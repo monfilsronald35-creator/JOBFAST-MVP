@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  salary      String?
+  status      String   @default("active")
+  businessId  String
+  professionId String
+  latitude    Float
+  longitude   Float
+  city        String?
+  state       String?
+  country     String?
+  address     String?
+  requirements String[]
+  benefits    String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business     Business          @relation(fields: [businessId], references: [id])
+  profession   Profession        @relation(fields: [professionId], references: [id])
+  applications JobApplication[]
+  savedJobs    SavedJob[]
+}
+
+model JobApplication {
+  id             String   @id @default(cuid())
+  jobId          String
+  userId         String
+  coverLetter    String?
+  expectedSalary String?
+  availability   String?
+  status         String   @default("pending")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  job  Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  job  Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+}
+
+model Business {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  logoUrl   String?
+  website   String?
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs Job[]
+  owner User @relation(fields: [ownerId], references: [id])
+}
+
+model Profession {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String
+  description String?
+  createdAt   DateTime @default(now())
+
+  jobs Job[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  firstName    String
+  lastName     String
+  phone        String?
+  role         String   @default("worker")
+  bio          String?
+  avatarUrl    String?
+  isVerified   Boolean  @default(false)
+  trustScore   Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  applications JobApplication[]
+  savedJobs    SavedJob[]
+  ownedBusinesses Business[]
+}

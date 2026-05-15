@@ -1,0 +1,137 @@
+{
+  "app": {
+    "name": "JOBFAST",
+    "welcome": "Bienvenue sur JOBFAST",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "next": "Suivant",
+    "back": "Retour",
+    "submit": "Soumettre"
+  },
+
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié",
+    "createAccount": "Créer un compte"
+  },
+
+  "profile": {
+    "title": "Profil",
+    "editProfile": "Modifier le profil",
+    "bio": "Bio",
+    "location": "Localisation",
+    "availability": "Disponibilité",
+    "distance": "Distance",
+    "skills": "Compétences",
+    "services": "Services",
+    "business": "Entreprise"
+  },
+
+  "availability": {
+    "available": "Disponible",
+    "busy": "Occupé",
+    "working": "En travail",
+    "offline": "Hors ligne"
+  },
+
+  "construction": {
+    "title": "Construction",
+    "boss": "Patron",
+    "worker": "Travailleur",
+    "assistant": "Assistant",
+    "apprentice": "Apprenti",
+    "engineer": "Ingénieur",
+    "mason": "Maçon",
+    "carpenter": "Charpentier",
+    "electrician": "Électricien",
+    "painter": "Peintre",
+    "tiler": "Carreleur",
+    "welder": "Soudeur",
+    "constructionWorker": "Ouvrier du bâtiment",
+    "findWorkers": "Trouver des travailleurs proches",
+    "findJobs": "Trouver des emplois de construction"
+  },
+
+  "services": {
+    "title": "Services à la demande",
+    "chef": "Chef privé",
+    "plumber": "Plombier",
+    "doctor": "Médecin",
+    "nurse": "Infirmier",
+    "taxi": "Taxi",
+    "delivery": "Livraison",
+    "cleaning": "Nettoyage",
+    "videographer": "Vidéaste",
+    "designer": "Designer",
+    "requestService": "Demander un service",
+    "findService": "Trouver des services proches"
+  },
+
+  "business": {
+    "title": "Annuaire des entreprises",
+    "companies": "Entreprises",
+    "restaurants": "Restaurants",
+    "hospitals": "Hôpitaux",
+    "clinics": "Cliniques",
+    "hotels": "Hôtels",
+    "offices": "Bureaux",
+    "lawyers": "Avocats",
+    "mechanics": "Mécaniciens",
+    "tourGuides": "Guides touristiques",
+    "organizations": "Organisations"
+  },
+
+  "location": {
+    "title": "Localisation",
+    "currentLocation": "Position actuelle",
+    "enableGps": "Activer le GPS",
+    "distanceSorting": "Tri par distance",
+    "nearbyResults": "Résultats à proximité",
+    "mapClusters": "Groupes sur la carte",
+    "city": "Ville",
+    "state": "État",
+    "country": "Pays",
+    "searchNearby": "Rechercher à proximité",
+    "gpsDenied": "Permission GPS refusée",
+    "gpsUnavailable": "GPS indisponible"
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "jobAlert": "Alerte emploi",
+    "serviceAlert": "Alerte service",
+    "businessAlert": "Alerte entreprise",
+    "newMatch": "Nouvelle correspondance trouvée",
+    "nearbyWorker": "Travailleur proche disponible"
+  },
+
+  "jobs": {
+    "title": "Emplois",
+    "findJob": "Trouver un emploi",
+    "postJob": "Publier un emploi",
+    "jobAvailable": "Emploi disponible",
+    "workersNearby": "Travailleurs proches",
+    "apply": "Postuler"
+  },
+
+  "search": {
+    "placeholder": "Rechercher des travailleurs, entreprises ou services...",
+    "noResults": "Aucun résultat trouvé",
+    "results": "Résultats"
+  },
+
+  "errors": {
+    "somethingWentWrong": "Une erreur est survenue",
+    "networkError": "Erreur réseau",
+    "unauthorized": "Non autorisé",
+    "notFound": "Introuvable"
+  }
+}
