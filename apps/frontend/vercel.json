@@ -1,24 +1,14 @@
 {
-  "version": 2,
+  "framework": "vite",
 
-  "builds": [
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
-
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://YOUR-BACKEND-DOMAIN.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://jobfast-mvp-api.onrender.com/api/:path*"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
