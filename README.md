@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 JOBFAST
 
 MVP Platform: Construction + Services + Business Directory + GPS Jobs System
@@ -194,3 +195,7 @@ System nan dwe tradui notification yo otomatik:
 - notifications
 - business directory
 - construction module
+=======
+# JOBFAST-MVP
+JOBFAST MVP - Construction, Services &amp; Business Platform
+>>>>>>> 130f70276fa555541371d6caf58e7036472b7cb5
