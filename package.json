@@ -6,9 +6,12 @@
 
   "type": "module",
 
+  "main": "server.js",
+
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "echo \"No build step required\""
   },
 
   "dependencies": {
@@ -23,5 +26,19 @@
 
   "engines": {
     "node": ">=18"
-  }
+  },
+
+  "keywords": [
+    "jobfast",
+    "backend",
+    "express",
+    "api",
+    "nodejs",
+    "jobs",
+    "marketplace"
+  ],
+
+  "author": "JOBFAST Team",
+
+  "license": "MIT"
 }
