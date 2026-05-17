@@ -1,13 +1,25 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import App from "./App.jsx";
+
 import "./styles/global.css";
 
-// ===============================
-// 🚀 MVP ENTRY POINT (SAFE)
-// ===============================
+// ========================================
+// 🌍 JOBFAST — MVP ENTRY POINT
+// ========================================
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+// ========================================
+// 🚀 RENDER APP
+// ========================================
+
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
