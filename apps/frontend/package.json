@@ -1,0 +1,44 @@
+{
+  "name": "jobfast",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JOBFAST MVP Backend",
+
+  "type": "module",
+
+  "main": "server.js",
+
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "build": "echo \"No build step required\""
+  },
+
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+
+  "engines": {
+    "node": ">=18"
+  },
+
+  "keywords": [
+    "jobfast",
+    "backend",
+    "express",
+    "api",
+    "nodejs",
+    "jobs",
+    "marketplace"
+  ],
+
+  "author": "JOBFAST Team",
+
+  "license": "MIT"
+}

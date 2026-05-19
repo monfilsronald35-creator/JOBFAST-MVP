@@ -1,0 +1,137 @@
+{
+  "app": {
+    "name": "JOBFAST",
+    "welcome": "Byenvini sou JOBFAST",
+    "loading": "Ap chaje...",
+    "search": "Chèche",
+    "save": "Sove",
+    "cancel": "Anile",
+    "close": "Fèmen",
+    "next": "Pwochen",
+    "back": "Retounen",
+    "submit": "Voye"
+  },
+
+  "auth": {
+    "login": "Konekte",
+    "register": "Enskri",
+    "logout": "Dekonekte",
+    "email": "Imèl",
+    "password": "Modpas",
+    "confirmPassword": "Konfime modpas",
+    "forgotPassword": "Ou bliye modpas",
+    "createAccount": "Kreye kont"
+  },
+
+  "profile": {
+    "title": "Pwofil",
+    "editProfile": "Modifye pwofil",
+    "bio": "Bio",
+    "location": "Kote",
+    "availability": "Disponibilite",
+    "distance": "Distans",
+    "skills": "Konpetans",
+    "services": "Sèvis",
+    "business": "Biznis"
+  },
+
+  "availability": {
+    "available": "Disponib",
+    "busy": "Okipe",
+    "working": "An travay",
+    "offline": "Dekonekte"
+  },
+
+  "construction": {
+    "title": "Konstriksyon",
+    "boss": "Boss",
+    "worker": "Travayè",
+    "assistant": "Asistan",
+    "apprentice": "Apranti",
+    "engineer": "Enjenyè",
+    "mason": "Mason",
+    "carpenter": "Bòs bwa",
+    "electrician": "Elektrisyen",
+    "painter": "Pent",
+    "tiler": "Pozè karèl",
+    "welder": "Soude",
+    "constructionWorker": "Travayè konstriksyon",
+    "findWorkers": "Chèche travayè ki pre w",
+    "findJobs": "Chèche travay konstriksyon"
+  },
+
+  "services": {
+    "title": "Sèvis Sou Demann",
+    "chef": "Chef lakay",
+    "plumber": "Plonbye",
+    "doctor": "Doktè",
+    "nurse": "Enfimyè",
+    "taxi": "Taksi",
+    "delivery": "Livrezon",
+    "cleaning": "Netwayaj",
+    "videographer": "Videograf",
+    "designer": "Designer",
+    "requestService": "Mande sèvis",
+    "findService": "Chèche sèvis ki pre w"
+  },
+
+  "business": {
+    "title": "Lis Biznis",
+    "companies": "Konpayi",
+    "restaurants": "Restoran",
+    "hospitals": "Lopital",
+    "clinics": "Klinik",
+    "hotels": "Otèl",
+    "offices": "Biwo",
+    "lawyers": "Avoka",
+    "mechanics": "Mekanisyen",
+    "tourGuides": "Gid touris",
+    "organizations": "Òganizasyon"
+  },
+
+  "location": {
+    "title": "Lokalizasyon",
+    "currentLocation": "Kote aktyèl",
+    "enableGps": "Aktive GPS",
+    "distanceSorting": "Triye pa distans",
+    "nearbyResults": "Rezilta ki pre",
+    "mapClusters": "Gwoup sou kat la",
+    "city": "Vil",
+    "state": "Depatman",
+    "country": "Peyi",
+    "searchNearby": "Chèche toupre",
+    "gpsDenied": "Aksè GPS refize",
+    "gpsUnavailable": "GPS pa disponib"
+  },
+
+  "notifications": {
+    "title": "Notifikasyon",
+    "jobAlert": "Alèt travay",
+    "serviceAlert": "Alèt sèvis",
+    "businessAlert": "Alèt biznis",
+    "newMatch": "Nouvo rezilta jwenn",
+    "nearbyWorker": "Travayè ki pre disponib"
+  },
+
+  "jobs": {
+    "title": "Travay",
+    "findJob": "Chèche travay",
+    "postJob": "Pibliye travay",
+    "jobAvailable": "Travay disponib",
+    "workersNearby": "Travayè ki pre",
+    "apply": "Aplike"
+  },
+
+  "search": {
+    "placeholder": "Chèche travayè, biznis oswa sèvis...",
+    "noResults": "Pa gen rezilta",
+    "results": "Rezilta"
+  },
+
+  "errors": {
+    "somethingWentWrong": "Gen yon erè ki rive",
+    "networkError": "Erè rezo",
+    "unauthorized": "Ou pa otorize",
+    "notFound": "Pa jwenn li"
+  }
+}
