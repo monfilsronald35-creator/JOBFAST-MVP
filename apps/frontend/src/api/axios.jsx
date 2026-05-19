@@ -4,8 +4,12 @@ import axios from "axios";
 // 🚀 BASE API INSTANCE (MVP SAFE)
 // ===============================
 
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://jobfast-mvp.onrender.com";
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: API_URL,
   withCredentials: true,
   timeout: 10000,
 });
@@ -39,10 +43,9 @@ API.interceptors.response.use(
     const message =
       error?.response?.data?.message || "Server Error";
 
-    // Optional: global error log
     console.error("API ERROR:", message);
 
-    // Auto logout if token invalid (401)
+    // 🔒 Auto logout if unauthorized
     if (error?.response?.status === 401) {
       localStorage.removeItem("token");
     }
