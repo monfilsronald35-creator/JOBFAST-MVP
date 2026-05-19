@@ -19,3 +19,13 @@ dist/
 build/
 .vercel/
 .env
+ ai
+analytics
+deploy 
+integrations
+media
+packages 
+realtime
+security 
+shared-ui 
+shared
