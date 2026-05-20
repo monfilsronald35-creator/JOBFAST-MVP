@@ -295,13 +295,16 @@ app.use((req, res) => {
 // 💥 ERROR
 // ======================================================
 
-app.use((err, req, res, next) => {
-  console.error(err);
+app.get("*", (req, res) => {
 
-  res.status(500).json({
-    success: false,
-    message: "Server error",
+  res.json({
+
+    success: true,
+
+    message: "JOBFAST API Running",
+
   });
+
 });
 
 // ======================================================
