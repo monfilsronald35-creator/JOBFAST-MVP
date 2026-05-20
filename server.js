@@ -281,19 +281,12 @@ app.get("/api/jobs", auth, (req, res) => {
 });
 
 // ======================================================
-// ❌ 404
-// ======================================================
 
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-  });
-});
+// 🌍 DEFAULT ROUTE
 
 // ======================================================
-// 💥 ERROR
-// ======================================================
+
+
 
 app.get("*", (req, res) => {
 
@@ -302,6 +295,28 @@ app.get("*", (req, res) => {
     success: true,
 
     message: "JOBFAST API Running",
+
+  });
+
+});
+
+
+
+// ======================================================
+// 💥 ERROR
+// ======================================================
+
+app.use((err, req, res, next) => {
+
+  console.error(err);
+
+
+
+  res.status(500).json({
+
+    success: false,
+
+    message: "Server error",
 
   });
 
