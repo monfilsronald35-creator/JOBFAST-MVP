@@ -5,12 +5,21 @@ import React from "react";
 // ===============================
 
 function Home() {
+
+  // ===============================
+  // 🔥 TEMP BUTTON ACTIONS
+  // ===============================
+
+  const handleClick = (section) => {
+    alert(`${section} coming soon 🚀`);
+  };
+
   return (
     <div style={styles.container}>
 
       {/* HEADER */}
       <h1 style={styles.title}>
-        Marketplace MVP
+        JOBFAST Marketplace MVP
       </h1>
 
       <p style={styles.subtitle}>
@@ -20,16 +29,24 @@ function Home() {
       {/* GRID SECTIONS */}
       <div style={styles.grid}>
 
-        {/* 👷 CONSTRUCTION (CORE SYSTEM) */}
+        {/* 👷 CONSTRUCTION */}
         <div style={styles.card}>
           <h2>👷 Construction Network</h2>
+
           <p>
             Boss • Assistant • Mason • Carpenter • Electrician • Plumber • Engineer
           </p>
+
           <p style={styles.note}>
-            🔴 Availability: Working / Searching Job Toggle (future logic)
+            🔴 Availability: Working / Searching Job Toggle
           </p>
-          <button style={styles.button}>
+
+          <button
+            style={styles.button}
+            onClick={() =>
+              handleClick("Construction Network")
+            }
+          >
             Find Construction Workers
           </button>
         </div>
@@ -37,35 +54,57 @@ function Home() {
         {/* 🏢 BUSINESS DIRECTORY */}
         <div style={styles.card}>
           <h2>🏢 Business Directory</h2>
+
           <p>
-            Company • Restaurant • Hospital • Clinic • Hotel • Office • Lawyer • Mechanic • Tour Guide • Organization
+            Company • Restaurant • Hospital • Clinic • Hotel • Office • Lawyer • Mechanic • Tour Guide
           </p>
-          <button style={styles.button}>
+
+          <button
+            style={styles.button}
+            onClick={() =>
+              handleClick("Business Directory")
+            }
+          >
             Explore Businesses
           </button>
         </div>
 
-        {/* 🚀 SERVICES ON DEMAND */}
+        {/* 🚀 SERVICES */}
         <div style={styles.card}>
           <h2>🚀 Services On Demand</h2>
+
           <p>
             Chef • Plumber • Doctor • Nurse • Taxi • Delivery • Cleaning • Videographer • Designer
           </p>
-          <button style={styles.button}>
+
+          <button
+            style={styles.button}
+            onClick={() =>
+              handleClick("Services")
+            }
+          >
             Request Service
           </button>
         </div>
 
-        {/* 📍 LOCATION ENGINE */}
+        {/* 📍 LOCATION */}
         <div style={styles.card}>
           <h2>📍 Location Engine</h2>
+
           <p>
-            GPS • Distance Sorting • City / State / Country • Nearby Search
+            GPS • Distance Sorting • Nearby Search
           </p>
+
           <p style={styles.note}>
-            🟢 Auto-notify nearby users when new job/service is posted
+            🟢 Nearby user notifications system
           </p>
-          <button style={styles.button}>
+
+          <button
+            style={styles.button}
+            onClick={() =>
+              handleClick("Nearby System")
+            }
+          >
             Find Nearby
           </button>
         </div>
@@ -76,7 +115,7 @@ function Home() {
 }
 
 // ===============================
-// 🎨 MVP STYLES (SIMPLE + SAFE)
+// 🎨 MVP STYLES
 // ===============================
 
 const styles = {
@@ -100,24 +139,27 @@ const styles = {
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "15px"
   },
 
   card: {
     background: "#1e293b",
     padding: "15px",
-    borderRadius: "10px"
+    borderRadius: "10px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.2)"
   },
 
   button: {
     marginTop: "10px",
-    padding: "9px 12px",
+    padding: "10px 14px",
     border: "none",
     borderRadius: "6px",
     background: "#3b82f6",
     color: "white",
-    cursor: "pointer"
+    cursor: "pointer",
+    fontWeight: "bold"
   },
 
   note: {

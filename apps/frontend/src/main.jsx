@@ -6,20 +6,27 @@ import App from "./App.jsx";
 import "./styles/global.css";
 
 // ========================================
-// 🌍 JOBFAST — MVP ENTRY POINT
+// 🌍 JOBFAST — MVP ENTRY POINT (FINAL)
 // ========================================
 
+// ✅ SAFE ROOT CHECK
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error("Root element not found");
+  throw new Error("❌ Root element (#root) not found");
 }
 
 // ========================================
-// 🚀 RENDER APP
+// 🚀 CREATE ROOT
 // ========================================
 
-ReactDOM.createRoot(rootElement).render(
+const root = ReactDOM.createRoot(rootElement);
+
+// ========================================
+// 🚀 RENDER APPLICATION
+// ========================================
+
+root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

@@ -1,87 +1,208 @@
-
-import React, { createContext, useContext, useState, useEffect } from "react";
-
-// ===============================
-// 🚀 AUTH CONTEXT (MVP SAFE)
-// ===============================
-
-// Create context
-const AuthContext = createContext();
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo
+} from "react";
 
 // ===============================
-// 🔐 PROVIDER
+// 🚀 AUTH CONTEXT (FINAL SAFE)
 // ===============================
+
+// ===============================
+// 📦 CREATE CONTEXT
+// ===============================
+
+const AuthContext = createContext(null);
+
+// ===============================
+// 🔐 AUTH PROVIDER
+// ===============================
+
 export function AuthProvider({ children }) {
-  // 👤 USER STATE (safe MVP structure)
+
+  // ===============================
+  // 👤 USER STATE
+  // ===============================
+
   const [user, setUser] = useState(null);
 
-  // 🔄 LOADING STATE (avoid flicker / crash)
+  // ===============================
+  // ⏳ LOADING STATE
+  // ===============================
+
   const [loading, setLoading] = useState(true);
 
   // ===============================
-  // 📦 INIT AUTH (LOCAL STORAGE SAFE)
+  // 🚀 INITIAL AUTH LOAD
   // ===============================
-  useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem("user");
 
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
+  useEffect(() => {
+
+    const loadUser = () => {
+      try {
+
+        const savedUser =
+          localStorage.getItem("user");
+
+        const savedToken =
+          localStorage.getItem("token");
+
+        // ===============================
+        // ✅ RESTORE USER
+        // ===============================
+
+        if (savedUser && savedToken) {
+
+          const parsedUser =
+            JSON.parse(savedUser);
+
+          setUser(parsedUser);
+
+        } else {
+
+          // cleanup invalid state
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+
+          setUser(null);
+        }
+
+      } catch (error) {
+
+        console.error(
+          "❌ Auth restore error:",
+          error
+        );
+
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+
+        setUser(null);
+
+      } finally {
+
+        setLoading(false);
       }
-    } catch (err) {
-      console.log("Auth load error:", err);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    loadUser();
+
   }, []);
 
   // ===============================
-  // 🔑 LOGIN (MVP SAFE)
+  // 🔑 LOGIN
   // ===============================
-  const login = (userData) => {
+
+  const login = (userData, token = null) => {
+
     try {
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-    } catch (err) {
-      console.log("Login error:", err);
+
+      // safe user object
+      const safeUser = {
+        id: userData?.id || null,
+        name: userData?.name || "User",
+        email: userData?.email || "",
+        role: userData?.role || "user",
+        available:
+          userData?.available ?? true
+      };
+
+      setUser(safeUser);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(safeUser)
+      );
+
+      // optional token
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+    } catch (error) {
+
+      console.error(
+        "❌ Login error:",
+        error
+      );
     }
   };
 
   // ===============================
   // 🚪 LOGOUT
   // ===============================
+
   const logout = () => {
+
     setUser(null);
+
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   // ===============================
-  // 📍 UPDATE AVAILABILITY (CORE FOR CONSTRUCTION SYSTEM)
+  // 🔄 UPDATE USER
   // ===============================
-  const toggleAvailability = () => {
+
+  const updateUser = (newData) => {
+
     if (!user) return;
 
     const updatedUser = {
       ...user,
-      available: user.available === false ? true : false,
+      ...newData
     };
 
     setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
   };
 
   // ===============================
-  // 📦 CONTEXT VALUE
+  // 📍 TOGGLE AVAILABILITY
   // ===============================
-  const value = {
+
+  const toggleAvailability = () => {
+
+    if (!user) return;
+
+    const updatedUser = {
+      ...user,
+      available: !user.available
+    };
+
+    setUser(updatedUser);
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
+  };
+
+  // ===============================
+  // 🧠 MEMOIZED CONTEXT VALUE
+  // ===============================
+
+  const value = useMemo(() => ({
     user,
     setUser,
+    loading,
+
     login,
     logout,
-    loading,
-    toggleAvailability,
-  };
+
+    updateUser,
+    toggleAvailability
+  }), [user, loading]);
+
+  // ===============================
+  // 🚀 PROVIDER
+  // ===============================
 
   return (
     <AuthContext.Provider value={value}>
@@ -91,10 +212,21 @@ export function AuthProvider({ children }) {
 }
 
 // ===============================
-// 🧠 HOOK (SAFE USAGE)
+// 🧠 SAFE AUTH HOOK
 // ===============================
+
 export function useAuth() {
-  return useContext(AuthContext);
+
+  const context =
+    useContext(AuthContext);
+
+  if (!context) {
+    throw new Error(
+      "useAuth must be used inside AuthProvider"
+    );
+  }
+
+  return context;
 }
 
 export default AuthContext;
