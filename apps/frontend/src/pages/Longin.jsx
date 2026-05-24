@@ -1,46 +1,87 @@
- import React, { useState } from "react";
+import React, { useState } from "react";
 import API from "../api/axios";
 
 // ===============================
-// 🚀 LOGIN PAGE (MVP SAFE)
+// 🚀 LOGIN PAGE (CONNECTED)
 // ===============================
 
 function Login() {
-  const [emailOrPhone, setEmailOrPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
 
   // ===============================
   // 🔐 HANDLE LOGIN
   // ===============================
+
   const handleLogin = async () => {
-    if (!emailOrPhone || !password) {
-      alert("Please fill all fields");
+
+    setError("");
+
+    // VALIDATION
+    if (!email || !password) {
+
+      setError(
+        "Please fill all fields"
+      );
+
       return;
     }
 
     try {
+
       setLoading(true);
 
-      const res = await API.post("/auth/login", {
-        emailOrPhone,
-        password,
-      });
+      // API CALL
+      const res = await API.post(
+        "/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
-      // Save token
-      localStorage.setItem("token", res.data.token);
+      // RESPONSE
+      const data = res.data;
+
+      // SAVE TOKEN
+      localStorage.setItem(
+        "token",
+        data.token
+      );
+
+      // SAVE USER
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
 
       alert("Login successful");
 
-      // Redirect (future routing system)
+      // REDIRECT
       window.location.href = "/";
 
     } catch (err) {
+
       console.error(err);
-      alert(
-        err?.response?.data?.message || "Login failed"
+
+      setError(
+        err?.response?.data
+          ?.message ||
+          "Login failed"
       );
+
     } finally {
+
       setLoading(false);
     }
   };
@@ -48,25 +89,38 @@ function Login() {
   // ===============================
   // 🎨 UI
   // ===============================
+
   return (
     <div style={styles.container}>
 
       <div style={styles.card}>
 
+        {/* TITLE */}
         <h1 style={styles.title}>
-          Login
+          JOBFAST
         </h1>
 
         <p style={styles.subtitle}>
-          Construction • Business • Services Platform
+          Construction • Businesses •
+          Services On Demand
         </p>
 
-        {/* EMAIL / PHONE */}
+        {/* ERROR */}
+        {error && (
+          <div style={styles.error}>
+            {error}
+          </div>
+        )}
+
+        {/* EMAIL */}
         <input
           style={styles.input}
-          placeholder="Email or Phone"
-          value={emailOrPhone}
-          onChange={(e) => setEmailOrPhone(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
         />
 
         {/* PASSWORD */}
@@ -75,21 +129,37 @@ function Login() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(
+              e.target.value
+            )
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleLogin();
+            }
+          }}
         />
 
         {/* BUTTON */}
         <button
           style={styles.button}
-          onClick={handleLogin}
+          onClick={() => {
+            if (!loading) {
+              handleLogin();
+            }
+          }}
           disabled={loading}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading
+            ? "Logging in..."
+            : "Login"}
         </button>
 
         {/* INFO */}
         <p style={styles.info}>
-          Access workers, businesses, and services near you
+          Find workers, companies,
+          services and jobs near you
         </p>
 
       </div>
@@ -98,63 +168,119 @@ function Login() {
 }
 
 // ===============================
-// 🎨 STYLES (SIMPLE + SAFE)
+// 🎨 STYLES
 // ===============================
 
 const styles = {
+
   container: {
     minHeight: "100vh",
+
     display: "flex",
+
     justifyContent: "center",
+
     alignItems: "center",
+
     background: "#0f172a",
-    fontFamily: "Arial"
+
+    padding: "20px",
+
+    fontFamily: "Arial",
   },
 
   card: {
-    width: "320px",
-    padding: "20px",
+    width: "100%",
+
+    maxWidth: "360px",
+
     background: "#1e293b",
-    borderRadius: "10px",
-    color: "white"
+
+    padding: "24px",
+
+    borderRadius: "14px",
+
+    color: "white",
+
+    boxShadow:
+      "0 0 20px rgba(0,0,0,0.3)",
   },
 
   title: {
-    fontSize: "24px",
-    marginBottom: "5px"
+    fontSize: "28px",
+
+    marginBottom: "6px",
+
+    textAlign: "center",
   },
 
   subtitle: {
-    fontSize: "12px",
+    fontSize: "13px",
+
     color: "#94a3b8",
-    marginBottom: "15px"
+
+    marginBottom: "20px",
+
+    textAlign: "center",
+  },
+
+  error: {
+    background: "#7f1d1d",
+
+    color: "#fecaca",
+
+    padding: "10px",
+
+    borderRadius: "8px",
+
+    marginBottom: "12px",
+
+    fontSize: "13px",
   },
 
   input: {
     width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
+
+    padding: "12px",
+
+    marginBottom: "12px",
+
+    borderRadius: "8px",
+
     border: "none",
-    outline: "none"
+
+    outline: "none",
+
+    fontSize: "14px",
   },
 
   button: {
     width: "100%",
-    padding: "10px",
-    background: "#3b82f6",
+
+    padding: "12px",
+
+    background: "#2563eb",
+
     border: "none",
-    borderRadius: "6px",
+
+    borderRadius: "8px",
+
     color: "white",
-    cursor: "pointer"
+
+    fontSize: "15px",
+
+    cursor: "pointer",
   },
 
   info: {
-    fontSize: "11px",
+    marginTop: "14px",
+
+    textAlign: "center",
+
+    fontSize: "12px",
+
     color: "#94a3b8",
-    marginTop: "10px",
-    textAlign: "center"
-  }
+  },
 };
 
 export default Login;

@@ -4,7 +4,7 @@ import axios from "axios";
 // 🌍 API BASE URL
 // ===============================
 
-const API_URL =
+export const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://jobfast-mvp.onrender.com";
 
@@ -17,12 +17,13 @@ const API = axios.create({
 
   timeout: 15000,
 
-  withCredentials: true,
-
   headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json"
-  }
+    "Content-Type":
+      "application/json",
+
+    Accept:
+      "application/json",
+  },
 });
 
 // ===============================
@@ -31,59 +32,52 @@ const API = axios.create({
 
 API.interceptors.request.use(
 
-  async (config) => {
+  (config) => {
 
-    try {
+    // ===============================
+    // 🔑 TOKEN
+    // ===============================
 
-      // ===============================
-      // 🛡 SAFE HEADERS
-      // ===============================
-
-      config.headers =
-        config.headers || {};
-
-      // ===============================
-      // 🔑 TOKEN
-      // ===============================
-
-      const token =
-        localStorage.getItem("token");
-
-      if (token) {
-        config.headers.Authorization =
-          `Bearer ${token}`;
-      }
-
-      // ===============================
-      // 🌍 CLIENT IDENTIFIER
-      // ===============================
-
-      config.headers["X-App-Client"] =
-        "JOBFAST_MVP";
-
-      // ===============================
-      // ⏱ REQUEST START TIME
-      // ===============================
-
-      config.metadata = {
-        startTime: new Date()
-      };
-
-      return config;
-
-    } catch (error) {
-
-      console.error(
-        "❌ Request interceptor error:",
-        error
+    const token =
+      localStorage.getItem(
+        "token"
       );
 
-      return Promise.reject(error);
+    if (token) {
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
     }
+
+    // ===============================
+    // 🌍 APP IDENTIFIER
+    // ===============================
+
+    config.headers[
+      "X-App-Client"
+    ] = "JOBFAST_MVP";
+
+    // ===============================
+    // ⏱ REQUEST TIMER
+    // ===============================
+
+    config.metadata = {
+      startTime: Date.now(),
+    };
+
+    return config;
   },
 
   (error) => {
-    return Promise.reject(error);
+
+    console.error(
+      "❌ Request Error:",
+      error
+    );
+
+    return Promise.reject(
+      error
+    );
   }
 );
 
@@ -94,33 +88,33 @@ API.interceptors.request.use(
 API.interceptors.response.use(
 
   // ===============================
-  // ✅ SUCCESS RESPONSE
+  // ✅ SUCCESS
   // ===============================
 
   (response) => {
 
     try {
 
-      if (
-        response?.config?.metadata?.startTime
-      ) {
+      const start =
+        response?.config
+          ?.metadata
+          ?.startTime;
 
-        const endTime = new Date();
+      if (start) {
 
         const duration =
-          endTime -
-          response.config.metadata.startTime;
+          Date.now() - start;
 
         console.log(
-          `✅ API: ${response.config.url} (${duration}ms)`
+          `✅ ${response.config.method?.toUpperCase()} ${response.config.url} (${duration}ms)`
         );
       }
 
-    } catch (error) {
+    } catch (err) {
 
       console.error(
-        "⚠ Response log error:",
-        error
+        "⚠ Log Error:",
+        err
       );
     }
 
@@ -128,17 +122,17 @@ API.interceptors.response.use(
   },
 
   // ===============================
-  // ❌ ERROR RESPONSE
+  // ❌ ERROR
   // ===============================
 
   (error) => {
 
-    // ===============================
-    // 🌍 ERROR MESSAGE
-    // ===============================
+    const status =
+      error?.response?.status;
 
     const message =
-      error?.response?.data?.message ||
+      error?.response?.data
+        ?.message ||
       error?.message ||
       "Server Error";
 
@@ -151,15 +145,29 @@ API.interceptors.response.use(
     // 🔒 AUTO LOGOUT
     // ===============================
 
-    if (
-      error?.response?.status === 401
-    ) {
+    if (status === 401) {
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
 
       console.warn(
         "⚠ Session expired"
+      );
+    }
+
+    // ===============================
+    // 🌐 OFFLINE SERVER
+    // ===============================
+
+    if (!error?.response) {
+
+      console.error(
+        "🌐 Backend unavailable"
       );
     }
 
@@ -168,7 +176,8 @@ API.interceptors.response.use(
     // ===============================
 
     if (
-      error?.code === "ECONNABORTED"
+      error?.code ===
+      "ECONNABORTED"
     ) {
 
       console.error(
@@ -176,88 +185,99 @@ API.interceptors.response.use(
       );
     }
 
-    // ===============================
-    // 🌐 SERVER OFFLINE
-    // ===============================
-
-    if (!error?.response) {
-
-      console.error(
-        "🌐 Server unavailable"
-      );
-    }
-
-    return Promise.reject(error);
+    return Promise.reject(
+      error
+    );
   }
 );
 
 // ===============================
-// 🚀 SAFE API METHODS
+// 🚀 SAFE METHODS
 // ===============================
 
-export const apiGet = async (
-  url,
-  config = {}
-) => {
+export const apiGet =
+  async (
+    url,
+    config = {}
+  ) => {
 
-  const response =
-    await API.get(url, config);
+    const response =
+      await API.get(
+        url,
+        config
+      );
 
-  return response.data;
-};
+    return response.data;
+  };
 
-export const apiPost = async (
-  url,
- data = {},
-  config = {}
-) => {
+export const apiPost =
+  async (
+    url,
+    data = {},
+    config = {}
+  ) => {
 
-  const response =
-    await API.post(
-      url,
-      data,
-      config
-    );
+    const response =
+      await API.post(
+        url,
+        data,
+        config
+      );
 
-  return response.data;
-};
+    return response.data;
+  };
 
-export const apiPut = async (
-  url,
-  data = {},
-  config = {}
-) => {
+export const apiPut =
+  async (
+    url,
+    data = {},
+    config = {}
+  ) => {
 
-  const response =
-    await API.put(
-      url,
-      data,
-      config
-    );
+    const response =
+      await API.put(
+        url,
+        data,
+        config
+      );
 
-  return response.data;
-};
+    return response.data;
+  };
 
-export const apiDelete = async (
-  url,
-  config = {}
-) => {
+export const apiPatch =
+  async (
+    url,
+    data = {},
+    config = {}
+  ) => {
 
-  const response =
-    await API.delete(
-      url,
-      config
-    );
+    const response =
+      await API.patch(
+        url,
+        data,
+        config
+      );
 
-  return response.data;
-};
+    return response.data;
+  };
+
+export const apiDelete =
+  async (
+    url,
+    config = {}
+  ) => {
+
+    const response =
+      await API.delete(
+        url,
+        config
+      );
+
+    return response.data;
+  };
 
 // ===============================
-// 📦 EXPORTS
+// 📦 EXPORT
 // ===============================
-
-export {
-  API_URL
-};
 
 export default API;
