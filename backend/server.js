@@ -1,10 +1,44 @@
+// ======================================================
+// 🌍 server.js
+// 🚀 JOBFAST GLOBAL SERVER
+// ======================================================
+
 import express from "express";
 import cors from "cors";
-import crypto from "crypto";
+import dotenv from "dotenv";
+
+// ======================================================
+// 🌍 LOAD ENV
+// ======================================================
+
+dotenv.config();
+
+// ======================================================
+// 🌍 DATABASE
+// ======================================================
+
+import connectDB from "./config/db.js";
+
+// ======================================================
+// 🌍 MODELS
+// ======================================================
+
+import Job from "./models/Job.js";
+import Business from "./models/Business.js";
+
+// ======================================================
+// 🌍 APP
+// ======================================================
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
+
+// ======================================================
+// 🚀 CONNECT DATABASE
+// ======================================================
+
+connectDB();
 
 // ======================================================
 // 🌍 MIDDLEWARE
@@ -18,7 +52,7 @@ app.use(
 
 app.use(
   express.json({
-    limit: "2mb",
+    limit: "10mb",
   })
 );
 
@@ -29,80 +63,10 @@ app.use(
 );
 
 // ======================================================
-// 🧠 MEMORY DATABASE (MVP)
-// ======================================================
-
-const db = {
-  users: [],
-  businesses: [],
-  jobs: [],
-  services: [],
-  notifications: [],
-};
-
-// ======================================================
-// 🧼 HELPERS
-// ======================================================
-
-const id = () => crypto.randomUUID();
-
-const normalize = (v) =>
-  String(v || "")
-    .trim()
-    .toLowerCase();
-
-const token = () =>
-  crypto.randomUUID();
-
-const hash = (v) =>
-  crypto
-    .createHash("sha256")
-    .update(v)
-    .digest("hex");
-
-const isEmail = (email) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-const safeUser = (user) => {
-  const { password, ...safe } =
-    user;
-
-  return safe;
-};
-
-// ======================================================
-// 🔐 AUTH MEMORY
-// ======================================================
-
-const authTokens = new Map();
-
-// ======================================================
-// 🏗️ CONSTRUCTION CATEGORIES
-// ======================================================
-
-const constructionRoles = [
-  "boss",
-  "engineer",
-  "architect",
-  "foreman",
-  "mason",
-  "welder",
-  "electrician",
-  "plumber",
-  "painter",
-  "ajoudan",
-  "worker",
-  "tile installer",
-  "carpenter",
-  "machine operator",
-];
-
-// ======================================================
-// 🕒 REQUEST LOGGER
+// 🕒 LOGGER
 // ======================================================
 
 app.use((req, res, next) => {
-
   console.log(
     `[${new Date().toISOString()}] ${req.method} ${req.url}`
   );
@@ -115,12 +79,11 @@ app.use((req, res, next) => {
 // ======================================================
 
 app.get("/", (req, res) => {
-
   res.json({
     success: true,
-    app: "JOBFAST GLOBAL MVP",
-    status: "running",
+    app: "JOBFAST GLOBAL API",
     version: "1.0.0",
+    status: "running",
   });
 });
 
@@ -128,252 +91,56 @@ app.get("/", (req, res) => {
 // ❤️ HEALTH CHECK
 // ======================================================
 
-app.get("/health", (req, res) => {
-
+app.get("/health", async (req, res) => {
   res.json({
     success: true,
     status: "healthy",
+    mongodb: "connected",
     uptime: process.uptime(),
-    timestamp:
-      new Date().toISOString(),
+    timestamp: new Date().toISOString(),
   });
 });
 
 // ======================================================
-// 👤 REGISTER
+// 🏗 CONSTRUCTION ROLES
 // ======================================================
 
-app.post(
-  "/api/auth/register",
-  (req, res) => {
-
-    const {
-      fullname,
-      email,
-      password,
-      phone,
-      bio,
-      category,
-      role,
-      country,
-      state,
-      city,
-      latitude,
-      longitude,
-    } = req.body || {};
-
-    if (
-      !fullname ||
-      !email ||
-      !password
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Missing required fields",
-      });
-    }
-
-    if (!isEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email",
-      });
-    }
-
-    if (
-      String(password).length < 6
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Password too short",
-      });
-    }
-
-    const exists = db.users.find(
-      (u) =>
-        u.email ===
-        normalize(email)
-    );
-
-    if (exists) {
-      return res.status(409).json({
-        success: false,
-        message:
-          "Email already exists",
-      });
-    }
-
-    const user = {
-      id: id(),
-
-      fullname,
-
-      email: normalize(email),
-
-      password: hash(password),
-
-      phone: phone || "",
-
-      bio: bio || "",
-
-      category:
-        category || "general",
-
-      role: role || "worker",
-
-      availability: "available",
-
-      verified: false,
-
-      location: {
-        country: country || "",
-        state: state || "",
-        city: city || "",
-        latitude:
-          latitude || null,
-        longitude:
-          longitude || null,
-      },
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    db.users.push(user);
-
-    const accessToken = token();
-
-    authTokens.set(
-      accessToken,
-      user.id
-    );
-
-    db.notifications.push({
-      id: id(),
-      type: "register",
-      message: `${fullname} joined JOBFAST`,
-      createdAt:
-        new Date().toISOString(),
-    });
-
-    res.status(201).json({
-      success: true,
-      token: accessToken,
-      user: safeUser(user),
-    });
-  }
-);
+const constructionRoles = [
+  "boss",
+  "engineer",
+  "architect",
+  "foreman",
+  "mason",
+  "helper",
+  "laborer",
+  "electrician",
+  "plumber",
+  "welder",
+  "painter",
+  "tiler",
+  "roofer",
+  "carpenter",
+  "steel_fixer",
+  "machine_operator",
+  "surveyor",
+  "excavator_operator",
+  "truck_driver",
+  "site_manager",
+  "finisher",
+  "block_layer",
+  "concrete_worker",
+  "interior_designer",
+  "construction_company",
+  "terminador",
+  "ajoudan",
+  "feray",
+  "kapent",
+  "beton",
+  "marble_worker"
+];
 
 // ======================================================
-// 🔑 LOGIN
-// ======================================================
-
-app.post(
-  "/api/auth/login",
-  (req, res) => {
-
-    const {
-      email,
-      password,
-    } = req.body || {};
-
-    const user = db.users.find(
-      (u) =>
-        u.email ===
-          normalize(email) &&
-        u.password ===
-          hash(password)
-    );
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message:
-          "Invalid credentials",
-      });
-    }
-
-    const accessToken = token();
-
-    authTokens.set(
-      accessToken,
-      user.id
-    );
-
-    res.json({
-      success: true,
-      token: accessToken,
-      user: safeUser(user),
-    });
-  }
-);
-
-// ======================================================
-// 🛡️ AUTH
-// ======================================================
-
-function auth(req, res, next) {
-
-  const bearer =
-    req.headers.authorization ||
-    "";
-
-  const accessToken =
-    bearer.replace("Bearer ", "");
-
-  if (!accessToken) {
-    return res.status(401).json({
-      success: false,
-      message: "No token",
-    });
-  }
-
-  const userId =
-    authTokens.get(accessToken);
-
-  if (!userId) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid token",
-    });
-  }
-
-  const user = db.users.find(
-    (u) => u.id === userId
-  );
-
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: "User not found",
-    });
-  }
-
-  req.user = user;
-
-  next();
-}
-
-// ======================================================
-// 👤 PROFILE
-// ======================================================
-
-app.get(
-  "/api/profile",
-  auth,
-  (req, res) => {
-
-    res.json({
-      success: true,
-      user: safeUser(req.user),
-    });
-  }
-);
-
-// ======================================================
-// 👷 CONSTRUCTION ROLES
+// 🚀 GET CONSTRUCTION ROLES
 // ======================================================
 
 app.get(
@@ -382,31 +149,8 @@ app.get(
 
     res.json({
       success: true,
+      total: constructionRoles.length,
       data: constructionRoles,
-    });
-  }
-);
-
-// ======================================================
-// 📍 UPDATE AVAILABILITY
-// ======================================================
-
-app.patch(
-  "/api/users/availability",
-  auth,
-  (req, res) => {
-
-    const {
-      availability,
-    } = req.body || {};
-
-    req.user.availability =
-      availability ||
-      "available";
-
-    res.json({
-      success: true,
-      user: safeUser(req.user),
     });
   }
 );
@@ -417,56 +161,25 @@ app.patch(
 
 app.post(
   "/api/business",
-  auth,
-  (req, res) => {
+  async (req, res) => {
 
-    const {
-      name,
-      type,
-      description,
-      city,
-      state,
-      country,
-    } = req.body || {};
+    try {
 
-    if (!name || !type) {
-      return res.status(400).json({
+      const business =
+        await Business.create(req.body);
+
+      res.status(201).json({
+        success: true,
+        data: business,
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
         success: false,
-        message:
-          "Missing business fields",
+        message: error.message,
       });
     }
-
-    const business = {
-      id: id(),
-
-      ownerId: req.user.id,
-
-      name,
-
-      type,
-
-      description:
-        description || "",
-
-      location: {
-        city: city || "",
-        state: state || "",
-        country: country || "",
-      },
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    db.businesses.push(
-      business
-    );
-
-    res.status(201).json({
-      success: true,
-      business,
-    });
   }
 );
 
@@ -476,71 +189,55 @@ app.post(
 
 app.get(
   "/api/business",
-  (req, res) => {
+  async (req, res) => {
 
-    res.json({
-      success: true,
-      total:
-        db.businesses.length,
-      data: db.businesses,
-    });
+    try {
+
+      const businesses =
+        await Business.find()
+          .sort({ createdAt: -1 });
+
+      res.json({
+        success: true,
+        total: businesses.length,
+        data: businesses,
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
   }
 );
 
 // ======================================================
-// 📋 CREATE JOB
+// 💼 CREATE JOB
 // ======================================================
 
 app.post(
   "/api/jobs",
-  auth,
-  (req, res) => {
+  async (req, res) => {
 
-    const {
-      title,
-      description,
-      salary,
-      city,
-      state,
-      country,
-    } = req.body || {};
+    try {
 
-    if (!title) {
-      return res.status(400).json({
+      const job =
+        await Job.create(req.body);
+
+      res.status(201).json({
+        success: true,
+        data: job,
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
         success: false,
-        message:
-          "Job title required",
+        message: error.message,
       });
     }
-
-    const job = {
-      id: id(),
-
-      userId: req.user.id,
-
-      title,
-
-      description:
-        description || "",
-
-      salary: salary || "",
-
-      location: {
-        city: city || "",
-        state: state || "",
-        country: country || "",
-      },
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    db.jobs.push(job);
-
-    res.status(201).json({
-      success: true,
-      job,
-    });
   }
 );
 
@@ -548,154 +245,85 @@ app.post(
 // 📋 GET JOBS
 // ======================================================
 
-app.get("/api/jobs", (req, res) => {
+app.get(
+  "/api/jobs",
+  async (req, res) => {
 
-  res.json({
-    success: true,
-    total: db.jobs.length,
-    data: db.jobs,
-  });
-});
+    try {
 
-// ======================================================
-// 📦 CREATE SERVICE
-// ======================================================
+      const jobs =
+        await Job.find()
+          .sort({ createdAt: -1 });
 
-app.post(
-  "/api/services",
-  auth,
-  (req, res) => {
+      res.json({
+        success: true,
+        total: jobs.length,
+        data: jobs,
+      });
 
-    const {
-      title,
-      category,
-      description,
-      price,
-    } = req.body || {};
+    } catch (error) {
 
-    if (!title) {
-      return res.status(400).json({
+      res.status(500).json({
         success: false,
-        message:
-          "Service title required",
+        message: error.message,
       });
     }
-
-    const service = {
-      id: id(),
-
-      userId: req.user.id,
-
-      title,
-
-      category:
-        category || "general",
-
-      description:
-        description || "",
-
-      price: price || "",
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    db.services.push(service);
-
-    res.status(201).json({
-      success: true,
-      service,
-    });
   }
 );
 
 // ======================================================
-// 📦 GET SERVICES
+// 🔍 SEARCH JOBS
 // ======================================================
 
 app.get(
-  "/api/services",
-  (req, res) => {
+  "/api/jobs/search",
+  async (req, res) => {
 
-    res.json({
-      success: true,
-      total:
-        db.services.length,
-      data: db.services,
-    });
-  }
-);
+    try {
 
-// ======================================================
-// 🔔 NOTIFICATIONS
-// ======================================================
+      const {
+        role,
+        city,
+        serviceType,
+      } = req.query;
 
-app.get(
-  "/api/notifications",
-  auth,
-  (req, res) => {
+      const filter = {};
 
-    res.json({
-      success: true,
-      total:
-        db.notifications.length,
-      data: db.notifications,
-    });
-  }
-);
+      if (role) {
+        filter.constructionRole = role;
+      }
 
-// ======================================================
-// 🌍 SEARCH USERS
-// ======================================================
+      if (serviceType) {
+        filter.serviceType =
+          serviceType;
+      }
 
-app.get(
-  "/api/users",
-  (req, res) => {
+      if (city) {
+        filter[
+          "locationData.cityNormalized"
+        ] =
+          String(city)
+            .trim()
+            .toLowerCase();
+      }
 
-    const {
-      category,
-      city,
-      availability,
-    } = req.query;
+      const jobs =
+        await Job.find(filter)
+          .sort({ createdAt: -1 });
 
-    let users = [...db.users];
+      res.json({
+        success: true,
+        total: jobs.length,
+        data: jobs,
+      });
 
-    if (category) {
-      users = users.filter(
-        (u) =>
-          normalize(
-            u.category
-          ) ===
-          normalize(category)
-      );
+    } catch (error) {
+
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
     }
-
-    if (city) {
-      users = users.filter(
-        (u) =>
-          normalize(
-            u.location.city
-          ) === normalize(city)
-      );
-    }
-
-    if (availability) {
-      users = users.filter(
-        (u) =>
-          normalize(
-            u.availability
-          ) ===
-          normalize(
-            availability
-          )
-      );
-    }
-
-    res.json({
-      success: true,
-      total: users.length,
-      data: users.map(safeUser),
-    });
   }
 );
 
@@ -716,12 +344,7 @@ app.use((req, res) => {
 // ======================================================
 
 app.use(
-  (
-    err,
-    req,
-    res,
-    next
-  ) => {
+  (err, req, res, next) => {
 
     console.error(err);
 
@@ -734,7 +357,7 @@ app.use(
 );
 
 // ======================================================
-// 💥 GLOBAL ERROR PROTECTION
+// 💥 GLOBAL ERRORS
 // ======================================================
 
 process.on(
@@ -770,11 +393,11 @@ app.listen(PORT, () => {
   );
 
   console.log(
-    `🚀 JOBFAST running on ${PORT}`
+    `🚀 JOBFAST RUNNING ON ${PORT}`
   );
 
   console.log(
-    "🌍 MVP API READY"
+    "🌍 MongoDB Connected"
   );
 
   console.log(

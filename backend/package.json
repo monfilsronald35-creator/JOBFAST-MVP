@@ -16,7 +16,9 @@
 
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.15.0"
   },
 
   "engines": {
@@ -32,7 +34,9 @@
     "services",
     "construction",
     "gps",
-    "jobs"
+    "jobs",
+    "mongodb",
+    "mongoose"
   ],
 
   "license": "MIT"
