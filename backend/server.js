@@ -1,44 +1,27 @@
-// ======================================================
-// 🌍 server.js
-// 🚀 JOBFAST GLOBAL SERVER
-// ======================================================
-
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-
-// ======================================================
-// 🌍 LOAD ENV
-// ======================================================
-
-dotenv.config();
-
-// ======================================================
-// 🌍 DATABASE
-// ======================================================
-
-import connectDB from "./config/db.js";
-
-// ======================================================
-// 🌍 MODELS
-// ======================================================
-
-import Job from "./models/Job.js";
-import Business from "./models/Business.js";
-
-// ======================================================
-// 🌍 APP
-// ======================================================
+import crypto from "crypto";
 
 const app = express();
 
-const PORT = process.env.PORT || 5000;
-
 // ======================================================
-// 🚀 CONNECT DATABASE
+// 🌍 CONFIG
 // ======================================================
 
-connectDB();
+const PORT =
+  Number(process.env.PORT) || 5000;
+
+// ======================================================
+// 🌍 TRUST PROXY
+// ======================================================
+
+app.set("trust proxy", 1);
+
+// ======================================================
+// 🌍 SECURITY HEADERS
+// ======================================================
+
+app.disable("x-powered-by");
 
 // ======================================================
 // 🌍 MIDDLEWARE
@@ -52,57 +35,139 @@ app.use(
 
 app.use(
   express.json({
-    limit: "10mb",
+    limit: "2mb",
   })
 );
 
 app.use(
   express.urlencoded({
     extended: true,
+    limit: "2mb",
   })
 );
 
 // ======================================================
-// 🕒 LOGGER
+// 🚦 SIMPLE RATE LIMIT
 // ======================================================
 
+const rateMap = new Map();
+
 app.use((req, res, next) => {
-  console.log(
-    `[${new Date().toISOString()}] ${req.method} ${req.url}`
-  );
+
+  const ip =
+    (
+      req.headers["x-forwarded-for"] ||
+      req.ip ||
+      "unknown"
+    )
+      .toString()
+      .split(",")[0]
+      .trim();
+
+  const now = Date.now();
+
+  const data = rateMap.get(ip) || {
+    count: 0,
+    time: now,
+  };
+
+  if (now - data.time < 10000) {
+
+    if (data.count >= 100) {
+
+      return res.status(429).json({
+        success: false,
+        message: "Too many requests",
+      });
+    }
+
+    data.count++;
+
+  } else {
+
+    data.count = 1;
+    data.time = now;
+  }
+
+  rateMap.set(ip, data);
 
   next();
 });
 
 // ======================================================
-// ❤️ ROOT
+// 🧹 CLEAN RATE MAP
 // ======================================================
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    app: "JOBFAST GLOBAL API",
-    version: "1.0.0",
-    status: "running",
-  });
-});
+const rateCleanup = setInterval(() => {
+
+  const now = Date.now();
+
+  for (const [ip, data] of rateMap.entries()) {
+
+    if (now - data.time > 60000) {
+      rateMap.delete(ip);
+    }
+  }
+
+}, 60000);
 
 // ======================================================
-// ❤️ HEALTH CHECK
+// 🧹 TIMER SAFE
 // ======================================================
 
-app.get("/health", async (req, res) => {
-  res.json({
-    success: true,
-    status: "healthy",
-    mongodb: "connected",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  });
-});
+// Evite timer kenbe process la viv
+rateCleanup.unref();
 
 // ======================================================
-// 🏗 CONSTRUCTION ROLES
+// 🧠 MEMORY DATABASE (MVP)
+// ======================================================
+
+const db = {
+  users: [],
+  businesses: [],
+  jobs: [],
+  services: [],
+  notifications: [],
+};
+
+// ======================================================
+// 🧼 HELPERS
+// ======================================================
+
+const id = () => crypto.randomUUID();
+
+const normalize = (v) =>
+  String(v || "")
+    .trim()
+    .toLowerCase();
+
+const token = () =>
+  crypto.randomUUID();
+
+const hash = (v) =>
+  crypto
+    .createHash("sha256")
+    .update(v)
+    .digest("hex");
+
+const isEmail = (email) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const safeUser = (user) => {
+
+  const { password, ...safe } = user;
+
+  return safe;
+};
+
+// ======================================================
+// 🔐 AUTH MEMORY
+// ======================================================
+
+const authTokens = new Map();
+
+// ======================================================
+// 🏗️ CONSTRUCTION CATEGORIES
 // ======================================================
 
 const constructionRoles = [
@@ -111,296 +176,322 @@ const constructionRoles = [
   "architect",
   "foreman",
   "mason",
-  "helper",
-  "laborer",
+  "welder",
   "electrician",
   "plumber",
-  "welder",
   "painter",
-  "tiler",
-  "roofer",
-  "carpenter",
-  "steel_fixer",
-  "machine_operator",
-  "surveyor",
-  "excavator_operator",
-  "truck_driver",
-  "site_manager",
-  "finisher",
-  "block_layer",
-  "concrete_worker",
-  "interior_designer",
-  "construction_company",
-  "terminador",
   "ajoudan",
-  "feray",
-  "kapent",
-  "beton",
-  "marble_worker"
+  "worker",
+  "tile installer",
+  "carpenter",
+  "machine operator",
 ];
 
 // ======================================================
-// 🚀 GET CONSTRUCTION ROLES
+// ❤️ ROOT
 // ======================================================
 
-app.get(
-  "/api/construction/roles",
-  (req, res) => {
+app.get("/", (req, res) => {
 
-    res.json({
-      success: true,
-      total: constructionRoles.length,
-      data: constructionRoles,
-    });
-  }
-);
-
-// ======================================================
-// 🏢 CREATE BUSINESS
-// ======================================================
-
-app.post(
-  "/api/business",
-  async (req, res) => {
-
-    try {
-
-      const business =
-        await Business.create(req.body);
-
-      res.status(201).json({
-        success: true,
-        data: business,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-);
-
-// ======================================================
-// 📋 GET BUSINESSES
-// ======================================================
-
-app.get(
-  "/api/business",
-  async (req, res) => {
-
-    try {
-
-      const businesses =
-        await Business.find()
-          .sort({ createdAt: -1 });
-
-      res.json({
-        success: true,
-        total: businesses.length,
-        data: businesses,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-);
-
-// ======================================================
-// 💼 CREATE JOB
-// ======================================================
-
-app.post(
-  "/api/jobs",
-  async (req, res) => {
-
-    try {
-
-      const job =
-        await Job.create(req.body);
-
-      res.status(201).json({
-        success: true,
-        data: job,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-);
-
-// ======================================================
-// 📋 GET JOBS
-// ======================================================
-
-app.get(
-  "/api/jobs",
-  async (req, res) => {
-
-    try {
-
-      const jobs =
-        await Job.find()
-          .sort({ createdAt: -1 });
-
-      res.json({
-        success: true,
-        total: jobs.length,
-        data: jobs,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-);
-
-// ======================================================
-// 🔍 SEARCH JOBS
-// ======================================================
-
-app.get(
-  "/api/jobs/search",
-  async (req, res) => {
-
-    try {
-
-      const {
-        role,
-        city,
-        serviceType,
-      } = req.query;
-
-      const filter = {};
-
-      if (role) {
-        filter.constructionRole = role;
-      }
-
-      if (serviceType) {
-        filter.serviceType =
-          serviceType;
-      }
-
-      if (city) {
-        filter[
-          "locationData.cityNormalized"
-        ] =
-          String(city)
-            .trim()
-            .toLowerCase();
-      }
-
-      const jobs =
-        await Job.find(filter)
-          .sort({ createdAt: -1 });
-
-      res.json({
-        success: true,
-        total: jobs.length,
-        data: jobs,
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
-  }
-);
-
-// ======================================================
-// ❌ 404
-// ======================================================
-
-app.use((req, res) => {
-
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
+  res.json({
+    success: true,
+    app: "JOBFAST GLOBAL MVP",
+    status: "running",
+    version: "1.0.0",
   });
 });
 
 // ======================================================
-// 💥 ERROR HANDLER
+// ❤️ HEALTH CHECK
 // ======================================================
 
-app.use(
-  (err, req, res, next) => {
+app.get("/health", (req, res) => {
 
-    console.error(err);
+  res.json({
+    success: true,
+    status: "healthy",
+    uptime: process.uptime(),
+    timestamp:
+      new Date().toISOString(),
+  });
+});
 
-    res.status(500).json({
-      success: false,
-      message:
-        "Internal server error",
+// ======================================================
+// 👤 REGISTER
+// ======================================================
+
+app.post(
+  "/api/auth/register",
+  (req, res) => {
+
+    const {
+      fullname,
+      email,
+      password,
+      phone,
+      bio,
+      category,
+      role,
+      country,
+      state,
+      city,
+      latitude,
+      longitude,
+    } = req.body || {};
+
+    if (
+      !fullname ||
+      !email ||
+      !password
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Missing required fields",
+      });
+    }
+
+    if (!isEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password too short",
+      });
+    }
+
+    const exists = db.users.find(
+      (u) =>
+        u.email ===
+        normalize(email)
+    );
+
+    if (exists) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Email already exists",
+      });
+    }
+
+    const user = {
+      id: id(),
+
+      fullname,
+
+      email: normalize(email),
+
+      password: hash(password),
+
+      phone: phone || "",
+
+      bio: bio || "",
+
+      category:
+        category || "general",
+
+      role: role || "worker",
+
+      availability: "available",
+
+      verified: false,
+
+      location: {
+        country: country || "",
+        state: state || "",
+        city: city || "",
+        latitude:
+          latitude || null,
+        longitude:
+          longitude || null,
+      },
+
+      createdAt:
+        new Date().toISOString(),
+    };
+
+    db.users.push(user);
+
+    const accessToken = token();
+
+    authTokens.set(
+      accessToken,
+      user.id
+    );
+
+    res.status(201).json({
+      success: true,
+      token: accessToken,
+      user: safeUser(user),
     });
   }
 );
 
 // ======================================================
-// 💥 GLOBAL ERRORS
+// 🔑 LOGIN
 // ======================================================
 
-process.on(
-  "unhandledRejection",
-  (err) => {
+app.post(
+  "/api/auth/login",
+  (req, res) => {
 
-    console.error(
-      "UNHANDLED REJECTION:",
-      err
+    const {
+      email,
+      password,
+    } = req.body || {};
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Email and password required",
+      });
+    }
+
+    const user = db.users.find(
+      (u) =>
+        u.email ===
+          normalize(email) &&
+        u.password ===
+          hash(password)
     );
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Invalid credentials",
+      });
+    }
+
+    const accessToken = token();
+
+    authTokens.set(
+      accessToken,
+      user.id
+    );
+
+    res.json({
+      success: true,
+      token: accessToken,
+      user: safeUser(user),
+    });
   }
 );
 
-process.on(
-  "uncaughtException",
-  (err) => {
+// ======================================================
+// 🛡️ AUTH
+// ======================================================
 
-    console.error(
-      "UNCAUGHT EXCEPTION:",
-      err
-    );
+function auth(req, res, next) {
+
+  const bearer =
+    req.headers.authorization ||
+    "";
+
+  const accessToken =
+    bearer.replace("Bearer ", "");
+
+  if (!accessToken) {
+    return res.status(401).json({
+      success: false,
+      message: "No token",
+    });
   }
-);
+
+  const userId =
+    authTokens.get(accessToken);
+
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token",
+    });
+  }
+
+  const user = db.users.find(
+    (u) => u.id === userId
+  );
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  req.user = user;
+
+  next();
+}
 
 // ======================================================
 // 🚀 START SERVER
 // ======================================================
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
 
   console.log(
     "================================="
   );
 
   console.log(
-    `🚀 JOBFAST RUNNING ON ${PORT}`
+    `🚀 JOBFAST running on ${PORT}`
   );
 
   console.log(
-    "🌍 MongoDB Connected"
+    "🌍 MVP API READY"
   );
 
   console.log(
     "================================="
   );
 });
+
+// ======================================================
+// 🛑 GRACEFUL SHUTDOWN
+// ======================================================
+
+const shutdown = (signal) => {
+
+  console.log(
+    `⚠️ ${signal} received`
+  );
+
+  clearInterval(rateCleanup);
+
+  server.close(() => {
+
+    console.log(
+      "🛑 Server stopped"
+    );
+
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+
+    console.log(
+      "❌ Force shutdown"
+    );
+
+    process.exit(1);
+
+  }, 10000);
+};
+
+process.on(
+  "SIGTERM",
+  () => shutdown("SIGTERM")
+);
+
+process.on(
+  "SIGINT",
+  () => shutdown("SIGINT")
+);
