@@ -1,122 +1,89 @@
-/* ==================================================
-   🌍 JOBFAST LANGUAGE SELECTOR (MVP STABLE)
-   FILE: apps/frontend/src/components/LanguageSelector.jsx
-   ================================================== */
-
-import React from "react";
-
+import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { changeLanguage } from "../i18n";
 
-import {
-  changeLanguage,
-  getCurrentLanguage
-} from "../i18n";
+// ==================================================
+// 🌍 AVAILABLE LANGUAGES (IMMUTABLE)
+// ==================================================
+const LANGUAGES = Object.freeze([
+  { code: "es", label: "Español" },
+  { code: "en", label: "English" },
+  { code: "ht", label: "Kreyòl" },
+  { code: "fr", label: "Français" }
+]);
 
-/* ==================================================
-   📍 AVAILABLE LANGUAGES
-   ================================================== */
+// ==================================================
+// 📍 COMPONENT
+// ==================================================
+export default function LanguageSelector({ compact = false }) {
+  const { i18n } = useTranslation();
 
-const LANGUAGES = [
-  {
-    code: "en",
-    label: "English"
-  },
+  // ⚡ CURRENT LANGUAGE (SOURCE OF TRUTH = i18n)
+  const currentLanguage = i18n?.language ?? "es";
 
-  {
-    code: "fr",
-    label: "Français"
-  },
+  // ==================================================
+  // ⚡ HANDLE CHANGE (SAFE + NO STALE BUGS)
+  // ==================================================
+  const handleChange = useCallback(
+    (event) => {
+      const newLanguage = event.target.value;
 
-  {
-    code: "ht",
-    label: "Kreyòl"
-  }
-];
+      // re-check live state to avoid stale issues
+      const activeLanguage = i18n?.language ?? "es";
 
-/* ==================================================
-   📍 COMPONENT
-   ================================================== */
+      if (!newLanguage || newLanguage === activeLanguage) return;
 
-export default function LanguageSelector({
-  compact = false
-}) {
-  const { i18n } =
-    useTranslation();
+      i18n?.changeLanguage?.(newLanguage);
+      changeLanguage?.(newLanguage);
+    },
+    [i18n]
+  );
 
-  /* ==================================================
-     📍 CURRENT LANGUAGE
-     ================================================== */
+  // ==================================================
+  // 🎨 STYLES
+  // ==================================================
+  const containerStyle = useMemo(
+    () => ({
+      display: "flex",
+      alignItems: "center",
+      width: compact ? "fit-content" : "100%"
+    }),
+    [compact]
+  );
 
-  const currentLanguage =
-    getCurrentLanguage();
+  const selectStyle = useMemo(
+    () => ({
+      width: compact ? "140px" : "100%",
+      padding: compact ? "8px" : "10px 12px",
+      border: "1px solid #334155",
+      borderRadius: "8px",
+      background: "#1e293b",
+      color: "#ffffff",
+      fontSize: "14px",
+      cursor: "pointer",
+      outline: "none",
+      fontFamily: "Inter, Arial, sans-serif",
+      transition: "all 0.2s ease"
+    }),
+    [compact]
+  );
 
-  /* ==================================================
-     📍 HANDLE CHANGE
-     ================================================== */
-
-  const handleChange = (event) => {
-    const language =
-      event.target.value;
-
-    changeLanguage(language);
-
-    i18n.changeLanguage(language);
-  };
-
-  /* ==================================================
-     📍 UI
-     ================================================== */
-
+  // ==================================================
+  // 📍 UI
+  // ==================================================
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-
-        width: compact
-          ? "fit-content"
-          : "100%"
-      }}
-    >
+    <div style={containerStyle}>
       <select
         value={currentLanguage}
         onChange={handleChange}
-
-        style={{
-          width: compact
-            ? "140px"
-            : "100%",
-
-          padding: compact
-            ? "8px"
-            : "10px 12px",
-
-          border:
-            "1px solid #334155",
-
-          borderRadius: "8px",
-
-          background: "#1e293b",
-
-          color: "#ffffff",
-
-          fontSize: "14px",
-
-          cursor: "pointer",
-
-          outline: "none"
-        }}
+        style={selectStyle}
+        aria-label="Select application language"
       >
-        {LANGUAGES.map(
-          (language) => (
-            <option
-              key={language.code}
-              value={language.code}
-            >
-              {language.label}
-            </option>
-          )
-        )}
+        {LANGUAGES.map(({ code, label }) => (
+          <option key={code} value={code}>
+            {label}
+          </option>
+        ))}
       </select>
     </div>
   );

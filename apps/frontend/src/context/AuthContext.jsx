@@ -3,206 +3,85 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useMemo
+  useCallback,
+  useMemo,
 } from "react";
 
-// ===============================
-// 🚀 AUTH CONTEXT (FINAL SAFE)
-// ===============================
-
-// ===============================
-// 📦 CREATE CONTEXT
-// ===============================
-
 const AuthContext = createContext(null);
+const STORAGE_KEY = "jobfast_user";
 
-// ===============================
-// 🔐 AUTH PROVIDER
-// ===============================
-
+// ======================================================
+// 🌍 JOBFAST — AUTH PROVIDER (COMPLETE & OPTIMIZED)
+// ======================================================
 export function AuthProvider({ children }) {
-
-  // ===============================
-  // 👤 USER STATE
-  // ===============================
-
   const [user, setUser] = useState(null);
-
-  // ===============================
-  // ⏳ LOADING STATE
-  // ===============================
-
   const [loading, setLoading] = useState(true);
 
-  // ===============================
-  // 🚀 INITIAL AUTH LOAD
-  // ===============================
-
+  // Chaje itilizatè a depi nan kòmansman an
   useEffect(() => {
-
-    const loadUser = () => {
-      try {
-
-        const savedUser =
-          localStorage.getItem("user");
-
-        const savedToken =
-          localStorage.getItem("token");
-
-        // ===============================
-        // ✅ RESTORE USER
-        // ===============================
-
-        if (savedUser && savedToken) {
-
-          const parsedUser =
-            JSON.parse(savedUser);
-
-          setUser(parsedUser);
-
-        } else {
-
-          // cleanup invalid state
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-
-          setUser(null);
-        }
-
-      } catch (error) {
-
-        console.error(
-          "❌ Auth restore error:",
-          error
-        );
-
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-
-        setUser(null);
-
-      } finally {
-
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      setUser(saved ? JSON.parse(saved) : null);
+    } catch (err) {
+      console.error("[JOBFAST AUTH]: Load error:", err);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // ===============================
-  // 🔑 LOGIN
-  // ===============================
-
-  const login = (userData, token = null) => {
-
+  // Sinkronizasyon sekirite ak LocalStorage
+  const syncStorage = useCallback((data) => {
     try {
+      if (data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch (err) {
+      console.error("[JOBFAST STORAGE]: Sync error:", err);
+    }
+  }, []);
 
-      // safe user object
-      const safeUser = {
-        id: userData?.id || null,
-        name: userData?.name || "User",
-        email: userData?.email || "",
-        role: userData?.role || "user",
-        available:
-          userData?.available ?? true
+  // Aksyon Koneksyon (Login)
+  const login = useCallback((userData) => {
+    setUser(userData);
+    syncStorage(userData);
+  }, [syncStorage]);
+
+  // Aksyon Dekoneksyon (Logout)
+  const logout = useCallback(() => {
+    setUser(null);
+    syncStorage(null);
+  }, [syncStorage]);
+
+  // Chanje disponiblite travayè a dinamikman
+  const toggleAvailability = useCallback(() => {
+    setUser((prev) => {
+      if (!prev) return prev;
+
+      const updated = {
+        ...prev,
+        available: !Boolean(prev.available),
       };
 
-      setUser(safeUser);
+      syncStorage(updated);
+      return updated;
+    });
+  }, [syncStorage]);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(safeUser)
-      );
-
-      // optional token
-      if (token) {
-        localStorage.setItem("token", token);
-      }
-
-    } catch (error) {
-
-      console.error(
-        "❌ Login error:",
-        error
-      );
-    }
-  };
-
-  // ===============================
-  // 🚪 LOGOUT
-  // ===============================
-
-  const logout = () => {
-
-    setUser(null);
-
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-  };
-
-  // ===============================
-  // 🔄 UPDATE USER
-  // ===============================
-
-  const updateUser = (newData) => {
-
-    if (!user) return;
-
-    const updatedUser = {
-      ...user,
-      ...newData
-    };
-
-    setUser(updatedUser);
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify(updatedUser)
-    );
-  };
-
-  // ===============================
-  // 📍 TOGGLE AVAILABILITY
-  // ===============================
-
-  const toggleAvailability = () => {
-
-    if (!user) return;
-
-    const updatedUser = {
-      ...user,
-      available: !user.available
-    };
-
-    setUser(updatedUser);
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify(updatedUser)
-    );
-  };
-
-  // ===============================
-  // 🧠 MEMOIZED CONTEXT VALUE
-  // ===============================
-
-  const value = useMemo(() => ({
-    user,
-    setUser,
-    loading,
-
-    login,
-    logout,
-
-    updateUser,
-    toggleAvailability
-  }), [user, loading]);
-
-  // ===============================
-  // 🚀 PROVIDER
-  // ===============================
+  // Optimize referans memwa pou evite re-render initil
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      loading,
+      login,
+      logout,
+      toggleAvailability,
+    }),
+    [user, loading, login, logout, toggleAvailability]
+  );
 
   return (
     <AuthContext.Provider value={value}>
@@ -211,22 +90,15 @@ export function AuthProvider({ children }) {
   );
 }
 
-// ===============================
-// 🧠 SAFE AUTH HOOK
-// ===============================
-
+// ======================================================
+// 🧠 CUSTOM HOOK POU APLIKASYON AN
+// ======================================================
 export function useAuth() {
-
-  const context =
-    useContext(AuthContext);
-
-  if (!context) {
-    throw new Error(
-      "useAuth must be used inside AuthProvider"
-    );
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("[JOBFAST AUTH]: useAuth must be used inside AuthProvider");
   }
-
-  return context;
+  return ctx;
 }
 
 export default AuthContext;

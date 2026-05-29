@@ -1,37 +1,255 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
+  <!-- Core -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Marketplace MVP</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
 
-  <!-- Favicon -->
-  <link rel="icon" href="/favicon.ico" />
+  <title>JOBFAST | Jobs, Services & Businesses Marketplace</title>
 
-  <!-- Basic SEO -->
-  <meta name="description" content="Construction, services, and business marketplace MVP" />
+  <!-- PWA -->
+  <meta
+    name="theme-color"
+    content="#0f172a"
+  />
 
-  <!-- Simple global style placeholder -->
+  <meta
+    name="color-scheme"
+    content="dark light"
+  />
+
+  <meta
+    name="application-name"
+    content="JOBFAST"
+  />
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  />
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  />
+
+  <meta
+    name="apple-mobile-web-app-title"
+    content="JOBFAST"
+  />
+
+  <meta
+    name="msapplication-TileColor"
+    content="#0f172a"
+  />
+
+  <link
+    rel="manifest"
+    href="/manifest.webmanifest"
+  />
+
+  <!-- SEO -->
+  <meta
+    name="description"
+    content="Find jobs, services, businesses, workers and opportunities near you with JOBFAST."
+  />
+
+  <meta
+    name="robots"
+    content="index,follow"
+  />
+
+  <meta
+    name="google"
+    content="notranslate"
+  />
+
+  <meta
+    name="format-detection"
+    content="telephone=no"
+  />
+
+  <link
+    rel="canonical"
+    href="https://jobfast.com"
+  />
+
+  <!-- Languages -->
+  <link rel="alternate" hreflang="en" href="https://jobfast.com/en" />
+  <link rel="alternate" hreflang="es" href="https://jobfast.com/es" />
+  <link rel="alternate" hreflang="fr" href="https://jobfast.com/fr" />
+  <link rel="alternate" hreflang="ht" href="https://jobfast.com/ht" />
+  <link rel="alternate" hreflang="x-default" href="https://jobfast.com" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="JOBFAST" />
+  <meta property="og:title" content="JOBFAST | Jobs, Services & Businesses Marketplace" />
+  <meta property="og:description" content="Find jobs, services, businesses and opportunities near you." />
+  <meta property="og:url" content="https://jobfast.com" />
+  <meta property="og:image" content="https://jobfast.com/social-preview.png" />
+  <meta property="og:image:alt" content="JOBFAST Marketplace" />
+
+  <!-- Twitter -->
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="JOBFAST | Jobs, Services & Businesses Marketplace"
+  />
+
+  <meta
+    name="twitter:description"
+    content="Find jobs, services, businesses and opportunities near you."
+  />
+
+  <meta
+    name="twitter:image"
+    content="https://jobfast.com/social-preview.png"
+  />
+
+  <!-- Icons -->
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="/favicon.svg"
+  />
+
+  <link
+    rel="icon"
+    href="/favicon.ico"
+  />
+
+  <link
+    rel="apple-touch-icon"
+    sizes="180x180"
+    href="/apple-touch-icon.png"
+  />
+
+  <!-- Performance -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+  <link
+    rel="preload"
+    href="/logo.svg"
+    as="image"
+  />
+
+  <!-- Base Styles -->
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
+    :root {
+      color-scheme: dark;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-text-size-adjust: 100%;
     }
 
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body,
     #root {
-      min-height: 100vh;
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background: #0f172a;
+      color: #ffffff;
+      overflow-x: hidden;
+
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #boot-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+
+      background: #0f172a;
+    }
+
+    .loader-spinner {
+      width: 40px;
+      height: 40px;
+
+      border: 3px solid rgba(255,255,255,.2);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+
+      animation: spin .8s linear infinite;
+    }
+
+    noscript {
+      display: block;
+      padding: 2rem;
+      text-align: center;
+      color: #ef4444;
+      font-weight: 600;
     }
   </style>
 </head>
 
 <body>
-  <!-- React app mount point -->
-  <div id="root"></div>
+  <noscript>
+    JOBFAST requires JavaScript to run properly.
+  </noscript>
 
-  <!-- App entry (Vite / React) -->
-  <script type="module" src="/src/main.jsx"></script>
+  <div id="root">
+    <div
+      id="boot-loader"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="loader-spinner"></div>
+      <span>Loading JOBFAST...</span>
+    </div>
+  </div>
+
+  <script
+    type="module"
+    src="/src/main.jsx"
+  ></script>
 </body>
 </html>

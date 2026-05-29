@@ -1,130 +1,176 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 
-// ===============================
-// 🚀 POST CARD (MVP SAFE)
-// ===============================
+// ======================================================
+const STATUS_COLORS = Object.freeze({
+  OPEN: "#22c55e",
+  BUSY: "#f59e0b",
+  DEFAULT: "#ef4444",
+});
 
+const TYPE_LABELS = Object.freeze({
+  construction: "👷 Construction",
+  business: "🏢 Business",
+  service: "🚀 Service",
+  default: "📦 General",
+});
+
+// ======================================================
 function PostCard({ post, onClick }) {
-  if (!post) return null;
+  if (!post?.id || !post?.title) return null;
 
-  const statusColor =
-    post.status === "OPEN"
-      ? "#22c55e"
-      : post.status === "BUSY"
-      ? "#f59e0b"
-      : "#ef4444";
+  const {
+    id,
+    title,
+    role,
+    category,
+    type,
+    status,
+    location,
+    distance,
+    name,
+    bio,
+    available,
+  } = post;
+
+  const statusColor = STATUS_COLORS[status] || STATUS_COLORS.DEFAULT;
+  const typeLabel = TYPE_LABELS[type] || TYPE_LABELS.default;
+
+  // ⚡ ultra-stable handler (NO re-create unless id or callback changes)
+  const handleClick = useCallback(() => {
+    onClick?.(id);
+  }, [onClick, id]);
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onClick?.(id);
+      }
+    },
+    [onClick, id]
+  );
 
   return (
-    <div style={styles.card} onClick={onClick}>
+    <article
+      style={styles.card}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      aria-label={`Open post ${title}`}
+    >
+      <h3 style={styles.title}>{title}</h3>
 
-      {/* TITLE */}
-      <h3 style={styles.title}>{post.title}</h3>
+      <p style={styles.text}>{role || category || "General"}</p>
 
-      {/* ROLE / CATEGORY */}
+      <p style={styles.type}>{typeLabel}</p>
+
       <p style={styles.text}>
-        {post.role || post.category || "General"}
+        📍 {location || "Unknown"}
+        {distance ? ` • ${distance}` : ""}
       </p>
 
-      {/* TYPE SYSTEM */}
-      <p style={styles.type}>
-        {post.type === "construction" && "👷 Construction"}
-        {post.type === "business" && "🏢 Business"}
-        {post.type === "service" && "🚀 Service"}
-      </p>
+      {name && <p style={styles.user}>👤 {name}</p>}
+      {bio && <p style={styles.bio}>{bio}</p>}
 
-      {/* LOCATION + DISTANCE (GPS READY UI) */}
-      <p style={styles.text}>
-        📍 {post.location} {post.distance ? `• ${post.distance}` : ""}
-      </p>
-
-      {/* USER INFO */}
-      {post.name && (
-        <p style={styles.user}>
-          👤 {post.name}
-        </p>
-      )}
-
-      {/* BIO */}
-      {post.bio && (
-        <p style={styles.bio}>
-          {post.bio}
-        </p>
-      )}
-
-      {/* STATUS (AVAILABLE / BUSY) */}
       <span style={{ ...styles.status, background: statusColor }}>
-        {post.status || "UNKNOWN"}
+        {status || "UNKNOWN"}
       </span>
 
-      {/* AVAILABILITY BADGE (Construction core feature) */}
-      {post.type === "construction" && (
+      {type === "construction" && (
         <div style={styles.availability}>
-          {post.available === false
+          {available === false
             ? "🔴 Busy (Not Available)"
             : "🟢 Available for Work"}
         </div>
       )}
-
-    </div>
+    </article>
   );
 }
 
-// ===============================
-// 🎨 STYLES (MVP SAFE)
-// ===============================
-const styles = {
+// ======================================================
+// 🧠 HIGH-LEVEL MEMO STRATEGY (best balance performance + correctness)
+function areEqual(prev, next) {
+  const p = prev.post;
+  const n = next.post;
+
+  return (
+    p?.id === n?.id &&
+    p?.status === n?.status &&
+    p?.available === n?.available &&
+    p?.title === n?.title &&
+    p?.distance === n?.distance &&
+    prev.onClick === next.onClick
+  );
+}
+
+export default memo(PostCard, areEqual);
+
+// ======================================================
+// 🎨 STYLES (minor UX polish upgrade)
+const styles = Object.freeze({
   card: {
     background: "#1e293b",
-    padding: "12px",
-    borderRadius: "10px",
-    color: "white",
+    borderRadius: "12px",
+    padding: "18px",
+    color: "#fff",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     cursor: "pointer",
-    transition: "0.2s",
+    transition: "transform 0.18s ease, box-shadow 0.18s ease",
+    willChange: "transform",
+    outline: "none",
   },
 
   title: {
-    fontSize: "16px",
-    marginBottom: "5px",
+    margin: "0 0 6px 0",
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#f8fafc",
   },
 
   text: {
-    fontSize: "13px",
-    color: "#cbd5e1",
-    marginBottom: "4px",
+    margin: "4px 0",
+    fontSize: "14px",
+    color: "#94a3b8",
   },
 
   type: {
-    fontSize: "12px",
-    color: "#94a3b8",
-    marginBottom: "4px",
+    margin: "6px 0",
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#60a5fa",
   },
 
   user: {
-    fontSize: "13px",
-    color: "#e2e8f0",
-    marginBottom: "4px",
+    margin: "8px 0 4px 0",
+    fontSize: "14px",
+    color: "#cbd5e1",
+    borderTop: "1px solid #334155",
+    paddingTop: "8px",
   },
 
   bio: {
-    fontSize: "12px",
-    color: "#94a3b8",
-    marginBottom: "6px",
+    margin: "4px 0",
+    fontSize: "13px",
+    fontStyle: "italic",
+    color: "#64748b",
   },
 
   status: {
     display: "inline-block",
     padding: "4px 10px",
-    borderRadius: "20px",
+    borderRadius: "999px",
     fontSize: "11px",
-    color: "white",
-    marginTop: "5px",
+    fontWeight: "700",
+    marginTop: "12px",
+    color: "#fff",
   },
 
   availability: {
-    marginTop: "8px",
-    fontSize: "12px",
+    marginTop: "12px",
+    fontSize: "13px",
+    fontWeight: "600",
     color: "#cbd5e1",
   },
-};
-
-export default PostCard;
+});

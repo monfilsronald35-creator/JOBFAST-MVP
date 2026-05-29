@@ -1,142 +1,176 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 
-// ===============================
-// 🚀 USER CARD (MVP SAFE)
-// ===============================
+// ======================================================
+const STATUS_COLORS = Object.freeze({
+  OPEN: "#22c55e",
+  BUSY: "#f59e0b",
+  DEFAULT: "#ef4444",
+});
 
-function UserCard({ user, onClick }) {
-  if (!user) return null;
+const TYPE_LABELS = Object.freeze({
+  construction: "👷 Construction",
+  business: "🏢 Business",
+  service: "🚀 Service",
+  default: "📦 General",
+});
 
-  const statusColor =
-    user.status === "AVAILABLE"
-      ? "#22c55e"
-      : user.status === "BUSY"
-      ? "#f59e0b"
-      : "#ef4444";
+// ======================================================
+function PostCard({ post, onClick }) {
+  if (!post?.id || !post?.title) return null;
+
+  const {
+    id,
+    title,
+    role,
+    category,
+    type,
+    status,
+    location,
+    distance,
+    name,
+    bio,
+    available,
+  } = post;
+
+  const statusColor = STATUS_COLORS[status] || STATUS_COLORS.DEFAULT;
+  const typeLabel = TYPE_LABELS[type] || TYPE_LABELS.default;
+
+  // ⚡ ultra-stable handler (NO re-create unless id or callback changes)
+  const handleClick = useCallback(() => {
+    onClick?.(id);
+  }, [onClick, id]);
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onClick?.(id);
+      }
+    },
+    [onClick, id]
+  );
 
   return (
-    <div style={styles.card} onClick={onClick}>
+    <article
+      style={styles.card}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      aria-label={`Open post ${title}`}
+    >
+      <h3 style={styles.title}>{title}</h3>
 
-      {/* NAME */}
-      <h3 style={styles.name}>
-        {user.fullName || user.name || "Unknown User"}
-      </h3>
+      <p style={styles.text}>{role || category || "General"}</p>
 
-      {/* ROLE SYSTEM */}
-      <p style={styles.role}>
-        {user.role === "construction" && "👷 Construction Worker"}
-        {user.role === "business" && "🏢 Business"}
-        {user.role === "service" && "🚀 Service Provider"}
-        {!user.role && "General User"}
-      </p>
+      <p style={styles.type}>{typeLabel}</p>
 
-      {/* CATEGORY (very important for your system) */}
-      {user.category && (
-        <p style={styles.text}>
-          🧩 {user.category}
-        </p>
-      )}
-
-      {/* CONSTRUCTION SPECIAL (Boss / Assistant / Worker system) */}
-      {user.role === "construction" && (
-        <p style={styles.text}>
-          🏗️ Construction Role: {user.constructionRole || "Worker"}
-        </p>
-      )}
-
-      {/* BUSINESS TYPES */}
-      {user.role === "business" && (
-        <p style={styles.text}>
-          🏢 Business Type: {user.businessType || "Company"}
-        </p>
-      )}
-
-      {/* LOCATION + GPS READY */}
       <p style={styles.text}>
-        📍 {user.location || "Unknown location"}
-        {user.distance ? ` • ${user.distance}` : ""}
+        📍 {location || "Unknown"}
+        {distance ? ` • ${distance}` : ""}
       </p>
 
-      {/* BIO */}
-      {user.bio && (
-        <p style={styles.bio}>
-          {user.bio}
-        </p>
-      )}
+      {name && <p style={styles.user}>👤 {name}</p>}
+      {bio && <p style={styles.bio}>{bio}</p>}
 
-      {/* AVAILABILITY SYSTEM (CORE FEATURE) */}
-      <div style={styles.statusBox}>
-        <span style={{ ...styles.status, background: statusColor }}>
-          {user.status || "UNKNOWN"}
-        </span>
-      </div>
+      <span style={{ ...styles.status, background: statusColor }}>
+        {status || "UNKNOWN"}
+      </span>
 
-      {/* ONLINE / BUSY INDICATOR */}
-      {user.role === "construction" && (
+      {type === "construction" && (
         <div style={styles.availability}>
-          {user.available === false
-            ? "🔴 Not available for work"
-            : "🟢 Available for work"}
+          {available === false
+            ? "🔴 Busy (Not Available)"
+            : "🟢 Available for Work"}
         </div>
       )}
-
-    </div>
+    </article>
   );
 }
 
-// ===============================
-// 🎨 STYLES (MVP SAFE)
-// ===============================
-const styles = {
+// ======================================================
+// 🧠 HIGH-LEVEL MEMO STRATEGY (best balance performance + correctness)
+function areEqual(prev, next) {
+  const p = prev.post;
+  const n = next.post;
+
+  return (
+    p?.id === n?.id &&
+    p?.status === n?.status &&
+    p?.available === n?.available &&
+    p?.title === n?.title &&
+    p?.distance === n?.distance &&
+    prev.onClick === next.onClick
+  );
+}
+
+export default memo(PostCard, areEqual);
+
+// ======================================================
+// 🎨 STYLES (minor UX polish upgrade)
+const styles = Object.freeze({
   card: {
     background: "#1e293b",
-    padding: "12px",
-    borderRadius: "10px",
-    color: "white",
+    borderRadius: "12px",
+    padding: "18px",
+    color: "#fff",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     cursor: "pointer",
-    transition: "0.2s",
+    transition: "transform 0.18s ease, box-shadow 0.18s ease",
+    willChange: "transform",
+    outline: "none",
   },
 
-  name: {
-    fontSize: "16px",
-    marginBottom: "5px",
-  },
-
-  role: {
-    fontSize: "13px",
-    color: "#94a3b8",
-    marginBottom: "4px",
+  title: {
+    margin: "0 0 6px 0",
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#f8fafc",
   },
 
   text: {
+    margin: "4px 0",
+    fontSize: "14px",
+    color: "#94a3b8",
+  },
+
+  type: {
+    margin: "6px 0",
     fontSize: "13px",
+    fontWeight: "600",
+    color: "#60a5fa",
+  },
+
+  user: {
+    margin: "8px 0 4px 0",
+    fontSize: "14px",
     color: "#cbd5e1",
-    marginBottom: "4px",
+    borderTop: "1px solid #334155",
+    paddingTop: "8px",
   },
 
   bio: {
-    fontSize: "12px",
-    color: "#94a3b8",
-    marginBottom: "6px",
-  },
-
-  statusBox: {
-    marginTop: "6px",
+    margin: "4px 0",
+    fontSize: "13px",
+    fontStyle: "italic",
+    color: "#64748b",
   },
 
   status: {
     display: "inline-block",
     padding: "4px 10px",
-    borderRadius: "20px",
+    borderRadius: "999px",
     fontSize: "11px",
-    color: "white",
+    fontWeight: "700",
+    marginTop: "12px",
+    color: "#fff",
   },
 
   availability: {
-    marginTop: "8px",
-    fontSize: "12px",
+    marginTop: "12px",
+    fontSize: "13px",
+    fontWeight: "600",
     color: "#cbd5e1",
   },
-};
-
-export default UserCard;
+});

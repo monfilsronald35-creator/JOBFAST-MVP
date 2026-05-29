@@ -2,164 +2,87 @@ import React, { useState } from "react";
 import API from "../api/axios";
 
 // ===============================
-// 🚀 LOGIN PAGE (CONNECTED)
+// 🚀 LOGIN PAGE (FINAL POLISH)
 // ===============================
 
 function Login() {
-
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  // ===============================
-  // 🔐 HANDLE LOGIN
-  // ===============================
+  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-
-    setError("");
-
-    // VALIDATION
-    if (!email || !password) {
-
-      setError(
-        "Please fill all fields"
-      );
-
+    if (!emailOrPhone || !password) {
+      alert("Please fill all fields");
       return;
     }
 
     try {
-
       setLoading(true);
 
-      // API CALL
-      const res = await API.post(
-        "/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const res = await API.post("/auth/login", {
+        emailOrPhone,
+        password,
+      });
 
-      // RESPONSE
-      const data = res.data;
-
-      // SAVE TOKEN
-      localStorage.setItem(
-        "token",
-        data.token
-      );
-
-      // SAVE USER
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
+      localStorage.setItem("token", res.data.token);
 
       alert("Login successful");
 
-      // REDIRECT
       window.location.href = "/";
-
     } catch (err) {
-
       console.error(err);
-
-      setError(
-        err?.response?.data
-          ?.message ||
-          "Login failed"
-      );
-
+      alert(err?.response?.data?.message || "Login failed");
     } finally {
-
       setLoading(false);
     }
   };
 
-  // ===============================
-  // 🎨 UI
-  // ===============================
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleLogin();
+  };
 
   return (
     <div style={styles.container}>
-
       <div style={styles.card}>
 
-        {/* TITLE */}
-        <h1 style={styles.title}>
-          JOBFAST
-        </h1>
+        <h1 style={styles.title}>Login</h1>
 
         <p style={styles.subtitle}>
-          Construction • Businesses •
-          Services On Demand
+          Construction • Business • Services Platform
         </p>
 
-        {/* ERROR */}
-        {error && (
-          <div style={styles.error}>
-            {error}
-          </div>
-        )}
-
-        {/* EMAIL */}
         <input
           style={styles.input}
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
+          placeholder="Email or Phone"
+          value={emailOrPhone}
+          onChange={(e) => setEmailOrPhone(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
 
-        {/* PASSWORD */}
         <input
           style={styles.input}
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
-          }
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleLogin();
-            }
-          }}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
 
-        {/* BUTTON */}
         <button
-          style={styles.button}
-          onClick={() => {
-            if (!loading) {
-              handleLogin();
-            }
+          style={{
+            ...styles.button,
+            opacity: loading ? 0.7 : 1,
+            cursor: loading ? "not-allowed" : "pointer",
+            transform: loading ? "scale(0.98)" : "scale(1)",
           }}
+          onClick={handleLogin}
           disabled={loading}
         >
-          {loading
-            ? "Logging in..."
-            : "Login"}
+          {loading ? "Logging in..." : "Login"}
         </button>
 
-        {/* INFO */}
         <p style={styles.info}>
-          Find workers, companies,
-          services and jobs near you
+          Access workers, businesses, and services near you
         </p>
 
       </div>
@@ -168,119 +91,81 @@ function Login() {
 }
 
 // ===============================
-// 🎨 STYLES
+// 🎨 FINAL PREMIUM STYLES
 // ===============================
 
 const styles = {
-
   container: {
     minHeight: "100vh",
-
     display: "flex",
-
     justifyContent: "center",
-
     alignItems: "center",
-
-    background: "#0f172a",
-
+    background: "linear-gradient(to bottom, #020617, #0f172a)",
+    fontFamily: "Inter, Arial, sans-serif",
     padding: "20px",
-
-    fontFamily: "Arial",
   },
 
   card: {
     width: "100%",
-
-    maxWidth: "360px",
-
-    background: "#1e293b",
-
-    padding: "24px",
-
-    borderRadius: "14px",
-
+    maxWidth: "380px",
+    padding: "30px",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    backdropFilter: "blur(18px)",
+    borderRadius: "20px",
     color: "white",
-
-    boxShadow:
-      "0 0 20px rgba(0,0,0,0.3)",
+    boxShadow: "0 25px 60px rgba(0,0,0,0.45)",
+    transition: "all 0.3s ease",
   },
 
   title: {
-    fontSize: "28px",
-
+    fontSize: "30px",
+    fontWeight: "800",
     marginBottom: "6px",
-
-    textAlign: "center",
   },
 
   subtitle: {
     fontSize: "13px",
-
     color: "#94a3b8",
-
-    marginBottom: "20px",
-
-    textAlign: "center",
-  },
-
-  error: {
-    background: "#7f1d1d",
-
-    color: "#fecaca",
-
-    padding: "10px",
-
-    borderRadius: "8px",
-
-    marginBottom: "12px",
-
-    fontSize: "13px",
+    marginBottom: "22px",
   },
 
   input: {
     width: "100%",
-
-    padding: "12px",
-
+    padding: "12px 14px",
     marginBottom: "12px",
-
-    borderRadius: "8px",
-
-    border: "none",
-
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.08)",
     outline: "none",
-
-    fontSize: "14px",
+    background: "rgba(255,255,255,0.03)",
+    color: "#fff",
+    transition: "0.3s",
   },
 
   button: {
     width: "100%",
-
     padding: "12px",
-
-    background: "#2563eb",
-
+    background: "linear-gradient(to right, #2563eb, #3b82f6)",
     border: "none",
-
-    borderRadius: "8px",
-
+    borderRadius: "12px",
     color: "white",
-
-    fontSize: "15px",
-
+    fontWeight: "700",
     cursor: "pointer",
+    transition: "0.3s",
   },
 
   info: {
-    marginTop: "14px",
-
-    textAlign: "center",
-
     fontSize: "12px",
-
     color: "#94a3b8",
+    marginTop: "14px",
+    textAlign: "center",
   },
 };
+
+// ===============================
+// 🔥 SMALL UX ENHANCEMENTS (IMPORTANT)
+// ===============================
+
+styles.input["onFocus"] = undefined; // React inline limitation note
 
 export default Login;

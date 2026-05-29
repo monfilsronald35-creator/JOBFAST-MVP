@@ -1,8 +1,10 @@
+
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api/axios";
 
 // ===============================
-// 🚀 REGISTER PAGE (MVP SAFE)
+// 🚀 REGISTER PAGE (GLOBAL FINAL)
 // ===============================
 
 function Register() {
@@ -10,39 +12,75 @@ function Register() {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
 
-  // 🧠 TYPE OF ACCOUNT
-  const [accountType, setAccountType] = useState("worker");
+  const [accountType, setAccountType] =
+    useState("worker");
 
-  // 👷 CONSTRUCTION ROLE
-  const [constructionRole, setConstructionRole] = useState("");
+  const [constructionRole, setConstructionRole] =
+    useState("");
 
-  // 🏢 BUSINESS TYPE
-  const [businessType, setBusinessType] = useState("");
+  const [businessType, setBusinessType] =
+    useState("");
 
   const [loading, setLoading] = useState(false);
 
   // ===============================
-  // 🔐 HANDLE REGISTER
+  // 🔐 REGISTER
   // ===============================
+
   const handleRegister = async () => {
-    if (!fullName || !emailOrPhone || !password) {
+    if (
+      !fullName.trim() ||
+      !emailOrPhone.trim() ||
+      !password.trim()
+    ) {
       alert("Please fill all required fields");
+      return;
+    }
+
+    if (
+      accountType === "worker" &&
+      !constructionRole
+    ) {
+      alert("Please select construction role");
+      return;
+    }
+
+    if (
+      accountType === "business" &&
+      !businessType
+    ) {
+      alert("Please select business type");
       return;
     }
 
     try {
       setLoading(true);
 
-      const res = await API.post("/auth/register", {
-        fullName,
-        emailOrPhone,
+      const payload = {
+        fullName: fullName.trim(),
+        emailOrPhone: emailOrPhone.trim(),
         password,
         accountType,
-        constructionRole: accountType === "worker" ? constructionRole : "",
-        businessType: accountType === "business" ? businessType : "",
-      });
+        constructionRole:
+          accountType === "worker"
+            ? constructionRole
+            : "",
 
-      localStorage.setItem("token", res.data.token);
+        businessType:
+          accountType === "business"
+            ? businessType
+            : "",
+      };
+
+      const res = await API.post(
+        "/auth/register",
+        payload
+      );
+
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
 
       alert("Account created successfully");
 
@@ -50,34 +88,68 @@ function Register() {
 
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.message || "Registration failed");
+
+      alert(
+        err?.response?.data?.message ||
+        "Registration failed"
+      );
+
     } finally {
       setLoading(false);
     }
   };
 
   // ===============================
+  // ⌨️ ENTER KEY
+  // ===============================
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleRegister();
+    }
+  };
+
+  // ===============================
+  // 🔄 ACCOUNT TYPE SWITCH
+  // ===============================
+
+  const handleAccountType = (e) => {
+    const type = e.target.value;
+
+    setAccountType(type);
+
+    setConstructionRole("");
+    setBusinessType("");
+  };
+
+  // ===============================
   // 🎨 UI
   // ===============================
+
   return (
     <div style={styles.container}>
+      <div style={styles.glow}></div>
 
       <div style={styles.card}>
 
         <h1 style={styles.title}>
-          Register
+          Create Account
         </h1>
 
         <p style={styles.subtitle}>
-          Join Construction • Business • Services Network
+          Join workers, businesses &
+          services worldwide
         </p>
 
-        {/* NAME */}
+        {/* FULL NAME */}
         <input
           style={styles.input}
           placeholder="Full Name"
           value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          onChange={(e) =>
+            setFullName(e.target.value)
+          }
+          onKeyDown={handleKeyDown}
         />
 
         {/* EMAIL / PHONE */}
@@ -85,7 +157,10 @@ function Register() {
           style={styles.input}
           placeholder="Email or Phone"
           value={emailOrPhone}
-          onChange={(e) => setEmailOrPhone(e.target.value)}
+          onChange={(e) =>
+            setEmailOrPhone(e.target.value)
+          }
+          onKeyDown={handleKeyDown}
         />
 
         {/* PASSWORD */}
@@ -94,28 +169,46 @@ function Register() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
+          onKeyDown={handleKeyDown}
         />
 
         {/* ACCOUNT TYPE */}
         <select
           style={styles.input}
           value={accountType}
-          onChange={(e) => setAccountType(e.target.value)}
+          onChange={handleAccountType}
         >
-          <option value="worker">👷 Construction Worker</option>
-          <option value="business">🏢 Business</option>
-          <option value="service">🚀 Service Provider</option>
+          <option value="worker">
+            👷 Construction Worker
+          </option>
+
+          <option value="business">
+            🏢 Business
+          </option>
+
+          <option value="service">
+            🚀 Service Provider
+          </option>
         </select>
 
-        {/* 👷 CONSTRUCTION ROLES */}
+        {/* WORKER ROLE */}
         {accountType === "worker" && (
           <select
             style={styles.input}
             value={constructionRole}
-            onChange={(e) => setConstructionRole(e.target.value)}
+            onChange={(e) =>
+              setConstructionRole(
+                e.target.value
+              )
+            }
           >
-            <option value="">Select Role</option>
+            <option value="">
+              Select Role
+            </option>
+
             <option>Mason</option>
             <option>Carpenter</option>
             <option>Electrician</option>
@@ -128,14 +221,21 @@ function Register() {
           </select>
         )}
 
-        {/* 🏢 BUSINESS TYPES */}
+        {/* BUSINESS TYPE */}
         {accountType === "business" && (
           <select
             style={styles.input}
             value={businessType}
-            onChange={(e) => setBusinessType(e.target.value)}
+            onChange={(e) =>
+              setBusinessType(
+                e.target.value
+              )
+            }
           >
-            <option value="">Select Business Type</option>
+            <option value="">
+              Select Business Type
+            </option>
+
             <option>Company</option>
             <option>Restaurant</option>
             <option>Hospital</option>
@@ -151,15 +251,34 @@ function Register() {
 
         {/* BUTTON */}
         <button
-          style={styles.button}
+          style={{
+            ...styles.button,
+            opacity: loading ? 0.7 : 1,
+            cursor: loading
+              ? "not-allowed"
+              : "pointer",
+
+            transform: loading
+              ? "scale(0.98)"
+              : "scale(1)",
+          }}
           onClick={handleRegister}
           disabled={loading}
         >
-          {loading ? "Creating account..." : "Register"}
+          {loading
+            ? "Creating account..."
+            : "Create Account"}
         </button>
 
-        <p style={styles.info}>
-          By registering you join nearby workers, businesses & services network
+        {/* LOGIN LINK */}
+        <p style={styles.loginText}>
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            style={styles.loginLink}
+          >
+            Login
+          </Link>
         </p>
 
       </div>
@@ -168,7 +287,7 @@ function Register() {
 }
 
 // ===============================
-// 🎨 STYLES (SAFE + SIMPLE)
+// 🎨 GLOBAL GLASS UI
 // ===============================
 
 const styles = {
@@ -177,54 +296,128 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#0f172a",
-    fontFamily: "Arial"
+
+    background:
+      "linear-gradient(to bottom, #020617, #0f172a)",
+
+    fontFamily:
+      "Inter, Arial, sans-serif",
+
+    padding: "20px",
+
+    position: "relative",
+
+    overflow: "hidden",
+  },
+
+  glow: {
+    position: "absolute",
+    inset: 0,
+
+    background:
+      "radial-gradient(circle at top, rgba(59,130,246,0.25), transparent 60%)",
   },
 
   card: {
-    width: "340px",
-    padding: "20px",
-    background: "#1e293b",
-    borderRadius: "10px",
-    color: "white"
+    position: "relative",
+    zIndex: 2,
+
+    width: "100%",
+    maxWidth: "400px",
+
+    padding: "32px",
+
+    background:
+      "rgba(255,255,255,0.05)",
+
+    border:
+      "1px solid rgba(255,255,255,0.08)",
+
+    backdropFilter: "blur(18px)",
+
+    borderRadius: "24px",
+
+    color: "white",
+
+    boxShadow:
+      "0 25px 60px rgba(0,0,0,0.45)",
+
+    transition: "0.3s",
   },
 
   title: {
-    fontSize: "24px",
-    marginBottom: "5px"
+    fontSize: "32px",
+    fontWeight: "900",
+    marginBottom: "6px",
   },
 
   subtitle: {
-    fontSize: "12px",
+    fontSize: "13px",
     color: "#94a3b8",
-    marginBottom: "15px"
+    marginBottom: "22px",
+    lineHeight: 1.6,
   },
 
   input: {
     width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "none",
-    outline: "none"
+    boxSizing: "border-box",
+
+    padding: "13px 14px",
+
+    marginBottom: "12px",
+
+    borderRadius: "12px",
+
+    border:
+      "1px solid rgba(255,255,255,0.08)",
+
+    outline: "none",
+
+    background:
+      "rgba(255,255,255,0.03)",
+
+    color: "#fff",
+
+    transition: "0.3s",
   },
 
   button: {
     width: "100%",
-    padding: "10px",
-    background: "#22c55e",
+
+    padding: "13px",
+
+    background:
+      "linear-gradient(to right, #22c55e, #16a34a)",
+
     border: "none",
-    borderRadius: "6px",
+
+    borderRadius: "12px",
+
     color: "white",
-    cursor: "pointer"
+
+    fontWeight: "700",
+
+    fontSize: "15px",
+
+    cursor: "pointer",
+
+    transition: "0.3s",
+
+    marginTop: "5px",
   },
 
-  info: {
-    fontSize: "11px",
+  loginText: {
+    marginTop: "18px",
+    textAlign: "center",
+    fontSize: "13px",
     color: "#94a3b8",
-    marginTop: "10px",
-    textAlign: "center"
-  }
+  },
+
+  loginLink: {
+    color: "#60a5fa",
+    textDecoration: "none",
+    fontWeight: "700",
+  },
 };
 
 export default Register;

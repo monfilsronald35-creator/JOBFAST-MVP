@@ -1,950 +1,440 @@
-/* ==================================================
-   🌍 JOBFAST SEARCH PAGE (MVP STABLE COMPLETE)
-   FILE: apps/frontend/src/pages/Search.jsx
-   ================================================== */
 
 import React, {
+  memo,
+  useCallback,
+  useDeferredValue,
   useMemo,
-  useState
+  useState,
 } from "react";
 
-import { useTranslation } from "react-i18next";
+// ======================================================
+// 🌍 JOBFAST — SEARCH PAGE
+// ======================================================
 
-import LocationBadge from "../components/LocationBadge";
+// ======================================================
+// 📦 STATIC DATA
+// ======================================================
 
-import LanguageSelector from "../components/LanguageSelector";
+const MOCK_RESULTS = [
+  {
+    id: 1,
+    name: "Ronald Monfils",
+    role: "Mason",
+    type: "construction",
+    location: "Bavaro, Punta Cana",
+    distance: "2.5km",
+    status: "AVAILABLE",
+  },
 
-import {
-  getCurrentPosition,
-  attachDistance,
-  sortByDistance,
-  filterNearby
-} from "../utils/location";
+  {
+    id: 2,
+    name: "Hotel Paradise",
+    role: "Hotel",
+    type: "business",
+    location: "Punta Cana",
+    distance: "3.1km",
+    status: "OPEN",
+  },
 
-/* ==================================================
-   🚀 SEARCH PAGE
-   ================================================== */
+  {
+    id: 3,
+    name: "Chef Jean",
+    role: "Chef Lakay",
+    type: "service",
+    location: "Veron",
+    distance: "1.2km",
+    status: "AVAILABLE",
+  },
+];
+
+// ======================================================
+// 🎨 STATUS CONFIG
+// ======================================================
+
+const STATUS_CONFIG = {
+  AVAILABLE: {
+    color: "#22c55e",
+    label: "AVAILABLE",
+  },
+
+  OPEN: {
+    color: "#22c55e",
+    label: "OPEN",
+  },
+
+  BUSY: {
+    color: "#ef4444",
+    label: "BUSY",
+  },
+
+  OFFLINE: {
+    color: "#64748b",
+    label: "OFFLINE",
+  },
+
+  DEFAULT: {
+    color: "#f59e0b",
+    label: "UNKNOWN",
+  },
+};
+
+// ======================================================
+// 🧠 SEARCH CARD
+// ======================================================
+
+const ResultCard = memo(function ResultCard({
+  item,
+}) {
+  const status =
+    STATUS_CONFIG[item.status] ||
+    STATUS_CONFIG.DEFAULT;
+
+  return (
+    <article style={styles.card}>
+      <div style={styles.cardHeader}>
+        <h3 style={styles.name}>
+          {item.name}
+        </h3>
+
+        <span
+          style={{
+            ...styles.status,
+            background: status.color,
+          }}
+        >
+          {status.label}
+        </span>
+      </div>
+
+      <div style={styles.cardBody}>
+        <p style={styles.text}>
+          <strong>Role:</strong>{" "}
+          {item.role}
+        </p>
+
+        <p style={styles.text}>
+          <strong>Type:</strong>{" "}
+          {item.type}
+        </p>
+
+        <p style={styles.text}>
+          📍 {item.location} •{" "}
+          {item.distance}
+        </p>
+      </div>
+    </article>
+  );
+});
+
+// ======================================================
+// 🚀 MAIN COMPONENT
+// ======================================================
 
 function Search() {
-  const { t } = useTranslation();
-
-  /* ==================================================
-     📍 STATES
-     ================================================== */
-
   const [query, setQuery] =
     useState("");
 
-  const [selectedType, setSelectedType] =
-    useState("all");
-
-  const [loadingGps, setLoadingGps] =
-    useState(false);
-
-  const [gpsError, setGpsError] =
-    useState("");
-
-  const [userLocation, setUserLocation] =
-    useState(null);
-
-  const [nearbyOnly, setNearbyOnly] =
-    useState(false);
-
-  /* ==================================================
-     📍 MOCK DATA
-     ================================================== */
-
-  const mockResults = [
-    /* =========================
-       CONSTRUCTION
-       ========================= */
-
-    {
-      id: 1,
-
-      name: "Ronald Monfils",
-
-      role: "mason",
-
-      type: "construction",
-
-      availability: "available",
-
-      bio:
-        "Professional mason available for construction jobs",
-
-      location: {
-        city: "Bavaro",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.629,
-        lng: -68.4055
-      }
-    },
-
-    {
-      id: 2,
-
-      name: "Jean Build Pro",
-
-      role: "electrician",
-
-      type: "construction",
-
-      availability: "working",
-
-      bio:
-        "Electrical installation and repair specialist",
-
-      location: {
-        city: "Veron",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.5901,
-        lng: -68.4301
-      }
-    },
-
-    {
-      id: 3,
-
-      name: "Carlos Constructor",
-
-      role: "boss",
-
-      type: "construction",
-
-      availability: "busy",
-
-      bio:
-        "Construction boss managing large projects",
-
-      location: {
-        city: "Higuey",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.615,
-        lng: -68.7079
-      }
-    },
-
-    {
-      id: 4,
-
-      name: "Wood Expert",
-
-      role: "carpenter",
-
-      type: "construction",
-
-      availability: "available",
-
-      bio:
-        "Custom wood and roofing specialist",
-
-      location: {
-        city: "Punta Cana",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.582,
-        lng: -68.3705
-      }
-    },
-
-    /* =========================
-       BUSINESSES
-       ========================= */
-
-    {
-      id: 5,
-
-      name: "Hotel Paradise",
-
-      businessType: "hotel",
-
-      type: "business",
-
-      availability: "working",
-
-      bio:
-        "Luxury hotel in Punta Cana",
-
-      location: {
-        city: "Punta Cana",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.5601,
-        lng: -68.3725
-      }
-    },
-
-    {
-      id: 6,
-
-      name: "Central Clinic",
-
-      businessType: "clinic",
-
-      type: "business",
-
-      availability: "available",
-
-      bio:
-        "Medical clinic open everyday",
-
-      location: {
-        city: "Punta Cana",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.5705,
-        lng: -68.408
-      }
-    },
-
-    {
-      id: 7,
-
-      name: "Bavaro Restaurant",
-
-      businessType: "restaurant",
-
-      type: "business",
-
-      availability: "working",
-
-      bio:
-        "Caribbean restaurant and local food",
-
-      location: {
-        city: "Bavaro",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.6402,
-        lng: -68.4011
-      }
-    },
-
-    {
-      id: 8,
-
-      name: "Global Lawyers",
-
-      businessType: "lawyer",
-
-      type: "business",
-
-      availability: "available",
-
-      bio:
-        "Immigration and business legal services",
-
-      location: {
-        city: "Santo Domingo",
-        state: "Distrito Nacional",
-        country:
-          "Dominican Republic",
-
-        lat: 18.4861,
-        lng: -69.9312
-      }
-    },
-
-    {
-      id: 9,
-
-      name: "Tour Punta Cana",
-
-      businessType: "tourGuide",
-
-      type: "business",
-
-      availability: "available",
-
-      bio:
-        "Tour guide services for visitors",
-
-      location: {
-        city: "Bavaro",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.6285,
-        lng: -68.4102
-      }
-    },
-
-    /* =========================
-       SERVICES
-       ========================= */
-
-    {
-      id: 10,
-
-      name: "Chef Jean",
-
-      serviceType: "chef",
-
-      type: "service",
-
-      availability: "available",
-
-      bio:
-        "Private chef available anytime",
-
-      location: {
-        city: "Veron",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.585,
-        lng: -68.435
-      }
-    },
-
-    {
-      id: 11,
-
-      name: "Quick Taxi",
-
-      serviceType: "taxi",
-
-      type: "service",
-
-      availability: "busy",
-
-      bio:
-        "24/7 taxi nearby",
-
-      location: {
-        city: "Higuey",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.615,
-        lng: -68.7079
-      }
-    },
-
-    {
-      id: 12,
-
-      name: "Clean Master",
-
-      serviceType: "cleaning",
-
-      type: "service",
-
-      availability: "available",
-
-      bio:
-        "House and office cleaning services",
-
-      location: {
-        city: "Punta Cana",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.5751,
-        lng: -68.3999
-      }
-    },
-
-    {
-      id: 13,
-
-      name: "Doctor Luis",
-
-      serviceType: "doctor",
-
-      type: "service",
-
-      availability: "working",
-
-      bio:
-        "Home doctor consultation available",
-
-      location: {
-        city: "Bavaro",
-        state: "La Altagracia",
-        country:
-          "Dominican Republic",
-
-        lat: 18.6202,
-        lng: -68.409
-      }
-    },
-
-    {
-      id: 14,
-
-      name: "Creative Designer",
-
-      serviceType: "designer",
-
-      type: "service",
-
-      availability: "available",
-
-      bio:
-        "Graphic design and branding services",
-
-      location: {
-        city: "Santo Domingo",
-        state: "Distrito Nacional",
-        country:
-          "Dominican Republic",
-
-        lat: 18.482,
-        lng: -69.9301
-      }
-    }
-  ];
-
-  /* ==================================================
-     📍 ENABLE GPS
-     ================================================== */
-
-  const handleEnableGps =
-    async () => {
-      try {
-        setLoadingGps(true);
-
-        setGpsError("");
-
-        const position =
-          await getCurrentPosition();
-
-        setUserLocation(position);
-      } catch (error) {
-        setGpsError(
-          t(
-            "location.gpsUnavailable"
-          )
-        );
-      } finally {
-        setLoadingGps(false);
-      }
-    };
-
-  /* ==================================================
-     📍 DISTANCE
-     ================================================== */
-
-  const resultsWithDistance =
-    useMemo(() => {
-      if (!userLocation) {
-        return mockResults;
-      }
-
-      return sortByDistance(
-        attachDistance(
-          mockResults,
-          userLocation
-        )
-      );
-    }, [userLocation]);
-
-  /* ==================================================
-     📍 FILTER RESULTS
-     ================================================== */
+  // ======================================================
+  // ⚡ DEFERRED SEARCH
+  // ======================================================
+
+  const deferredQuery =
+    useDeferredValue(query);
+
+  // ======================================================
+  // 🔎 HANDLE INPUT
+  // ======================================================
+
+  const handleChange =
+    useCallback((e) => {
+      setQuery(e.target.value);
+    }, []);
+
+  // ======================================================
+  // 🔍 FILTER RESULTS
+  // ======================================================
 
   const filteredResults =
     useMemo(() => {
-      const safeQuery =
-        query.toLowerCase();
+      const search =
+        deferredQuery
+          .trim()
+          .toLowerCase();
 
-      let results =
-        resultsWithDistance.filter(
-          (item) => {
-            const searchable =
-              [
-                item.name,
-                item.role,
-                item.type,
-                item.businessType,
-                item.serviceType,
-                item.bio,
-                item.location?.city
-              ]
-                .join(" ")
-                .toLowerCase();
-
-            return searchable.includes(
-              safeQuery
-            );
-          }
-        );
-
-      if (
-        selectedType !== "all"
-      ) {
-        results = results.filter(
-          (item) =>
-            item.type ===
-            selectedType
-        );
+      if (!search) {
+        return MOCK_RESULTS;
       }
 
-      if (nearbyOnly) {
-        results =
-          filterNearby(
-            results,
-            10
-          );
-      }
+      return MOCK_RESULTS.filter(
+        ({
+          name,
+          role,
+          type,
+          location,
+        }) =>
+          name
+            .toLowerCase()
+            .includes(search) ||
+          role
+            .toLowerCase()
+            .includes(search) ||
+          type
+            .toLowerCase()
+            .includes(search) ||
+          location
+            .toLowerCase()
+            .includes(search)
+      );
+    }, [deferredQuery]);
 
-      return results;
-    }, [
-      query,
-      selectedType,
-      nearbyOnly,
-      resultsWithDistance
-    ]);
+  // ======================================================
+  // 📊 RESULTS COUNT
+  // ======================================================
 
-  /* ==================================================
-     📍 UI
-     ================================================== */
+  const resultsCount =
+    filteredResults.length;
+
+  // ======================================================
+  // 🎨 UI
+  // ======================================================
 
   return (
-    <div style={styles.container}>
+    <main style={styles.container}>
+      {/* HEADER */}
 
-      {/* =========================
-          HEADER
-         ========================= */}
+      <header style={styles.header}>
+        <h1 style={styles.title}>
+          Search Nearby
+        </h1>
 
-      <div style={styles.header}>
+        <p style={styles.subtitle}>
+          Construction • Businesses •
+          Services On Demand
+        </p>
+      </header>
 
-        <div>
-          <h1 style={styles.title}>
-            JOBFAST
-          </h1>
+      {/* SEARCH */}
 
-          <p style={styles.subtitle}>
-            Construction •
-            Businesses •
-            Services On Demand
-          </p>
-        </div>
-
-        <LanguageSelector
-          compact
+      <div style={styles.searchWrapper}>
+        <input
+          type="text"
+          value={query}
+          onChange={handleChange}
+          placeholder="Search workers, businesses, services..."
+          autoComplete="off"
+          style={styles.input}
         />
-
       </div>
 
-      {/* =========================
-          SEARCH
-         ========================= */}
+      {/* RESULTS INFO */}
 
-      <input
-        style={styles.input}
-        placeholder={t(
-          "search.placeholder"
-        )}
-        value={query}
-        onChange={(e) =>
-          setQuery(
-            e.target.value
-          )
-        }
-      />
+      <p style={styles.resultsText}>
+        {resultsCount} result
+        {resultsCount !== 1 && "s"} found
+      </p>
 
-      {/* =========================
-          FILTERS
-         ========================= */}
+      {/* RESULTS */}
 
-      <div style={styles.filters}>
-
-        <button
-          style={{
-            ...styles.filterButton,
-            background:
-              selectedType ===
-              "all"
-                ? "#2563eb"
-                : "#1e293b"
-          }}
-          onClick={() =>
-            setSelectedType(
-              "all"
-            )
-          }
-        >
-          All
-        </button>
-
-        <button
-          style={{
-            ...styles.filterButton,
-            background:
-              selectedType ===
-              "construction"
-                ? "#2563eb"
-                : "#1e293b"
-          }}
-          onClick={() =>
-            setSelectedType(
-              "construction"
-            )
-          }
-        >
-          Construction
-        </button>
-
-        <button
-          style={{
-            ...styles.filterButton,
-            background:
-              selectedType ===
-              "business"
-                ? "#2563eb"
-                : "#1e293b"
-          }}
-          onClick={() =>
-            setSelectedType(
-              "business"
-            )
-          }
-        >
-          Business
-        </button>
-
-        <button
-          style={{
-            ...styles.filterButton,
-            background:
-              selectedType ===
-              "service"
-                ? "#2563eb"
-                : "#1e293b"
-          }}
-          onClick={() =>
-            setSelectedType(
-              "service"
-            )
-          }
-        >
-          Services
-        </button>
-
-      </div>
-
-      {/* =========================
-          ACTIONS
-         ========================= */}
-
-      <div style={styles.actions}>
-
-        <button
-          style={styles.button}
-          onClick={
-            handleEnableGps
-          }
-        >
-          {loadingGps
-            ? t("app.loading")
-            : t(
-                "location.enableGps"
-              )}
-        </button>
-
-        <button
-          style={{
-            ...styles.button,
-            background:
-              nearbyOnly
-                ? "#22c55e"
-                : "#334155"
-          }}
-          onClick={() =>
-            setNearbyOnly(
-              !nearbyOnly
-            )
-          }
-        >
-          {t(
-            "location.searchNearby"
-          )}
-        </button>
-
-      </div>
-
-      {/* =========================
-          GPS ERROR
-         ========================= */}
-
-      {gpsError && (
-        <div style={styles.error}>
-          {gpsError}
-        </div>
-      )}
-
-      {/* =========================
-          RESULTS COUNT
-         ========================= */}
-
-      <div style={styles.resultsInfo}>
-        {filteredResults.length}{" "}
-        {t("search.results")}
-      </div>
-
-      {/* =========================
-          RESULTS
-         ========================= */}
-
-      <div style={styles.list}>
-
-        {filteredResults.length ===
-        0 ? (
-          <div style={styles.empty}>
-            {t(
-              "search.noResults"
-            )}
+      <section style={styles.list}>
+        {resultsCount === 0 ? (
+          <div style={styles.emptyCard}>
+            <p style={styles.empty}>
+              No results found
+            </p>
           </div>
         ) : (
-          filteredResults.map(
-            (item) => (
-              <div
-                key={item.id}
-                style={styles.card}
-              >
-
-                <div
-                  style={
-                    styles.topRow
-                  }
-                >
-
-                  <div
-                    style={{
-                      flex: 1
-                    }}
-                  >
-                    <h3
-                      style={
-                        styles.name
-                      }
-                    >
-                      {item.name}
-                    </h3>
-
-                    <p
-                      style={
-                        styles.bio
-                      }
-                    >
-                      {item.bio}
-                    </p>
-                  </div>
-
-                  <span
-                    style={
-                      styles.type
-                    }
-                  >
-                    {item.type}
-                  </span>
-
-                </div>
-
-                <LocationBadge
-                  location={
-                    item.location
-                  }
-
-                  distanceKm={
-                    item.distanceKm
-                  }
-
-                  availability={
-                    item.availability
-                  }
-
-                  role={item.role}
-
-                  businessType={
-                    item.businessType
-                  }
-
-                  serviceType={
-                    item.serviceType
-                  }
-                />
-
-              </div>
-            )
-          )
+          filteredResults.map((item) => (
+            <ResultCard
+              key={item.id}
+              item={item}
+            />
+          ))
         )}
-
-      </div>
-
-    </div>
+      </section>
+    </main>
   );
 }
 
-/* ==================================================
-   🎨 STYLES
-   ================================================== */
+// ======================================================
+// 🎨 STYLES
+// ======================================================
 
 const styles = {
   container: {
     minHeight: "100vh",
-    background: "#0f172a",
+
+    padding: "24px",
+
+    background:
+      "linear-gradient(to bottom, #020617, #0f172a)",
+
     color: "#ffffff",
-    padding: "20px",
-    fontFamily: "Arial"
+
+    fontFamily:
+      "Inter, Arial, sans-serif",
   },
 
   header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent:
-      "space-between",
-    gap: "10px",
-    marginBottom: "20px"
+    marginBottom: "24px",
   },
 
   title: {
     margin: 0,
-    fontSize: "30px",
-    fontWeight: 700
+
+    fontSize: "32px",
+
+    fontWeight: "800",
   },
 
   subtitle: {
-    marginTop: "5px",
+    marginTop: "8px",
+
     color: "#94a3b8",
-    fontSize: "13px"
+
+    fontSize: "14px",
+
+    lineHeight: 1.6,
+  },
+
+  searchWrapper: {
+    marginBottom: "16px",
   },
 
   input: {
     width: "100%",
-    padding: "12px",
-    borderRadius: "10px",
+
+    padding: "14px 16px",
+
+    borderRadius: "14px",
+
     border:
-      "1px solid #334155",
-    background: "#1e293b",
-    color: "#ffffff",
+      "1px solid rgba(255,255,255,0.08)",
+
     outline: "none",
-    marginBottom: "15px",
-    fontSize: "14px",
-    boxSizing: "border-box"
-  },
 
-  filters: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap",
-    marginBottom: "15px"
-  },
-
-  filterButton: {
-    padding: "10px 14px",
-    border: "none",
-    borderRadius: "999px",
-    cursor: "pointer",
-    color: "#ffffff",
-    fontWeight: 600
-  },
-
-  actions: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap",
-    marginBottom: "20px"
-  },
-
-  button: {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    background: "#2563eb",
-    color: "#ffffff",
-    fontWeight: 600
-  },
-
-  error: {
     background:
-      "rgba(239,68,68,0.15)",
-    color: "#ef4444",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "15px"
+      "rgba(255,255,255,0.06)",
+
+    color: "#fff",
+
+    fontSize: "14px",
+
+    boxSizing: "border-box",
+
+    backdropFilter:
+      "blur(12px)",
+
+    WebkitBackdropFilter:
+      "blur(12px)",
   },
 
-  resultsInfo: {
+  resultsText: {
+    fontSize: "13px",
+
     color: "#94a3b8",
-    marginBottom: "15px",
-    fontSize: "14px"
+
+    marginBottom: "16px",
   },
 
   list: {
     display: "grid",
-    gap: "14px"
+
+    gap: "14px",
   },
 
   card: {
-    background: "#1e293b",
-    borderRadius: "12px",
-    padding: "14px",
+    padding: "18px",
+
+    borderRadius: "18px",
+
+    background:
+      "rgba(255,255,255,0.05)",
+
     border:
-      "1px solid #334155"
+      "1px solid rgba(255,255,255,0.08)",
+
+    backdropFilter:
+      "blur(16px)",
+
+    WebkitBackdropFilter:
+      "blur(16px)",
+
+    transition:
+      "transform 0.25s ease",
   },
 
-  topRow: {
+  cardHeader: {
     display: "flex",
+
     justifyContent:
       "space-between",
-    gap: "10px",
-    marginBottom: "12px"
+
+    alignItems: "center",
+
+    gap: "12px",
+
+    marginBottom: "12px",
+  },
+
+  cardBody: {
+    display: "grid",
+
+    gap: "4px",
   },
 
   name: {
     margin: 0,
-    fontSize: "18px"
+
+    fontSize: "18px",
+
+    fontWeight: "700",
   },
 
-  bio: {
-    marginTop: "5px",
-    color: "#94a3b8",
-    fontSize: "13px",
-    lineHeight: 1.5
+  text: {
+    margin: 0,
+
+    color: "#cbd5e1",
+
+    fontSize: "14px",
+
+    lineHeight: 1.6,
   },
 
-  type: {
-    background:
-      "rgba(255,255,255,0.08)",
-    padding: "6px 10px",
+  status: {
+    padding: "6px 12px",
+
     borderRadius: "999px",
-    fontSize: "12px",
-    height: "fit-content",
-    textTransform:
-      "capitalize"
+
+    fontSize: "11px",
+
+    fontWeight: "700",
+
+    color: "#fff",
+
+    whiteSpace: "nowrap",
+  },
+
+  emptyCard: {
+    padding: "30px",
+
+    borderRadius: "18px",
+
+    textAlign: "center",
+
+    background:
+      "rgba(255,255,255,0.04)",
+
+    border:
+      "1px solid rgba(255,255,255,0.06)",
   },
 
   empty: {
-    textAlign: "center",
+    margin: 0,
+
     color: "#94a3b8",
-    padding: "40px 0"
-  }
+
+    fontSize: "14px",
+  },
 };
 
-export default Search;
+export default memo(Search);

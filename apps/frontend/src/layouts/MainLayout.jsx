@@ -1,83 +1,95 @@
-import React from "react";
+import React, { memo } from "react";
+import Navbar from "./Navbar";
 
-// ===============================
-// 🚀 MAIN LAYOUT (MVP SAFE)
-// ===============================
+// Kalkile yon sèl fwa nan nivo modil la
+const CURRENT_YEAR = new Date().getFullYear();
 
-function MainLayout({ children }) {
+// ======================================================
+// 🌍 JOBFAST — FOOTER (MEMOIZED)
+// ======================================================
+const Footer = memo(function Footer() {
+  return (
+    <footer style={styles.footer} aria-label="Footer information">
+      <div style={styles.footerContainer}>
+        <p style={styles.footerText}>
+          📍 GPS Network • Nearby Jobs • Services On Demand
+        </p>
+        <p style={styles.copyright}>
+          &copy; {CURRENT_YEAR} JOBFAST.RD — All rights reserved.
+        </p>
+      </div>
+    </footer>
+  );
+});
+
+// ======================================================
+// 🚀 JOBFAST — MAIN LAYOUT (MEMOIZED)
+// ======================================================
+const MainLayout = memo(function MainLayout({ children }) {
   return (
     <div style={styles.app}>
+      {/* GLOBAL NAVBAR */}
+      <Navbar />
 
-      {/* TOP NAVBAR AREA (simple placeholder, no dependency) */}
-      <header style={styles.header}>
-        <div style={styles.brand}>Marketplace MVP</div>
-
-        <div style={styles.tags}>
-          <span>👷 Construction</span>
-          <span>🏢 Business</span>
-          <span>🚀 Services</span>
-        </div>
-      </header>
-
-      {/* MAIN CONTENT */}
-      <main style={styles.main}>
+      {/* DYNAMIC CONTENT */}
+      <main style={styles.main} role="main">
         {children}
       </main>
 
-      {/* FOOTER (light MVP info only) */}
-      <footer style={styles.footer}>
-        <p>GPS Network • Nearby Jobs • Services On Demand</p>
-      </footer>
-
+      {/* GLOBAL FOOTER */}
+      <Footer />
     </div>
   );
-}
+});
 
-// ===============================
-// 🎨 STYLES (NO EXTERNAL FILES)
-// ===============================
-const styles = {
+export default MainLayout;
+
+// ======================================================
+// 🎨 IMMUTABLE DESIGN SYSTEM STYLES
+// ======================================================
+const styles = Object.freeze({
   app: {
-    minHeight: "100vh",
+    minHeight: "100dvh",
     display: "flex",
     flexDirection: "column",
-    background: "#0f172a",
-    color: "white",
-    fontFamily: "Arial",
-  },
-
-  header: {
-    padding: "12px 16px",
-    borderBottom: "1px solid #1e293b",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  brand: {
-    fontSize: "16px",
-    fontWeight: "bold",
-  },
-
-  tags: {
-    display: "flex",
-    gap: "12px",
-    fontSize: "12px",
-    color: "#cbd5e1",
+    background: "linear-gradient(to bottom, #020617, #0f172a)",
+    color: "#ffffff",
+    fontFamily: "Inter, Arial, sans-serif",
   },
 
   main: {
     flex: 1,
-    padding: "15px",
+    padding: "24px 0",
+    display: "flex",
+    flexDirection: "column",
   },
 
   footer: {
-    padding: "10px",
-    textAlign: "center",
-    fontSize: "11px",
-    color: "#94a3b8",
-    borderTop: "1px solid #1e293b",
+    width: "100%",
+    marginTop: "auto",
   },
-};
 
-export default MainLayout;
+  footerContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    textAlign: "center",
+    padding: "16px 0",
+  },
+
+  footerText: {
+    margin: 0,
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#94a3b8",
+    letterSpacing: "0.3px",
+  },
+
+  copyright: {
+    margin: 0,
+    fontSize: "11px",
+    color: "#64748b",
+  },
+});

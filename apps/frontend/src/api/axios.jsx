@@ -1,283 +1,183 @@
-import axios from "axios";
-
-// ===============================
-// 🌍 API BASE URL
-// ===============================
-
-export const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://jobfast-mvp.onrender.com";
-
-// ===============================
-// 🚀 CREATE API INSTANCE
-// ===============================
-
-const API = axios.create({
-  baseURL: API_URL,
-
-  timeout: 15000,
-
-  headers: {
-    "Content-Type":
-      "application/json",
-
-    Accept:
-      "application/json",
-  },
+// ======================================================
+// 🌍 JOBFAST — CORE ENUMS (SOURCE OF TRUTH)
+// ======================================================
+export const STATUS = Object.freeze({
+  ONLINE: "online",
+  BUSY: "busy",
+  OFFLINE: "offline",
 });
 
-// ===============================
-// 🔐 REQUEST INTERCEPTOR
-// ===============================
+export const AVAILABILITY = Object.freeze({
+  AVAILABLE: "available",
+  UNAVAILABLE: "unavailable",
+  WORKING: "working",
+  ON_BREAK: "on_break",
+});
 
-API.interceptors.request.use(
+export const JOB_STATUS = Object.freeze({
+  PENDING: "pending",
+  AVAILABLE: "available",
+  ASSIGNED: "assigned",
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
+});
 
-  (config) => {
+// ======================================================
+// 👤 SAFE DERIVED CONTRACT (READ-ONLY VIEW)
+// ======================================================
+export const USER_STATE = Object.freeze({
+  STATUS,
+  AVAILABILITY,
+});
 
-    // ===============================
-    // 🔑 TOKEN
-    // ===============================
+// ======================================================
+// 👤 USER ROLES
+// ======================================================
+export const USER_ROLES = Object.freeze({
+  ADMIN: "admin",
+  BOSS: "boss",
+  WORKER: "worker",
+  APPRENTICE: "apprentice",
+  DRIVER: "driver",
+  ENGINEER: "engineer",
+  PROVIDER: "provider",
+  USER: "user",
+});
 
-    const token =
-      localStorage.getItem(
-        "token"
-      );
+// ======================================================
+// 🏢 BUSINESS TYPES
+// ======================================================
+export const BUSINESS_TYPES = Object.freeze({
+  COMPANY: "company",
+  RESTAURANT: "restaurant",
+  HOSPITAL: "hospital",
+  CLINIC: "clinic",
+  HOTEL: "hotel",
+  OFFICE: "office",
+  LAWYER: "lawyer",
+  MECHANIC: "mechanic",
+  TOUR_GUIDE: "tour_guide",
+  ORGANIZATION: "organization",
+});
 
-    if (token) {
+// ======================================================
+// ⚙️ SERVICE SYSTEM (IMMUTABLE)
+// ======================================================
+export const SERVICE_CATEGORIES = Object.freeze({
+  CONSTRUCTION: Object.freeze([
+    "mason",
+    "carpenter",
+    "electrician",
+    "welder",
+    "painter",
+    "tiler",
+    "foreman",
+    "site_manager",
+    "architect",
+    "engineer",
+  ]),
 
-      config.headers.Authorization =
-        `Bearer ${token}`;
-    }
+  ON_DEMAND: Object.freeze([
+    "chef_lakay",
+    "plumber",
+    "doctor",
+    "nurse",
+    "taxi",
+    "delivery",
+    "cleaning",
+    "videographer",
+    "designer",
+  ]),
+});
 
-    // ===============================
-    // 🌍 APP IDENTIFIER
-    // ===============================
+// ======================================================
+// 📍 LOCATION SYSTEM
+// ======================================================
+export const LOCATION = Object.freeze({
+  LEVELS: Object.freeze({
+    CITY: "city",
+    STATE: "state",
+    COUNTRY: "country",
+  }),
 
-    config.headers[
-      "X-App-Client"
-    ] = "JOBFAST_MVP";
+  DEFAULT: Object.freeze({
+    lat: 18.5601,
+    lng: -68.3725,
+    zoom: 10,
+  }),
+});
 
-    // ===============================
-    // ⏱ REQUEST TIMER
-    // ===============================
+// ======================================================
+// 🔥 PRIORITY SYSTEM
+// ======================================================
+export const PRIORITY = Object.freeze({
+  LOW: "low",
+  NORMAL: "normal",
+  HIGH: "high",
+  URGENT: "urgent",
+});
 
-    config.metadata = {
-      startTime: Date.now(),
-    };
+// ======================================================
+// 🔔 NOTIFICATION TYPES
+// ======================================================
+export const NOTIFICATION_TYPES = Object.freeze({
+  SYSTEM: "system",
+  JOB: "job",
+  SERVICE: "service",
+  MESSAGE: "message",
+  ALERT: "alert",
+});
 
-    return config;
-  },
+// ======================================================
+// 🔎 SEARCH LIMITS
+// ======================================================
+export const SEARCH_LIMITS = Object.freeze({
+  USERS: 20,
+  BUSINESSES: 20,
+  SERVICES: 15,
+  JOBS: 20,
+});
 
-  (error) => {
+// ======================================================
+// 🎨 UI CONFIG
+// ======================================================
+export const UI = Object.freeze({
+  MAX_MODAL_WIDTH: 500,
+  TOAST_DURATION: 3000,
+  ANIMATION_SPEED: 200,
+});
 
-    console.error(
-      "❌ Request Error:",
-      error
-    );
+// ======================================================
+// 🧠 ENTITY TYPES
+// ======================================================
+export const ENTITY_TYPES = Object.freeze({
+  USER: "user",
+  BUSINESS: "business",
+  SERVICE: "service",
+  JOB: "job",
+  LOCATION: "location",
+});
 
-    return Promise.reject(
-      error
-    );
-  }
-);
+// ======================================================
+// 🧭 STATUS GROUPS (ROBUST + SAFE)
+// ======================================================
+export const STATUS_GROUPS = Object.freeze({
+  ACTIVE: [
+    STATUS.ONLINE,
+    AVAILABILITY.AVAILABLE,
+    JOB_STATUS.IN_PROGRESS,
+  ],
 
-// ===============================
-// ⚠ RESPONSE INTERCEPTOR
-// ===============================
+  INACTIVE: [
+    STATUS.OFFLINE,
+    AVAILABILITY.UNAVAILABLE,
+    JOB_STATUS.CANCELLED,
+  ],
 
-API.interceptors.response.use(
-
-  // ===============================
-  // ✅ SUCCESS
-  // ===============================
-
-  (response) => {
-
-    try {
-
-      const start =
-        response?.config
-          ?.metadata
-          ?.startTime;
-
-      if (start) {
-
-        const duration =
-          Date.now() - start;
-
-        console.log(
-          `✅ ${response.config.method?.toUpperCase()} ${response.config.url} (${duration}ms)`
-        );
-      }
-
-    } catch (err) {
-
-      console.error(
-        "⚠ Log Error:",
-        err
-      );
-    }
-
-    return response;
-  },
-
-  // ===============================
-  // ❌ ERROR
-  // ===============================
-
-  (error) => {
-
-    const status =
-      error?.response?.status;
-
-    const message =
-      error?.response?.data
-        ?.message ||
-      error?.message ||
-      "Server Error";
-
-    console.error(
-      "❌ API ERROR:",
-      message
-    );
-
-    // ===============================
-    // 🔒 AUTO LOGOUT
-    // ===============================
-
-    if (status === 401) {
-
-      localStorage.removeItem(
-        "token"
-      );
-
-      localStorage.removeItem(
-        "user"
-      );
-
-      console.warn(
-        "⚠ Session expired"
-      );
-    }
-
-    // ===============================
-    // 🌐 OFFLINE SERVER
-    // ===============================
-
-    if (!error?.response) {
-
-      console.error(
-        "🌐 Backend unavailable"
-      );
-    }
-
-    // ===============================
-    // ⏱ TIMEOUT
-    // ===============================
-
-    if (
-      error?.code ===
-      "ECONNABORTED"
-    ) {
-
-      console.error(
-        "⏱ Request timeout"
-      );
-    }
-
-    return Promise.reject(
-      error
-    );
-  }
-);
-
-// ===============================
-// 🚀 SAFE METHODS
-// ===============================
-
-export const apiGet =
-  async (
-    url,
-    config = {}
-  ) => {
-
-    const response =
-      await API.get(
-        url,
-        config
-      );
-
-    return response.data;
-  };
-
-export const apiPost =
-  async (
-    url,
-    data = {},
-    config = {}
-  ) => {
-
-    const response =
-      await API.post(
-        url,
-        data,
-        config
-      );
-
-    return response.data;
-  };
-
-export const apiPut =
-  async (
-    url,
-    data = {},
-    config = {}
-  ) => {
-
-    const response =
-      await API.put(
-        url,
-        data,
-        config
-      );
-
-    return response.data;
-  };
-
-export const apiPatch =
-  async (
-    url,
-    data = {},
-    config = {}
-  ) => {
-
-    const response =
-      await API.patch(
-        url,
-        data,
-        config
-      );
-
-    return response.data;
-  };
-
-export const apiDelete =
-  async (
-    url,
-    config = {}
-  ) => {
-
-    const response =
-      await API.delete(
-        url,
-        config
-      );
-
-    return response.data;
-  };
-
-// ===============================
-// 📦 EXPORT
-// ===============================
-
-export default API;
+  BUSY: [
+    STATUS.BUSY,
+    AVAILABILITY.WORKING,
+    JOB_STATUS.ASSIGNED,
+  ],
+});

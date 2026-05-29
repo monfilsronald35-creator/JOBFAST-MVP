@@ -1,132 +1,155 @@
 /* ==================================================
-   🌍 JOBFAST i18n SYSTEM (MVP STABLE)
-   FILE: apps/frontend/src/i18n/index.js
+   🌍 JOBFAST i18n SYSTEM (PRODUCTION v3.6)
    ================================================== */
 
 import i18n from "i18next";
-
 import { initReactI18next } from "react-i18next";
 
-/* ==================================================
-   📍 LOCALES
-   ================================================== */
-
+import es from "../locales/es.json";
 import en from "../locales/en.json";
-import fr from "../locales/fr.json";
 import ht from "../locales/ht.json";
+import fr from "../locales/fr.json";
 
 /* ==================================================
-   📍 AVAILABLE LANGUAGES
+   📍 CONSTANTS
    ================================================== */
 
-const resources = {
-  en: {
-    translation: en
-  },
+export const SUPPORTED_LANGUAGES = ["es", "en", "ht", "fr"];
+const DEFAULT_LANGUAGE = "es";
+const STORAGE_KEY = "jobfast_language";
 
-  fr: {
-    translation: fr
-  },
-
-  ht: {
-    translation: ht
-  }
-};
+const LANG_SET = new Set(SUPPORTED_LANGUAGES);
 
 /* ==================================================
-   📍 SAFE LANGUAGE DETECTION
+   📍 CACHE (safe for SSR + runtime reset)
    ================================================== */
 
-const getSavedLanguage = () => {
+let cachedLang = null;
+
+/* ==================================================
+   📍 SAFE STORAGE
+   ================================================== */
+
+const safeGet = (key) => {
   try {
-    const savedLanguage =
-      localStorage.getItem(
-        "jobfast_language"
-      );
-
-    if (
-      savedLanguage === "en" ||
-      savedLanguage === "fr" ||
-      savedLanguage === "ht"
-    ) {
-      return savedLanguage;
-    }
-
-    const browserLanguage =
-      navigator.language
-        ?.toLowerCase()
-        ?.split("-")[0];
-
-    if (
-      browserLanguage === "fr"
-    ) {
-      return "fr";
-    }
-
-    if (
-      browserLanguage === "ht"
-    ) {
-      return "ht";
-    }
-
-    return "en";
-  } catch (error) {
-    return "en";
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
   }
 };
 
+const safeSet = (key, value) => {
+  try {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {}
+};
+
 /* ==================================================
-   📍 INIT i18n
+   📍 TRANSLATIONS
    ================================================== */
 
-i18n.use(initReactI18next).init({
-  resources,
-
-  lng: getSavedLanguage(),
-
-  fallbackLng: "en",
-
-  interpolation: {
-    escapeValue: false
-  },
-
-  react: {
-    useSuspense: false
-  }
+const resources = Object.freeze({
+  es: { translation: es },
+  en: { translation: en },
+  ht: { translation: ht },
+  fr: { translation: fr }
 });
 
 /* ==================================================
-   📍 CHANGE LANGUAGE
+   📍 NORMALIZER
    ================================================== */
 
-export const changeLanguage = (
-  language = "en"
-) => {
-  const safeLanguage =
-    ["en", "fr", "ht"].includes(
-      language
-    )
-      ? language
-      : "en";
+const normalizeLang = (lang) => {
+  if (typeof lang !== "string") return null;
 
-  localStorage.setItem(
-    "jobfast_language",
-    safeLanguage
-  );
+  const clean = lang.toLowerCase().split("-")[0];
+  return LANG_SET.has(clean) ? clean : null;
+};
 
-  i18n.changeLanguage(
-    safeLanguage
-  );
+/* ==================================================
+   📍 DETECTION (SSR SAFE + STABLE)
+   ================================================== */
+
+const detectLanguage = () => {
+  if (cachedLang) return cachedLang;
+
+  if (typeof window === "undefined") {
+    return (cachedLang = DEFAULT_LANGUAGE);
+  }
+
+  const saved = normalizeLang(safeGet(STORAGE_KEY));
+  if (saved) return (cachedLang = saved);
+
+  const browser =
+    typeof navigator !== "undefined"
+      ? normalizeLang(navigator.language)
+      : null;
+
+  return (cachedLang = browser || DEFAULT_LANGUAGE);
+};
+
+/* ==================================================
+   📍 INIT (SINGLETON SAFE)
+   ================================================== */
+
+if (!i18n.isInitialized) {
+  i18n.use(initReactI18next).init({
+    resources,
+    lng: detectLanguage(),
+    fallbackLng: DEFAULT_LANGUAGE,
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false }
+  });
+}
+
+/* ==================================================
+   📍 SYNC CACHE WITH i18n
+   ================================================== */
+
+const handleLanguageChange = (lng) => {
+  const normalized = normalizeLang(lng);
+  if (normalized) cachedLang = normalized;
+};
+
+i18n.on("languageChanged", handleLanguageChange);
+
+/* ==================================================
+   📍 SWITCH LANGUAGE
+   ================================================== */
+
+export const changeLanguage = (lang) => {
+  const safeLang = normalizeLang(lang) || DEFAULT_LANGUAGE;
+
+  const current = i18n.resolvedLanguage || i18n.language;
+
+  if (current === safeLang) return;
+
+  cachedLang = safeLang;
+  safeSet(STORAGE_KEY, safeLang);
+
+  i18n.changeLanguage(safeLang);
 };
 
 /* ==================================================
    📍 GET CURRENT LANGUAGE
    ================================================== */
 
-export const getCurrentLanguage =
-  () => {
-    return i18n.language || "en";
-  };
+export const getCurrentLanguage = () =>
+  i18n.resolvedLanguage ||
+  i18n.language ||
+  cachedLang ||
+  DEFAULT_LANGUAGE;
+
+/* ==================================================
+   📍 OPTIONAL CLEANUP (for microfrontends)
+   ================================================== */
+
+export const cleanupI18nListener = () => {
+  i18n.off("languageChanged", handleLanguageChange);
+};
 
 /* ==================================================
    📍 EXPORT

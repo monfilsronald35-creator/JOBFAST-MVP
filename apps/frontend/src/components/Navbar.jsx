@@ -1,72 +1,149 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 
-// ===============================
-// 🚀 NAVBAR (MVP SAFE)
-// ===============================
+// ======================================================
+// 🌍 JOBFAST — GLOBAL NAVBAR (PRODUCTION FINAL)
+// ======================================================
 
-function Navbar() {
+const NAV_ITEMS = Object.freeze([
+  { label: "👷 Construction", key: "construction" },
+  { label: "🏢 Business", key: "business" },
+  { label: "🚀 Services", key: "services" },
+  { label: "📍 Nearby", key: "nearby" },
+]);
+
+// ======================================================
+// 🎯 NAV ITEM
+// ======================================================
+const NavItem = memo(function NavItem({ item, onNavigate }) {
+  const handleClick = useCallback(() => {
+    onNavigate(item.key);
+  }, [onNavigate, item.key]);
+
   return (
-    <div style={styles.navbar}>
+    <button type="button" onClick={handleClick} style={styles.link}>
+      {item.label}
+    </button>
+  );
+});
 
-      {/* LEFT - BRAND */}
-      <div style={styles.brand}>
-        Marketplace MVP
+// ======================================================
+// 🔐 AUTH BUTTON
+// ======================================================
+const AuthButton = memo(function AuthButton({ id, label, onClick, primary }) {
+  const handleClick = useCallback(() => {
+    onClick(id);
+  }, [onClick, id]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      style={primary ? styles.buttonPrimary : styles.button}
+    >
+      {label}
+    </button>
+  );
+});
+
+// ======================================================
+// 🚀 NAVBAR
+// ======================================================
+function Navbar() {
+  const handleAuthClick = useCallback((type) => {
+    console.log("🚀 AUTH:", type);
+  }, []);
+
+  const handleNavClick = useCallback((key) => {
+    console.log("🧭 NAV:", key);
+  }, []);
+
+  return (
+    <nav style={styles.navbar} aria-label="Primary navigation">
+      <div style={styles.container}>
+        
+        {/* BRAND */}
+        <div style={styles.brand}>
+          ⚡ JOBFAST<span style={styles.logoDot}>.RD</span>
+        </div>
+
+        {/* LINKS */}
+        <div style={styles.links}>
+          {NAV_ITEMS.map((item) => (
+            <NavItem
+              key={item.key}
+              item={item}
+              onNavigate={handleNavClick}
+            />
+          ))}
+        </div>
+
+        {/* ACTIONS */}
+        <div style={styles.actions}>
+          <AuthButton
+            id="login"
+            label="Login"
+            onClick={handleAuthClick}
+          />
+
+          <AuthButton
+            id="register"
+            label="Register"
+            primary
+            onClick={handleAuthClick}
+          />
+        </div>
       </div>
-
-      {/* CENTER - CATEGORIES */}
-      <div style={styles.links}>
-        <span style={styles.link}>👷 Construction</span>
-        <span style={styles.link}>🏢 Business</span>
-        <span style={styles.link}>🚀 Services</span>
-        <span style={styles.link}>📍 Nearby</span>
-      </div>
-
-      {/* RIGHT - USER ACTIONS */}
-      <div style={styles.actions}>
-        <button style={styles.button}>
-          Login
-        </button>
-
-        <button style={{ ...styles.button, background: "#22c55e" }}>
-          Register
-        </button>
-      </div>
-
-    </div>
+    </nav>
   );
 }
 
-// ===============================
-// 🎨 STYLES (MVP SAFE)
-// ===============================
-const styles = {
+// ======================================================
+// 🎨 STYLES
+// ======================================================
+const styles = Object.freeze({
   navbar: {
     width: "100%",
-    padding: "12px 16px",
-    background: "#0f172a",
-    color: "white",
+    position: "sticky",
+    top: 0,
+    zIndex: 1000,
+    padding: "14px 0",
+  },
+
+  container: {
     display: "flex",
-    justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px solid #1e293b",
-    fontFamily: "Arial",
+    justifyContent: "space-between",
+    gap: "20px",
+    padding: "0 16px",
   },
 
   brand: {
-    fontSize: "16px",
-    fontWeight: "bold",
-    color: "white",
+    fontSize: "20px",
+    fontWeight: "900",
+    color: "#fff",
+    whiteSpace: "nowrap",
+  },
+
+  logoDot: {
+    color: "#3b82f6",
   },
 
   links: {
     display: "flex",
-    gap: "15px",
-    fontSize: "13px",
-    color: "#cbd5e1",
+    flex: 1,
+    justifyContent: "center",
+    gap: "8px",
   },
 
   link: {
+    background: "transparent",
+    border: "none",
+    color: "var(--color-text-soft)",
+    fontSize: "13px",
+    fontWeight: "600",
     cursor: "pointer",
+    padding: "8px 12px",
+    borderRadius: "10px",
   },
 
   actions: {
@@ -75,14 +152,26 @@ const styles = {
   },
 
   button: {
-    padding: "6px 10px",
-    border: "none",
-    borderRadius: "6px",
-    background: "#3b82f6",
-    color: "white",
+    padding: "8px 14px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "10px",
+    background: "rgba(255,255,255,0.03)",
+    color: "#fff",
+    fontSize: "13px",
+    fontWeight: "600",
     cursor: "pointer",
-    fontSize: "12px",
   },
-};
 
-export default Navbar;
+  buttonPrimary: {
+    padding: "8px 14px",
+    border: "none",
+    borderRadius: "10px",
+    background: "linear-gradient(to right, #2563eb, #3b82f6)",
+    color: "#fff",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+});
+
+export default memo(Navbar);

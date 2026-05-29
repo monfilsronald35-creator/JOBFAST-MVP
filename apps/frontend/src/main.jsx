@@ -1,32 +1,39 @@
 import React from "react";
+
 import ReactDOM from "react-dom/client";
 
 import App from "./App.jsx";
 
 import "./styles/global.css";
 
-// ========================================
-// 🌍 JOBFAST — MVP ENTRY POINT (FINAL)
-// ========================================
+// ======================================================
+// 🌍 JOBFAST — ENTRY POINT
+// ======================================================
 
-// ✅ SAFE ROOT CHECK
-const rootElement = document.getElementById("root");
+// ======================================================
+// 🧠 ROOT ELEMENT
+// ======================================================
+
+const rootElement =
+  document.getElementById("root");
+
+// ======================================================
+// 🔐 ROOT SAFETY
+// ======================================================
 
 if (!rootElement) {
-  throw new Error("❌ Root element (#root) not found");
+  throw new Error(
+    "[JOBFAST]: Root element '#root' not found."
+  );
 }
 
-// ========================================
-// 🚀 CREATE ROOT
-// ========================================
+// ======================================================
+// 🚀 APP ROOT
+// ======================================================
 
-const root = ReactDOM.createRoot(rootElement);
-
-// ========================================
-// 🚀 RENDER APPLICATION
-// ========================================
-
-root.render(
+ReactDOM.createRoot(
+  rootElement
+).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

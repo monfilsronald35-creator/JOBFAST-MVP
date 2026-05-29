@@ -1,241 +1,518 @@
+import React, {
+  memo,
+  useCallback,
+  useState,
+} from "react";
 
-import React, { useState } from "react";
+// ======================================================
+// 🌍 JOBFAST — CREATE POST
+// ======================================================
 
-// ===============================
-// 🚀 CREATE POST (MVP SAFE)
-// ===============================
+// ======================================================
+// 📦 STATIC CONFIG
+// ======================================================
+
+const CATEGORY_OPTIONS = Object.freeze({
+  construction: [
+    "Mason",
+    "Carpenter",
+    "Electrician",
+    "Plumber",
+    "Welder",
+    "Engineer",
+    "Boss",
+    "Assistant",
+  ],
+
+  business: [
+    "Company",
+    "Restaurant",
+    "Hospital",
+    "Clinic",
+    "Hotel",
+    "Office",
+    "Lawyer",
+    "Mechanic",
+    "Tour Guide",
+    "Organization",
+  ],
+
+  service: [
+    "Chef Lakay",
+    "Plumber",
+    "Doctor",
+    "Nurse",
+    "Taxi",
+    "Delivery",
+    "Cleaning",
+    "Videographer",
+    "Designer",
+  ],
+});
+
+const TYPE_LABELS = Object.freeze({
+  construction:
+    "Select Construction Role",
+
+  business:
+    "Select Business Type",
+
+  service: "Select Service",
+});
+
+const INITIAL_FORM = Object.freeze({
+  title: "",
+  description: "",
+  type: "construction",
+  category: "",
+});
+
+// ======================================================
+// 🧠 HELPERS
+// ======================================================
+
+const normalize = (value = "") =>
+  value.trim();
+
+const isValidForm = ({
+  title,
+  description,
+  category,
+}) =>
+  normalize(title) &&
+  normalize(description) &&
+  normalize(category);
+
+const createPayload = (form) => ({
+  title: normalize(form.title),
+
+  description: normalize(
+    form.description
+  ),
+
+  type: form.type,
+
+  category: form.category,
+
+  createdAt:
+    new Date().toISOString(),
+});
+
+// ======================================================
+// 🎨 REUSABLE INPUT
+// ======================================================
+
+const Input = memo(function Input({
+  as = "input",
+  style,
+  ...props
+}) {
+  const Component = as;
+
+  return (
+    <Component
+      {...props}
+      style={{
+        ...(as === "textarea"
+          ? styles.textarea
+          : styles.input),
+
+        ...style,
+      }}
+    />
+  );
+});
+
+// ======================================================
+// 🎨 CATEGORY SELECT
+// ======================================================
+
+const CategorySelect = memo(
+  function CategorySelect({
+    type,
+    value,
+    onChange,
+  }) {
+    const options =
+      CATEGORY_OPTIONS[type];
+
+    return (
+      <select
+        name="category"
+        value={value}
+        onChange={onChange}
+        style={styles.input}
+      >
+        <option value="">
+          {TYPE_LABELS[type]}
+        </option>
+
+        {options.map((option) => (
+          <option
+            key={option}
+            value={option}
+          >
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  }
+);
+
+// ======================================================
+// 🚀 MAIN COMPONENT
+// ======================================================
 
 function CreatePost() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [form, setForm] =
+    useState(INITIAL_FORM);
 
-  // TYPE SYSTEM (Construction / Business / Service)
-  const [type, setType] = useState("construction");
+  const [loading, setLoading] =
+    useState(false);
 
-  // EXTRA CATEGORY
-  const [category, setCategory] = useState("");
+  // ======================================================
+  // 🔄 UPDATE FIELD
+  // ======================================================
 
-  const [loading, setLoading] = useState(false);
+  const updateField =
+    useCallback((name, value) => {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }, []);
 
-  // ===============================
-  // 📦 HANDLE CREATE POST (MOCK SAFE)
-  // ===============================
-  const handleCreate = async () => {
-    if (!title || !description) {
-      alert("Please fill all fields");
-      return;
-    }
+  // ======================================================
+  // 🔎 HANDLE CHANGE
+  // ======================================================
 
-    setLoading(true);
+  const handleChange =
+    useCallback(
+      ({ target }) => {
+        updateField(
+          target.name,
+          target.value
+        );
+      },
+      [updateField]
+    );
 
-    try {
-      // 🧠 MVP ONLY (no backend crash protection)
-      const newPost = {
-        title,
-        description,
-        type,
-        category,
-        createdAt: new Date().toISOString(),
-      };
+  // ======================================================
+  // 🔄 HANDLE TYPE
+  // ======================================================
 
-      console.log("POST CREATED:", newPost);
+  const handleTypeChange =
+    useCallback(({ target }) => {
+      setForm((prev) => ({
+        ...prev,
+        type: target.value,
+        category: "",
+      }));
+    }, []);
 
-      alert("Post created successfully (MVP)");
+  // ======================================================
+  // 🧠 VALIDATION
+  // ======================================================
 
-      // reset form
-      setTitle("");
-      setDescription("");
-      setCategory("");
+  const isDisabled =
+    loading || !isValidForm(form);
 
-    } catch (err) {
-      console.error(err);
-      alert("Error creating post");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ======================================================
+  // 📦 CREATE POST
+  // ======================================================
 
-  // ===============================
+  const handleCreate =
+    useCallback(async () => {
+      if (isDisabled) {
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const payload =
+          createPayload(form);
+
+        console.log(
+          "🚀 POST CREATED:",
+          payload
+        );
+
+        alert(
+          "Post created successfully"
+        );
+
+        setForm(INITIAL_FORM);
+      } catch (error) {
+        console.error(error);
+
+        alert(
+          "Error creating post"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }, [form, isDisabled]);
+
+  // ======================================================
   // 🎨 UI
-  // ===============================
+  // ======================================================
+
   return (
-    <div style={styles.container}>
+    <main style={styles.container}>
+      <section style={styles.card}>
+        {/* HEADER */}
 
-      <div style={styles.card}>
+        <header style={styles.header}>
+          <h1 style={styles.title}>
+            Create Post
+          </h1>
 
-        <h1 style={styles.title}>Create Post</h1>
+          <p style={styles.subtitle}>
+            Construction •
+            Businesses • Services
+            On Demand
+          </p>
+        </header>
 
-        <p style={styles.subtitle}>
-          Construction • Businesses • Services On Demand
-        </p>
+        {/* TYPE */}
 
-        {/* TYPE SELECT */}
         <select
+          name="type"
+          value={form.type}
+          onChange={
+            handleTypeChange
+          }
           style={styles.input}
-          value={type}
-          onChange={(e) => setType(e.target.value)}
         >
-          <option value="construction">👷 Construction</option>
-          <option value="business">🏢 Business</option>
-          <option value="service">🚀 Service</option>
+          <option value="construction">
+            👷 Construction
+          </option>
+
+          <option value="business">
+            🏢 Business
+          </option>
+
+          <option value="service">
+            🚀 Service
+          </option>
         </select>
 
-        {/* CATEGORY (DYNAMIC MVP) */}
-        {type === "construction" && (
-          <select
-            style={styles.input}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Select Construction Role</option>
-            <option>Mason</option>
-            <option>Carpenter</option>
-            <option>Electrician</option>
-            <option>Plumber</option>
-            <option>Welder</option>
-            <option>Engineer</option>
-            <option>Boss</option>
-            <option>Assistant</option>
-          </select>
-        )}
+        {/* CATEGORY */}
 
-        {type === "business" && (
-          <select
-            style={styles.input}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Select Business Type</option>
-            <option>Company</option>
-            <option>Restaurant</option>
-            <option>Hospital</option>
-            <option>Clinic</option>
-            <option>Hotel</option>
-            <option>Office</option>
-            <option>Lawyer</option>
-            <option>Mechanic</option>
-            <option>Tour Guide</option>
-            <option>Organization</option>
-          </select>
-        )}
-
-        {type === "service" && (
-          <select
-            style={styles.input}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Select Service</option>
-            <option>Chef Lakay</option>
-            <option>Plumber</option>
-            <option>Doctor</option>
-            <option>Nurse</option>
-            <option>Taxi</option>
-            <option>Delivery</option>
-            <option>Cleaning</option>
-            <option>Videographer</option>
-            <option>Designer</option>
-          </select>
-        )}
+        <CategorySelect
+          type={form.type}
+          value={form.category}
+          onChange={handleChange}
+        />
 
         {/* TITLE */}
-        <input
-          style={styles.input}
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+
+        <Input
+          type="text"
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          placeholder="Post title"
+          autoComplete="off"
         />
 
         {/* DESCRIPTION */}
-        <textarea
-          style={styles.textarea}
-          placeholder="Description..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+
+        <Input
+          as="textarea"
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Describe your job, business, or service..."
         />
 
         {/* BUTTON */}
+
         <button
-          style={styles.button}
+          type="button"
+          disabled={isDisabled}
           onClick={handleCreate}
-          disabled={loading}
+          style={{
+            ...styles.button,
+
+            opacity: isDisabled
+              ? 0.7
+              : 1,
+
+            cursor: isDisabled
+              ? "not-allowed"
+              : "pointer",
+          }}
         >
-          {loading ? "Creating..." : "Create Post"}
+          {loading
+            ? "Creating..."
+            : "Create Post"}
         </button>
 
-        <p style={styles.note}>
-          GPS + Nearby notifications will work when backend is connected
-        </p>
+        {/* NOTE */}
 
-      </div>
-    </div>
+        <p style={styles.note}>
+          GPS and nearby alerts
+          activate after backend
+          integration
+        </p>
+      </section>
+    </main>
   );
 }
 
-// ===============================
-// 🎨 STYLES (MVP SAFE)
-// ===============================
+// ======================================================
+// 🎨 DESIGN SYSTEM
+// ======================================================
+
+const glass = {
+  background:
+    "rgba(255,255,255,0.05)",
+
+  border:
+    "1px solid rgba(255,255,255,0.08)",
+
+  backdropFilter:
+    "blur(14px)",
+
+  WebkitBackdropFilter:
+    "blur(14px)",
+};
+
+const FIELD_STYLES = {
+  width: "100%",
+
+  padding: "14px 16px",
+
+  borderRadius: "14px",
+
+  border:
+    "1px solid rgba(255,255,255,0.08)",
+
+  outline: "none",
+
+  boxSizing: "border-box",
+
+  background:
+    "rgba(255,255,255,0.06)",
+
+  color: "#fff",
+
+  fontSize: "14px",
+};
+
+// ======================================================
+// 🎨 STYLES
+// ======================================================
+
 const styles = {
   container: {
-    padding: "20px",
-    fontFamily: "Arial",
-    background: "#0f172a",
     minHeight: "100vh",
-    color: "white",
+
+    padding: "24px",
+
+    display: "flex",
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    background:
+      "linear-gradient(to bottom, #020617, #0f172a)",
+
+    fontFamily:
+      "Inter, Arial, sans-serif",
   },
 
   card: {
-    maxWidth: "420px",
-    margin: "0 auto",
-    background: "#1e293b",
-    padding: "15px",
-    borderRadius: "10px",
+    ...glass,
+
+    width: "100%",
+
+    maxWidth: "480px",
+
+    padding: "24px",
+
+    borderRadius: "24px",
+  },
+
+  header: {
+    marginBottom: "20px",
   },
 
   title: {
-    fontSize: "24px",
-    marginBottom: "5px",
+    margin: 0,
+
+    color: "#fff",
+
+    fontSize: "30px",
+
+    fontWeight: "800",
   },
 
   subtitle: {
-    fontSize: "12px",
+    marginTop: "8px",
+
     color: "#94a3b8",
-    marginBottom: "15px",
+
+    fontSize: "13px",
+
+    lineHeight: 1.6,
   },
 
   input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "none",
+    ...FIELD_STYLES,
+
+    marginBottom: "14px",
   },
 
   textarea: {
-    width: "100%",
-    padding: "10px",
-    height: "80px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "none",
+    ...FIELD_STYLES,
+
+    minHeight: "120px",
+
+    resize: "vertical",
+
+    marginBottom: "16px",
+
+    lineHeight: 1.6,
   },
 
   button: {
     width: "100%",
-    padding: "10px",
-    background: "#3b82f6",
+
+    padding: "14px",
+
     border: "none",
-    borderRadius: "6px",
-    color: "white",
-    cursor: "pointer",
+
+    borderRadius: "14px",
+
+    background:
+      "linear-gradient(to right, #2563eb, #3b82f6)",
+
+    color: "#fff",
+
+    fontSize: "14px",
+
+    fontWeight: "700",
+
+    transition:
+      "all 0.2s ease",
   },
 
   note: {
-    fontSize: "11px",
-    color: "#94a3b8",
-    marginTop: "10px",
+    marginTop: "16px",
+
     textAlign: "center",
+
+    color: "#94a3b8",
+
+    fontSize: "11px",
+
+    lineHeight: 1.5,
   },
 };
 
-export default CreatePost;
+export default memo(CreatePost);

@@ -2,118 +2,76 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// ===============================
-// 🔄 LOADER ANIMATION
-// ===============================
-
-const loaderAnimation = `
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+// ======================================================
+// 🎨 LOADER
+// ======================================================
+function FullScreenLoader() {
+  return (
+    <div style={styles.center} role="status" aria-busy="true">
+      <div style={styles.spinner} />
+      <p style={styles.text}>Tanpri tann yon ti moman...</p>
+    </div>
+  );
 }
-`;
 
-// ===============================
+// ======================================================
 // 🚀 PROTECTED ROUTE
-// ===============================
+// ======================================================
+export default function ProtectedRoute({
+  children,
+  fallback,
+  redirectTo = "/login",
+  replace = true,
+}) {
+  const { isAuthenticated, loading } = useAuth();
 
-function ProtectedRoute({ children }) {
+  // ⏳ loading state
+  if (loading) return <FullScreenLoader />;
 
-  const { user, loading } = useAuth();
-
-  // ===============================
-  // ⏳ LOADING
-  // ===============================
-
-  if (loading) {
-    return (
-      <>
-        <style>{loaderAnimation}</style>
-
-        <div style={styles.center}>
-
-          <div style={styles.loader}></div>
-
-          <h2 style={styles.title}>
-            Loading...
-          </h2>
-
-          <p style={styles.text}>
-            Please wait while we verify your session.
-          </p>
-
-        </div>
-      </>
+  // 🚫 unauthorized access
+  if (!isAuthenticated) {
+    return fallback ?? (
+      <Navigate to={redirectTo} replace={replace} />
     );
   }
 
-  // ===============================
-  // 🚫 BLOCK ACCESS
-  // ===============================
-
-  if (!user) {
-    return <Navigate to="/" replace />;
-  }
-
-  // ===============================
-  // ✅ ACCESS GRANTED
-  // ===============================
-
-  return children;
+  // ✅ authorized access
+  return children ?? null;
 }
 
-// ===============================
+// ======================================================
 // 🎨 STYLES
-// ===============================
-
-const styles = {
+// ======================================================
+const styles = Object.freeze({
   center: {
     width: "100%",
-    minHeight: "100vh",
-
+    height: "100dvh",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-
+    background: "linear-gradient(to bottom, #020617, #0f172a)",
+    color: "#ffffff",
+    fontFamily: "Inter, Arial, sans-serif",
+    textAlign: "center",
     padding: "20px",
-
-    background: "#0f172a",
-    color: "white",
-
-    fontFamily: "Arial, sans-serif",
-    textAlign: "center"
   },
 
-  loader: {
-    width: "55px",
-    height: "55px",
-
-    marginBottom: "20px",
-
-    border: "5px solid #1e293b",
-    borderTop: "5px solid #3b82f6",
+  spinner: {
+    width: "40px",
+    height: "40px",
+    border: "3px solid rgba(59, 130, 246, 0.15)",
+    borderTopColor: "#3b82f6",
     borderRadius: "50%",
-
-    animation: "spin 1s linear infinite"
-  },
-
-  title: {
-    fontSize: "24px",
-    marginBottom: "8px"
+    animation: "jobfast-spin 0.8s linear infinite",
+    marginBottom: "16px",
   },
 
   text: {
-    maxWidth: "300px",
-
+    margin: 0,
+    fontSize: "14px",
+    fontWeight: "500",
     color: "#94a3b8",
-    fontSize: "14px"
-  }
-};
-
-export default ProtectedRoute;
+    letterSpacing: "0.2px",
+  },
+});
