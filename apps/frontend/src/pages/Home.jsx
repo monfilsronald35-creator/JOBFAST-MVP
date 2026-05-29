@@ -1,428 +1,383 @@
+// ======================================================
+// 🌍 src/pages/Home.jsx
+// 🚀 JOBFAST PREMIUM MULTI-LANGUAGE MOBILE LANDING
+// ======================================================
 
-import React from "react";
+import React, {
+  memo,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
+
 import { useNavigate } from "react-router-dom";
 
 // ======================================================
-// 🚀 JOBFAST HOME PAGE (AIRBNB / UBER POLISH FINAL)
+// 🌐 TRANSLATIONS
+// ======================================================
+
+const translations = Object.freeze({
+  ht: {
+    tagline: "Travay • Sèvis • Biznis • GPS",
+    badge: "🌍 GLOBAL MARKETPLACE",
+    title: "Bienvenue sou JOBFAST",
+    description:
+      "Konekte ak travay, sèvis, biznis ak opòtinite bò kote ou an tan reyèl.",
+    register: "Kreye Kont",
+    login: "Konekte",
+    features: [
+      {
+        icon: "👷",
+        title: "Travay",
+        desc: "Jwenn mason, bòs, elektrisyen ak plis ankò.",
+      },
+      {
+        icon: "🏢",
+        title: "Biznis",
+        desc: "Dekouvri biznis ak sèvis bò kote ou.",
+      },
+      {
+        icon: "🚀",
+        title: "Sèvis",
+        desc: "Livrezon, taxi, enfimyè, chef ak plis.",
+      },
+      {
+        icon: "📍",
+        title: "GPS",
+        desc: "Rechèch nearby ak distans an tan reyèl.",
+      },
+    ],
+  },
+
+  en: {
+    tagline: "Jobs • Services • Business • GPS",
+    badge: "🌍 GLOBAL MARKETPLACE",
+    title: "Welcome to JOBFAST",
+    description:
+      "Connect with jobs, services, businesses and nearby opportunities in real time.",
+    register: "Create Account",
+    login: "Login",
+    features: [
+      {
+        icon: "👷",
+        title: "Jobs",
+        desc: "Find masons, electricians, workers and more.",
+      },
+      {
+        icon: "🏢",
+        title: "Business",
+        desc: "Discover businesses and services nearby.",
+      },
+      {
+        icon: "🚀",
+        title: "Services",
+        desc: "Delivery, taxi, nurses, chefs and more.",
+      },
+      {
+        icon: "📍",
+        title: "GPS",
+        desc: "Nearby search and real-time distance.",
+      },
+    ],
+  },
+
+  es: {
+    tagline: "Trabajo • Servicios • Negocios • GPS",
+    badge: "🌍 MERCADO GLOBAL",
+    title: "Bienvenido a JOBFAST",
+    description:
+      "Conéctate con trabajos, servicios, negocios y oportunidades cercanas en tiempo real.",
+    register: "Crear Cuenta",
+    login: "Iniciar Sesión",
+    features: [
+      {
+        icon: "👷",
+        title: "Trabajo",
+        desc: "Encuentra albañiles, electricistas y más.",
+      },
+      {
+        icon: "🏢",
+        title: "Negocios",
+        desc: "Descubre negocios y servicios cercanos.",
+      },
+      {
+        icon: "🚀",
+        title: "Servicios",
+        desc: "Taxi, delivery, enfermeras y más.",
+      },
+      {
+        icon: "📍",
+        title: "GPS",
+        desc: "Búsqueda cercana y distancia en tiempo real.",
+      },
+    ],
+  },
+
+  fr: {
+    tagline: "Travail • Services • Entreprises • GPS",
+    badge: "🌍 MARKETPLACE GLOBAL",
+    title: "Bienvenue sur JOBFAST",
+    description:
+      "Connectez-vous aux emplois, services et opportunités proches de vous en temps réel.",
+    register: "Créer un compte",
+    login: "Connexion",
+    features: [
+      {
+        icon: "👷",
+        title: "Travail",
+        desc: "Trouvez maçons, électriciens et plus.",
+      },
+      {
+        icon: "🏢",
+        title: "Entreprises",
+        desc: "Découvrez des entreprises proches.",
+      },
+      {
+        icon: "🚀",
+        title: "Services",
+        desc: "Livraison, taxi, infirmiers et plus.",
+      },
+      {
+        icon: "📍",
+        title: "GPS",
+        desc: "Recherche nearby en temps réel.",
+      },
+    ],
+  },
+});
+
+// ======================================================
+// 🌐 DEFAULT LANGUAGE (SSR SAFE)
+// ======================================================
+
+const getDefaultLanguage = () => {
+  try {
+    if (typeof navigator === "undefined") return "ht";
+
+    const lang = navigator.language?.slice(0, 2)?.toLowerCase();
+
+    return translations[lang] ? lang : "ht";
+  } catch {
+    return "ht";
+  }
+};
+
+// ======================================================
+// 🔒 SAFE LOCAL STORAGE
+// ======================================================
+
+const getSavedLanguage = () => {
+  try {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("jobfast-lang");
+  } catch {
+    return null;
+  }
+};
+
+// ======================================================
+// 🚀 COMPONENT
 // ======================================================
 
 function Home() {
   const navigate = useNavigate();
 
-  // 👉 (optional future auth hook)
-  const user = null;
+  // 🌐 STATE
+  const [lang, setLang] = useState(() => {
+    return getSavedLanguage() || getDefaultLanguage();
+  });
 
-  const cards = [
-    {
-      icon: "👷",
-      title: "Construction Network",
-      description:
-        "Boss • Mason • Carpenter • Electrician • Plumber • Engineer",
-      note: "Find skilled construction workers nearby instantly.",
-      button: "Find Workers",
-      route: "/search",
-    },
-    {
-      icon: "🏢",
-      title: "Business Directory",
-      description:
-        "Restaurant • Hospital • Hotel • Lawyer • Mechanic • Company",
-      note: "Explore trusted businesses near your location.",
-      button: "Explore Businesses",
-      route: "/search",
-    },
-    {
-      icon: "🚀",
-      title: "Services On Demand",
-      description:
-        "Chef • Taxi • Nurse • Delivery • Cleaning • Designer",
-      note: "Book professional services in real-time.",
-      button: "Request Service",
-      route: "/create-post",
-    },
-    {
-      icon: "📍",
-      title: "Nearby GPS Search",
-      description:
-        "GPS • Nearby Discovery • Distance Search • Smart Matching",
-      note: "Instantly discover nearby workers and services.",
-      button: "Find Nearby",
-      route: "/search",
-    },
-  ];
+  // 🧠 SAFE TRANSLATIONS
+  const t = useMemo(() => {
+    return translations[lang] || translations.ht;
+  }, [lang]);
+
+  // 🌐 HTML LANG UPDATE
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
+  // 🌐 CHANGE LANGUAGE
+  const changeLanguage = (language) => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("jobfast-lang", language);
+      }
+    } catch {}
+
+    setLang(language);
+  };
+
+  // 🧠 FEATURES MEMO
+  const featureCards = useMemo(() => {
+    return t.features.map((feature) => (
+      <div key={feature.title} style={styles.featureCard}>
+        <span style={styles.icon}>{feature.icon}</span>
+        <h3 style={styles.featureTitle}>{feature.title}</h3>
+        <p style={styles.featureDescription}>{feature.desc}</p>
+      </div>
+    ));
+  }, [lang]);
 
   return (
-    <div style={styles.page}>
+    <main style={styles.page}>
+      <section style={styles.card}>
 
-      {/* ================= NAVBAR ================= */}
-      <header style={styles.navbar}>
-        <div style={styles.logo}>🚀 JOBFAST</div>
+        {/* LANGUAGE SWITCHER */}
+        <div style={styles.languageBar}>
 
-        <div style={styles.navActions}>
-          <button style={styles.loginBtn} onClick={() => navigate("/login")}>
-            Login
+          <button
+            type="button"
+            aria-label="Kreyòl"
+            aria-pressed={lang === "ht"}
+            style={{
+              ...styles.langButton,
+              ...(lang === "ht" && styles.langButtonActive),
+            }}
+            onClick={() => changeLanguage("ht")}
+          >
+            🇭🇹
           </button>
 
           <button
-            style={styles.registerBtn}
-            onClick={() => navigate("/register")}
+            type="button"
+            aria-label="English"
+            aria-pressed={lang === "en"}
+            style={{
+              ...styles.langButton,
+              ...(lang === "en" && styles.langButtonActive),
+            }}
+            onClick={() => changeLanguage("en")}
           >
-            Create Account
+            🇺🇸
+          </button>
+
+          <button
+            type="button"
+            aria-label="Español"
+            aria-pressed={lang === "es"}
+            style={{
+              ...styles.langButton,
+              ...(lang === "es" && styles.langButtonActive),
+            }}
+            onClick={() => changeLanguage("es")}
+          >
+            🇪🇸
+          </button>
+
+          <button
+            type="button"
+            aria-label="Français"
+            aria-pressed={lang === "fr"}
+            style={{
+              ...styles.langButton,
+              ...(lang === "fr" && styles.langButtonActive),
+            }}
+            onClick={() => changeLanguage("fr")}
+          >
+            🇫🇷
+          </button>
+
+        </div>
+
+        {/* HERO */}
+        <h1 style={styles.title}>{t.title}</h1>
+        <p style={styles.description}>{t.description}</p>
+
+        {/* ACTIONS */}
+        <div style={styles.actions}>
+          <button type="button" onClick={() => navigate("/register")}>
+            {t.register}
+          </button>
+
+          <button type="button" onClick={() => navigate("/login")}>
+            {t.login}
           </button>
         </div>
-      </header>
 
-      {/* ================= HERO ================= */}
-      <section style={styles.hero}>
-        <div style={styles.heroGlow}></div>
+        {/* FEATURES */}
+        <div style={styles.features}>{featureCards}</div>
 
-        <div style={styles.heroContent}>
-          <div style={styles.badge}>
-            🌍 GLOBAL MARKETPLACE PLATFORM
-          </div>
-
-          <h1 style={styles.title}>
-            Connect Workers, Businesses & Services
-          </h1>
-
-          <p style={styles.subtitle}>
-            Construction • Services • Businesses • GPS Discovery
-          </p>
-
-          <p style={styles.description}>
-            JOBFAST helps people find workers, businesses, jobs and services nearby in real-time.
-          </p>
-
-          <div style={styles.actions}>
-            <button
-              style={styles.primaryButton}
-              onClick={() =>
-                navigate(user ? "/search" : "/register")
-              }
-            >
-              Start Free
-            </button>
-
-            <button
-              style={styles.secondaryButton}
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-          </div>
-        </div>
       </section>
-
-      {/* ================= STATS ================= */}
-      <section style={styles.statsSection}>
-        {[
-          ["10K+", "Workers"],
-          ["5K+", "Businesses"],
-          ["50+", "Services"],
-          ["24/7", "Availability"],
-        ].map(([number, text]) => (
-          <div key={text} style={styles.statCard}>
-            <h2 style={styles.statNumber}>{number}</h2>
-            <p style={styles.statText}>{text}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* ================= FEATURES ================= */}
-      <section style={styles.section}>
-        <h2 style={styles.sectionTitle}>Marketplace Features</h2>
-
-        <div style={styles.grid}>
-          {cards.map((card, index) => (
-            <div
-              key={index}
-              style={styles.card}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-8px)";
-                e.currentTarget.style.boxShadow =
-                  "0 20px 40px rgba(0,0,0,0.35)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <div style={styles.icon}>{card.icon}</div>
-
-              <h3 style={styles.cardTitle}>{card.title}</h3>
-
-              <p style={styles.cardDescription}>{card.description}</p>
-
-              <p style={styles.note}>{card.note}</p>
-
-              <button
-                style={styles.cardButton}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = "0.9";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = "1";
-                }}
-                onClick={() => navigate(card.route)}
-              >
-                {card.button}
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ================= FOOTER ================= */}
-      <footer style={styles.footer}>
-        © 2026 JOBFAST. All rights reserved.
-      </footer>
-    </div>
+    </main>
   );
 }
 
 // ======================================================
-// 🎨 STYLES (AIRBNB / UBER GLASS SYSTEM)
+// 🎨 MINIMAL STYLES (kept simple here)
 // ======================================================
-
-const glass = {
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  backdropFilter: "blur(12px)",
-  transition: "all 0.35s ease",
-  willChange: "transform",
-};
 
 const styles = {
   page: {
     minHeight: "100vh",
-    overflowX: "hidden",
-    background: "linear-gradient(to bottom, #020617, #0f172a)",
-    color: "#fff",
-    fontFamily: "Inter, Arial, sans-serif",
-  },
-
-  // NAVBAR (FINAL AIRBNB STYLE)
-  navbar: {
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
-    padding: "18px 24px",
-    backdropFilter: "blur(18px)",
-    background: "rgba(2,6,23,0.85)",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-  },
-
-  logo: {
-    fontWeight: "800",
-    fontSize: "22px",
-  },
-
-  navActions: {
-    display: "flex",
-    gap: "12px",
-  },
-
-  loginBtn: {
-    padding: "10px 18px",
-    borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    cursor: "pointer",
-    background: "transparent",
+    background: "#0f172a",
     color: "#fff",
+    padding: 20,
   },
 
-  registerBtn: {
-    padding: "10px 18px",
-    borderRadius: "10px",
+  card: {
+    width: "100%",
+    maxWidth: 420,
+    textAlign: "center",
+  },
+
+  languageBar: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 20,
+  },
+
+  langButton: {
+    padding: 8,
+    borderRadius: 10,
+    background: "#1e293b",
     border: "none",
     cursor: "pointer",
-    background: "linear-gradient(to right, #2563eb, #3b82f6)",
-    color: "#fff",
-    fontWeight: "700",
   },
 
-  // HERO (MOBILE PERFECT)
-  hero: {
-    position: "relative",
-    textAlign: "center",
-    padding: "120px 20px 90px",
-  },
-
-  heroGlow: {
-    position: "absolute",
-    inset: 0,
-    background:
-      "radial-gradient(circle at top, rgba(59,130,246,0.25), transparent 60%)",
-  },
-
-  heroContent: {
-    position: "relative",
-    zIndex: 2,
-    maxWidth: "900px",
-    margin: "0 auto",
-  },
-
-  badge: {
-    display: "inline-block",
-    padding: "8px 18px",
-    borderRadius: "999px",
-    background: "rgba(59,130,246,0.15)",
-    border: "1px solid rgba(59,130,246,0.35)",
-    color: "#93c5fd",
-    fontSize: "13px",
-    marginBottom: "25px",
+  langButtonActive: {
+    background: "#3b82f6",
   },
 
   title: {
-    fontSize: "clamp(42px, 8vw, 76px)",
-    fontWeight: "900",
-    lineHeight: 1.1,
-    marginBottom: "20px",
-  },
-
-  subtitle: {
-    fontSize: "clamp(18px, 3vw, 22px)",
-    color: "#cbd5e1",
-    marginBottom: "20px",
+    fontSize: 28,
+    fontWeight: "bold",
   },
 
   description: {
-    fontSize: "clamp(15px, 2vw, 17px)",
-    maxWidth: "700px",
-    margin: "0 auto",
-    color: "#94a3b8",
-    lineHeight: 1.8,
+    opacity: 0.8,
+    marginBottom: 20,
   },
 
   actions: {
     display: "flex",
-    justifyContent: "center",
-    gap: "16px",
-    marginTop: "40px",
-    flexWrap: "wrap",
+    flexDirection: "column",
+    gap: 10,
+    marginBottom: 20,
   },
 
-  primaryButton: {
-    padding: "14px 30px",
-    borderRadius: "14px",
-    border: "none",
-    background: "linear-gradient(to right, #2563eb, #3b82f6)",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-
-  secondaryButton: {
-    padding: "14px 30px",
-    borderRadius: "14px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    background: "rgba(255,255,255,0.05)",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-
-  // STATS
-  statsSection: {
+  features: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "20px",
-    maxWidth: "1100px",
-    margin: "0 auto 90px",
-    padding: "0 20px",
+    gap: 10,
   },
 
-  statCard: {
-    ...glass,
-    borderRadius: "20px",
-    padding: "25px",
-    textAlign: "center",
+  featureCard: {
+    background: "#1e293b",
+    padding: 12,
+    borderRadius: 12,
   },
 
-  statNumber: {
-    fontSize: "34px",
-    color: "#60a5fa",
-  },
+  icon: { fontSize: 22 },
 
-  statText: {
-    color: "#cbd5e1",
-  },
+  featureTitle: { fontWeight: "bold" },
 
-  // FEATURES
-  section: {
-    paddingBottom: "60px",
-  },
-
-  sectionTitle: {
-    textAlign: "center",
-    fontSize: "36px",
-    fontWeight: "800",
-    marginBottom: "45px",
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))",
-    gap: "24px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    padding: "0 20px",
-  },
-
-  card: {
-    ...glass,
-    borderRadius: "24px",
-    padding: "28px",
-    cursor: "pointer",
-    transition: "all 0.35s ease",
-    willChange: "transform",
-  },
-
-  icon: {
-    fontSize: "42px",
-    marginBottom: "18px",
-  },
-
-  cardTitle: {
-    fontSize: "22px",
-    marginBottom: "14px",
-    fontWeight: "700",
-  },
-
-  cardDescription: {
-    color: "#cbd5e1",
-    lineHeight: 1.7,
-    marginBottom: "12px",
-  },
-
-  note: {
-    color: "#94a3b8",
-    fontSize: "14px",
-    marginBottom: "22px",
-  },
-
-  cardButton: {
-    width: "100%",
-    padding: "13px",
-    borderRadius: "12px",
-    border: "none",
-    background: "linear-gradient(to right, #2563eb, #3b82f6)",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-    transition: "0.3s",
-  },
-
-  // FOOTER
-  footer: {
-    textAlign: "center",
-    padding: "40px 20px",
-    color: "#64748b",
-    fontSize: "14px",
-  },
+  featureDescription: { fontSize: 12, opacity: 0.8 },
 };
 
-export default Home;
+export default memo(Home);

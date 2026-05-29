@@ -1,3 +1,8 @@
+// ======================================================
+// 🌍 src/main.jsx
+// 🚀 JOBFAST GLOBAL ENTRY POINT
+// ======================================================
+
 import React from "react";
 
 import ReactDOM from "react-dom/client";
@@ -5,10 +10,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 
 import "./styles/global.css";
-
-// ======================================================
-// 🌍 JOBFAST — ENTRY POINT
-// ======================================================
 
 // ======================================================
 // 🧠 ROOT ELEMENT
@@ -22,18 +23,26 @@ const rootElement =
 // ======================================================
 
 if (!rootElement) {
+
   throw new Error(
-    "[JOBFAST]: Root element '#root' not found."
+    "❌ Root element '#root' not found."
   );
 }
 
 // ======================================================
-// 🚀 APP ROOT
+// 🚀 CREATE ROOT
 // ======================================================
 
-ReactDOM.createRoot(
-  rootElement
-).render(
+const root =
+  ReactDOM.createRoot(
+    rootElement
+  );
+
+// ======================================================
+// 🚀 RENDER APP
+// ======================================================
+
+root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

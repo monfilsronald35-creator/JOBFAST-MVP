@@ -1,12 +1,17 @@
+// ======================================================
+// 🌍 src/pages/CreatePost.jsx
+// 🚀 JOBFAST GLOBAL — CREATE POST
+// ======================================================
+
 import React, {
   memo,
   useCallback,
+  useEffect,
+  useMemo,
   useState,
 } from "react";
 
-// ======================================================
-// 🌍 JOBFAST — CREATE POST
-// ======================================================
+import API from "../api/axios";
 
 // ======================================================
 // 📦 STATIC CONFIG
@@ -22,6 +27,12 @@ const CATEGORY_OPTIONS = Object.freeze({
     "Engineer",
     "Boss",
     "Assistant",
+    "Painter",
+    "Foreman",
+    "Architect",
+    "Steel Fixer",
+    "Concrete Worker",
+    "Tile Installer",
   ],
 
   business: [
@@ -47,6 +58,8 @@ const CATEGORY_OPTIONS = Object.freeze({
     "Cleaning",
     "Videographer",
     "Designer",
+    "Developer",
+    "Photographer",
   ],
 });
 
@@ -57,7 +70,8 @@ const TYPE_LABELS = Object.freeze({
   business:
     "Select Business Type",
 
-  service: "Select Service",
+  service:
+    "Select Service",
 });
 
 const INITIAL_FORM = Object.freeze({
@@ -65,6 +79,9 @@ const INITIAL_FORM = Object.freeze({
   description: "",
   type: "construction",
   category: "",
+  city: "",
+  country: "",
+  phone: "",
 });
 
 // ======================================================
@@ -74,25 +91,45 @@ const INITIAL_FORM = Object.freeze({
 const normalize = (value = "") =>
   value.trim();
 
+const isValidPhone = (phone = "") =>
+  /^[0-9+\-\s()]{6,20}$/.test(
+    normalize(phone)
+  );
+
 const isValidForm = ({
   title,
   description,
   category,
+  city,
+  phone,
 }) =>
-  normalize(title) &&
-  normalize(description) &&
-  normalize(category);
+  normalize(title).length >= 3 &&
+  normalize(description).length >= 10 &&
+  normalize(category) &&
+  normalize(city) &&
+  (!phone || isValidPhone(phone));
 
 const createPayload = (form) => ({
-  title: normalize(form.title),
+  title:
+    normalize(form.title),
 
-  description: normalize(
-    form.description
-  ),
+  description:
+    normalize(form.description),
 
-  type: form.type,
+  type:
+    normalize(form.type),
 
-  category: form.category,
+  category:
+    normalize(form.category),
+
+  city:
+    normalize(form.city),
+
+  country:
+    normalize(form.country),
+
+  phone:
+    normalize(form.phone),
 
   createdAt:
     new Date().toISOString(),
@@ -107,6 +144,7 @@ const Input = memo(function Input({
   style,
   ...props
 }) {
+
   const Component = as;
 
   return (
@@ -133,8 +171,9 @@ const CategorySelect = memo(
     value,
     onChange,
   }) {
+
     const options =
-      CATEGORY_OPTIONS[type];
+      CATEGORY_OPTIONS[type] || [];
 
     return (
       <select
@@ -142,6 +181,7 @@ const CategorySelect = memo(
         value={value}
         onChange={onChange}
         style={styles.input}
+        aria-label="Category"
       >
         <option value="">
           {TYPE_LABELS[type]}
@@ -165,11 +205,45 @@ const CategorySelect = memo(
 // ======================================================
 
 function CreatePost() {
+
   const [form, setForm] =
     useState(INITIAL_FORM);
 
   const [loading, setLoading] =
     useState(false);
+
+  const [success, setSuccess] =
+    useState("");
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  // ======================================================
+  // ⏱ AUTO CLEAR ALERTS
+  // ======================================================
+
+  useEffect(() => {
+
+    if (
+      !success &&
+      !errorMessage
+    ) {
+      return;
+    }
+
+    const timer =
+      setTimeout(() => {
+
+        setSuccess("");
+
+        setErrorMessage("");
+
+      }, 4000);
+
+    return () =>
+      clearTimeout(timer);
+
+  }, [success, errorMessage]);
 
   // ======================================================
   // 🔄 UPDATE FIELD
@@ -177,23 +251,27 @@ function CreatePost() {
 
   const updateField =
     useCallback((name, value) => {
+
       setForm((prev) => ({
         ...prev,
         [name]: value,
       }));
+
     }, []);
 
   // ======================================================
-  // 🔎 HANDLE CHANGE
+  // 🔄 HANDLE CHANGE
   // ======================================================
 
   const handleChange =
     useCallback(
       ({ target }) => {
+
         updateField(
           target.name,
           target.value
         );
+
       },
       [updateField]
     );
@@ -204,19 +282,26 @@ function CreatePost() {
 
   const handleTypeChange =
     useCallback(({ target }) => {
+
       setForm((prev) => ({
         ...prev,
         type: target.value,
         category: "",
       }));
+
     }, []);
 
   // ======================================================
   // 🧠 VALIDATION
   // ======================================================
 
-  const isDisabled =
-    loading || !isValidForm(form);
+  const isDisabled = useMemo(
+    () =>
+      loading ||
+      !isValidForm(form),
+
+    [form, loading]
+  );
 
   // ======================================================
   // 📦 CREATE POST
@@ -224,36 +309,79 @@ function CreatePost() {
 
   const handleCreate =
     useCallback(async () => {
+
       if (isDisabled) {
         return;
       }
 
       setLoading(true);
 
+      setErrorMessage("");
+
+      setSuccess("");
+
       try {
+
         const payload =
           createPayload(form);
 
+        const response =
+          await API.post(
+            "/posts/create",
+            payload
+          );
+
         console.log(
-          "🚀 POST CREATED:",
-          payload
+          "✅ POST CREATED:",
+          response?.data
         );
 
-        alert(
+        setSuccess(
           "Post created successfully"
         );
 
-        setForm(INITIAL_FORM);
+        setForm({
+          ...INITIAL_FORM,
+          type: form.type,
+        });
+
       } catch (error) {
+
         console.error(error);
 
-        alert(
+        setErrorMessage(
+          error?.response?.data?.message ||
+          error?.message ||
           "Error creating post"
         );
+
       } finally {
+
         setLoading(false);
       }
+
     }, [form, isDisabled]);
+
+  // ======================================================
+  // ⌨️ ENTER SUBMIT
+  // ======================================================
+
+  const handleKeyDown =
+    useCallback(
+      (event) => {
+
+        if (
+          event.key === "Enter" &&
+          !loading &&
+          event.target.tagName !==
+            "TEXTAREA"
+        ) {
+          handleCreate();
+        }
+
+      },
+      [handleCreate, loading]
+    );
 
   // ======================================================
   // 🎨 UI
@@ -262,7 +390,6 @@ function CreatePost() {
   return (
     <main style={styles.container}>
       <section style={styles.card}>
-        {/* HEADER */}
 
         <header style={styles.header}>
           <h1 style={styles.title}>
@@ -271,20 +398,17 @@ function CreatePost() {
 
           <p style={styles.subtitle}>
             Construction •
-            Businesses • Services
-            On Demand
+            Businesses •
+            Services On Demand
           </p>
         </header>
-
-        {/* TYPE */}
 
         <select
           name="type"
           value={form.type}
-          onChange={
-            handleTypeChange
-          }
+          onChange={handleTypeChange}
           style={styles.input}
+          aria-label="Post Type"
         >
           <option value="construction">
             👷 Construction
@@ -299,51 +423,96 @@ function CreatePost() {
           </option>
         </select>
 
-        {/* CATEGORY */}
-
         <CategorySelect
           type={form.type}
           value={form.category}
           onChange={handleChange}
         />
 
-        {/* TITLE */}
-
         <Input
           type="text"
           name="title"
           value={form.title}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder="Post title"
           autoComplete="off"
+          maxLength={120}
+          aria-label="Post title"
         />
-
-        {/* DESCRIPTION */}
 
         <Input
           as="textarea"
           name="description"
           value={form.description}
           onChange={handleChange}
-          placeholder="Describe your job, business, or service..."
+          placeholder="Describe your post..."
+          maxLength={1000}
+          aria-label="Post description"
         />
 
-        {/* BUTTON */}
+        <Input
+          type="text"
+          name="city"
+          value={form.city}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="City"
+          maxLength={60}
+          aria-label="City"
+        />
+
+        <Input
+          type="text"
+          name="country"
+          value={form.country}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Country"
+          maxLength={60}
+          aria-label="Country"
+        />
+
+        <Input
+          type="tel"
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Phone Number"
+          maxLength={20}
+          aria-label="Phone Number"
+        />
+
+        {errorMessage && (
+          <div style={styles.error}>
+            {errorMessage}
+          </div>
+        )}
+
+        {success && (
+          <div style={styles.success}>
+            {success}
+          </div>
+        )}
 
         <button
           type="button"
           disabled={isDisabled}
+          aria-busy={loading}
           onClick={handleCreate}
           style={{
             ...styles.button,
 
-            opacity: isDisabled
-              ? 0.7
-              : 1,
+            opacity:
+              isDisabled
+                ? 0.7
+                : 1,
 
-            cursor: isDisabled
-              ? "not-allowed"
-              : "pointer",
+            cursor:
+              isDisabled
+                ? "not-allowed"
+                : "pointer",
           }}
         >
           {loading
@@ -351,13 +520,12 @@ function CreatePost() {
             : "Create Post"}
         </button>
 
-        {/* NOTE */}
-
         <p style={styles.note}>
           GPS and nearby alerts
           activate after backend
           integration
         </p>
+
       </section>
     </main>
   );
@@ -431,11 +599,16 @@ const styles = {
 
     width: "100%",
 
-    maxWidth: "480px",
+    maxWidth: "520px",
 
     padding: "24px",
 
     borderRadius: "24px",
+
+    overflow: "hidden",
+
+    boxShadow:
+      "0 20px 60px rgba(0,0,0,0.45)",
   },
 
   header: {
@@ -500,6 +673,39 @@ const styles = {
 
     transition:
       "all 0.2s ease",
+
+    transform:
+      "translateZ(0)",
+  },
+
+  error: {
+    marginBottom: "14px",
+
+    padding: "12px",
+
+    borderRadius: "12px",
+
+    background:
+      "rgba(239,68,68,0.15)",
+
+    color: "#fca5a5",
+
+    fontSize: "13px",
+  },
+
+  success: {
+    marginBottom: "14px",
+
+    padding: "12px",
+
+    borderRadius: "12px",
+
+    background:
+      "rgba(34,197,94,0.15)",
+
+    color: "#86efac",
+
+    fontSize: "13px",
   },
 
   note: {

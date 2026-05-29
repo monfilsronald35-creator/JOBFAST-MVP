@@ -1,185 +1,424 @@
+// ======================================================
+// 🌍 src/pages/Register.jsx
+// 🚀 JOBFAST GLOBAL — REGISTER
+// ======================================================
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
 import API from "../api/axios";
 
-// ===============================
-// 🚀 REGISTER PAGE (GLOBAL FINAL)
-// ===============================
+// ======================================================
+// 📦 STATIC CONFIG
+// ======================================================
+
+const CONSTRUCTION_ROLES = Object.freeze([
+  "Mason",
+  "Carpenter",
+  "Electrician",
+  "Plumber",
+  "Painter",
+  "Welder",
+  "Engineer",
+  "Assistant",
+  "Boss",
+]);
+
+const BUSINESS_TYPES = Object.freeze([
+  "Company",
+  "Restaurant",
+  "Hospital",
+  "Clinic",
+  "Hotel",
+  "Office",
+  "Lawyer",
+  "Mechanic",
+  "Tour Guide",
+  "Organization",
+]);
+
+// ======================================================
+// 🧠 HELPERS
+// ======================================================
+
+const normalize = (value = "") =>
+  value.trim();
+
+const isValidForm = ({
+  fullName,
+  emailOrPhone,
+  password,
+}) =>
+  normalize(fullName).length >= 3 &&
+  normalize(emailOrPhone).length >= 3 &&
+  normalize(password).length >= 6;
+
+// ======================================================
+// 🚀 COMPONENT
+// ======================================================
 
 function Register() {
-  const [fullName, setFullName] = useState("");
-  const [emailOrPhone, setEmailOrPhone] = useState("");
-  const [password, setPassword] = useState("");
 
-  const [accountType, setAccountType] =
-    useState("worker");
+  const navigate =
+    useNavigate();
 
-  const [constructionRole, setConstructionRole] =
+  const [form, setForm] =
+    useState({
+      fullName: "",
+      emailOrPhone: "",
+      password: "",
+      accountType: "worker",
+      constructionRole: "",
+      businessType: "",
+    });
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [errorMessage, setErrorMessage] =
     useState("");
 
-  const [businessType, setBusinessType] =
+  const [success, setSuccess] =
     useState("");
 
-  const [loading, setLoading] = useState(false);
+  // ======================================================
+  // ⏱ AUTO CLEAR ALERTS
+  // ======================================================
 
-  // ===============================
-  // 🔐 REGISTER
-  // ===============================
+  useEffect(() => {
 
-  const handleRegister = async () => {
     if (
-      !fullName.trim() ||
-      !emailOrPhone.trim() ||
-      !password.trim()
+      !errorMessage &&
+      !success
     ) {
-      alert("Please fill all required fields");
       return;
     }
 
+    const timer =
+      setTimeout(() => {
+
+        setErrorMessage("");
+
+        setSuccess("");
+
+      }, 4000);
+
+    return () =>
+      clearTimeout(timer);
+
+  }, [errorMessage, success]);
+
+  // ======================================================
+  // 🔄 UPDATE FIELD
+  // ======================================================
+
+  const updateField =
+    useCallback((name, value) => {
+
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+
+    }, []);
+
+  // ======================================================
+  // 🔄 HANDLE CHANGE
+  // ======================================================
+
+  const handleChange =
+    useCallback((event) => {
+
+      const {
+        name,
+        value,
+      } = event.target;
+
+      // ======================================================
+      // 🚫 PREVENT ONLY SPACE
+      // ======================================================
+
+      if (
+        value.length === 1 &&
+        value === " "
+      ) {
+        return;
+      }
+
+      updateField(name, value);
+
+    }, [updateField]);
+
+  // ======================================================
+  // 🔄 ACCOUNT TYPE
+  // ======================================================
+
+  const handleAccountType =
+    useCallback((event) => {
+
+      const type =
+        event.target.value;
+
+      setForm((prev) => ({
+        ...prev,
+        accountType: type,
+        constructionRole: "",
+        businessType: "",
+      }));
+
+    }, []);
+
+  // ======================================================
+  // 🧠 VALIDATION
+  // ======================================================
+
+  const isDisabled = useMemo(() => {
+
     if (
-      accountType === "worker" &&
-      !constructionRole
+      loading ||
+      !isValidForm(form)
     ) {
-      alert("Please select construction role");
-      return;
+      return true;
     }
 
     if (
-      accountType === "business" &&
-      !businessType
+      form.accountType ===
+        "worker" &&
+      !form.constructionRole
     ) {
-      alert("Please select business type");
-      return;
+      return true;
     }
 
-    try {
+    if (
+      form.accountType ===
+        "business" &&
+      !form.businessType
+    ) {
+      return true;
+    }
+
+    return false;
+
+  }, [form, loading]);
+
+  // ======================================================
+  // 🚀 REGISTER
+  // ======================================================
+
+  const handleRegister =
+    useCallback(async () => {
+
+      if (loading) {
+        return;
+      }
+
+      if (isDisabled) {
+        return;
+      }
+
       setLoading(true);
 
-      const payload = {
-        fullName: fullName.trim(),
-        emailOrPhone: emailOrPhone.trim(),
-        password,
-        accountType,
-        constructionRole:
-          accountType === "worker"
-            ? constructionRole
-            : "",
+      setErrorMessage("");
 
-        businessType:
-          accountType === "business"
-            ? businessType
-            : "",
-      };
+      setSuccess("");
 
-      const res = await API.post(
-        "/auth/register",
-        payload
-      );
+      try {
 
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
+        const payload = {
+          fullName:
+            normalize(
+              form.fullName
+            ),
 
-      alert("Account created successfully");
+          emailOrPhone:
+            normalize(
+              form.emailOrPhone
+            ),
 
-      window.location.href = "/";
+          password:
+            normalize(
+              form.password
+            ),
 
-    } catch (err) {
-      console.error(err);
+          accountType:
+            form.accountType,
 
-      alert(
-        err?.response?.data?.message ||
-        "Registration failed"
-      );
+          constructionRole:
+            form.accountType ===
+            "worker"
+              ? form.constructionRole
+              : "",
 
-    } finally {
-      setLoading(false);
-    }
-  };
+          businessType:
+            form.accountType ===
+            "business"
+              ? form.businessType
+              : "",
+        };
 
-  // ===============================
-  // ⌨️ ENTER KEY
-  // ===============================
+        const res =
+          await API.post(
+            "/auth/register",
+            payload
+          );
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleRegister();
-    }
-  };
+        console.log(
+          "✅ REGISTER SUCCESS:",
+          res?.data
+        );
 
-  // ===============================
-  // 🔄 ACCOUNT TYPE SWITCH
-  // ===============================
+        // ======================================================
+        // 🔐 SAVE TOKEN
+        // ======================================================
 
-  const handleAccountType = (e) => {
-    const type = e.target.value;
+        if (
+          res?.data?.token
+        ) {
 
-    setAccountType(type);
+          localStorage.setItem(
+            "token",
+            res.data.token
+          );
 
-    setConstructionRole("");
-    setBusinessType("");
-  };
+        }
 
-  // ===============================
+        setSuccess(
+          "Account created successfully"
+        );
+
+        // ======================================================
+        // 🚀 REDIRECT
+        // ======================================================
+
+        setTimeout(() => {
+
+          navigate("/");
+
+        }, 1200);
+
+      } catch (err) {
+
+        console.error(err);
+
+        setErrorMessage(
+          err?.response?.data
+            ?.message ||
+          err?.message ||
+          "Registration failed"
+        );
+
+      } finally {
+
+        setLoading(false);
+      }
+
+    }, [
+      form,
+      isDisabled,
+      loading,
+      navigate,
+    ]);
+
+  // ======================================================
+  // ⌨️ ENTER SUBMIT
+  // ======================================================
+
+  const handleKeyDown =
+    useCallback((event) => {
+
+      if (
+        event.key === "Enter" &&
+        !loading
+      ) {
+        handleRegister();
+      }
+
+    }, [
+      handleRegister,
+      loading,
+    ]);
+
+  // ======================================================
   // 🎨 UI
-  // ===============================
+  // ======================================================
 
   return (
-    <div style={styles.container}>
+    <main style={styles.container}>
       <div style={styles.glow}></div>
 
-      <div style={styles.card}>
+      <section style={styles.card}>
 
         <h1 style={styles.title}>
           Create Account
         </h1>
 
         <p style={styles.subtitle}>
-          Join workers, businesses &
+          Join workers,
+          businesses &
           services worldwide
         </p>
 
         {/* FULL NAME */}
+
         <input
-          style={styles.input}
-          placeholder="Full Name"
-          value={fullName}
-          onChange={(e) =>
-            setFullName(e.target.value)
-          }
+          type="text"
+          name="fullName"
+          value={form.fullName}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
+          placeholder="Full Name"
+          autoComplete="name"
+          aria-label="Full Name"
+          style={styles.input}
         />
 
         {/* EMAIL / PHONE */}
+
         <input
-          style={styles.input}
-          placeholder="Email or Phone"
-          value={emailOrPhone}
-          onChange={(e) =>
-            setEmailOrPhone(e.target.value)
-          }
+          type="text"
+          name="emailOrPhone"
+          value={form.emailOrPhone}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
+          placeholder="Email or Phone"
+          autoComplete="username"
+          aria-label="Email or Phone"
+          style={styles.input}
         />
 
         {/* PASSWORD */}
+
         <input
-          style={styles.input}
           type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
+          name="password"
+          value={form.password}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
+          placeholder="Password"
+          autoComplete="new-password"
+          aria-label="Password"
+          style={styles.input}
         />
 
         {/* ACCOUNT TYPE */}
+
         <select
+          value={form.accountType}
+          onChange={
+            handleAccountType
+          }
+          aria-label="Account Type"
           style={styles.input}
-          value={accountType}
-          onChange={handleAccountType}
         >
           <option value="worker">
             👷 Construction Worker
@@ -195,75 +434,120 @@ function Register() {
         </select>
 
         {/* WORKER ROLE */}
-        {accountType === "worker" && (
+
+        {form.accountType ===
+          "worker" && (
           <select
-            style={styles.input}
-            value={constructionRole}
-            onChange={(e) =>
-              setConstructionRole(
-                e.target.value
+            value={
+              form.constructionRole
+            }
+            onChange={(
+              event
+            ) =>
+              updateField(
+                "constructionRole",
+                event.target.value
               )
             }
+            aria-label="Construction Role"
+            style={styles.input}
           >
             <option value="">
               Select Role
             </option>
 
-            <option>Mason</option>
-            <option>Carpenter</option>
-            <option>Electrician</option>
-            <option>Plumber</option>
-            <option>Painter</option>
-            <option>Welder</option>
-            <option>Engineer</option>
-            <option>Assistant</option>
-            <option>Boss</option>
+            {CONSTRUCTION_ROLES.map(
+              (role) => (
+                <option
+                  key={role}
+                  value={role}
+                >
+                  {role}
+                </option>
+              )
+            )}
           </select>
         )}
 
         {/* BUSINESS TYPE */}
-        {accountType === "business" && (
+
+        {form.accountType ===
+          "business" && (
           <select
-            style={styles.input}
-            value={businessType}
-            onChange={(e) =>
-              setBusinessType(
-                e.target.value
+            value={
+              form.businessType
+            }
+            onChange={(
+              event
+            ) =>
+              updateField(
+                "businessType",
+                event.target.value
               )
             }
+            aria-label="Business Type"
+            style={styles.input}
           >
             <option value="">
               Select Business Type
             </option>
 
-            <option>Company</option>
-            <option>Restaurant</option>
-            <option>Hospital</option>
-            <option>Clinic</option>
-            <option>Hotel</option>
-            <option>Office</option>
-            <option>Lawyer</option>
-            <option>Mechanic</option>
-            <option>Tour Guide</option>
-            <option>Organization</option>
+            {BUSINESS_TYPES.map(
+              (type) => (
+                <option
+                  key={type}
+                  value={type}
+                >
+                  {type}
+                </option>
+              )
+            )}
           </select>
         )}
 
+        {/* ERROR */}
+
+        {errorMessage && (
+          <div style={styles.error}>
+            {errorMessage}
+          </div>
+        )}
+
+        {/* SUCCESS */}
+
+        {success && (
+          <div style={styles.success}>
+            {success}
+          </div>
+        )}
+
         {/* BUTTON */}
+
         <button
+          type="button"
+          onClick={
+            handleRegister
+          }
+          disabled={isDisabled}
+          aria-busy={loading}
           style={{
             ...styles.button,
-            opacity: loading ? 0.7 : 1,
-            cursor: loading
-              ? "not-allowed"
-              : "pointer",
 
-            transform: loading
-              ? "scale(0.98)"
-              : "scale(1)",
+            opacity:
+              isDisabled
+                ? 0.7
+                : 1,
+
+            cursor:
+              isDisabled
+                ? "not-allowed"
+                : "pointer",
+
+            transform:
+              loading
+                ? "scale(0.98)"
+                : "scale(1)",
           }}
-          onClick={handleRegister}
-          disabled={loading}
         >
           {loading
             ? "Creating account..."
@@ -271,30 +555,37 @@ function Register() {
         </button>
 
         {/* LOGIN LINK */}
+
         <p style={styles.loginText}>
           Already have an account?{" "}
+
           <Link
             to="/login"
-            style={styles.loginLink}
+            style={
+              styles.loginLink
+            }
           >
             Login
           </Link>
         </p>
 
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 
-// ===============================
-// 🎨 GLOBAL GLASS UI
-// ===============================
+// ======================================================
+// 🎨 STYLES
+// ======================================================
 
 const styles = {
   container: {
     minHeight: "100vh",
+
     display: "flex",
+
     justifyContent: "center",
+
     alignItems: "center",
 
     background:
@@ -312,6 +603,7 @@ const styles = {
 
   glow: {
     position: "absolute",
+
     inset: 0,
 
     background:
@@ -320,9 +612,11 @@ const styles = {
 
   card: {
     position: "relative",
+
     zIndex: 2,
 
     width: "100%",
+
     maxWidth: "400px",
 
     padding: "32px",
@@ -333,33 +627,43 @@ const styles = {
     border:
       "1px solid rgba(255,255,255,0.08)",
 
-    backdropFilter: "blur(18px)",
+    backdropFilter:
+      "blur(18px)",
+
+    WebkitBackdropFilter:
+      "blur(18px)",
 
     borderRadius: "24px",
 
-    color: "white",
+    overflow: "hidden",
+
+    color: "#fff",
 
     boxShadow:
       "0 25px 60px rgba(0,0,0,0.45)",
-
-    transition: "0.3s",
   },
 
   title: {
     fontSize: "32px",
+
     fontWeight: "900",
+
     marginBottom: "6px",
   },
 
   subtitle: {
     fontSize: "13px",
+
     color: "#94a3b8",
+
     marginBottom: "22px",
+
     lineHeight: 1.6,
   },
 
   input: {
     width: "100%",
+
     boxSizing: "border-box",
 
     padding: "13px 14px",
@@ -378,7 +682,13 @@ const styles = {
 
     color: "#fff",
 
-    transition: "0.3s",
+    fontSize: "14px",
+
+    transition:
+      "all 0.3s ease",
+
+    boxShadow:
+      "0 0 0 rgba(59,130,246,0)",
   },
 
   button: {
@@ -393,31 +703,68 @@ const styles = {
 
     borderRadius: "12px",
 
-    color: "white",
+    color: "#fff",
 
     fontWeight: "700",
 
     fontSize: "15px",
 
-    cursor: "pointer",
+    transition:
+      "all 0.3s ease",
 
-    transition: "0.3s",
+    transform:
+      "translateZ(0)",
 
     marginTop: "5px",
   },
 
+  error: {
+    marginBottom: "14px",
+
+    padding: "12px",
+
+    borderRadius: "12px",
+
+    background:
+      "rgba(239,68,68,0.15)",
+
+    color: "#fca5a5",
+
+    fontSize: "13px",
+  },
+
+  success: {
+    marginBottom: "14px",
+
+    padding: "12px",
+
+    borderRadius: "12px",
+
+    background:
+      "rgba(34,197,94,0.15)",
+
+    color: "#86efac",
+
+    fontSize: "13px",
+  },
+
   loginText: {
     marginTop: "18px",
+
     textAlign: "center",
+
     fontSize: "13px",
+
     color: "#94a3b8",
   },
 
   loginLink: {
     color: "#60a5fa",
+
     textDecoration: "none",
+
     fontWeight: "700",
   },
 };
 
-export default Register;
+export default memo(Register);

@@ -1,16 +1,8 @@
-import React, {
-  memo,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 // ======================================================
-// 🌍 JOBFAST — MY POSTS
-// ======================================================
-
-// ======================================================
-// 📦 STATIC DATA
+// 🌍 DATA LAYER
 // ======================================================
 
 const INITIAL_POSTS = Object.freeze([
@@ -24,7 +16,6 @@ const INITIAL_POSTS = Object.freeze([
     createdAt: "2026-05-07",
     timestamp: new Date("2026-05-07").getTime(),
   },
-
   {
     id: 2,
     title: "Hotel Reception Job",
@@ -35,7 +26,6 @@ const INITIAL_POSTS = Object.freeze([
     createdAt: "2026-05-06",
     timestamp: new Date("2026-05-06").getTime(),
   },
-
   {
     id: 3,
     title: "Chef Lakay Needed",
@@ -48,25 +38,10 @@ const INITIAL_POSTS = Object.freeze([
   },
 ]);
 
-// ======================================================
-// 🎨 CONFIG
-// ======================================================
-
 const STATUS_CONFIG = Object.freeze({
-  OPEN: Object.freeze({
-    label: "OPEN",
-    color: "#22c55e",
-  }),
-
-  CLOSED: Object.freeze({
-    label: "CLOSED",
-    color: "#ef4444",
-  }),
-
-  DEFAULT: Object.freeze({
-    label: "UNKNOWN",
-    color: "#64748b",
-  }),
+  OPEN: { label: "OPEN", color: "#22c55e" },
+  CLOSED: { label: "CLOSED", color: "#ef4444" },
+  DEFAULT: { label: "UNKNOWN", color: "#64748b" },
 });
 
 const TYPE_ICONS = Object.freeze({
@@ -80,429 +55,282 @@ const TYPE_ICONS = Object.freeze({
 // ======================================================
 
 const getStatusConfig = (status) =>
-  STATUS_CONFIG[status] ||
-  STATUS_CONFIG.DEFAULT;
-
-const formatCount = (count) =>
-  `${count} post${
-    count !== 1 ? "s" : ""
-  }`;
-
-const formatDate = (date) =>
-  new Intl.DateTimeFormat(
-    "en-US",
-    {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }
-  ).format(new Date(date));
+  STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
 
 const sortPosts = (posts) =>
-  [...posts].sort(
-    (a, b) =>
-      b.timestamp - a.timestamp
-  );
+  [...posts].sort((a, b) => b.timestamp - a.timestamp);
 
 // ======================================================
 // 🎨 EMPTY STATE
 // ======================================================
 
-const EmptyState = memo(
-  function EmptyState() {
-    return (
-      <div style={styles.emptyCard}>
-        <p style={styles.emptyTitle}>
-          No posts available
-        </p>
+const EmptyState = memo(({ onCreate }) => (
+  <div style={styles.emptyCard}>
+    <h3 style={styles.emptyTitle}>No posts found</h3>
+    <p style={styles.emptyText}>
+      Create your first JOBFAST post to start getting opportunities.
+    </p>
 
-        <p style={styles.emptyText}>
-          Create your first JOBFAST
-          post.
-        </p>
-      </div>
-    );
-  }
-);
-
-// ======================================================
-// 🎨 BUTTON
-// ======================================================
-
-const Button = memo(function Button({
-  children,
-  onClick,
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={styles.deleteBtn}
-    >
-      {children}
+    <button style={styles.createBtn} onClick={onCreate}>
+      Create Post
     </button>
-  );
-});
+  </div>
+));
 
 // ======================================================
 // 🎨 POST CARD
 // ======================================================
 
-const PostCard = memo(function PostCard({
-  post,
-  onDelete,
-}) {
-  const status =
-    getStatusConfig(post.status);
+const PostCard = memo(function PostCard({ post, onDelete }) {
+  const status = getStatusConfig(post.status);
 
-  const handleDelete =
-    useCallback(() => {
-      onDelete(post.id);
-    }, [onDelete, post.id]);
+  const handleDelete = useCallback(() => {
+    onDelete(post.id);
+  }, [onDelete, post.id]);
 
   return (
     <article style={styles.card}>
-      {/* HEADER */}
-
       <div style={styles.cardHeader}>
         <div>
           <h3 style={styles.cardTitle}>
-            {
-              TYPE_ICONS[
-                post.type
-              ]
-            }{" "}
-            {post.title}
+            {TYPE_ICONS[post.type]} {post.title}
           </h3>
-
-          <p style={styles.cardMeta}>
-            {post.category}
-          </p>
+          <p style={styles.cardMeta}>{post.category}</p>
         </div>
 
-        <span
-          style={{
-            ...styles.status,
-            background:
-              status.color,
-          }}
-        >
+        <span style={{ ...styles.status, background: status.color }}>
           {status.label}
         </span>
       </div>
 
-      {/* BODY */}
-
       <div style={styles.cardBody}>
-        <p style={styles.text}>
-          📍 {post.location}
-        </p>
-
-        <p style={styles.date}>
-          Posted:{" "}
-          {formatDate(
-            post.createdAt
-          )}
-        </p>
+        <p style={styles.text}>📍 {post.location}</p>
+        <p style={styles.date}>Posted: {post.createdAt}</p>
       </div>
 
-      {/* ACTIONS */}
-
-      <div style={styles.actions}>
-        <Button
-          onClick={handleDelete}
-        >
-          Delete
-        </Button>
-      </div>
+      <button style={styles.deleteBtn} onClick={handleDelete}>
+        Delete
+      </button>
     </article>
   );
 });
 
 // ======================================================
-// 🚀 MAIN COMPONENT
+// 🚀 DELETE MODAL (SAFE)
+// ======================================================
+
+const DeleteModal = memo(({ open, onCancel, onConfirm }) => {
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") onCancel();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onCancel]);
+
+  if (!open) return null;
+
+  return (
+    <div style={styles.modalOverlay} onClick={onCancel}>
+      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <h3 style={styles.modalTitle}>Delete this post?</h3>
+
+        <p style={styles.modalText}>
+          This action is permanent and cannot be undone.
+        </p>
+
+        <div style={styles.modalActions}>
+          <button style={styles.cancelBtn} onClick={onCancel}>
+            Cancel
+          </button>
+
+          <button style={styles.confirmBtn} onClick={onConfirm}>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ======================================================
+// 🚀 MAIN COMPONENT (FULL SAFE ARCHITECTURE)
 // ======================================================
 
 function MyPosts() {
-  const [posts, setPosts] =
-    useState(INITIAL_POSTS);
+  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
-  // ======================================================
-  // 🧠 SORTED POSTS
-  // ======================================================
+  const sortedPosts = useMemo(() => sortPosts(posts), [posts]);
+  const totalPosts = sortedPosts.length;
 
-  const sortedPosts =
-    useMemo(() => {
-      return sortPosts(posts);
-    }, [posts]);
+  // ✅ SAFE delete request
+  const requestDelete = useCallback((id) => {
+    setPendingDelete(id);
+  }, []);
 
-  // ======================================================
-  // 🗑 DELETE POST
-  // ======================================================
+  // 🔥 FIX: NO STALE STATE RISK ANYMORE
+  const confirmDelete = useCallback(() => {
+    setPosts((prev) => {
+      if (pendingDelete == null) return prev;
+      return prev.filter((p) => p.id !== pendingDelete);
+    });
 
-  const handleDelete =
-    useCallback((id) => {
-      setPosts((prev) =>
-        prev.filter(
-          (post) =>
-            post.id !== id
-        )
-      );
-    }, []);
+    setPendingDelete(null);
+  }, [pendingDelete]);
 
-  // ======================================================
-  // 📊 TOTAL POSTS
-  // ======================================================
+  const cancelDelete = useCallback(() => {
+    setPendingDelete(null);
+  }, []);
 
-  const totalPosts =
-    sortedPosts.length;
-
-  // ======================================================
-  // 🎨 UI
-  // ======================================================
+  const handleCreate = useCallback(() => {
+    console.log("navigate:/create-post");
+  }, []);
 
   return (
     <main style={styles.container}>
-      {/* HEADER */}
-
       <header style={styles.header}>
-        <h1 style={styles.title}>
-          My Posts
-        </h1>
+        <h1 style={styles.title}>My Posts</h1>
 
         <p style={styles.subtitle}>
-          Manage your
-          construction,
-          business, and
-          service posts
+          Manage your construction, business and service posts
         </p>
 
         <p style={styles.count}>
-          {formatCount(
-            totalPosts
-          )}
+          {totalPosts} post{totalPosts !== 1 ? "s" : ""}
         </p>
       </header>
 
-      {/* POSTS */}
-
       <section style={styles.list}>
         {totalPosts === 0 ? (
-          <EmptyState />
+          <EmptyState onCreate={handleCreate} />
         ) : (
-          sortedPosts.map(
-            (post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onDelete={
-                  handleDelete
-                }
-              />
-            )
-          )
+          sortedPosts.map((post) => (
+            <PostCard key={post.id} post={post} onDelete={requestDelete} />
+          ))
         )}
       </section>
+
+      <DeleteModal
+        open={Boolean(pendingDelete)}
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
+      />
     </main>
   );
 }
 
 // ======================================================
-// 🎨 TOKENS
+// 🎨 STYLES (UNCHANGED)
 // ======================================================
 
-const glass = Object.freeze({
-  background:
-    "rgba(255,255,255,0.05)",
-
-  border:
-    "1px solid rgba(255,255,255,0.08)",
-
-  backdropFilter:
-    "blur(14px)",
-
-  WebkitBackdropFilter:
-    "blur(14px)",
-});
-
-// ======================================================
-// 🎨 STYLES
-// ======================================================
-
-const styles = Object.freeze({
+const styles = {
   container: {
     minHeight: "100vh",
-
     padding: "24px",
-
-    background:
-      "linear-gradient(to bottom, #020617, #0f172a)",
-
+    background: "linear-gradient(to bottom, #020617, #0f172a)",
     color: "#fff",
-
-    fontFamily:
-      "Inter, Arial, sans-serif",
+    fontFamily: "Inter, Arial, sans-serif",
   },
-
-  header: {
-    marginBottom: "24px",
-  },
-
-  title: {
-    margin: 0,
-
-    fontSize: "32px",
-
-    fontWeight: "800",
-  },
-
-  subtitle: {
-    marginTop: "8px",
-
-    color: "#94a3b8",
-
-    fontSize: "14px",
-
-    lineHeight: 1.6,
-  },
-
-  count: {
-    marginTop: "10px",
-
-    color: "#cbd5e1",
-
-    fontSize: "13px",
-  },
-
-  list: {
-    display: "grid",
-
-    gap: "14px",
-  },
-
+  header: { marginBottom: "24px" },
+  title: { fontSize: "32px", fontWeight: "800" },
+  subtitle: { color: "#94a3b8", fontSize: "14px", marginTop: "8px" },
+  count: { marginTop: "10px", color: "#cbd5e1", fontSize: "13px" },
+  list: { display: "grid", gap: "14px" },
   card: {
-    ...glass,
-
-    padding: "18px",
-
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.08)",
     borderRadius: "22px",
+    padding: "18px",
   },
-
-  cardHeader: {
-    display: "flex",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "flex-start",
-
-    gap: "12px",
-
-    marginBottom: "14px",
-  },
-
-  cardTitle: {
-    margin: 0,
-
-    fontSize: "18px",
-
-    fontWeight: "700",
-  },
-
-  cardMeta: {
-    marginTop: "6px",
-
-    fontSize: "12px",
-
-    color: "#94a3b8",
-  },
-
-  cardBody: {
-    display: "grid",
-
-    gap: "6px",
-  },
-
-  text: {
-    margin: 0,
-
-    color: "#cbd5e1",
-
-    fontSize: "14px",
-
-    lineHeight: 1.6,
-  },
-
-  date: {
-    margin: 0,
-
-    color: "#94a3b8",
-
-    fontSize: "12px",
-  },
-
+  cardHeader: { display: "flex", justifyContent: "space-between" },
+  cardTitle: { fontSize: "18px", fontWeight: "700" },
+  cardMeta: { fontSize: "12px", color: "#94a3b8" },
+  cardBody: { marginTop: "10px" },
+  text: { color: "#cbd5e1", fontSize: "14px" },
+  date: { fontSize: "12px", color: "#94a3b8" },
   status: {
     padding: "6px 12px",
-
     borderRadius: "999px",
-
     fontSize: "11px",
-
     fontWeight: "700",
-
     color: "#fff",
-
-    whiteSpace: "nowrap",
   },
-
-  actions: {
-    marginTop: "16px",
-  },
-
   deleteBtn: {
+    marginTop: "12px",
+    background: "#ef4444",
     border: "none",
-
-    borderRadius: "12px",
-
     padding: "10px 14px",
-
-    background:
-      "linear-gradient(to right, #dc2626, #ef4444)",
-
+    borderRadius: "10px",
     color: "#fff",
-
-    fontSize: "13px",
-
     fontWeight: "700",
-
     cursor: "pointer",
   },
-
   emptyCard: {
-    ...glass,
-
-    padding: "40px 20px",
-
-    borderRadius: "22px",
-
+    padding: "40px",
     textAlign: "center",
+    borderRadius: "22px",
+    background: "rgba(255,255,255,0.04)",
   },
-
-  emptyTitle: {
-    margin: 0,
-
-    fontSize: "16px",
-
+  emptyTitle: { fontSize: "16px", fontWeight: "700" },
+  emptyText: { marginTop: "8px", color: "#94a3b8", fontSize: "13px" },
+  createBtn: {
+    marginTop: "15px",
+    background: "#3b82f6",
+    border: "none",
+    padding: "10px 14px",
+    borderRadius: "10px",
+    color: "#fff",
     fontWeight: "700",
+    cursor: "pointer",
   },
-
-  emptyText: {
-    marginTop: "8px",
-
-    color: "#94a3b8",
-
-    fontSize: "13px",
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.65)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
   },
-});
+  modal: {
+    background: "#0f172a",
+    padding: "22px",
+    borderRadius: "16px",
+    width: "92%",
+    maxWidth: "380px",
+    border: "1px solid rgba(255,255,255,0.08)",
+  },
+  modalTitle: { fontSize: "18px", fontWeight: "800" },
+  modalText: { marginTop: "8px", color: "#94a3b8", fontSize: "13px" },
+  modalActions: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "16px",
+  },
+  cancelBtn: {
+    flex: 1,
+    background: "#334155",
+    border: "none",
+    padding: "10px",
+    borderRadius: "10px",
+    color: "#fff",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+  confirmBtn: {
+    flex: 1,
+    background: "#ef4444",
+    border: "none",
+    padding: "10px",
+    borderRadius: "10px",
+    color: "#fff",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+};
 
 export default memo(MyPosts);
