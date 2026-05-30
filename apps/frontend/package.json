@@ -1,24 +1,42 @@
+
 {
   "name": "jobfast-frontend",
-  "private": true,
   "version": "1.0.0",
+  "description": "JOBFAST GLOBAL FRONTEND - PRODUCTION READY",
+  "private": true,
   "type": "module",
-
+  "main": "index.html",
   "scripts": {
     "dev": "vite",
+    "host": "vite --host",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
     "build": "vite build",
     "preview": "vite preview"
   },
-
   "dependencies": {
     "axios": "^1.7.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"
   },
-
   "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "rimraf": "^6.0.1",
     "vite": "^5.4.2"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "jobfast",
+    "frontend",
+    "react",
+    "vite",
+    "spa"
+  ],
+  "author": "Monfils Ronald",
+  "license": "MIT"
 }
