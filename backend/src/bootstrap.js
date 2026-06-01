@@ -1,4 +1,3 @@
-
 import { connectDatabase } from '../config/database.js';
 import { env } from '../config/env.js';
 
@@ -14,25 +13,19 @@ export async function bootstrap() {
       throw new Error('DB_URL_MISSING');
     }
 
-    // ================= DATABASE =================
-
     await connectDatabase();
 
     console.log('🟢 Database connected successfully');
 
     bootstrapped = true;
-
     console.log('🚀 App fully ready');
-
   } catch (error) {
     console.error('❌ Bootstrap failed:', error.message);
 
-    // 💥 hard fail for production
     if (env.APP_STAGE === 'production') {
       process.exit(1);
     }
 
-    // dev mode fallback
-    console.warn('⚠️ Running in degraded mode (no DB)');
+    throw error;
   }
 }

@@ -1,6 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+// 🔥 Enpòte AuthProvider la pou vlope tout sistèm nan
+import { AuthProvider } from "./context/AuthContext.js"; 
+
 // Pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -47,30 +50,33 @@ function MainDashboard() {
 }
 
 // ==============================
-// 🚀 APP ROUTER (FIXED)
+// 🚀 APP ROUTER (PRODUCTION READY)
 // ==============================
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    /* 🔥 Nou vlope tout aplikasyon an nan kouch anlè nèt la */
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Protected route */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <MainDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected route */}
+          <Route
+            path="/"
+            element = {
+              <ProtectedRoute>
+                <MainDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
@@ -81,7 +87,7 @@ const styles = {
   container: {
     padding: "20px",
     fontFamily: "Arial, sans-serif",
-    backgroundColor: "#0f172a", // better than background
+    backgroundColor: "#0f172a",
     color: "white",
     minHeight: "100vh",
   },

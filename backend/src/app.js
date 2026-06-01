@@ -5,17 +5,13 @@ import morgan from 'morgan';
 import compression from 'compression';
 import crypto from 'crypto';
 
-import { env } from '../config/env.js';
-
-import authRoutes from '../routes/auth.routes.js';
-import userRoutes from '../routes/users.routes.js';
-import jobRoutes from '../routes/jobs.routes.js';
-
-import { errorHandler, notFoundHandler } from '../middlewares/errorHandler.js';
+import { env } from './config/env.js';
+import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/users.routes.js';
+import jobRoutes from './routes/jobs.routes.js';
+import { notFoundHandler, errorHandler } from './middlewares/notFound.js';
 
 const app = express();
-
-// ================= SECURITY =================
 
 app.use(
   helmet({
@@ -23,26 +19,17 @@ app.use(
   })
 );
 
-// ================= CORS (FIXED) =================
-
 app.use(
   cors({
-    origin: env.ALLOWED_ORIGINS?.split(',') || '*',
+    origin: env.CORS_ORIGIN.includes('*') ? '*' : env.CORS_ORIGIN,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
 );
 
-// ================= PERFORMANCE =================
-
 app.use(compression());
-
-// ================= BODY =================
-
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-// ================= REQUEST ID =================
 
 app.use((req, res, next) => {
   req.id = crypto.randomUUID();
@@ -50,33 +37,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// ================= LOGGING =================
-
 app.use(morgan(env.APP_STAGE === 'development' ? 'dev' : 'combined'));
-
-// ================= HEALTH =================
 
 app.get('/health', (req, res) => {
   res.json({
     success: true,
     status: 'ok',
     uptime: process.uptime(),
+    app: env.APP_NAME,
+    version: env.APP_VERSION,
   });
 });
 
-// ================= RATE LIMIT (IMPORTANT) =================
-// (optional middleware placeholder)
-// app.use(rateLimiter);
-
-// ================= ROUTES =================
-
-const API_PREFIX = env.API_PREFIX || '/api';
+const API_PREFIX = env.API_PREFIX || '/api/v1';
 
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/jobs`, jobRoutes);
-
-// ================= ERROR HANDLING =================
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -1,4 +1,3 @@
-
 function logError(err) {
   console.error('==============================');
   console.error('❌ ERROR OCCURRED');

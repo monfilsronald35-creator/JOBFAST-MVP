@@ -1,4 +1,3 @@
-
 import express from "express";
 
 const router = express.Router();
@@ -12,7 +11,6 @@ const users = [];
 /* ===============================
    🧠 VALIDATION SYSTEM
    =============================== */
-
 const validRoles = [
   "admin",
   "boss",
@@ -151,16 +149,23 @@ router.get("/search", (req, res) => {
     result = result.filter((u) => u.role === role);
   }
 
+  // ⚡ OPTIMIZATION: Ignore case-sensitivity pou rechèch yo ka pi fleksib
   if (serviceType) {
-    result = result.filter((u) => u.serviceType === serviceType);
+    result = result.filter(
+      (u) => u.serviceType && u.serviceType.toLowerCase() === serviceType.toLowerCase()
+    );
   }
 
   if (businessType) {
-    result = result.filter((u) => u.businessType === businessType);
+    result = result.filter(
+      (u) => u.businessType && u.businessType.toLowerCase() === businessType.toLowerCase()
+    );
   }
 
   if (city) {
-    result = result.filter((u) => u.location?.city === city);
+    result = result.filter(
+      (u) => u.location?.city && u.location.city.toLowerCase() === city.toLowerCase()
+    );
   }
 
   return res.json(result);

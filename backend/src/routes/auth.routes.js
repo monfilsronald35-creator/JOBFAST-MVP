@@ -1,7 +1,10 @@
+// ======================================================
+// 🔐 JOBFAST — AUTHENTICATION ROUTES (PRODUCTION SAFE)
+// ======================================================
 
 import express from 'express';
 
-// Controllers
+// Controllers (Ranje ak chemen eksplit ak estansyon .js)
 import { loginController } from '../controllers/auth/login.controller.js';
 import { registerController } from '../controllers/auth/register.controller.js';
 
@@ -10,19 +13,22 @@ import { authMiddleware } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// ================= RATE LIMIT =================
+// ======================================================
+// 🛡️ LIGHTWEIGHT MEMORY RATE LIMITER (ANTI-BRUTE FORCE)
+// ======================================================
 const requestMap = new Map();
 
 function rateLimit(req, res, next) {
-  const rawIp = req.headers['x-forwarded-for'] || req.ip;
+  // Sekirize rekiperasyon IP a pou anpeche spoofing nan proxy
+  const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
   const ip = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : rawIp;
 
   const now = Date.now();
-  const windowMs = 15 * 60 * 1000;
-  const maxRequests = 50;
+  const windowMs = 15 * 60 * 1000; // 15 minit fenèt anrejistreman
+  const maxRequests = 50;          // Limit maksimòm tantativ
 
-  // 🧹 cleanup
-  if (requestMap.size > 1000) {
+  // 🧹 Auto-cleanup memwa si map la vin twò gwo pou evite Memory Leaks
+  if (requestMap.size > 5000) {
     requestMap.clear();
   }
 
@@ -33,15 +39,18 @@ function rateLimit(req, res, next) {
     return next();
   }
 
+  // Si tan fenèt la fin pase, reset kontè a pou IP sa a
   if (now - data.start > windowMs) {
     requestMap.set(ip, { count: 1, start: now });
     return next();
   }
 
+  // Bloque si li depase limit la
   if (data.count >= maxRequests) {
     return res.status(429).json({
       success: false,
-      message: 'Too many requests',
+      message: 'Too many authentication attempts. Please try again after 15 minutes.',
+      code: 'TOO_MANY_REQUESTS'
     });
   }
 
@@ -49,22 +58,29 @@ function rateLimit(req, res, next) {
   next();
 }
 
-// ================= PUBLIC =================
+// ======================================================
+// 🔓 PUBLIC ENDPOINTS
+// ======================================================
 router.post('/register', rateLimit, registerController);
 router.post('/login', rateLimit, loginController);
 
-// ================= PROTECTED =================
+// ======================================================
+// 🔒 PROTECTED ENDPOINTS (REQUIRES VALID AUTH TOKEN)
+// ======================================================
 router.get('/me', authMiddleware, (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
+    message: 'User profile retrieved successfully',
     data: req.user,
   });
 });
 
 router.post('/logout', authMiddleware, (req, res) => {
-  res.json({
+  // INFO: Nan JWT, logout la fèt plis sou frontend lan lè w siye token an, 
+  // men endpoint sa a bon pou w ka invalidat li nan blacklist si sa nesesè pita.
+  res.status(200).json({
     success: true,
-    message: 'Logged out',
+    message: 'Session closed successfully. Logged out.',
   });
 });
 
