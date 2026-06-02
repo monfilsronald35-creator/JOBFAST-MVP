@@ -9,7 +9,7 @@ import { env } from './config/env.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/users.routes.js';
 import jobRoutes from './routes/jobs.routes.js';
-import { notFoundHandler, errorHandler } from './middlewares/notFound.js';
+import { notFoundHandler, errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
