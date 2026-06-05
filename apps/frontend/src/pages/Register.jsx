@@ -1,6 +1,6 @@
 // ======================================================
 // 🌍 src/pages/Register.jsx
-// 🚀 JOBFAST GLOBAL — REGISTER
+// 🚀 JOBFAST GLOBAL — REGISTER (TAILWIND + ROLE CARD)
 // ======================================================
 
 import React, {
@@ -17,48 +17,26 @@ import {
 } from "react-router-dom";
 
 import API from "../api/axios";
+import RoleCard from "../components/RoleCard";
 
 // ======================================================
-// 📦 STATIC CONFIG
+// 📦 STATIC CONFIG (Wòl yo ak tout Emoji yo jan sa ye nan makèt la)
 // ======================================================
-
-const CONSTRUCTION_ROLES = Object.freeze([
-  "Mason",
-  "Carpenter",
-  "Electrician",
-  "Plumber",
-  "Painter",
-  "Welder",
-  "Engineer",
-  "Assistant",
-  "Boss",
-]);
-
-const BUSINESS_TYPES = Object.freeze([
-  "Company",
-  "Restaurant",
-  "Hospital",
-  "Clinic",
-  "Hotel",
-  "Office",
-  "Lawyer",
-  "Mechanic",
-  "Tour Guide",
-  "Organization",
+const ROLES_LIST = Object.freeze([
+  { id: "boss", label: "Boss", icon: "🤠" },
+  { id: "worker", label: "Worker", icon: "👷‍♂️" },
+  { id: "apprentice", label: "Apprentice", icon: "🧑‍🎓" },
+  { id: "engineer", label: "Engineer", icon: "👨‍💼" },
+  { id: "assistant", label: "Assistant", icon: "🧑‍💻" },
+  { id: "client", label: "Client", icon: "🧑" },
 ]);
 
 // ======================================================
 // 🧠 HELPERS
 // ======================================================
+const normalize = (value = "") => value.trim();
 
-const normalize = (value = "") =>
-  value.trim();
-
-const isValidForm = ({
-  fullName,
-  emailOrPhone,
-  password,
-}) =>
+const isValidForm = ({ fullName, emailOrPhone, password }) =>
   normalize(fullName).length >= 3 &&
   normalize(emailOrPhone).length >= 3 &&
   normalize(password).length >= 6;
@@ -66,705 +44,235 @@ const isValidForm = ({
 // ======================================================
 // 🚀 COMPONENT
 // ======================================================
-
 function Register() {
+  const navigate = useNavigate();
 
-  const navigate =
-    useNavigate();
+  const [form, setForm] = useState({
+    fullName: "",
+    emailOrPhone: "",
+    password: "",
+    accountType: "worker", // default kont kòmanse sou travayè
+  });
 
-  const [form, setForm] =
-    useState({
-      fullName: "",
-      emailOrPhone: "",
-      password: "",
-      accountType: "worker",
-      constructionRole: "",
-      businessType: "",
-    });
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
-
-  const [success, setSuccess] =
-    useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [success, setSuccess] = useState("");
 
   // ======================================================
   // ⏱ AUTO CLEAR ALERTS
   // ======================================================
-
   useEffect(() => {
+    if (!errorMessage && !success) return;
 
-    if (
-      !errorMessage &&
-      !success
-    ) {
-      return;
-    }
+    const timer = setTimeout(() => {
+      setErrorMessage("");
+      setSuccess("");
+    }, 4000);
 
-    const timer =
-      setTimeout(() => {
-
-        setErrorMessage("");
-
-        setSuccess("");
-
-      }, 4000);
-
-    return () =>
-      clearTimeout(timer);
-
+    return () => clearTimeout(timer);
   }, [errorMessage, success]);
 
   // ======================================================
   // 🔄 UPDATE FIELD
   // ======================================================
-
-  const updateField =
-    useCallback((name, value) => {
-
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-
-    }, []);
+  const updateField = useCallback((name, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }, []);
 
   // ======================================================
   // 🔄 HANDLE CHANGE
   // ======================================================
+  const handleChange = useCallback((event) => {
+    const { name, value } = event.target;
 
-  const handleChange =
-    useCallback((event) => {
+    if (value.length === 1 && value === " ") {
+      return;
+    }
 
-      const {
-        name,
-        value,
-      } = event.target;
-
-      // ======================================================
-      // 🚫 PREVENT ONLY SPACE
-      // ======================================================
-
-      if (
-        value.length === 1 &&
-        value === " "
-      ) {
-        return;
-      }
-
-      updateField(name, value);
-
-    }, [updateField]);
-
-  // ======================================================
-  // 🔄 ACCOUNT TYPE
-  // ======================================================
-
-  const handleAccountType =
-    useCallback((event) => {
-
-      const type =
-        event.target.value;
-
-      setForm((prev) => ({
-        ...prev,
-        accountType: type,
-        constructionRole: "",
-        businessType: "",
-      }));
-
-    }, []);
+    updateField(name, value);
+  }, [updateField]);
 
   // ======================================================
   // 🧠 VALIDATION
   // ======================================================
-
   const isDisabled = useMemo(() => {
-
-    if (
-      loading ||
-      !isValidForm(form)
-    ) {
-      return true;
-    }
-
-    if (
-      form.accountType ===
-        "worker" &&
-      !form.constructionRole
-    ) {
-      return true;
-    }
-
-    if (
-      form.accountType ===
-        "business" &&
-      !form.businessType
-    ) {
-      return true;
-    }
-
-    return false;
-
+    return loading || !isValidForm(form);
   }, [form, loading]);
 
   // ======================================================
-  // 🚀 REGISTER
+  // 🚀 REGISTER ACTION
   // ======================================================
+  const handleRegister = useCallback(async () => {
+    if (loading || isDisabled) return;
 
-  const handleRegister =
-    useCallback(async () => {
+    setLoading(true);
+    setErrorMessage("");
+    setSuccess("");
 
-      if (loading) {
-        return;
+    try {
+      const payload = {
+        fullName: normalize(form.fullName),
+        emailOrPhone: normalize(form.emailOrPhone),
+        password: normalize(form.password),
+        accountType: form.accountType,
+      };
+
+      const res = await API.post("/auth/register", payload);
+      console.log("✅ REGISTER SUCCESS:", res?.data);
+
+      if (res?.data?.token) {
+        localStorage.setItem("token", res.data.token);
       }
 
-      if (isDisabled) {
-        return;
-      }
+      setSuccess("Account created successfully");
 
-      setLoading(true);
+      setTimeout(() => {
+        navigate("/");
+      }, 1200);
 
-      setErrorMessage("");
-
-      setSuccess("");
-
-      try {
-
-        const payload = {
-          fullName:
-            normalize(
-              form.fullName
-            ),
-
-          emailOrPhone:
-            normalize(
-              form.emailOrPhone
-            ),
-
-          password:
-            normalize(
-              form.password
-            ),
-
-          accountType:
-            form.accountType,
-
-          constructionRole:
-            form.accountType ===
-            "worker"
-              ? form.constructionRole
-              : "",
-
-          businessType:
-            form.accountType ===
-            "business"
-              ? form.businessType
-              : "",
-        };
-
-        const res =
-          await API.post(
-            "/auth/register",
-            payload
-          );
-
-        console.log(
-          "✅ REGISTER SUCCESS:",
-          res?.data
-        );
-
-        // ======================================================
-        // 🔐 SAVE TOKEN
-        // ======================================================
-
-        if (
-          res?.data?.token
-        ) {
-
-          localStorage.setItem(
-            "token",
-            res.data.token
-          );
-
-        }
-
-        setSuccess(
-          "Account created successfully"
-        );
-
-        // ======================================================
-        // 🚀 REDIRECT
-        // ======================================================
-
-        setTimeout(() => {
-
-          navigate("/");
-
-        }, 1200);
-
-      } catch (err) {
-
-        console.error(err);
-
-        setErrorMessage(
-          err?.response?.data
-            ?.message ||
-          err?.message ||
-          "Registration failed"
-        );
-
-      } finally {
-
-        setLoading(false);
-      }
-
-    }, [
-      form,
-      isDisabled,
-      loading,
-      navigate,
-    ]);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Registration failed"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [form, isDisabled, loading, navigate]);
 
   // ======================================================
   // ⌨️ ENTER SUBMIT
   // ======================================================
-
-  const handleKeyDown =
-    useCallback((event) => {
-
-      if (
-        event.key === "Enter" &&
-        !loading
-      ) {
-        handleRegister();
-      }
-
-    }, [
-      handleRegister,
-      loading,
-    ]);
+  const handleKeyDown = useCallback((event) => {
+    if (event.key === "Enter" && !loading) {
+      handleRegister();
+    }
+  }, [handleRegister, loading]);
 
   // ======================================================
-  // 🎨 UI
+  // 🎨 UI WITH TAILWIND (Fits perfectly with image_30.png)
   // ======================================================
-
   return (
-    <main style={styles.container}>
-      <div style={styles.glow}></div>
+    <main className="min-h-screen bg-navy-900 text-text-inverse flex flex-col justify-between p-6 font-sans relative overflow-hidden">
+      {/* Efè limyè Radial nan background lan */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,136,229,0.15),transparent_60%)] pointer-events-none"></div>
 
-      <section style={styles.card}>
-
-        <h1 style={styles.title}>
-          Create Account
-        </h1>
-
-        <p style={styles.subtitle}>
-          Join workers,
-          businesses &
-          services worldwide
-        </p>
-
-        {/* FULL NAME */}
-
-        <input
-          type="text"
-          name="fullName"
-          value={form.fullName}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Full Name"
-          autoComplete="name"
-          aria-label="Full Name"
-          style={styles.input}
-        />
-
-        {/* EMAIL / PHONE */}
-
-        <input
-          type="text"
-          name="emailOrPhone"
-          value={form.emailOrPhone}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Email or Phone"
-          autoComplete="username"
-          aria-label="Email or Phone"
-          style={styles.input}
-        />
-
-        {/* PASSWORD */}
-
-        <input
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Password"
-          autoComplete="new-password"
-          aria-label="Password"
-          style={styles.input}
-        />
-
-        {/* ACCOUNT TYPE */}
-
-        <select
-          value={form.accountType}
-          onChange={
-            handleAccountType
-          }
-          aria-label="Account Type"
-          style={styles.input}
+      {/* Header ak bouton tounen nan Splash lan */}
+      <div className="flex items-center justify-between pt-2 relative z-10 w-full max-w-sm mx-auto">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="text-xl p-2 active:scale-95 transition-all text-text-muted hover:text-text-inverse"
+          aria-label="Tounen"
         >
-          <option value="worker">
-            👷 Construction Worker
-          </option>
+          ⬅️
+        </button>
+        <h1 className="text-lg font-display font-bold tracking-wide">Kreye Kont</h1>
+        <div className="w-8"></div>
+      </div>
 
-          <option value="business">
-            🏢 Business
-          </option>
+      <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-center z-10 my-4">
+        
+        {/* TÈKS ENTWODIKSYON */}
+        <div className="text-left mb-4">
+          <p className="text-xs text-text-muted font-medium tracking-wide">Chwazi wòl ou</p>
+        </div>
 
-          <option value="service">
-            🚀 Service Provider
-          </option>
-        </select>
+        {/* 🎛️ SEKSYON RÔLE CARD (GRID KONEKTE DIRÈK) */}
+        <div className="grid grid-cols-3 gap-y-4 gap-x-2 justify-items-center w-full mb-6 bg-navy-900/50 p-1 rounded-2xl">
+          {ROLES_LIST.map((item) => (
+            <RoleCard
+              key={item.id}
+              title={item.label}
+              icon={item.icon}
+              selected={form.accountType === item.id}
+              onClick={() => updateField("accountType", item.id)}
+            />
+          ))}
+        </div>
 
-        {/* WORKER ROLE */}
-
-        {form.accountType ===
-          "worker" && (
-          <select
-            value={
-              form.constructionRole
-            }
-            onChange={(
-              event
-            ) =>
-              updateField(
-                "constructionRole",
-                event.target.value
-              )
-            }
-            aria-label="Construction Role"
-            style={styles.input}
-          >
-            <option value="">
-              Select Role
-            </option>
-
-            {CONSTRUCTION_ROLES.map(
-              (role) => (
-                <option
-                  key={role}
-                  value={role}
-                >
-                  {role}
-                </option>
-              )
-            )}
-          </select>
-        )}
-
-        {/* BUSINESS TYPE */}
-
-        {form.accountType ===
-          "business" && (
-          <select
-            value={
-              form.businessType
-            }
-            onChange={(
-              event
-            ) =>
-              updateField(
-                "businessType",
-                event.target.value
-              )
-            }
-            aria-label="Business Type"
-            style={styles.input}
-          >
-            <option value="">
-              Select Business Type
-            </option>
-
-            {BUSINESS_TYPES.map(
-              (type) => (
-                <option
-                  key={type}
-                  value={type}
-                >
-                  {type}
-                </option>
-              )
-            )}
-          </select>
-        )}
-
-        {/* ERROR */}
-
+        {/* ALÈT YO */}
         {errorMessage && (
-          <div style={styles.error}>
+          <div className="mb-4 p-3 rounded-xl bg-danger-50 border border-danger-500/30 text-danger-500 text-xs text-center font-medium animate-fade-in">
             {errorMessage}
           </div>
         )}
 
-        {/* SUCCESS */}
-
         {success && (
-          <div style={styles.success}>
+          <div className="mb-4 p-3 rounded-xl bg-success-50 border border-success-600/30 text-success-500 text-xs text-center font-medium animate-fade-in">
             {success}
           </div>
         )}
 
-        {/* BUTTON */}
+        {/* FÒM NAN NÈT */}
+        <div className="flex flex-col gap-3">
+          <input
+            type="text"
+            name="fullName"
+            value={form.fullName}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Non konplè"
+            autoComplete="name"
+            aria-label="Full Name"
+            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
+          />
 
-        <button
-          type="button"
-          onClick={
-            handleRegister
-          }
-          disabled={isDisabled}
-          aria-busy={loading}
-          style={{
-            ...styles.button,
+          <input
+            type="text"
+            name="emailOrPhone"
+            value={form.emailOrPhone}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Nimewo telefòn oswa imèl"
+            autoComplete="username"
+            aria-label="Email or Phone"
+            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
+          />
 
-            opacity:
-              isDisabled
-                ? 0.7
-                : 1,
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Modpas"
+            autoComplete="new-password"
+            aria-label="Password"
+            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
+          />
 
-            cursor:
-              isDisabled
-                ? "not-allowed"
-                : "pointer",
-
-            transform:
-              loading
-                ? "scale(0.98)"
-                : "scale(1)",
-          }}
-        >
-          {loading
-            ? "Creating account..."
-            : "Create Account"}
-        </button>
-
-        {/* LOGIN LINK */}
-
-        <p style={styles.loginText}>
-          Already have an account?{" "}
-
-          <Link
-            to="/login"
-            style={
-              styles.loginLink
-            }
+          {/* GWO BOUTON JÒN LAN (Kòrèk selon MVP) */}
+          <button
+            type="button"
+            onClick={handleRegister}
+            disabled={isDisabled}
+            aria-busy={loading}
+            className={`
+              w-full font-display font-bold py-4 rounded-xl shadow-card text-sm tracking-wide mt-3 text-center transition-all duration-200
+              ${isDisabled 
+                ? "bg-gold-500/50 text-navy-900/60 cursor-not-allowed" 
+                : "bg-gold-400 text-navy-900 active:scale-95 hover:bg-gold-300 cursor-pointer"}
+            `}
           >
-            Login
-          </Link>
-        </p>
+            {loading ? "Y ap kreye kont..." : "Kreye Kont"}
+          </button>
+        </div>
+      </div>
 
-      </section>
+      {/* LYEN LOGIN LAN NAN FON AN */}
+      <p className="text-center text-xs text-text-muted mb-2 relative z-10">
+        Deja gen kont?{" "}
+        <Link to="/login" className="text-brand-400 hover:underline font-bold ml-1">
+          Login
+        </Link>
+      </p>
     </main>
   );
 }
-
-// ======================================================
-// 🎨 STYLES
-// ======================================================
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-
-    display: "flex",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    background:
-      "linear-gradient(to bottom, #020617, #0f172a)",
-
-    fontFamily:
-      "Inter, Arial, sans-serif",
-
-    padding: "20px",
-
-    position: "relative",
-
-    overflow: "hidden",
-  },
-
-  glow: {
-    position: "absolute",
-
-    inset: 0,
-
-    background:
-      "radial-gradient(circle at top, rgba(59,130,246,0.25), transparent 60%)",
-  },
-
-  card: {
-    position: "relative",
-
-    zIndex: 2,
-
-    width: "100%",
-
-    maxWidth: "400px",
-
-    padding: "32px",
-
-    background:
-      "rgba(255,255,255,0.05)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    backdropFilter:
-      "blur(18px)",
-
-    WebkitBackdropFilter:
-      "blur(18px)",
-
-    borderRadius: "24px",
-
-    overflow: "hidden",
-
-    color: "#fff",
-
-    boxShadow:
-      "0 25px 60px rgba(0,0,0,0.45)",
-  },
-
-  title: {
-    fontSize: "32px",
-
-    fontWeight: "900",
-
-    marginBottom: "6px",
-  },
-
-  subtitle: {
-    fontSize: "13px",
-
-    color: "#94a3b8",
-
-    marginBottom: "22px",
-
-    lineHeight: 1.6,
-  },
-
-  input: {
-    width: "100%",
-
-    boxSizing: "border-box",
-
-    padding: "13px 14px",
-
-    marginBottom: "12px",
-
-    borderRadius: "12px",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    outline: "none",
-
-    background:
-      "rgba(255,255,255,0.03)",
-
-    color: "#fff",
-
-    fontSize: "14px",
-
-    transition:
-      "all 0.3s ease",
-
-    boxShadow:
-      "0 0 0 rgba(59,130,246,0)",
-  },
-
-  button: {
-    width: "100%",
-
-    padding: "13px",
-
-    background:
-      "linear-gradient(to right, #22c55e, #16a34a)",
-
-    border: "none",
-
-    borderRadius: "12px",
-
-    color: "#fff",
-
-    fontWeight: "700",
-
-    fontSize: "15px",
-
-    transition:
-      "all 0.3s ease",
-
-    transform:
-      "translateZ(0)",
-
-    marginTop: "5px",
-  },
-
-  error: {
-    marginBottom: "14px",
-
-    padding: "12px",
-
-    borderRadius: "12px",
-
-    background:
-      "rgba(239,68,68,0.15)",
-
-    color: "#fca5a5",
-
-    fontSize: "13px",
-  },
-
-  success: {
-    marginBottom: "14px",
-
-    padding: "12px",
-
-    borderRadius: "12px",
-
-    background:
-      "rgba(34,197,94,0.15)",
-
-    color: "#86efac",
-
-    fontSize: "13px",
-  },
-
-  loginText: {
-    marginTop: "18px",
-
-    textAlign: "center",
-
-    fontSize: "13px",
-
-    color: "#94a3b8",
-  },
-
-  loginLink: {
-    color: "#60a5fa",
-
-    textDecoration: "none",
-
-    fontWeight: "700",
-  },
-};
 
 export default memo(Register);
