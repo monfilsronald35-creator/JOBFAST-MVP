@@ -16,6 +16,7 @@ export default {
           800: "#0E417A",
           900: "#0A2A4F",
         },
+        // Koulè Navy yo optimize pou UI Dark Mode primòm lan match ak dashboard la
         navy: {
           50: "#EAF0F7",
           100: "#D5DFEC",
@@ -25,15 +26,16 @@ export default {
           500: "#2C5F9F",
           600: "#214A7D",
           700: "#17365B",
-          800: "#0B1F3A",
-          900: "#071523",
+          800: "#0f172a", // Koulè fon fonse pou kat yo ak konpozan yo
+          900: "#090d16", // Background jeneral Dashboard la
+          950: "#05070c", // Tab bar anba nèt ak zòn ki pi fonse yo
         },
         gold: {
           50: "#FFF9E6",
           100: "#FFF1BF",
           200: "#FFE58A",
           300: "#FFD94D",
-          400: "#F5C518",
+          400: "#F5C518", // Koulè lò pwofesyonèl ou an
           500: "#E0AD00",
           600: "#B98600",
           700: "#8F6500",
@@ -60,7 +62,7 @@ export default {
           primary: "#0F172A",
           secondary: "#475569",
           muted: "#94A3B8",
-          inverse: "#FFFFFF",
+          inverse: "#FFFFFF", // Pou tèks blan yo nan dark mode a
         },
         border: {
           DEFAULT: "#E2E8F0",
