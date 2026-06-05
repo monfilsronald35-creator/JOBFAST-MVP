@@ -1,523 +1,131 @@
-// ======================================================
-// 🌍 src/pages/Login.jsx
-// 🚀 JOBFAST GLOBAL — LOGIN
-// ======================================================
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../services/auth';
 
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+export default function Login() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-import { useNavigate } from "react-router-dom";
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-import API from "../api/axios";
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-// ======================================================
-// 🧠 HELPERS
-// ======================================================
+    try {
+      const data = await loginUser({
+        email: formData.identifier.includes('@') ? formData.identifier : undefined,
+        phone: !formData.identifier.includes('@') ? formData.identifier : undefined,
+        password: formData.password
+      });
 
-const normalize = (value = "") =>
-  value.trim();
-
-const isValidForm = ({
-  emailOrPhone,
-  password,
-}) =>
-  normalize(emailOrPhone).length >= 3 &&
-  normalize(password).length >= 6;
-
-// ======================================================
-// 🚀 COMPONENT
-// ======================================================
-
-function Login() {
-
-  const navigate =
-    useNavigate();
-
-  const [form, setForm] =
-    useState({
-      emailOrPhone: "",
-      password: "",
-    });
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
-
-  const [success, setSuccess] =
-    useState("");
-
-  // ======================================================
-  // ⏱ AUTO CLEAR ALERTS
-  // ======================================================
-
-  useEffect(() => {
-
-    if (
-      !errorMessage &&
-      !success
-    ) {
-      return;
+      if (data) {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Idantifyan oswa modpas kòrèk. Rele ankò.');
+    } finally {
+      setLoading(false);
     }
-
-    const timer =
-      setTimeout(() => {
-
-        setErrorMessage("");
-
-        setSuccess("");
-
-      }, 4000);
-
-    return () =>
-      clearTimeout(timer);
-
-  }, [errorMessage, success]);
-
-  // ======================================================
-  // 🔄 UPDATE FIELD
-  // ======================================================
-
-  const updateField =
-    useCallback((name, value) => {
-
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-
-    }, []);
-
-  // ======================================================
-  // 🔄 HANDLE CHANGE
-  // ======================================================
-
-  const handleChange =
-    useCallback((event) => {
-
-      const {
-        name,
-        value,
-      } = event.target;
-
-      // ======================================================
-      // 🚫 PREVENT ONLY SPACE
-      // ======================================================
-
-      if (
-        name === "emailOrPhone" &&
-        value.length === 1 &&
-        value === " "
-      ) {
-        return;
-      }
-
-      updateField(name, value);
-
-    }, [updateField]);
-
-  // ======================================================
-  // 🧠 VALIDATION
-  // ======================================================
-
-  const isDisabled = useMemo(
-    () =>
-      loading ||
-      !isValidForm(form),
-
-    [form, loading]
-  );
-
-  // ======================================================
-  // 🚀 LOGIN
-  // ======================================================
-
-  const handleLogin =
-    useCallback(async () => {
-
-      if (loading) {
-        return;
-      }
-
-      if (isDisabled) {
-        return;
-      }
-
-      setLoading(true);
-
-      setErrorMessage("");
-
-      setSuccess("");
-
-      try {
-
-        const payload = {
-          emailOrPhone:
-            normalize(
-              form.emailOrPhone
-            ),
-
-          password:
-            normalize(
-              form.password
-            ),
-        };
-
-        const res =
-          await API.post(
-            "/auth/login",
-            payload
-          );
-
-        console.log(
-          "✅ LOGIN SUCCESS:",
-          res?.data
-        );
-
-        // ======================================================
-        // 🔐 SAVE TOKEN
-        // ======================================================
-
-        if (
-          res?.data?.token
-        ) {
-
-          localStorage.setItem(
-            "token",
-            res.data.token
-          );
-
-        }
-
-        setSuccess(
-          "Login successful"
-        );
-
-        // ======================================================
-        // 🚀 REDIRECT
-        // ======================================================
-
-        setTimeout(() => {
-
-          navigate("/");
-
-        }, 1200);
-
-      } catch (err) {
-
-        console.error(err);
-
-        setErrorMessage(
-          err?.response?.data
-            ?.message ||
-          err?.message ||
-          "Login failed"
-        );
-
-      } finally {
-
-        setLoading(false);
-      }
-
-    }, [
-      form,
-      isDisabled,
-      loading,
-      navigate,
-    ]);
-
-  // ======================================================
-  // ⌨️ ENTER SUBMIT
-  // ======================================================
-
-  const handleKeyDown =
-    useCallback(
-      (event) => {
-
-        if (
-          event.key === "Enter" &&
-          !loading
-        ) {
-          handleLogin();
-        }
-
-      },
-      [handleLogin, loading]
-    );
-
-  // ======================================================
-  // 🎨 UI
-  // ======================================================
+  };
 
   return (
-    <main style={styles.container}>
-      <section style={styles.card}>
+    <div className="min-h-screen bg-navy-900 text-text-inverse flex flex-col justify-between p-6 font-sans">
+      
+      {/* Spacing anlè a piske pa gen header nan desen LOGIN SCREEN nan image_28.png */}
+      <div className="h-12"></div>
 
-        <h1 style={styles.title}>
-          Login
-        </h1>
+      {/* Tit Akèy la - Egzak ak desen an */}
+      <div className="flex flex-col items-center text-center">
+        <h2 className="text-3xl font-display font-bold tracking-wide">Byenveni</h2>
+        <p className="text-text-muted text-sm mt-2">Kontinye ak kont ou</p>
+      </div>
 
-        <p style={styles.subtitle}>
-          Construction • Business •
-          Services Platform
-        </p>
-
-        {/* EMAIL / PHONE */}
-
-        <input
-          type="text"
-          name="emailOrPhone"
-          value={form.emailOrPhone}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Email or Phone"
-          autoComplete="username"
-          aria-label="Email or Phone"
-          style={styles.input}
-        />
-
-        {/* PASSWORD */}
-
-        <input
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Password"
-          autoComplete="current-password"
-          aria-label="Password"
-          style={styles.input}
-        />
-
-        {/* ERROR */}
-
-        {errorMessage && (
-          <div style={styles.error}>
-            {errorMessage}
+      {/* Fòm nan */}
+      <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto flex flex-col gap-4 my-auto">
+        
+        {/* Si gen erè */}
+        {error && (
+          <div className="bg-danger-50 border border-danger-500 text-danger-600 text-xs p-3 rounded-xl text-center font-medium animate-fade-in">
+            {error}
           </div>
         )}
 
-        {/* SUCCESS */}
+        {/* Input Idantifyan (Telefòn oswa Imèl) */}
+        <div className="flex flex-col gap-1">
+          <input
+            type="text"
+            name="identifier"
+            placeholder="Nimewo telefòn oswa imèl"
+            value={formData.identifier}
+            onChange={handleChange}
+            required
+            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
+          />
+        </div>
 
-        {success && (
-          <div style={styles.success}>
-            {success}
-          </div>
-        )}
+        {/* Input Modpas ak ti je a */}
+        <div className="relative flex flex-col gap-1">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            placeholder="Modpas"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-4 text-text-muted hover:text-text-inverse text-lg"
+          >
+            👁️
+          </button>
+        </div>
 
-        {/* BUTTON */}
+        {/* Lyen Modpas Bliye */}
+        <div className="text-center mt-2">
+          <span 
+            onClick={() => navigate('/forgot-password')} 
+            className="text-xs text-brand-500 cursor-pointer hover:underline font-medium tracking-wide"
+          >
+            Mwen bliye modpas mwen
+          </span>
+        </div>
 
+        {/* Gwo Bouton Login Lò/Jòn nan */}
         <button
-          type="button"
-          onClick={handleLogin}
-          disabled={isDisabled}
-          aria-busy={loading}
-          style={{
-            ...styles.button,
-
-            opacity:
-              isDisabled
-                ? 0.7
-                : 1,
-
-            cursor:
-              isDisabled
-                ? "not-allowed"
-                : "pointer",
-
-            transform:
-              loading
-                ? "scale(0.98)"
-                : "scale(1)",
-          }}
+          type="submit"
+          disabled={loading}
+          className="w-full bg-gold-400 text-navy-900 font-display font-bold py-4 rounded-xl shadow-card active:scale-95 hover:bg-gold-300 disabled:opacity-50 disabled:scale-100 transition-all text-center tracking-wide mt-4 text-sm"
         >
-          {loading
-            ? "Logging in..."
-            : "Login"}
+          {loading ? 'Y AP KONEKTE...' : 'Login'}
         </button>
 
-        <p style={styles.info}>
-          Access workers,
-          businesses, and services
-          near you
-        </p>
+        <div className="text-center mt-4">
+          <p className="text-xs text-text-muted">Oswa</p>
+        </div>
 
-      </section>
-    </main>
+        {/* Bouton pou Kreye Kont */}
+        <button
+          type="button"
+          onClick={() => navigate('/register')}
+          className="w-full text-brand-400 hover:text-brand-500 font-medium py-2 text-xs tracking-wide transition-all"
+        >
+          Kreye yon nouvo kont
+        </button>
+
+      </form>
+
+      {/* Spacing anba pou balanse layout a */}
+      <div className="h-12"></div>
+    </div>
   );
 }
-
-// ======================================================
-// 🎨 STYLES
-// ======================================================
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-
-    display: "flex",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    background:
-      "linear-gradient(to bottom, #020617, #0f172a)",
-
-    fontFamily:
-      "Inter, Arial, sans-serif",
-
-    padding: "20px",
-  },
-
-  card: {
-    width: "100%",
-
-    maxWidth: "380px",
-
-    padding: "30px",
-
-    background:
-      "rgba(255,255,255,0.05)",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    backdropFilter:
-      "blur(18px)",
-
-    WebkitBackdropFilter:
-      "blur(18px)",
-
-    borderRadius: "20px",
-
-    color: "#fff",
-
-    overflow: "hidden",
-
-    boxShadow:
-      "0 25px 60px rgba(0,0,0,0.45)",
-  },
-
-  title: {
-    fontSize: "30px",
-
-    fontWeight: "800",
-
-    marginBottom: "6px",
-  },
-
-  subtitle: {
-    fontSize: "13px",
-
-    color: "#94a3b8",
-
-    marginBottom: "22px",
-
-    lineHeight: 1.6,
-  },
-
-  input: {
-    width: "100%",
-
-    padding: "12px 14px",
-
-    marginBottom: "12px",
-
-    borderRadius: "12px",
-
-    border:
-      "1px solid rgba(255,255,255,0.08)",
-
-    outline: "none",
-
-    boxSizing: "border-box",
-
-    background:
-      "rgba(255,255,255,0.03)",
-
-    color: "#fff",
-
-    fontSize: "14px",
-
-    transition:
-      "all 0.3s ease",
-
-    boxShadow:
-      "0 0 0 rgba(59,130,246,0)",
-  },
-
-  button: {
-    width: "100%",
-
-    padding: "12px",
-
-    background:
-      "linear-gradient(to right, #2563eb, #3b82f6)",
-
-    border: "none",
-
-    borderRadius: "12px",
-
-    color: "#fff",
-
-    fontWeight: "700",
-
-    transition:
-      "all 0.3s ease",
-
-    transform:
-      "translateZ(0)",
-  },
-
-  error: {
-    marginBottom: "14px",
-
-    padding: "12px",
-
-    borderRadius: "12px",
-
-    background:
-      "rgba(239,68,68,0.15)",
-
-    color: "#fca5a5",
-
-    fontSize: "13px",
-  },
-
-  success: {
-    marginBottom: "14px",
-
-    padding: "12px",
-
-    borderRadius: "12px",
-
-    background:
-      "rgba(34,197,94,0.15)",
-
-    color: "#86efac",
-
-    fontSize: "13px",
-  },
-
-  info: {
-    fontSize: "12px",
-
-    color: "#94a3b8",
-
-    marginTop: "14px",
-
-    textAlign: "center",
-
-    lineHeight: 1.6,
-  },
-};
-
-export default memo(Login);
