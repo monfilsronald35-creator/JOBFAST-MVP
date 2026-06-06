@@ -4,13 +4,12 @@
 
 import express from 'express';
 
-// 🚀 Enpòtasyon kontwolè yo
+// 🚀 Kontwolè yo
 import { loginController } from '../controllers/login.controller.js';
 import { registerController } from '../controllers/register.controller.js';
 
-// 🛡️ FIKS MIDDLEWARE: Chemen sekirize pou Linux sou Render
-// Si folder ou a sou Git rele "middleware" san "s", jis wete "s" la nan chemen sa a:
-import { authMiddleware } from './../middlewares/auth.js';
+// 🛡️ FIKS MIDDLEWARE: Chemen dirèk nan src/auth.js nou sot kreye a!
+import { authMiddleware } from '../auth.js';
 
 const router = express.Router();
 
