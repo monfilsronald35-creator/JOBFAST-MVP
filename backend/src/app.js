@@ -9,9 +9,8 @@ import { env } from './config/env.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/users.routes.js';
 import jobRoutes from './routes/jobs.routes.js';
-// Si sou GitHub li gen yon gwo "E", mete gwo "E" a nan app.js la tou:
-import { notFoundHandler, errorHandler } from './middlewares/ErrorHandler.js';
-
+// Ranplase liy 13 la ak liy sa a:
+import { notFoundHandler, errorHandler } from './ErrorHandler.js';
 
 const app = express();
 
