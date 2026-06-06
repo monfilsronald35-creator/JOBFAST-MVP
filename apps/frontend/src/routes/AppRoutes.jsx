@@ -1,12 +1,13 @@
 import React, { memo } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// ✅ ENPÒTASYON KI KORÈK SELON SOU GITHUB OU
+// ✅ ENPÒTASYON PWÒP SAN KONFLI
 import SplashScreen from "../pages/SplashScreen.jsx";
-import RegisterScreen from "../pages/Register.jsx"; // Fiks: Soti nan RegisterScreen vini nan Register.jsx
-import LoginScreen from "../pages/Login.jsx";       // Fiks: Soti nan LoginScreen vini nan Login.jsx
+import Onboarding from "../pages/Onboarding.jsx";
+import RegisterScreen from "../pages/Register.jsx"; 
+import LoginScreen from "../pages/Login.jsx";       
 import Dashboard from "../pages/Dashboard.jsx";
-import CreatePost from "../pages/createPost.jsx";    // Fiks: ti "c" nan createPost.jsx
+import PostJobScreen from "../pages/PostJobScreen.jsx"; // Ranplase createPost nèt
 import AvailabilityStatus from "../pages/AvailabilityStatus.jsx";
 import ProfileScreen from "../pages/ProfileScreen.jsx";
 import SearchScreen from "../pages/SearchScreen.jsx";
@@ -25,12 +26,13 @@ const AppRoutes = () => {
       <Routes>
         {/* Paj Piblik */}
         <Route path="/" element={<SplashScreen />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/register" element={<RegisterScreen />} />
         <Route path="/login" element={<LoginScreen />} />
 
         {/* Paj Prive (Obligatwa pou konekte) */}
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/create-post" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
+        <Route path="/post-job" element={<PrivateRoute><PostJobScreen /></PrivateRoute>} />
         <Route path="/status" element={<PrivateRoute><AvailabilityStatus /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><ProfileScreen /></PrivateRoute>} />
         <Route path="/search" element={<PrivateRoute><SearchScreen /></PrivateRoute>} />
