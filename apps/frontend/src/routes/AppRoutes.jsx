@@ -1,15 +1,15 @@
 import React, { memo } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Enpòtasyon paj yo (Lazy loading pou pèfòmans maksimòm)
-import SplashScreen from "../pages/SplashScreen";
-import RegisterScreen from "../pages/RegisterScreen";
-import LoginScreen from "../pages/LoginScreen";
-import Dashboard from "../pages/Dashboard";
-import CreatePost from "../pages/CreatePost";
-import AvailabilityStatus from "../pages/AvailabilityStatus";
-import ProfileScreen from "../pages/ProfileScreen";
-import SearchScreen from "../pages/SearchScreen";
+// Enpòtasyon paj yo ak estansyon .jsx fiks pou Vercel Linux
+import SplashScreen from "../pages/SplashScreen.jsx";
+import RegisterScreen from "../pages/RegisterScreen.jsx";
+import LoginScreen from "../pages/LoginScreen.jsx";
+import Dashboard from "../pages/Dashboard.jsx";
+import CreatePost from "../pages/CreatePost.jsx";
+import AvailabilityStatus from "../pages/AvailabilityStatus.jsx";
+import ProfileScreen from "../pages/ProfileScreen.jsx";
+import SearchScreen from "../pages/SearchScreen.jsx";
 
 // Tcheke si itilizatè a konekte (Senp otantifikasyon)
 const isAuthenticated = () => !!localStorage.getItem("token");
