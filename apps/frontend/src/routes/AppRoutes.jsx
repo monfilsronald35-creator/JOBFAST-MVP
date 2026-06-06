@@ -1,12 +1,12 @@
 import React, { memo } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Enpòtasyon paj yo ak estansyon .jsx fiks pou Vercel Linux
+// ✅ ENPÒTASYON KI KORÈK SELON SOU GITHUB OU
 import SplashScreen from "../pages/SplashScreen.jsx";
-import RegisterScreen from "../pages/RegisterScreen.jsx";
-import LoginScreen from "../pages/LoginScreen.jsx";
+import RegisterScreen from "../pages/Register.jsx"; // Fiks: Soti nan RegisterScreen vini nan Register.jsx
+import LoginScreen from "../pages/Login.jsx";       // Fiks: Soti nan LoginScreen vini nan Login.jsx
 import Dashboard from "../pages/Dashboard.jsx";
-import CreatePost from "../pages/CreatePost.jsx";
+import CreatePost from "../pages/createPost.jsx";    // Fiks: ti "c" nan createPost.jsx
 import AvailabilityStatus from "../pages/AvailabilityStatus.jsx";
 import ProfileScreen from "../pages/ProfileScreen.jsx";
 import SearchScreen from "../pages/SearchScreen.jsx";
@@ -35,7 +35,7 @@ const AppRoutes = () => {
         <Route path="/profile" element={<PrivateRoute><ProfileScreen /></PrivateRoute>} />
         <Route path="/search" element={<PrivateRoute><SearchScreen /></PrivateRoute>} />
 
-        {/* Catch-all route: redireksyon si itilizatè a ale sou yon paj ki pa egziste */}
+        {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
