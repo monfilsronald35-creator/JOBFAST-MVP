@@ -55,19 +55,22 @@ function Onboarding() {
   const [currentSlide, setCurrentSlide] = useState(1); // Kòmanse nan 1 pou repwodwi dezyèm pwen an nèt sou imaj la
 
   const slides = [
-    {
-      title: "Byenveni nan JOBFAST",
-      description: "Platfòm ki konekte travayè, kliyan, biznis ak sèvis nan zòn ou."
-    },
-    {
-      title: "Byenveni nan JOBFAST",
-      description: "Platfòm ki konekte travayè, kliyan, biznis ak sèvis nan zòn ou."
-    },
-    {
-      title: "Byenveni nan JOBFAST",
-      description: "Platfòm ki konekte travayè, kliyan, biznis ak sèvis nan zòn ou."
-    }
-  ];
+  {
+    title: "Byenveni nan JOBFAST",
+    description:
+      "Platfòm entelijan ki konekte kliyan, pwofesyonèl, antrepriz ak sèvis esansyèl nan yon sèl ekosistèm dijital."
+  },
+  {
+    title: "Jwenn Sèvis Pi Vit",
+    description:
+      "Lokalize travayè kalifye, sèvis konstriksyon ak pwofesyonèl verifye toupre ou gras ak teknoloji GPS an tan reyèl."
+  },
+  {
+    title: "Devlope Aktivite Ou",
+    description:
+      "Jere pwofil ou, resevwa notifikasyon enpòtan, jwenn nouvo opòtinite epi fè biznis ou grandi avèk JOBFAST."
+  }
+];
 
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
