@@ -4,9 +4,9 @@
 
 import express from 'express';
 
-// Controllers (Ranje ak chemen eksplit ak estansyon .js)
-import { loginController } from '../controllers/auth/login.controller.js';
-import { registerController } from '../controllers/auth/register.controller.js';
+// 🚀 FIKS: Enpòtasyon dirèk san folder entèmedyè pou evite konfli lèt kapital sou Render
+import { loginController } from '../controllers/login.controller.js';
+import { registerController } from '../controllers/register.controller.js';
 
 // Middleware
 import { authMiddleware } from '../middlewares/auth.js';
@@ -19,15 +19,13 @@ const router = express.Router();
 const requestMap = new Map();
 
 function rateLimit(req, res, next) {
-  // Sekirize rekiperasyon IP a pou anpeche spoofing nan proxy
   const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
   const ip = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : rawIp;
 
   const now = Date.now();
-  const windowMs = 15 * 60 * 1000; // 15 minit fenèt anrejistreman
-  const maxRequests = 50;          // Limit maksimòm tantativ
+  const windowMs = 15 * 60 * 1000; // 15 minit
+  const maxRequests = 50;          // Limit tantativ
 
-  // 🧹 Auto-cleanup memwa si map la vin twò gwo pou evite Memory Leaks
   if (requestMap.size > 5000) {
     requestMap.clear();
   }
@@ -39,13 +37,11 @@ function rateLimit(req, res, next) {
     return next();
   }
 
-  // Si tan fenèt la fin pase, reset kontè a pou IP sa a
   if (now - data.start > windowMs) {
     requestMap.set(ip, { count: 1, start: now });
     return next();
   }
 
-  // Bloque si li depase limit la
   if (data.count >= maxRequests) {
     return res.status(429).json({
       success: false,
@@ -76,8 +72,6 @@ router.get('/me', authMiddleware, (req, res) => {
 });
 
 router.post('/logout', authMiddleware, (req, res) => {
-  // INFO: Nan JWT, logout la fèt plis sou frontend lan lè w siye token an, 
-  // men endpoint sa a bon pou w ka invalidat li nan blacklist si sa nesesè pita.
   res.status(200).json({
     success: true,
     message: 'Session closed successfully. Logged out.',
