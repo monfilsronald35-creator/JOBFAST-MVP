@@ -4,12 +4,13 @@
 
 import express from 'express';
 
-// 🚀 FIKS: Enpòtasyon dirèk san folder entèmedyè pou evite konfli lèt kapital sou Render
+// 🚀 Enpòtasyon kontwolè yo
 import { loginController } from '../controllers/login.controller.js';
 import { registerController } from '../controllers/register.controller.js';
 
-// Middleware
-import { authMiddleware } from '../middlewares/auth.js';
+// 🛡️ FIKS MIDDLEWARE: Chemen sekirize pou Linux sou Render
+// Si folder ou a sou Git rele "middleware" san "s", jis wete "s" la nan chemen sa a:
+import { authMiddleware } from './../middlewares/auth.js';
 
 const router = express.Router();
 
