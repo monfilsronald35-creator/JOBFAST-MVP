@@ -1,102 +1,90 @@
-import React, { memo } from "react";
-import PropTypes from "prop-types";
+import React from "react";
+import { 
+  Briefcase, 
+  Building2, 
+  Zap, 
+  Terminal, 
+  MapPin, 
+  DollarSign 
+} from "lucide-react";
 
-// ======================================================
-// 📦 IKON SVG YO (Liy Fin, Lejè, Style Mondyal)
-// ======================================================
-const LocationIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 flex-shrink-0">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-  </svg>
-);
-
-// Map Ikon Emoji oswa Ikon Custom selon Kategori yo (Menm jan ak makèt la)
 const CATEGORY_ICONS = {
-  construction: "🤠",
-  services: "👷‍♂️",
-  businesses: "👨‍💼",
-  jobs: "🧑‍💻",
-  default: "💼"
+  construction: Briefcase,
+  services: Zap,
+  businesses: Building2,
+  jobs: Terminal,
+  default: Briefcase
 };
 
-// ======================================================
-// 🚀 MAIN JOB CARD COMPONENT
-// ======================================================
 function JobCard({ 
   title, 
-  location, 
-  distance, 
+  location = "Bávaro, Punta Cana", 
+  distance = "0.0", 
   price, 
   period = "jou", 
-  status = "disponib", // disponib, okipe, chantier, pa_disponib
+  status = "disponib",
   category = "default",
   onClick 
 }) {
-
-  // Jere Estati a ak koulè pwen yo (Kòrèk selon MVP Flow la)
-  const getStatusColor = (currentStatus) => {
+  const getStatusClasses = (currentStatus) => {
     switch (currentStatus?.toLowerCase()) {
       case "disponib":
-        return "bg-success-500"; // Vèt
+        return "bg-emerald-500 ring-emerald-500/20";
       case "okipe":
-        return "bg-warning-500"; // Jòn / Oranj
+        return "bg-amber-500 ring-amber-500/20";
       case "sou chantier":
       case "chantier":
-        return "bg-brand-500"; // Ble
+        return "bg-blue-500 ring-blue-500/20";
       case "pa disponib":
-      case "pa_disponib":
-        return "bg-danger-500"; // Wouj
+        return "bg-rose-500 ring-rose-500/20";
       default:
-        return "bg-success-500";
+        return "bg-emerald-500 ring-emerald-500/20";
     }
   };
 
-  const iconPlaceholder = CATEGORY_ICONS[category.toLowerCase()] || CATEGORY_ICONS.default;
+  const IconComponent = CATEGORY_ICONS[category.toLowerCase()] || CATEGORY_ICONS.default;
 
   return (
     <div 
       onClick={onClick}
-      className="w-full bg-navy-850 border border-navy-800 hover:border-navy-700 rounded-2xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all duration-200 group shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:shadow-glow"
+      tabIndex={0}
+      role="button"
+      aria-label={`${title} nan distans ${distance} kilomèt`}
+      className="select-none w-full bg-navy-800/20 border border-slate-800/60 hover:border-slate-700 rounded-2xl p-4 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all duration-200 group shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-400/20"
     >
-      {/* 🟢 PATI GÒCH: AVATAR / IKON + ENFÒMASYON */}
       <div className="flex items-center gap-3.5 min-w-0">
         
-        {/* Kontenè Ikon Pwofesyonèl ak Pwen Estati Sou Li */}
-        <div className="relative flex-shrink-0 w-12 h-12 bg-navy-800 rounded-xl border border-navy-700 flex items-center justify-center text-2xl shadow-inner group-hover:scale-105 transition-transform">
-          <span>{iconPlaceholder}</span>
-          
-          {/* Ti Pwen Estati a nan kwen an anba */}
-          <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-navy-850 ${getStatusColor(status)} shadow-sm`}></span>
+        <div className="relative flex-shrink-0 w-12 h-12 bg-navy-900 rounded-xl border border-navy-800 flex items-center justify-center text-gold-400 shadow-inner group-hover:scale-105 transition-transform duration-200">
+          <IconComponent className="h-5 w-5" strokeWidth={2.5} />
+          <span 
+            className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-navy-900 ring-4 ${getStatusClasses(status)}`}
+            aria-hidden="true"
+          />
         </div>
 
-        {/* Detay Tèks yo (Tit, Kote, ak Ti Badj Estati a) */}
-        <div className="min-w-0 flex flex-col gap-0.5">
-          <h3 className="text-sm font-semibold tracking-wide text-text-inverse truncate group-hover:text-gold-400 transition-colors">
+        <div className="min-w-0 flex flex-col gap-1">
+          <h3 className="text-xs font-black tracking-wide text-white truncate group-hover:text-gold-400 transition-colors duration-200">
             {title}
           </h3>
           
-          <div className="flex items-center gap-1.5 text-xs text-text-muted">
-            <LocationIcon />
+          <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-gold-400/80" strokeWidth={2.5} />
             <span className="truncate">{location}</span>
           </div>
         </div>
 
       </div>
 
-      {/* 🟡 PATI DWA: DISTANS AK PRI (LÒ) */}
       <div className="flex flex-col items-end justify-between h-12 flex-shrink-0 pl-2">
-        {/* Distans nan nivo KM */}
-        <span className="text-xs font-semibold text-text-muted bg-navy-800/60 px-2 py-0.5 rounded-md border border-navy-700/50">
+        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 bg-navy-900/60 border border-slate-800 px-2 py-0.5 rounded-lg">
           {distance} km
         </span>
         
-        {/* Pri a an jòn lò */}
-        <div className="text-right">
-          <span className="text-sm font-bold text-gold-400 tracking-tight">
+        <div className="text-right flex items-baseline">
+          <span className="text-xs font-black text-gold-400 tracking-tight">
             USD {price}
           </span>
-          <span className="text-[10px] text-text-muted font-medium ml-0.5">
+          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider ml-1">
             / {period}
           </span>
         </div>
@@ -106,18 +94,4 @@ function JobCard({
   );
 }
 
-// ======================================================
-// 🛡️ PROP TYPES VALIDATION
-// ======================================================
-JobCard.propTypes = {
-  title: PropTypes.string.isRequired,
-  location: PropTypes.string.isRequired,
-  distance: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  period: PropTypes.string,
-  status: PropTypes.string,
-  category: PropTypes.string,
-  onClick: PropTypes.func
-};
-
-export default memo(JobCard);
+export default JobCard;
