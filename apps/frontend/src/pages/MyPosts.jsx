@@ -1,11 +1,18 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  Briefcase, 
+  Building2, 
+  Zap, 
+  MapPin, 
+  Calendar, 
+  Trash2, 
+  Plus, 
+  AlertTriangle,
+  Pencil
+} from "lucide-react";
 
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
-
-// ======================================================
-// 🌍 DATA LAYER
-// ======================================================
-
-const INITIAL_POSTS = Object.freeze([
+const INITIAL_POSTS = [
   {
     id: 1,
     title: "Need Mason in Bavaro",
@@ -36,301 +43,185 @@ const INITIAL_POSTS = Object.freeze([
     createdAt: "2026-05-05",
     timestamp: new Date("2026-05-05").getTime(),
   },
-]);
+];
 
-const STATUS_CONFIG = Object.freeze({
-  OPEN: { label: "OPEN", color: "#22c55e" },
-  CLOSED: { label: "CLOSED", color: "#ef4444" },
-  DEFAULT: { label: "UNKNOWN", color: "#64748b" },
-});
+const STATUS_CONFIG = {
+  OPEN: { label: "OPEN", classes: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" },
+  CLOSED: { label: "CLOSED", classes: "bg-rose-500/10 border-rose-500/30 text-rose-400" },
+  DEFAULT: { label: "UNKNOWN", classes: "bg-slate-500/10 border-slate-500/30 text-slate-400" },
+};
 
-const TYPE_ICONS = Object.freeze({
-  construction: "👷",
-  business: "🏢",
-  service: "🚀",
-});
+const TYPE_ICONS = {
+  construction: Briefcase,
+  business: Building2,
+  service: Zap,
+};
 
-// ======================================================
-// 🧠 HELPERS
-// ======================================================
+const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
 
-const getStatusConfig = (status) =>
-  STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
+const sortPosts = (posts) => [...posts].sort((a, b) => b.timestamp - a.timestamp);
 
-const sortPosts = (posts) =>
-  [...posts].sort((a, b) => b.timestamp - a.timestamp);
-
-// ======================================================
-// 🎨 EMPTY STATE
-// ======================================================
-
-const EmptyState = memo(({ onCreate }) => (
-  <div style={styles.emptyCard}>
-    <h3 style={styles.emptyTitle}>No posts found</h3>
-    <p style={styles.emptyText}>
-      Create your first JOBFAST post to start getting opportunities.
-    </p>
-
-    <button style={styles.createBtn} onClick={onCreate}>
-      Create Post
-    </button>
-  </div>
-));
-
-// ======================================================
-// 🎨 POST CARD
-// ======================================================
-
-const PostCard = memo(function PostCard({ post, onDelete }) {
-  const status = getStatusConfig(post.status);
-
-  const handleDelete = useCallback(() => {
-    onDelete(post.id);
-  }, [onDelete, post.id]);
-
-  return (
-    <article style={styles.card}>
-      <div style={styles.cardHeader}>
-        <div>
-          <h3 style={styles.cardTitle}>
-            {TYPE_ICONS[post.type]} {post.title}
-          </h3>
-          <p style={styles.cardMeta}>{post.category}</p>
-        </div>
-
-        <span style={{ ...styles.status, background: status.color }}>
-          {status.label}
-        </span>
-      </div>
-
-      <div style={styles.cardBody}>
-        <p style={styles.text}>📍 {post.location}</p>
-        <p style={styles.date}>Posted: {post.createdAt}</p>
-      </div>
-
-      <button style={styles.deleteBtn} onClick={handleDelete}>
-        Delete
-      </button>
-    </article>
-  );
-});
-
-// ======================================================
-// 🚀 DELETE MODAL (SAFE)
-// ======================================================
-
-const DeleteModal = memo(({ open, onCancel, onConfirm }) => {
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") onCancel();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onCancel]);
-
-  if (!open) return null;
-
-  return (
-    <div style={styles.modalOverlay} onClick={onCancel}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 style={styles.modalTitle}>Delete this post?</h3>
-
-        <p style={styles.modalText}>
-          This action is permanent and cannot be undone.
-        </p>
-
-        <div style={styles.modalActions}>
-          <button style={styles.cancelBtn} onClick={onCancel}>
-            Cancel
-          </button>
-
-          <button style={styles.confirmBtn} onClick={onConfirm}>
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// ======================================================
-// 🚀 MAIN COMPONENT (FULL SAFE ARCHITECTURE)
-// ======================================================
-
-function MyPosts() {
+export default function MyPosts() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState(INITIAL_POSTS);
   const [pendingDelete, setPendingDelete] = useState(null);
 
-  const sortedPosts = useMemo(() => sortPosts(posts), [posts]);
+  const sortedPosts = sortPosts(posts);
   const totalPosts = sortedPosts.length;
 
-  // ✅ SAFE delete request
-  const requestDelete = useCallback((id) => {
-    setPendingDelete(id);
-  }, []);
+  const requestDelete = (id) => setPendingDelete(id);
 
-  // 🔥 FIX: NO STALE STATE RISK ANYMORE
-  const confirmDelete = useCallback(() => {
-    setPosts((prev) => {
-      if (pendingDelete == null) return prev;
-      return prev.filter((p) => p.id !== pendingDelete);
-    });
-
+  const confirmDelete = () => {
+    if (pendingDelete == null) return;
+    setPosts((prev) => prev.filter((p) => p.id !== pendingDelete));
     setPendingDelete(null);
-  }, [pendingDelete]);
+  };
 
-  const cancelDelete = useCallback(() => {
-    setPendingDelete(null);
-  }, []);
+  const cancelDelete = () => setPendingDelete(null);
 
-  const handleCreate = useCallback(() => {
-    console.log("navigate:/create-post");
-  }, []);
+  const requestEdit = (post) => {
+    // Navigate ak pòs la pou modifye
+    navigate(`/edit-post?id=${post.id}`, { state: { post } });
+  };
 
   return (
-    <main style={styles.container}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>My Posts</h1>
-
-        <p style={styles.subtitle}>
-          Manage your construction, business and service posts
-        </p>
-
-        <p style={styles.count}>
-          {totalPosts} post{totalPosts !== 1 ? "s" : ""}
-        </p>
+    <div className="flex min-h-screen w-full flex-col animate-fade-in select-none bg-navy-900 px-6 py-10 font-sans text-white">
+      
+      <header className="mx-auto mb-8 flex w-full max-w-sm items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-white">Pòs Mwen Yo</h1>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">
+            {totalPosts} pòs pibliye
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/create-post")}
+          aria-label="Kreye yon nouvo pòs"
+          className="flex h-10 w-10 active:scale-95 items-center justify-center rounded-xl bg-gold-400 text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+        >
+          <Plus className="h-5 w-5" strokeWidth={3} />
+        </button>
       </header>
 
-      <section style={styles.list}>
+      <main className="mx-auto flex-1 w-full max-w-sm space-y-4">
         {totalPosts === 0 ? (
-          <EmptyState onCreate={handleCreate} />
+          <div className="flex flex-col items-center justify-center border border-dashed border-slate-800 bg-navy-800/10 p-6 py-24 text-center rounded-2xl">
+            <div className="rounded-2xl border border-navy-800 bg-navy-800/20 p-4 mb-4">
+              <Briefcase className="h-8 w-8 text-slate-600" />
+            </div>
+            <h3 className="font-bold text-sm text-white">Pa gen okenn pòs</h3>
+            <p className="mt-1 text-xs max-w-[240px] leading-relaxed text-slate-400">
+              Pibliye premye pòs ou sou JobFast pou ou ka kòmanse resevwa òf rapid.
+            </p>
+            <button
+              onClick={() => navigate("/create-post")}
+              className="mt-5 active:scale-95 rounded-xl bg-gold-400 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+            >
+              Kreye yon pòs
+            </button>
+          </div>
         ) : (
-          sortedPosts.map((post) => (
-            <PostCard key={post.id} post={post} onDelete={requestDelete} />
-          ))
-        )}
-      </section>
+          sortedPosts.map((post) => {
+            const status = getStatusConfig(post.status);
+            const IconComponent = TYPE_ICONS[post.type] || Briefcase;
+            
+            return (
+              <article 
+                key={post.id} 
+                className="relative overflow-hidden rounded-2xl border border-slate-800/60 bg-navy-800/20 p-5 transition-all hover:border-slate-700"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-navy-800 bg-navy-900 text-gold-400 shadow-inner">
+                      <IconComponent className="h-4 w-4" strokeWidth={2.5} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="truncate text-sm font-black tracking-wide text-white">
+                        {post.title}
+                      </h3>
+                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        {post.category}
+                      </p>
+                    </div>
+                  </div>
 
-      <DeleteModal
-        open={Boolean(pendingDelete)}
-        onCancel={cancelDelete}
-        onConfirm={confirmDelete}
-      />
-    </main>
+                  <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${status.classes}`}>
+                    {status.label}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-1.5 border-t border-slate-800/40 pt-3 text-xs font-semibold text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                    <span className="truncate">{post.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500">
+                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                    <span>Pibliye: {post.createdAt}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    onClick={() => requestEdit(post)}
+                    aria-label={`Modifye pòs ${post.title}`}
+                    className="flex items-center gap-1.5 active:scale-95 rounded-xl border border-transparent bg-blue-500/10 px-3.5 py-2 text-xs font-bold text-blue-400 transition-all hover:bg-blue-500/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>Modifye</span>
+                  </button>
+                  <button
+                    onClick={() => requestDelete(post.id)}
+                    aria-label={`Efase pòs ${post.title}`}
+                    className="flex items-center gap-1.5 active:scale-95 rounded-xl border border-transparent bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-400 transition-all hover:bg-rose-500/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Efase</span>
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        )}
+      </main>
+
+      {pendingDelete && (
+        <div
+          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-6 backdrop-blur-sm"
+          onClick={cancelDelete}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="w-full max-w-xs rounded-2xl border border-slate-800 bg-navy-900 p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-400 mb-4">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            
+            <h3 className="text-center text-base font-black tracking-wide text-white">Efase pòs sa a?</h3>
+            <p className="mt-2 text-center text-xs font-medium leading-relaxed text-slate-400">
+              Aksyon sa a se pèmanan. Ou p ap kapab rekipere pòs sa a ankò si ou efase li.
+            </p>
+            
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={cancelDelete}
+                className="flex-1 active:scale-95 rounded-xl border border-slate-800 bg-navy-800/40 py-3 text-xs font-bold uppercase tracking-widest text-slate-300 transition-all hover:bg-navy-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+              >
+                Anile
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 active:scale-95 rounded-xl bg-rose-500 py-3 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-rose-600 shadow-md shadow-rose-500/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+              >
+                Efase
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
-
-// ======================================================
-// 🎨 STYLES (UNCHANGED)
-// ======================================================
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    padding: "24px",
-    background: "linear-gradient(to bottom, #020617, #0f172a)",
-    color: "#fff",
-    fontFamily: "Inter, Arial, sans-serif",
-  },
-  header: { marginBottom: "24px" },
-  title: { fontSize: "32px", fontWeight: "800" },
-  subtitle: { color: "#94a3b8", fontSize: "14px", marginTop: "8px" },
-  count: { marginTop: "10px", color: "#cbd5e1", fontSize: "13px" },
-  list: { display: "grid", gap: "14px" },
-  card: {
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "22px",
-    padding: "18px",
-  },
-  cardHeader: { display: "flex", justifyContent: "space-between" },
-  cardTitle: { fontSize: "18px", fontWeight: "700" },
-  cardMeta: { fontSize: "12px", color: "#94a3b8" },
-  cardBody: { marginTop: "10px" },
-  text: { color: "#cbd5e1", fontSize: "14px" },
-  date: { fontSize: "12px", color: "#94a3b8" },
-  status: {
-    padding: "6px 12px",
-    borderRadius: "999px",
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "#fff",
-  },
-  deleteBtn: {
-    marginTop: "12px",
-    background: "#ef4444",
-    border: "none",
-    padding: "10px 14px",
-    borderRadius: "10px",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-  emptyCard: {
-    padding: "40px",
-    textAlign: "center",
-    borderRadius: "22px",
-    background: "rgba(255,255,255,0.04)",
-  },
-  emptyTitle: { fontSize: "16px", fontWeight: "700" },
-  emptyText: { marginTop: "8px", color: "#94a3b8", fontSize: "13px" },
-  createBtn: {
-    marginTop: "15px",
-    background: "#3b82f6",
-    border: "none",
-    padding: "10px 14px",
-    borderRadius: "10px",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.65)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 999,
-  },
-  modal: {
-    background: "#0f172a",
-    padding: "22px",
-    borderRadius: "16px",
-    width: "92%",
-    maxWidth: "380px",
-    border: "1px solid rgba(255,255,255,0.08)",
-  },
-  modalTitle: { fontSize: "18px", fontWeight: "800" },
-  modalText: { marginTop: "8px", color: "#94a3b8", fontSize: "13px" },
-  modalActions: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "16px",
-  },
-  cancelBtn: {
-    flex: 1,
-    background: "#334155",
-    border: "none",
-    padding: "10px",
-    borderRadius: "10px",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-  confirmBtn: {
-    flex: 1,
-    background: "#ef4444",
-    border: "none",
-    padding: "10px",
-    borderRadius: "10px",
-    color: "#fff",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-};
-
-export default memo(MyPosts);
