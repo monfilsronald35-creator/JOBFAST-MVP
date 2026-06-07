@@ -163,7 +163,7 @@ export default function NotificationsScreen() {
                 className={`flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition-all active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10
                   ${notif.unread 
                     ? 'bg-navy-800/40 border-gold-400/20 shadow-md' 
-                    : 'bg-navy-800/10 border-slate-800/40 hover:bg-navy-800/30'
+                    : 'bg-navy-800/10 border-slate-800/40 hover:bg-navy-800/30' 
                   }`}
               >
                 <div className="flex-shrink-0 rounded-xl border border-navy-800 bg-navy-900 p-2.5 shadow-inner">
