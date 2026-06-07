@@ -36,11 +36,11 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-between bg-navy-900 px-6 py-12 font-sans text-text-inverse">
+    <div className="flex min-h-screen flex-col justify-between bg-navy-900 px-6 py-12 font-sans">
       <div className="h-12" />
 
       <div className="flex flex-col items-center text-center">
-        <h2 className="text-3xl font-display font-bold tracking-wide text-white">Byenveni</h2>
+        <h2 className="font-display text-3xl font-bold tracking-wide text-white">Byenveni</h2>
         <p className="mt-2 text-sm text-slate-400">Kontinye ak kont ou</p>
       </div>
 
@@ -67,7 +67,7 @@ export default function Login() {
             value={formData.identifier}
             onChange={handleChange}
             required
-            className="w-full rounded-2xl border border-navy-700 bg-navy-800 px-4 py-4 text-sm text-text-inverse placeholder-slate-500 transition-all focus:border-gold-500 focus:outline-none focus:ring-4 focus:ring-gold-500/10"
+            className="w-full rounded-2xl border border-navy-700 bg-navy-800 px-4 py-4 text-sm placeholder-slate-500 transition-all focus:border-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
           />
         </div>
 
@@ -84,14 +84,14 @@ export default function Login() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full rounded-2xl border border-navy-700 bg-navy-800 px-4 py-4 pr-16 text-sm text-text-inverse placeholder-slate-500 transition-all focus:border-gold-500 focus:outline-none focus:ring-4 focus:ring-gold-500/10"
+            className="w-full rounded-2xl border border-navy-700 bg-navy-800 px-4 py-4 pr-16 text-sm placeholder-slate-500 transition-all focus:border-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? "Kache modpas" : "Montre modpas"}
             aria-pressed={showPassword}
-            className="absolute right-4 top-10 text-xs font-bold text-slate-400 transition-colors hover:text-white"
+            className="absolute right-4 top-10 text-xs font-bold text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
           >
             {showPassword ? "Kache" : "Montre"}
           </button>
@@ -101,7 +101,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => navigate("/forgot-password")}
-            className="text-xs font-medium tracking-wide text-gold-400 transition-colors hover:text-gold-300"
+            className="text-xs font-medium tracking-wide text-gold-400 transition-colors hover:text-gold-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
           >
             Mwen bliye modpas mwen
           </button>
@@ -118,7 +118,7 @@ export default function Login() {
         <button
           type="button"
           onClick={() => navigate("/register")}
-          className="w-full py-2 text-xs font-semibold tracking-wide text-gold-400 transition-colors hover:text-gold-300"
+          className="w-full py-2 text-xs font-semibold tracking-wide text-gold-400 transition-colors hover:text-gold-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
         >
           Kreye yon nouvo kont
         </button>
