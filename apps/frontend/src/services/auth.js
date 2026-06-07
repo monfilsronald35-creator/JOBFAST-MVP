@@ -1,39 +1,41 @@
 import API from './api';
 
 /**
- * Fonksyon pou konekte yon itilizatè
- * @param {Object} credentials - { phone, password }
+ * 🔐 JOBFAST AUTHENTICATION SERVICE
+ * Jere tout kominikasyon ak wout otantifikasyon sou backend lan.
  */
+
 export const login = async (credentials) => {
-  const { data } = await API.post('/auth/login', credentials);
-  if (data.token) {
-    localStorage.setItem('token', data.token);
+  try {
+    const { data } = await API.post('/auth/login', credentials);
+    // Nou sèlman retounen done yo bay AuthContext la, 
+    // se li menm k ap pran desizyon pou l ekri nan localStorage la san danje.
+    return data;
+  } catch (error) {
+    // Ekstrè mesaj erè backend la bay la, si l pa genyen, bay yon mesaj jenerik
+    const message = error.response?.data?.message || "Erè pandan koneksyon an. Rezo w la ka gen pwoblèm.";
+    throw new Error(message);
   }
-  return data;
 };
 
-/**
- * Fonksyon pou kreye yon nouvo kont
- * @param {Object} userData - Done itilizatè a
- */
 export const register = async (userData) => {
-  const { data } = await API.post('/auth/register', userData);
-  return data;
+  try {
+    const { data } = await API.post('/auth/register', userData);
+    return data;
+  } catch (error) {
+    const message = error.response?.data?.message || "Erè pandan enskripsyon an. Tanpri verifye enfòmasyon yo.";
+    throw new Error(message);
+  }
 };
 
-/**
- * Fonksyon pou dekonnekte (Logout)
- */
-export const logout = () => {
-  localStorage.removeItem('token');
-  // Si ou gen lòt bagay ou bezwen retire nan store-la, ajoute yo isit la
-  window.location.href = '/login'; 
-};
-
-/**
- * Fonksyon pou jwenn enfòmasyon itilizatè konekte a
- */
 export const getCurrentUser = async () => {
-  const { data } = await API.get('/auth/me');
-  return data;
+  try {
+    const { data } = await API.get('/auth/me');
+    return data;
+  } catch (error) {
+    const message = error.response?.data?.message || "Nou pa ka rekipere enfòmasyon pwofil ou.";
+    throw new Error(message);
+  }
 };
+
+// Nòt: logout() pa bezwen la ankò piske se AuthContext ki efase 'jobfast_user' nèt.
