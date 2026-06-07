@@ -1,74 +1,15 @@
-import React, { useMemo } from "react";
+import React from "react";
+import { MapPin, Navigation, Activity } from "lucide-react";
 import { formatLocation } from "../utils/location";
 
-// ==================================================
-// 🌍 STATUS COLORS
-// ==================================================
-const STATUS_COLORS = Object.freeze({
-  busy: "#f59e0b",
-  working: "#3b82f6",
-  offline: "#ef4444",
-  available: "#22c55e"
+const STATUS_CONFIG = Object.freeze({
+  available: { color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10", dot: "bg-emerald-500 ring-emerald-500/20" },
+  busy: { color: "text-amber-400 border-amber-500/30 bg-amber-500/10", dot: "bg-amber-500 ring-amber-500/20" },
+  working: { color: "text-blue-400 border-blue-500/30 bg-blue-500/10", dot: "bg-blue-500 ring-blue-500/20" },
+  offline: { color: "text-rose-400 border-rose-500/30 bg-rose-500/10", dot: "bg-rose-500 ring-rose-500/20" },
 });
 
-// ==================================================
-// 🎨 STATIC STYLES (OUT OF RENDER FLOW = MEMORY EFFICIENT)
-// ==================================================
-const baseBox = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "6px",
-  border: "1px solid #334155",
-  borderRadius: "10px",
-  background: "#1e293b",
-  width: "100%",
-  fontFamily: "Inter, Arial, sans-serif",
-  transition: "all 0.2s ease",
-  willChange: "transform"
-};
-
-const headerBox = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "10px"
-};
-
-const textWhite = {
-  fontSize: "14px",
-  fontWeight: 600,
-  textTransform: "capitalize",
-  color: "#ffffff"
-};
-
-const locationTextStyle = {
-  fontSize: "14px",
-  color: "#cbd5e1",
-  wordBreak: "break-word",
-  lineHeight: "1.3"
-};
-
-const distanceStyle = {
-  fontSize: "13px",
-  color: "#94a3b8"
-};
-
-const badgeBase = {
-  display: "inline-flex",
-  alignItems: "center",
-  width: "fit-content",
-  padding: "4px 8px",
-  borderRadius: "999px",
-  background: "rgba(255,255,255,0.06)",
-  fontSize: "12px",
-  fontWeight: 600,
-  textTransform: "capitalize"
-};
-
-// ==================================================
-// 📍 COMPONENT (PRODUCTION READY)
-// ==================================================
-export default function LocationBadge({
+function LocationBadge({
   location = null,
   distanceKm = null,
   availability = "available",
@@ -77,96 +18,60 @@ export default function LocationBadge({
   serviceType = "",
   compact = false
 }) {
-  // ==================================================
-  // 📍 LOCATION (SAFE + CLEAN)
-  // ==================================================
-  const locationText = useMemo(() => {
-    const formatted = formatLocation(location);
-    const clean = typeof formatted === "string" ? formatted.trim() : "";
+  const formatted = formatLocation(location);
+  const locationText = (typeof formatted === "string" ? formatted.trim() : "") || "Kote ki enkoni";
 
-    return clean || "Unknown location";
-  }, [location?.lat, location?.lng, location?.address]);
+  const category = (role || businessType || serviceType || "jeneral").trim();
 
-  // ==================================================
-  // 📍 CATEGORY
-  // ==================================================
-  const category = useMemo(() => {
-    return (role || businessType || serviceType || "general")
-      .trim()
-      .toLowerCase();
-  }, [role, businessType, serviceType]);
-
-  // ==================================================
-  // 📍 STATUS
-  // ==================================================
   const normalizedStatus = (availability || "available").toLowerCase();
+  const statusConfig = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.available;
 
-  const statusColor = useMemo(() => {
-    return STATUS_COLORS[normalizedStatus] ?? STATUS_COLORS.available;
-  }, [normalizedStatus]);
+  const safeDistance = (typeof distanceKm === "number" && Number.isFinite(distanceKm) && distanceKm >= 0)
+    ? distanceKm.toFixed(1)
+    : null;
 
-  // ==================================================
-  // 📍 DISTANCE
-  // ==================================================
-  const safeDistance = useMemo(() => {
-    if (typeof distanceKm !== "number" || !Number.isFinite(distanceKm) || distanceKm < 0) {
-      return null;
-    }
-    return distanceKm.toFixed(1);
-  }, [distanceKm]);
-
-  // ==================================================
-  // 📦 ROOT STYLE
-  // ==================================================
-  const containerStyle = useMemo(() => ({
-    ...baseBox,
-    padding: compact ? "8px" : "12px"
-  }), [compact]);
-
-  // ==================================================
-  // 📍 UI
-  // ==================================================
   return (
-    <div style={containerStyle}>
-      
-      {/* HEADER */}
-      <div style={headerBox}>
-        <span style={textWhite}>{category}</span>
+    <div 
+      className={`select-none w-full flex flex-col gap-3 rounded-2xl border border-slate-800/60 bg-navy-800/20 p-4 transition-all duration-200 ${
+        compact ? "p-3 gap-2" : ""
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3 w-full">
+        <span className="truncate text-[10px] font-black uppercase tracking-widest text-white">
+          {category}
+        </span>
 
         <span
-          aria-label={normalizedStatus}
+          aria-label={`Status: ${normalizedStatus}`}
           title={normalizedStatus}
-          style={{
-            width: "10px",
-            height: "10px",
-            borderRadius: "50%",
-            background: statusColor,
-            boxShadow: `0 0 0 3px ${statusColor}22`
-          }}
+          className={`h-2.5 w-2.5 rounded-full ring-4 ${statusConfig.dot}`}
         />
       </div>
 
-      {/* LOCATION */}
-      <div style={locationTextStyle} title={locationText}>
-        📍 {locationText}
+      <div 
+        className="flex items-start gap-1.5 text-xs font-bold text-slate-300 w-full"
+        title={locationText}
+      >
+        <MapPin className="h-4 w-4 shrink-0 text-gold-400" strokeWidth={2.5} />
+        <span className="break-words leading-snug">{locationText}</span>
       </div>
 
-      {/* DISTANCE */}
       {safeDistance && (
-        <div style={distanceStyle}>
-          🚗 {safeDistance} km
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+          <Navigation className="h-3.5 w-3.5 shrink-0 text-slate-600" strokeWidth={2.5} />
+          <span>{safeDistance} km toupre w</span>
         </div>
       )}
 
-      {/* STATUS */}
-      <div
-        style={{
-          ...badgeBase,
-          color: statusColor
-        }}
-      >
-        {normalizedStatus}
+      <div className="mt-1 flex items-center gap-1.5 w-full">
+        <div className={`inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${statusConfig.color}`}>
+          <Activity className="h-3 w-3" strokeWidth={2.5} />
+          <span>{normalizedStatus}</span>
+        </div>
       </div>
+
     </div>
   );
 }
+
+export default LocationBadge;
