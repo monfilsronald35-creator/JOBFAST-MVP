@@ -1,177 +1,96 @@
-import React, { memo, useCallback } from "react";
-
-// ======================================================
-// 🌍 JOBFAST — GLOBAL NAVBAR (PRODUCTION FINAL)
-// ======================================================
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const NAV_ITEMS = Object.freeze([
-  { label: "👷 Construction", key: "construction" },
-  { label: "🏢 Business", key: "business" },
-  { label: "🚀 Services", key: "services" },
-  { label: "📍 Nearby", key: "nearby" },
+  { label: "Construction", key: "construction", path: "/search?cat=construction" },
+  { label: "Business", key: "business", path: "/search?cat=business" },
+  { label: "Services", key: "services", path: "/search?cat=services" },
+  { label: "Toupre w", key: "nearby", path: "/search?nearby=true" },
 ]);
 
-// ======================================================
-// 🎯 NAV ITEM
-// ======================================================
-const NavItem = memo(function NavItem({ item, onNavigate }) {
-  const handleClick = useCallback(() => {
-    onNavigate(item.key);
-  }, [onNavigate, item.key]);
-
-  return (
-    <button type="button" onClick={handleClick} style={styles.link}>
-      {item.label}
-    </button>
-  );
-});
-
-// ======================================================
-// 🔐 AUTH BUTTON
-// ======================================================
-const AuthButton = memo(function AuthButton({ id, label, onClick, primary }) {
-  const handleClick = useCallback(() => {
-    onClick(id);
-  }, [onClick, id]);
-
+function NavItem({ item, isActive, onClick }) {
   return (
     <button
       type="button"
-      onClick={handleClick}
-      style={primary ? styles.buttonPrimary : styles.button}
+      onClick={onClick}
+      className={`rounded-xl px-3.5 py-2 text-xs font-black uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-400/20 ${
+        isActive 
+          ? "bg-navy-800 text-gold-400" 
+          : "text-slate-400 hover:text-white"
+      }`}
+    >
+      {item.label}
+    </button>
+  );
+}
+
+function AuthButton({ label, onClick, primary }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`active:scale-95 rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-400/20 ${
+        primary
+          ? "bg-gold-400 text-navy-950 shadow-md shadow-gold-400/5 hover:bg-gold-500"
+          : "border border-slate-800 bg-navy-800/10 text-slate-200 hover:border-slate-700"
+      }`}
     >
       {label}
     </button>
   );
-});
+}
 
-// ======================================================
-// 🚀 NAVBAR
-// ======================================================
 function Navbar() {
-  const handleAuthClick = useCallback((type) => {
-    console.log("🚀 AUTH:", type);
-  }, []);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleNavClick = useCallback((key) => {
-    console.log("🧭 NAV:", key);
-  }, []);
+  const currentQuery = location.search + location.pathname;
 
   return (
-    <nav style={styles.navbar} aria-label="Primary navigation">
-      <div style={styles.container}>
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-800/60 bg-navy-900/80 py-3.5 backdrop-blur-md select-none">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-6">
         
-        {/* BRAND */}
-        <div style={styles.brand}>
-          ⚡ JOBFAST<span style={styles.logoDot}>.RD</span>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/")}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/")}
+          className="cursor-pointer text-xl font-black tracking-tighter text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-400/20"
+        >
+          JOB<span className="text-gold-400">FAST</span>
+          <span className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-500">.RD</span>
         </div>
 
-        {/* LINKS */}
-        <div style={styles.links}>
-          {NAV_ITEMS.map((item) => (
-            <NavItem
-              key={item.key}
-              item={item}
-              onNavigate={handleNavClick}
-            />
-          ))}
+        <div className="hidden items-center gap-1.5 md:flex">
+          {NAV_ITEMS.map((item) => {
+            const isActive = currentQuery.includes(item.key) || (item.key === "nearby" && currentQuery.includes("nearby"));
+            return (
+              <NavItem
+                key={item.key}
+                item={item}
+                isActive={isActive}
+                onClick={() => navigate(item.path)}
+              />
+            );
+          })}
         </div>
 
-        {/* ACTIONS */}
-        <div style={styles.actions}>
+        <div className="flex items-center gap-2.5">
           <AuthButton
-            id="login"
-            label="Login"
-            onClick={handleAuthClick}
+            label="Konekte"
+            onClick={() => navigate("/login")}
           />
 
           <AuthButton
-            id="register"
-            label="Register"
+            label="Enskri"
             primary
-            onClick={handleAuthClick}
+            onClick={() => navigate("/register")}
           />
         </div>
+
       </div>
     </nav>
   );
 }
 
-// ======================================================
-// 🎨 STYLES
-// ======================================================
-const styles = Object.freeze({
-  navbar: {
-    width: "100%",
-    position: "sticky",
-    top: 0,
-    zIndex: 1000,
-    padding: "14px 0",
-  },
-
-  container: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "20px",
-    padding: "0 16px",
-  },
-
-  brand: {
-    fontSize: "20px",
-    fontWeight: "900",
-    color: "#fff",
-    whiteSpace: "nowrap",
-  },
-
-  logoDot: {
-    color: "#3b82f6",
-  },
-
-  links: {
-    display: "flex",
-    flex: 1,
-    justifyContent: "center",
-    gap: "8px",
-  },
-
-  link: {
-    background: "transparent",
-    border: "none",
-    color: "var(--color-text-soft)",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    padding: "8px 12px",
-    borderRadius: "10px",
-  },
-
-  actions: {
-    display: "flex",
-    gap: "10px",
-  },
-
-  button: {
-    padding: "8px 14px",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "10px",
-    background: "rgba(255,255,255,0.03)",
-    color: "#fff",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-
-  buttonPrimary: {
-    padding: "8px 14px",
-    border: "none",
-    borderRadius: "10px",
-    background: "linear-gradient(to right, #2563eb, #3b82f6)",
-    color: "#fff",
-    fontSize: "13px",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-});
-
-export default memo(Navbar);
+export default Navbar;
