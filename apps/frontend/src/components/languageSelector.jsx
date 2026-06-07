@@ -1,10 +1,8 @@
-import React, { useCallback, useMemo } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { Globe } from "lucide-react";
 import { changeLanguage } from "../i18n";
 
-// ==================================================
-// 🌍 AVAILABLE LANGUAGES (IMMUTABLE)
-// ==================================================
 const LANGUAGES = Object.freeze([
   { code: "es", label: "Español" },
   { code: "en", label: "English" },
@@ -12,79 +10,50 @@ const LANGUAGES = Object.freeze([
   { code: "fr", label: "Français" }
 ]);
 
-// ==================================================
-// 📍 COMPONENT
-// ==================================================
-export default function LanguageSelector({ compact = false }) {
+function LanguageSelector({ compact = false }) {
   const { i18n } = useTranslation();
-
-  // ⚡ CURRENT LANGUAGE (SOURCE OF TRUTH = i18n)
   const currentLanguage = i18n?.language ?? "es";
 
-  // ==================================================
-  // ⚡ HANDLE CHANGE (SAFE + NO STALE BUGS)
-  // ==================================================
-  const handleChange = useCallback(
-    (event) => {
-      const newLanguage = event.target.value;
+  const handleChange = (event) => {
+    const newLanguage = event.target.value;
+    const activeLanguage = i18n?.language ?? "es";
 
-      // re-check live state to avoid stale issues
-      const activeLanguage = i18n?.language ?? "es";
+    if (!newLanguage || newLanguage === activeLanguage) return;
 
-      if (!newLanguage || newLanguage === activeLanguage) return;
+    i18n?.changeLanguage?.(newLanguage);
+    changeLanguage?.(newLanguage);
+  };
 
-      i18n?.changeLanguage?.(newLanguage);
-      changeLanguage?.(newLanguage);
-    },
-    [i18n]
-  );
-
-  // ==================================================
-  // 🎨 STYLES
-  // ==================================================
-  const containerStyle = useMemo(
-    () => ({
-      display: "flex",
-      alignItems: "center",
-      width: compact ? "fit-content" : "100%"
-    }),
-    [compact]
-  );
-
-  const selectStyle = useMemo(
-    () => ({
-      width: compact ? "140px" : "100%",
-      padding: compact ? "8px" : "10px 12px",
-      border: "1px solid #334155",
-      borderRadius: "8px",
-      background: "#1e293b",
-      color: "#ffffff",
-      fontSize: "14px",
-      cursor: "pointer",
-      outline: "none",
-      fontFamily: "Inter, Arial, sans-serif",
-      transition: "all 0.2s ease"
-    }),
-    [compact]
-  );
-
-  // ==================================================
-  // 📍 UI
-  // ==================================================
   return (
-    <div style={containerStyle}>
+    <div className={`relative flex items-center select-none ${compact ? "w-fit" : "w-full"}`}>
+      <div className="pointer-events-none absolute left-3.5 flex items-center justify-center text-slate-500">
+        <Globe className="h-4 w-4" strokeWidth={2} />
+      </div>
+
       <select
         value={currentLanguage}
         onChange={handleChange}
-        style={selectStyle}
-        aria-label="Select application language"
+        aria-label="Chwazi lang aplikasyon an"
+        className={`
+          appearance-none w-full bg-navy-950 border border-slate-800/60 text-xs font-black uppercase tracking-wider text-slate-300 rounded-xl outline-none transition-all duration-200 cursor-pointer
+          pl-10 pr-8 focus:border-gold-400 focus:ring-4 focus:ring-gold-400/10 focus-visible:ring-4 focus-visible:ring-gold-400/20
+          ${compact ? "py-2.5 text-[10px] tracking-widest max-w-[140px]" : "py-3.5"}
+        `}
       >
         {LANGUAGES.map(({ code, label }) => (
-          <option key={code} value={code}>
+          <option key={code} value={code} className="bg-navy-950 text-white font-sans normal-case tracking-normal text-sm">
             {label}
           </option>
         ))}
       </select>
+
+      <div className="pointer-events-none absolute right-3.5 flex items-center text-slate-500">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="h-3 w-3">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </div>
     </div>
   );
 }
+
+export default LanguageSelector;
