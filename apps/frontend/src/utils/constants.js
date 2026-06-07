@@ -1,6 +1,11 @@
-/* ===============================
-🧩 CORE ENUMS (ATOMIC TRUTH LAYER - PRIVATE)
-=============================== */
+/* =========================================================================
+   🧩 JOBFAST ENTERPRISE SYSTEM — MASTER CORE CONSTANTS (v3.6)
+   🚀 ATOMIC TRUTH LAYER — SAFE FOR PRODUCTION & DYNAMIC FILTERS
+========================================================================= */
+
+/* =========================================================================
+   🔒 CORE ENUMS (ATOMIC TRUTH LAYER - PRIVATE CORE)
+========================================================================= */
 const STATUS = Object.freeze({
   ONLINE: "online",
   BUSY: "busy",
@@ -23,28 +28,25 @@ const JOB_STATUS = Object.freeze({
   CANCELLED: "cancelled",
 });
 
-/* ===============================
-🧠 INTERNAL DOMAIN LAYER (PRIVATE CORE)
-=============================== */
 const DOMAIN = Object.freeze({
   STATUS,
   AVAILABILITY,
   JOB_STATUS,
 });
 
-/* ===============================
-🔐 PUBLIC READ-ONLY CONTRACT LAYER
-=============================== */
+/* =========================================================================
+   🔐 PUBLIC READ-ONLY CONTRACT LAYER
+========================================================================= */
 export const USER_STATE = Object.freeze({
   STATUS: DOMAIN.STATUS,
   AVAILABILITY: DOMAIN.AVAILABILITY,
 });
 
-export { JOB_STATUS }; // clean single export (no duplication)
+export { JOB_STATUS }; // Single clean export pou evite redondans
 
-/* ===============================
-👤 USER ROLES
-=============================== */
+/* =========================================================================
+   👤 USER ROLES
+========================================================================= */
 export const USER_ROLES = Object.freeze({
   ADMIN: "admin",
   BOSS: "boss",
@@ -56,9 +58,9 @@ export const USER_ROLES = Object.freeze({
   USER: "user",
 });
 
-/* ===============================
-🏢 BUSINESS TYPES
-=============================== */
+/* =========================================================================
+   🏢 BUSINESS TYPES
+========================================================================= */
 export const BUSINESS_TYPES = Object.freeze({
   COMPANY: "company",
   RESTAURANT: "restaurant",
@@ -72,9 +74,9 @@ export const BUSINESS_TYPES = Object.freeze({
   ORGANIZATION: "organization",
 });
 
-/* ===============================
-⚙️ SERVICE CATEGORIES
-=============================== */
+/* =========================================================================
+   ⚙️ SERVICE CATEGORIES (DEEP FROZEN ARCHITECTURE)
+========================================================================= */
 export const SERVICE_CATEGORIES = Object.freeze({
   CONSTRUCTION: Object.freeze([
     "mason",
@@ -102,9 +104,9 @@ export const SERVICE_CATEGORIES = Object.freeze({
   ]),
 });
 
-/* ===============================
-📍 LOCATION SYSTEM
-=============================== */
+/* =========================================================================
+   📍 LOCATION SYSTEM (PUNTA CANA / REGIONAL CORE)
+========================================================================= */
 export const LOCATION = Object.freeze({
   LEVELS: Object.freeze({
     CITY: "city",
@@ -113,15 +115,15 @@ export const LOCATION = Object.freeze({
   }),
 
   DEFAULT: Object.freeze({
-    lat: 18.5601,
+    lat: 18.5601,  /* Sante liyen nan zòn Punta Cana / Bávaro Hub */
     lng: -68.3725,
     zoom: 10,
   }),
 });
 
-/* ===============================
-🔥 PRIORITY SYSTEM
-=============================== */
+/* =========================================================================
+   🔥 PRIORITY & NOTIFICATION SYSTEM
+========================================================================= */
 export const PRIORITY = Object.freeze({
   LOW: "low",
   NORMAL: "normal",
@@ -129,9 +131,6 @@ export const PRIORITY = Object.freeze({
   URGENT: "urgent",
 });
 
-/* ===============================
-🔔 NOTIFICATION SYSTEM
-=============================== */
 export const NOTIFICATION_TYPES = Object.freeze({
   SYSTEM: "system",
   JOB: "job",
@@ -140,9 +139,9 @@ export const NOTIFICATION_TYPES = Object.freeze({
   ALERT: "alert",
 });
 
-/* ===============================
-🔎 SEARCH LIMITS
-=============================== */
+/* =========================================================================
+   🔎 SEARCH ENGINE LIMITS
+========================================================================= */
 export const SEARCH_LIMITS = Object.freeze({
   USERS: 20,
   BUSINESSES: 20,
@@ -150,18 +149,15 @@ export const SEARCH_LIMITS = Object.freeze({
   JOBS: 20,
 });
 
-/* ===============================
-🎨 UI CONFIG
-=============================== */
+/* =========================================================================
+   🎨 UI DESIGN SYSTEM CONFIG (STRICT LIMITS)
+========================================================================= */
 export const UI = Object.freeze({
   MAX_MODAL_WIDTH: 500,
   TOAST_DURATION: 3000,
   ANIMATION_SPEED: 200,
 });
 
-/* ===============================
-🧠 ENTITY TYPES
-=============================== */
 export const ENTITY_TYPES = Object.freeze({
   USER: "user",
   BUSINESS: "business",
@@ -170,25 +166,25 @@ export const ENTITY_TYPES = Object.freeze({
   LOCATION: "location",
 });
 
-/* ===============================
-🧭 STATUS GROUPS (FILTER ENGINE LAYER)
-=============================== */
+/* =========================================================================
+   🧭 STATUS GROUPS (FILTER ENGINE LAYER)
+========================================================================= */
 export const STATUS_GROUPS = Object.freeze({
-  ACTIVE: [
+  ACTIVE: Object.freeze([
     STATUS.ONLINE,
     AVAILABILITY.AVAILABLE,
     JOB_STATUS.IN_PROGRESS,
-  ],
+  ]),
 
-  INACTIVE: [
+  INACTIVE: Object.freeze([
     STATUS.OFFLINE,
     AVAILABILITY.UNAVAILABLE,
     JOB_STATUS.CANCELLED,
-  ],
+  ]),
 
-  BUSY: [
+  BUSY: Object.freeze([
     STATUS.BUSY,
     AVAILABILITY.WORKING,
     JOB_STATUS.ASSIGNED,
-  ],
+  ]),
 });
