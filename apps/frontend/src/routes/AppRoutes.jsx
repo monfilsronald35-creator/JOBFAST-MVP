@@ -2,8 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Chanje liy sa a pou l match ak non fichye a nèt:
-import MainLayout from "../components/mainLayout";
+
 import Loader from "../components/Loader";
 
 import SplashScreen from "../pages/SplashScreen.jsx";
