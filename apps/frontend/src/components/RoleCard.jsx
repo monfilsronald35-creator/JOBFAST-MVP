@@ -1,8 +1,8 @@
 import React from "react";
 
 const RoleCard = ({
-  title, // Sa a ap pran 'Boss', 'Worker', elatriye.
-  icon,  // Emoji a
+  title,
+  icon: IconComponent,
   selected = false,
   disabled = false,
   onClick,
@@ -14,28 +14,25 @@ const RoleCard = ({
       disabled={disabled}
       aria-pressed={selected}
       className={`
-        group flex flex-col items-center gap-2 bg-transparent border-none outline-none focus:outline-none
-        ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}
+        group flex flex-col items-center gap-2.5 bg-transparent border-none outline-none focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-400/20 transition-opacity
+        ${disabled ? "cursor-not-allowed opacity-30" : "cursor-pointer"}
       `}
     >
-      {/* Ti wonn Icon lan nan grid la */}
       <div
         className={`
-          flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl border-2
-          transition-all duration-200 ease-smooth
+          flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border transition-all duration-200
           ${selected
-            ? "border-gold-500 bg-navy-800 shadow-glow scale-105"
-            : "border-navy-700 bg-navy-800 group-hover:border-navy-500 group-hover:-translate-y-0.5"}
+            ? "border-gold-400 bg-navy-800 text-gold-400 scale-105 shadow-lg shadow-gold-400/5"
+            : "border-slate-800/60 bg-navy-800/20 text-slate-400 group-hover:border-slate-700 group-hover:text-white group-hover:-translate-y-0.5"}
         `}
       >
-        {icon}
+        {IconComponent && <IconComponent className="h-5 w-5" strokeWidth={selected ? 2.5 : 2} />}
       </div>
 
-      {/* Non wòl la anba ti wonn nan */}
       <span
         className={`
-          truncate text-xs font-medium tracking-wide transition-colors duration-200
-          ${selected ? "text-gold-400 font-bold" : "text-text-muted group-hover:text-text-inverse"}
+          w-full truncate text-[10px] font-black uppercase tracking-widest text-center transition-colors duration-200
+          ${selected ? "text-gold-400" : "text-slate-500 group-hover:text-slate-300"}
         `}
       >
         {title}
@@ -44,4 +41,4 @@ const RoleCard = ({
   );
 };
 
-export default React.memo(RoleCard);
+export default RoleCard;
