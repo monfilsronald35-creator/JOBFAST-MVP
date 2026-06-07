@@ -5,7 +5,7 @@ const NAV_ITEMS = Object.freeze([
   { label: "Construction", key: "construction", path: "/search?cat=construction" },
   { label: "Business", key: "business", path: "/search?cat=business" },
   { label: "Services", key: "services", path: "/search?cat=services" },
-  { label: "Toupre w", key: "nearby", path: "/search?nearby=true" },
+  { label: "Toupre w", key: "nearby", path: "/search?nearby=true" }, 
 ]);
 
 function NavItem({ item, isActive, onClick }) {
