@@ -1,20 +1,31 @@
 {
   "short_name": "JobFast",
   "name": "JobFast Global Marketplace",
-  "icons": [
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
+  "description": "Platfòm GPS elit pou konstriksyon, sèvis sou demann ak anyè biznis.",
+  "lang": "en-US",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#0f172a",
-  "background_color": "#0f172a"
+  "orientation": "portrait-primary",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "icons": [
+    {
+      "src": "/favicons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-maskable-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
 }
