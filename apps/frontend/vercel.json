@@ -1,14 +1,26 @@
 {
+  "version": 2,
+  "cleanUrls": true,
   "framework": "vite",
-
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://jobfast-mvp.onrender.com/api/:path*"
+      "source": "/v1/:path*",
+      "destination": "https://jobfast-backend.onrender.com/v1/:path*"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
