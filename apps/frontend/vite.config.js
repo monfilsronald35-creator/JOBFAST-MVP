@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ======================================================
-// 🚀 JOBFAST — VITE CONFIG (ENTERPRISE PRODUCTION READY)
+// 🚀 JOBFAST — VITE CONFIG (ENTERPRISE PRODUCTION READY v3.6)
 // ======================================================
 export default defineConfig({
   plugins: [react()],
@@ -30,9 +30,9 @@ export default defineConfig({
     strictPort: true,
     open: true,
 
-    // ⚡ SAFE API PROXY
+    // ⚡ SAFE REVERSE PROXY (LOCAL DEV MATCHING VERCEL PRODUCTION)
     proxy: {
-      "/api": {
+      "/v1": {
         target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
@@ -48,13 +48,22 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: false,
 
-    // 🔐 SECURITY UPGRADE (Terser minification)
+    // 🔐 SECURITY UPGRADE (Premium minification with Terser)
     minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true, // Jete tout console.log nan pwodiksyon pou sekirite ak vitès
+        drop_debugger: true
+      },
+      mangle: {
+        keep_fnames: true // Kenbe non fonksyon yo pou evite konfli nan kach React la
+      }
+    },
 
     target: "es2020",
     emptyOutDir: true,
 
-    // ⚡ CODE SPLITTING (PERFORMANCE BOOST)
+    // ⚡ CODE SPLITTING (MAXIMUM PERFORMANCE BOOST)
     rollupOptions: {
       output: {
         manualChunks: {
