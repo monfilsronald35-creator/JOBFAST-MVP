@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
   Briefcase, 
@@ -10,11 +11,10 @@ import {
   ArrowLeft,
   Home,
   Search,
-  PlusSquare,
+  Plus,
   User
 } from 'lucide-react';
 
-// 1. Diksyonè Tradiksyon (Ou ka deplase sa nan yon fichye separe pita tankou locales.js)
 const TRANSLATIONS = {
   ht: {
     title: "Notifikasyon",
@@ -24,7 +24,7 @@ const TRANSLATIONS = {
     confirmClear: "Èske ou sèten ou vle efase tout notifikasyon yo?",
     navHome: "Akeyi",
     navSearch: "Rechèch",
-    navPost: "Paste",
+    navPost: "Poste",
     navNotif: "Notifikasyon",
     navProfile: "Profil",
     timeJustNow: "Kounye a",
@@ -32,23 +32,6 @@ const TRANSLATIONS = {
     timeHours: "èdtan de sa",
     timeDays: "jou de sa",
     timeYesterday: "Yè"
-  },
-  en: {
-    title: "Notifications",
-    newBadge: "New",
-    emptyState: "You have no notifications.",
-    clearAll: "Clear All",
-    confirmClear: "Are you sure you want to delete all notifications?",
-    navHome: "Home",
-    navSearch: "Search",
-    navPost: "Post",
-    navNotif: "Notifications",
-    navProfile: "Profile",
-    timeJustNow: "Just now",
-    timeMinutes: "minutes ago",
-    timeHours: "hours ago",
-    timeDays: "days ago",
-    timeYesterday: "Yesterday"
   }
 };
 
@@ -91,11 +74,10 @@ const INITIAL_NOTIFICATIONS = [
   }
 ];
 
-const NotificationsScreen = () => {
+export default function NotificationsScreen() {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-  // Ou ka kontwole lang nan depi nan anviwònman app a ('ht' oswa 'en')
-  const [lang] = useState('ht'); 
-  const t = TRANSLATIONS[lang];
+  const t = TRANSLATIONS.ht;
 
   const markAsRead = (id) => {
     setNotifications(prev => 
@@ -123,7 +105,7 @@ const NotificationsScreen = () => {
     if (days === 1) return t.timeYesterday;
     if (days < 7) return `${days} ${t.timeDays}`;
     
-    return new Date(isoString).toLocaleDateString(lang === 'ht' ? 'fr-FR' : 'en-US', {
+    return new Date(isoString).toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -133,127 +115,161 @@ const NotificationsScreen = () => {
   const getIcon = (type) => {
     switch (type) {
       case 'job_nearby':
-        return <Briefcase className="w-5 h-5 text-amber-500" />;
+        return <Briefcase className="h-4 w-4 text-gold-400" />;
       case 'response':
-        return <MessageSquare className="w-5 h-5 text-blue-400" />;
+        return <MessageSquare className="h-4 w-4 text-blue-400" />;
       case 'service_nearby':
-        return <Bell className="w-5 h-5 text-indigo-400" />;
+        return <Bell className="h-4 w-4 text-indigo-400" />;
       case 'job_completed':
-        return <Star className="w-5 h-5 text-green-400" />;
+        return <Star className="h-4 w-4 text-emerald-400" />;
       default:
-        return <Bell className="w-5 h-5 text-gray-400" />;
+        return <Bell className="h-4 w-4 text-slate-400" />;
     }
   };
 
   return (
-    <div className="h-screen bg-[#0B1528] text-white flex flex-col max-w-md mx-auto shadow-2xl font-sans overflow-hidden">
+    <div className="flex min-h-screen w-full flex-col animate-fade-in select-none bg-navy-900 pb-24 font-sans text-white">
       
-      {/* HEADER */}
-      <header className="px-4 pt-6 pb-4 bg-[#0F1E36] border-b border-gray-800/60 flex items-center justify-between shrink-0 z-50 backdrop-blur-md bg-opacity-95">
+      <header className="mx-auto flex w-full max-w-md items-center justify-between px-5 pb-4 pt-6 shrink-0 z-50">
         <div className="flex items-center gap-3">
-          <button className="p-1.5 hover:bg-gray-800 active:scale-95 rounded-full transition-all">
-            <ArrowLeft className="w-6 h-6 text-gray-400" />
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Retounen"
+            className="rounded-xl border border-navy-800 bg-navy-800/60 p-2.5 text-slate-400 transition-all active:scale-95 hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="text-xl font-bold tracking-wide">{t.title}</h1>
+          <h1 className="text-base font-extrabold tracking-wide text-white">{t.title}</h1>
         </div>
-        <div className="relative p-2 bg-[#132644] rounded-xl border border-gray-800">
-          <Bell className="w-5 h-5 text-amber-500" />
+        
+        <div className="relative rounded-xl border border-navy-800 bg-navy-800/40 p-2.5">
+          <Bell className="h-4 w-4 text-gold-400" />
           {notifications.some(n => n.unread) && (
-            <span className="absolute top-2 right-2 bg-red-500 w-2 h-2 rounded-full animate-pulse" />
+            <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" />
           )}
         </div>
       </header>
 
-      {/* NOTIFICATIONS LIST */}
-      <main className="flex-1 overflow-y-auto px-4 py-4 space-y-3 custom-scrollbar">
+      <main className="mx-auto flex-1 w-full max-w-md overflow-y-auto px-5 space-y-3">
         {notifications.length > 0 ? (
           <>
             {notifications.map((notif) => (
-              <div
+              <button
                 key={notif.id}
+                type="button"
                 onClick={() => markAsRead(notif.id)}
-                className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer flex items-start gap-4 transform active:scale-[0.99]
+                aria-label={notif.title}
+                className={`flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition-all active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10
                   ${notif.unread 
-                    ? 'bg-[#132644] border-amber-500/20 shadow-md' 
-                    : 'bg-[#0F1E36]/40 border-gray-800/40 hover:bg-[#0F1E36]/80'
+                    ? 'bg-navy-800/40 border-gold-400/20 shadow-md' 
+                    : 'bg-navy-800/10 border-slate-800/40 hover:bg-navy-800/30'
                   }`}
               >
-                <div className="p-2.5 rounded-xl flex-shrink-0 bg-[#0B1528] border border-gray-800 shadow-inner">
+                <div className="flex-shrink-0 rounded-xl border border-navy-800 bg-navy-900 p-2.5 shadow-inner">
                   {getIcon(notif.type)}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <h3 className={`text-sm font-semibold truncate ${notif.unread ? 'text-white font-bold' : 'text-gray-300 font-medium'}`}>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <h3 className={`truncate text-sm tracking-wide ${notif.unread ? 'font-black text-white' : 'font-bold text-slate-300'}`}>
                       {notif.title}
                     </h3>
                     {notif.unread && (
-                      <span className="bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                      <span className="shrink-0 rounded-full border border-gold-400/30 bg-gold-400/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold-400">
                         {t.newBadge}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 font-normal mb-2 leading-relaxed">
+                  <p className="mb-2 text-xs font-medium leading-relaxed text-slate-400">
                     {notif.description}
                   </p>
-                  <div className="flex items-center gap-1 text-[11px] text-gray-500 font-medium">
-                    <Clock className="w-3 h-3" />
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                    <Clock className="h-3 w-3" />
                     <span>{formatTimeAgo(notif.createdAt)}</span>
                   </div>
                 </div>
 
-                <div className="self-center text-gray-600 pl-1">
-                  <ChevronRight className="w-4 h-4" />
+                <div className="self-center pl-1 text-slate-600">
+                  <ChevronRight className="h-4 w-4" />
                 </div>
-              </div>
+              </button>
             ))}
 
-            <div className="pt-2 pb-6">
+            <div className="pb-6 pt-2">
               <button
+                type="button"
                 onClick={clearAll}
-                className="w-full py-3 bg-transparent border border-dashed border-gray-800 hover:border-red-500/40 hover:bg-red-500/5 rounded-xl text-xs font-semibold text-gray-500 hover:text-red-400 transition-all flex items-center justify-center gap-2 uppercase tracking-widest active:scale-98"
+                className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-slate-800 bg-transparent py-3 text-xs font-bold uppercase tracking-widest text-slate-500 active:scale-95 transition-all hover:border-rose-500/40 hover:bg-rose-500/5 hover:text-rose-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-4 w-4" />
                 {t.clearAll}
               </button>
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 text-gray-500 space-y-4">
-            <div className="p-5 bg-[#0F1E36] rounded-full border border-gray-800">
-              <Bell className="w-10 h-10 text-gray-650" />
+          <div className="animate-fade-in flex flex-col items-center justify-center py-32 space-y-4 text-slate-500">
+            <div className="rounded-2xl border border-navy-800 bg-navy-800/20 p-5">
+              <Bell className="h-8 w-8 text-slate-600" />
             </div>
-            <p className="text-sm font-medium text-gray-400">{t.emptyState}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{t.emptyState}</p>
           </div>
         )}
       </main>
 
-      {/* BOTTOM NAV BAR */}
-      <nav className="shrink-0 bg-[#0F1E36] border-t border-gray-800 px-6 py-3 flex items-center justify-between text-gray-400 z-50">
-        <button className="flex flex-col items-center gap-1 active:scale-90 transition-all">
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">{t.navHome}</span>
+      <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto flex max-w-md items-center justify-between border-t border-slate-900 bg-navy-950/95 px-6 py-2 backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard")}
+          aria-label={t.navHome}
+          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+        >
+          <Home className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navHome}</span>
         </button>
-        <button className="flex flex-col items-center gap-1 active:scale-90 transition-all">
-          <Search className="w-5 h-5" />
-          <span className="text-[10px]">{t.navSearch}</span>
+
+        <button
+          type="button"
+          onClick={() => navigate("/search")}
+          aria-label={t.navSearch}
+          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+        >
+          <Search className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navSearch}</span>
         </button>
-        <button className="flex flex-col items-center gap-1 active:scale-90 transition-all">
-          <PlusSquare className="w-5 h-5" />
-          <span className="text-[10px]">{t.navPost}</span>
+
+        <button
+          type="button"
+          onClick={() => navigate("/post-job")}
+          aria-label={t.navPost}
+          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+        >
+          <div className="relative -mt-4 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-800 bg-navy-800 text-gold-400 shadow-lg">
+            <Plus className="h-5 w-5" strokeWidth={3} />
+          </div>
+          <span className="mt-0.5 text-[9px] font-bold uppercase tracking-wider">{t.navPost}</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-amber-500 active:scale-90 transition-all">
-          <Bell className="w-5 h-5" />
-          <span className="text-[10px] font-bold">{t.navNotif}</span>
+
+        <button
+          type="button"
+          onClick={() => navigate("/notifications")}
+          aria-label={t.navNotif}
+          className="flex flex-col items-center gap-1 text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+        >
+          <Bell className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navNotif}</span>
         </button>
-        <button className="flex flex-col items-center gap-1 active:scale-90 transition-all">
-          <User className="w-5 h-5" />
-          <span className="text-[10px]">{t.navProfile}</span>
+
+        <button
+          type="button"
+          onClick={() => navigate("/profile")}
+          aria-label={t.navProfile}
+          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+        >
+          <User className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navProfile}</span>
         </button>
       </nav>
-
     </div>
   );
-};
-
-export default NotificationsScreen;
+}
