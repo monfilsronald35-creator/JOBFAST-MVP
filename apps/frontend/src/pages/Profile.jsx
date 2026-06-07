@@ -1,842 +1,125 @@
-import React, {
-  memo,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  Briefcase, 
+  Building2, 
+  Zap, 
+  MapPin, 
+  Calendar, 
+  Trash2, 
+  Plus, 
+  AlertTriangle 
+} from "lucide-react";
 
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
-
-// ===============================
-// 🚀 STATIC DATA
-// ===============================
-
-const CATEGORY_CARDS = [
+const INITIAL_POSTS = [
   {
-    icon: "👷",
-    title: "Construction",
-    text:
-      "Mason • Carpenter • Electrician • Plumber • Engineer",
+    id: 1,
+    title: "Need Mason in Bavaro",
+    type: "construction",
+    category: "Mason",
+    status: "OPEN",
+    location: "Bavaro, Punta Cana",
+    createdAt: "2026-05-07",
+    timestamp: new Date("2026-05-07").getTime(),
   },
-
   {
-    icon: "🏢",
-    title: "Business",
-    text:
-      "Restaurants • Hotels • Clinics • Companies • Offices",
+    id: 2,
+    title: "Hotel Reception Job",
+    type: "business",
+    category: "Hotel",
+    status: "OPEN",
+    location: "Punta Cana",
+    createdAt: "2026-05-06",
+    timestamp: new Date("2026-05-06").getTime(),
   },
-
   {
-    icon: "🚀",
-    title: "Services",
-    text:
-      "Delivery • Taxi • Cleaning • Nurse • Designer • Chef",
+    id: 3,
+    title: "Chef Lakay Needed",
+    type: "service",
+    category: "Chef",
+    status: "CLOSED",
+    location: "Veron",
+    createdAt: "2026-05-05",
+    timestamp: new Date("2026-05-05").getTime(),
   },
 ];
 
-// ===============================
-// 🚀 REUSABLE COMPONENTS
-// ===============================
+const STATUS_CONFIG = {
+  OPEN: { label: "OPEN", classes: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" },
+  CLOSED: { label: "CLOSED", classes: "bg-rose-500/10 border-rose-500/30 text-rose-400" },
+  DEFAULT: { label: "UNKNOWN", classes: "bg-slate-500/10 border-slate-500/30 text-slate-400" },
+};
 
-const HoverCard = memo(
-  ({
-    children,
-    style,
-    hoverHandlers,
-  }) => (
-    <div
-      style={style}
-      {...hoverHandlers}
-    >
-      {children}
-    </div>
-  )
-);
+const TYPE_ICONS = {
+  construction: Briefcase,
+  business: Building2,
+  service: Zap,
+};
 
-const ActionButton = memo(
-  ({
-    children,
-    onClick,
-    hoverHandlers,
-    style,
-  }) => (
-    <button
-      type="button"
-      style={style}
-      onClick={onClick}
-      {...hoverHandlers}
-    >
-      {children}
-    </button>
-  )
-);
+const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
 
-// ===============================
-// 🚀 PROFILE PAGE
-// ===============================
+const sortPosts = (posts) => [...posts].sort((a, b) => b.timestamp - a.timestamp);
 
-function Profile() {
+export default function MyPosts() {
   const navigate = useNavigate();
+  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
-  // ===============================
-  // 👤 STATE
-  // ===============================
+  const sortedPosts = sortPosts(posts);
+  const totalPosts = sortedPosts.length;
 
-  const [isAvailable, setIsAvailable] =
-    useState(true);
+  const requestDelete = (id) => setPendingDelete(id);
 
-  // ===============================
-  // 🧠 USER DATA
-  // ===============================
+  const confirmDelete = () => {
+    if (pendingDelete == null) return;
+    setPosts((prev) => prev.filter((p) => p.id !== pendingDelete));
+    setPendingDelete(null);
+  };
 
-  const user = useMemo(
-    () => ({
-      fullName: "User Name",
-
-      role: "Construction Worker",
-
-      constructionRole: "Mason",
-
-      businessType: "",
-
-      serviceCategory: "",
-
-      bio:
-        "Experienced worker available for nearby jobs and services.",
-
-      location: "Punta Cana",
-
-      distance: "2.5km",
-
-      joined: "2026",
-
-      rating: "4.9",
-
-      jobsCompleted: "124",
-    }),
-    []
-  );
-
-  // ===============================
-  // 📊 STATS
-  // ===============================
-
-  const stats = useMemo(
-    () => [
-      {
-        value: user.rating,
-        label: "Rating",
-      },
-
-      {
-        value: user.jobsCompleted,
-        label: "Jobs Done",
-      },
-
-      {
-        value: user.joined,
-        label: "Joined",
-      },
-    ],
-    [user]
-  );
-
-  // ===============================
-  // 🔄 TOGGLE STATUS
-  // ===============================
-
-  const toggleAvailability =
-    useCallback(() => {
-      setIsAvailable((prev) => !prev);
-    }, []);
-
-  // ===============================
-  // ✨ HOVER EFFECTS
-  // ===============================
-
-  const handleCardHover = useCallback(
-    (e, active) => {
-      e.currentTarget.style.transform =
-        active
-          ? "translateY(-6px)"
-          : "translateY(0)";
-
-      e.currentTarget.style.boxShadow =
-        active
-          ? "0 20px 40px rgba(0,0,0,0.35)"
-          : "0 0 0 rgba(0,0,0,0)";
-    },
-    []
-  );
-
-  const handleButtonHover =
-    useCallback((e, active) => {
-      e.currentTarget.style.opacity =
-        active ? "0.92" : "1";
-    }, []);
-
-  // ===============================
-  // 🧠 REUSABLE HOVER PROPS
-  // ===============================
-
-  const cardHoverHandlers =
-    useMemo(
-      () => ({
-        onMouseEnter: (e) =>
-          handleCardHover(e, true),
-
-        onMouseLeave: (e) =>
-          handleCardHover(e, false),
-      }),
-      [handleCardHover]
-    );
-
-  const buttonHoverHandlers =
-    useMemo(
-      () => ({
-        onMouseEnter: (e) =>
-          handleButtonHover(e, true),
-
-        onMouseLeave: (e) =>
-          handleButtonHover(e, false),
-      }),
-      [handleButtonHover]
-    );
-
-  // ===============================
-  // 🎨 UI
-  // ===============================
+  const cancelDelete = () => setPendingDelete(null);
 
   return (
-    <div style={styles.page}>
-      {/* NAVBAR */}
-
-      <header style={styles.navbar}>
-        <div
-          role="button"
-          tabIndex={0}
-          style={styles.logo}
-          onClick={() => navigate("/")}
+    <div className="flex min-h-screen w-full flex-col animate-fade-in select-none bg-navy-900 px-6 py-10 font-sans text-white">
+      
+      <header className="mx-auto mb-8 flex w-full max-w-sm items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-white">Pòs Mwen Yo</h1>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">
+            {totalPosts} pòs pibliye
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/create-post")}
+          aria-label="Kreye yon nouvo pòs"
+          className="flex h-10 w-10 active:scale-95 items-center justify-center rounded-xl bg-gold-400 text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
         >
-          🚀 JOBFAST
-        </div>
-
-        <div style={styles.navActions}>
-          <Link
-            to="/search"
-            style={styles.navLink}
-          >
-            Search
-          </Link>
-
-          <Link
-            to="/create-post"
-            style={styles.navButton}
-          >
-            Create Post
-          </Link>
-        </div>
+          <Plus className="h-5 w-5" strokeWidth={3} />
+        </button>
       </header>
 
-      {/* HERO */}
-
-      <section style={styles.hero}>
-        <div style={styles.heroGlow}></div>
-
-        <div style={styles.profileCard}>
-          <div style={styles.profileTop}>
-            <div style={styles.avatar}>
-              {user.fullName.charAt(0)}
+      <main className="mx-auto flex-1 w-full max-w-sm space-y-4">
+        {totalPosts === 0 ? (
+          <div className="flex flex-col items-center justify-center border border-dashed border-slate-800 bg-navy-800/10 p-6 py-24 text-center rounded-2xl">
+            <div className="rounded-2xl border border-navy-800 bg-navy-800/20 p-4 mb-4">
+              <Briefcase className="h-8 w-8 text-slate-600" />
             </div>
-
-            <div>
-              <h1 style={styles.title}>
-                {user.fullName}
-              </h1>
-
-              <p style={styles.role}>
-                👷 {user.role}
-              </p>
-
-              <p style={styles.location}>
-                📍 {user.location} •{" "}
-                {user.distance}
-              </p>
-            </div>
-          </div>
-
-          {/* BIO */}
-
-          <p style={styles.bio}>
-            {user.bio}
-          </p>
-
-          {/* TAGS */}
-
-          <div style={styles.tags}>
-            {!!user.constructionRole && (
-              <div style={styles.tag}>
-                🔨{" "}
-                {user.constructionRole}
-              </div>
-            )}
-
-            {!!user.businessType && (
-              <div style={styles.tag}>
-                🏢 {user.businessType}
-              </div>
-            )}
-
-            {!!user.serviceCategory && (
-              <div style={styles.tag}>
-                🚀{" "}
-                {user.serviceCategory}
-              </div>
-            )}
-          </div>
-
-          {/* ACTIONS */}
-
-          <div style={styles.profileActions}>
-            <ActionButton
-              style={styles.primaryButton}
-              hoverHandlers={
-                buttonHoverHandlers
-              }
-              onClick={() =>
-                navigate(
-                  "/edit-profile"
-                )
-              }
+            <h3 className="font-bold text-sm text-white">Pa gen okenn pòs</h3>
+            <p className="mt-1 text-xs max-w-[240px] leading-relaxed text-slate-400">
+              Pibliye premye pòs ou sou JobFast pou ou ka kòmanse resevwa òf rapid.
+            </p>
+            <button
+              onClick={() => navigate("/create-post")}
+              className="mt-5 active:scale-95 rounded-xl bg-gold-400 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
             >
-              Edit Profile
-            </ActionButton>
+              Kreye yon pòs
+            </button>
           </div>
-
-          {/* STATS */}
-
-          <div style={styles.statsGrid}>
-            {stats.map((stat) => (
-              <HoverCard
-                key={stat.label}
-                style={styles.statCard}
-                hoverHandlers={
-                  cardHoverHandlers
-                }
-              >
-                <h2
-                  style={
-                    styles.statNumber
-                  }
-                >
-                  {stat.value}
-                </h2>
-
-                <p
-                  style={
-                    styles.statText
-                  }
-                >
-                  {stat.label}
-                </p>
-              </HoverCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* STATUS */}
-
-      <section style={styles.section}>
-        <HoverCard
-          style={styles.card}
-          hoverHandlers={
-            cardHoverHandlers
-          }
-        >
-          <div style={styles.cardHeader}>
-            <h2 style={styles.cardTitle}>
-              Availability Status
-            </h2>
-
-            <span
-              style={{
-                ...styles.statusBadge,
-
-                background:
-                  isAvailable
-                    ? "rgba(34,197,94,0.18)"
-                    : "rgba(239,68,68,0.18)",
-
-                color:
-                  isAvailable
-                    ? "#4ade80"
-                    : "#f87171",
-              }}
-            >
-              {isAvailable
-                ? "AVAILABLE"
-                : "BUSY"}
-            </span>
-          </div>
-
-          <p style={styles.cardText}>
-            When available, your
-            profile appears in nearby
-            search results.
-          </p>
-
-          <ActionButton
-            style={styles.primaryButton}
-            hoverHandlers={
-              buttonHoverHandlers
-            }
-            onClick={
-              toggleAvailability
-            }
-          >
-            {isAvailable
-              ? "Set as Busy"
-              : "Set as Available"}
-          </ActionButton>
-        </HoverCard>
-      </section>
-
-      {/* CATEGORIES */}
-
-      <section
-        style={styles.sectionBottom}
-      >
-        <div style={styles.grid}>
-          {CATEGORY_CARDS.map(
-            (item) => (
-              <HoverCard
-                key={item.title}
-                style={styles.card}
-                hoverHandlers={
-                  cardHoverHandlers
-                }
-              >
-                <div
-                  style={
-                    styles.cardIcon
-                  }
-                >
-                  {item.icon}
-                </div>
-
-                <h3
-                  style={
-                    styles.cardTitle
-                  }
-                >
-                  {item.title}
-                </h3>
-
-                <p
-                  style={
-                    styles.cardText
-                  }
-                >
-                  {item.text}
-                </p>
-              </HoverCard>
-            )
-          )}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// ===============================
-// 🎨 GLASS SYSTEM
-// ===============================
-
-const glass = {
-  background:
-    "rgba(255,255,255,0.05)",
-
-  border:
-    "1px solid rgba(255,255,255,0.08)",
-
-  backdropFilter: "blur(18px)",
-
-  WebkitBackdropFilter:
-    "blur(18px)",
-
-  transition:
-    "all 0.35s ease",
-};
-
-// ===============================
-// 🎨 STYLES
-// ===============================
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-
-    background:
-      "linear-gradient(to bottom, #020617, #0f172a)",
-
-    color: "#fff",
-
-    fontFamily:
-      "Inter, Arial, sans-serif",
-
-    overflowX: "hidden",
-  },
-
-  navbar: {
-    position: "sticky",
-
-    top: 0,
-
-    zIndex: 100,
-
-    display: "flex",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
-
-    flexWrap: "wrap",
-
-    gap: "14px",
-
-    padding: "18px 24px",
-
-    backdropFilter:
-      "blur(18px)",
-
-    background:
-      "rgba(2,6,23,0.85)",
-
-    borderBottom:
-      "1px solid rgba(255,255,255,0.08)",
-  },
-
-  logo: {
-    fontSize: "22px",
-
-    fontWeight: "900",
-
-    cursor: "pointer",
-  },
-
-  navActions: {
-    display: "flex",
-
-    alignItems: "center",
-
-    flexWrap: "wrap",
-
-    gap: "14px",
-  },
-
-  navLink: {
-    color: "#cbd5e1",
-
-    textDecoration: "none",
-
-    fontWeight: "600",
-  },
-
-  navButton: {
-    padding: "10px 18px",
-
-    borderRadius: "12px",
-
-    background:
-      "linear-gradient(to right, #2563eb, #3b82f6)",
-
-    color: "#fff",
-
-    textDecoration: "none",
-
-    fontWeight: "700",
-
-    transition: "0.3s",
-  },
-
-  hero: {
-    position: "relative",
-
-    padding:
-      "110px 20px 40px",
-  },
-
-  heroGlow: {
-    position: "absolute",
-
-    inset: 0,
-
-    background:
-      "radial-gradient(circle at top, rgba(59,130,246,0.25), transparent 60%)",
-  },
-
-  profileCard: {
-    ...glass,
-
-    position: "relative",
-
-    zIndex: 2,
-
-    maxWidth: "1000px",
-
-    margin: "0 auto",
-
-    borderRadius: "28px",
-
-    padding: "32px",
-
-    boxShadow:
-      "0 25px 60px rgba(0,0,0,0.45)",
-  },
-
-  profileTop: {
-    display: "flex",
-
-    gap: "22px",
-
-    alignItems: "center",
-
-    flexWrap: "wrap",
-  },
-
-  avatar: {
-    width: "88px",
-
-    height: "88px",
-
-    borderRadius: "50%",
-
-    display: "flex",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    fontSize: "34px",
-
-    fontWeight: "900",
-
-    background:
-      "linear-gradient(to right, #2563eb, #3b82f6)",
-  },
-
-  title: {
-    fontSize: "36px",
-
-    fontWeight: "900",
-
-    marginBottom: "6px",
-  },
-
-  role: {
-    color: "#cbd5e1",
-
-    marginBottom: "5px",
-  },
-
-  location: {
-    color: "#94a3b8",
-
-    fontSize: "14px",
-  },
-
-  bio: {
-    marginTop: "24px",
-
-    color: "#cbd5e1",
-
-    lineHeight: 1.8,
-  },
-
-  tags: {
-    display: "flex",
-
-    flexWrap: "wrap",
-
-    gap: "12px",
-
-    marginTop: "20px",
-  },
-
-  tag: {
-    padding: "9px 14px",
-
-    borderRadius: "999px",
-
-    background:
-      "rgba(59,130,246,0.15)",
-
-    border:
-      "1px solid rgba(59,130,246,0.3)",
-
-    color: "#93c5fd",
-
-    fontSize: "13px",
-
-    fontWeight: "700",
-  },
-
-  profileActions: {
-    marginTop: "24px",
-  },
-
-  statsGrid: {
-    display: "grid",
-
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(180px, 1fr))",
-
-    gap: "18px",
-
-    marginTop: "30px",
-  },
-
-  statCard: {
-    ...glass,
-
-    borderRadius: "20px",
-
-    padding: "22px",
-
-    textAlign: "center",
-
-    cursor: "pointer",
-
-    willChange:
-      "transform",
-  },
-
-  section: {
-    maxWidth: "1000px",
-
-    margin: "0 auto",
-
-    padding:
-      "0 20px 24px",
-  },
-
-  sectionBottom: {
-    maxWidth: "1200px",
-
-    margin: "0 auto",
-
-    padding:
-      "0 20px 80px",
-  },
-
-  grid: {
-    display: "grid",
-
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(260px, 1fr))",
-
-    gap: "24px",
-  },
-
-  card: {
-    ...glass,
-
-    borderRadius: "24px",
-
-    padding: "26px",
-
-    cursor: "pointer",
-
-    willChange:
-      "transform",
-  },
-
-  cardHeader: {
-    display: "flex",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
-
-    flexWrap: "wrap",
-
-    gap: "12px",
-
-    marginBottom: "16px",
-  },
-
-  cardTitle: {
-    fontSize: "22px",
-
-    fontWeight: "800",
-  },
-
-  cardText: {
-    color: "#cbd5e1",
-
-    lineHeight: 1.7,
-
-    marginTop: "10px",
-  },
-
-  cardIcon: {
-    fontSize: "42px",
-
-    marginBottom: "16px",
-  },
-
-  statusBadge: {
-    padding: "8px 14px",
-
-    borderRadius: "999px",
-
-    fontWeight: "800",
-
-    fontSize: "12px",
-  },
-
-  primaryButton: {
-    width: "100%",
-
-    marginTop: "22px",
-
-    padding: "13px",
-
-    borderRadius: "14px",
-
-    border: "none",
-
-    background:
-      "linear-gradient(to right, #2563eb, #3b82f6)",
-
-    color: "#fff",
-
-    fontWeight: "700",
-
-    fontSize: "14px",
-
-    cursor: "pointer",
-
-    transition: "0.3s",
-  },
-
-  statNumber: {
-    fontSize: "32px",
-
-    color: "#60a5fa",
-
-    marginBottom: "6px",
-  },
-
-  statText: {
-    color: "#cbd5e1",
-  },
-};
-
-export default memo(Profile);
+        ) : (
+          sortedPosts.map((post) => {
+            const status = getStatusConfig(post.status);
+            const IconComponent = TYPE_ICONS[post.type] || Briefcase;
+            
+            return (
+              <article 
+                key={post.id} 
+                className="relative overflow-hidden rounded-2xl border border-sl
