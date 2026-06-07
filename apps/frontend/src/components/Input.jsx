@@ -1,49 +1,49 @@
-import React, { memo } from "react";
+import React from "react";
 
-const Input = memo(({ 
+const Input = ({ 
   as: Component = "input", 
   label, 
   error, 
-  icon, 
+  icon: IconComponent, 
   className = "", 
   ...props 
 }) => {
   return (
-    <div className="w-full mb-4">
+    <div className="animate-fade-in mb-4 w-full select-none">
       {label && (
-        <label className="block text-gray-400 text-[10px] font-bold uppercase mb-2 ml-1 tracking-wider">
+        <label className="block ml-1 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
           {label}
         </label>
       )}
       
-      <div className="relative flex items-center">
-        {/* Ikon a si li egziste */}
-        {icon && (
-          <div className="absolute left-4 text-gray-500 text-lg">
-            {icon}
+      <div className="relative flex items-center w-full">
+        {IconComponent && (
+          <div className="absolute left-4 flex items-center justify-center pointer-events-none text-slate-500">
+            <IconComponent className="h-4 w-4" strokeWidth={2} />
           </div>
         )}
         
         <Component
           {...props}
           className={`
-            w-full bg-[#0B1528] border ${error ? 'border-red-500' : 'border-gray-700'} 
-            text-white py-3 rounded-xl outline-none transition-all duration-200
-            placeholder:text-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500
-            ${icon ? 'pl-12' : 'pl-4'} pr-4
-            ${Component === 'textarea' ? 'h-32 resize-none pt-3' : ''}
+            w-full bg-navy-950 border ${error ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-800/60 focus:border-gold-400'} 
+            text-sm font-medium text-white py-3.5 rounded-xl outline-none transition-all duration-200
+            placeholder:text-slate-600 focus:ring-4 ${error ? 'focus:ring-rose-500/10' : 'focus:ring-gold-400/10'}
+            focus-visible:ring-4 focus-visible:ring-${error ? 'rose' : 'gold'}-400/20
+            ${IconComponent ? 'pl-11' : 'px-4'} pr-4
+            ${Component === 'textarea' ? 'h-28 resize-none pt-3.5' : ''}
             ${className}
           `}
         />
       </div>
       
       {error && (
-        <p className="text-red-400 text-[10px] mt-1 ml-1 font-medium">{error}</p>
+        <p className="ml-1 mt-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-400">
+          {error}
+        </p>
       )}
     </div>
   );
-});
-
-Input.displayName = "Input";
+};
 
 export default Input;
