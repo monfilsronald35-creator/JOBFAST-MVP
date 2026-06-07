@@ -1,183 +1,194 @@
-import React, { useState } from "react";
+import React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
-// Done simulation ki matche egzakteman ak Imaj MVP a (Non, distans, pri, status)
 const MOCK_WORKERS = [
   {
     id: 1,
-    name: "Mason",
+    name: "Jean Mason",
     distance: "2.5 km",
-    location: "Bavaro",
+    location: "Bávaro",
     rate: "USD 50 / jou",
     status: "Disponib",
     dotColor: "bg-emerald-500",
-    textColor: "text-emerald-400"
+    textColor: "text-emerald-400",
   },
   {
     id: 2,
-    name: "Mason",
+    name: "Pierre Mason",
     distance: "2.8 km",
-    location: "Veron",
+    location: "Verón",
     rate: "USD 45 / jou",
     status: "Okipe",
     dotColor: "bg-amber-500",
-    textColor: "text-amber-400"
+    textColor: "text-amber-400",
   },
   {
     id: 3,
-    name: "Mason",
+    name: "Luc Mason",
     distance: "3.1 km",
     location: "Friusa",
     rate: "USD 60 / jou",
     status: "Disponib",
     dotColor: "bg-emerald-500",
-    textColor: "text-emerald-400"
+    textColor: "text-emerald-400",
   },
   {
     id: 4,
-    name: "Mason",
+    name: "Jacques Mason",
     distance: "3.4 km",
     location: "El Cortecito",
     rate: "USD 55 / jou",
     status: "Disponib",
     dotColor: "bg-emerald-500",
-    textColor: "text-emerald-400"
-  }
+    textColor: "text-emerald-400",
+  },
 ];
 
 export default function SearchResultsScreen() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
   const query = searchParams.get("query") || "Mason";
 
   return (
-    <div className="min-h-screen w-full bg-[#0B1528] text-white flex flex-col font-sans select-none pb-28">
-      
-      {/* 🟢 TOP BAR (Search Input solid ak bouton Retou) */}
-      <div className="px-5 pt-6 pb-3 max-w-md w-full mx-auto flex items-center gap-3">
-        <button 
+    <div className="flex min-h-screen w-full flex-col bg-navy-900 pb-24 font-sans text-white select-none animate-fade-in">
+      <div className="mx-auto flex w-full max-w-md items-center gap-3 px-5 pb-3 pt-6">
+        <button
+          type="button"
           onClick={() => navigate(-1)}
-          className="p-2.5 bg-[#162238] border border-slate-800/80 rounded-xl text-slate-400 active:scale-95 transition-transform"
+          aria-label="Retounen"
+          className="rounded-xl border border-navy-800 bg-navy-800/60 p-2.5 text-slate-400 transition-all hover:text-gold-400 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        
+
         <div className="relative flex-1">
           <span className="absolute inset-y-0 left-4 flex items-center text-slate-500">
-            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </span>
+
           <input
             type="text"
             readOnly
             value={query}
-            className="w-full pl-11 pr-10 py-3 bg-[#162238] border border-slate-800 rounded-xl text-xs font-semibold text-white focus:outline-none"
+            aria-label="Rechèch aktyèl"
+            className="w-full rounded-xl border border-navy-800 bg-navy-800/40 py-3 pl-11 pr-10 text-xs font-bold text-white focus:outline-none"
           />
-          <button 
+
+          <button
+            type="button"
             onClick={() => navigate("/search")}
-            className="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-white"
+            aria-label="Klere rechèch la"
+            className="absolute inset-y-0 right-4 flex items-center text-slate-400 transition-colors hover:text-gold-400"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </div>
 
-      {/* 🎛️ FILTÈ KOUTIM (Custom Pills dapre Imaj la) */}
-      <div className="px-5 py-2 max-w-md w-full mx-auto flex items-center gap-2 text-[11px] font-bold text-slate-300">
-        <button className="flex items-center gap-1.5 px-3 py-2 bg-[#162238] border border-slate-800 rounded-lg active:scale-95">
-          Filté
-          <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+      <div className="mx-auto flex w-full max-w-md items-center gap-2 px-5 py-2 text-[11px] font-bold text-slate-300">
+        <button type="button" className="flex items-center gap-1.5 rounded-xl border border-navy-800 bg-navy-800/40 px-3 py-2 transition-all hover:border-slate-700 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10">
+          Filtre
+          <svg className="h-3 w-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
 
-        <button className="flex items-center gap-1.5 px-3 py-2 bg-[#162238] border border-slate-800 rounded-lg active:scale-95">
-          2 km
-          <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+        <button type="button" className="flex items-center gap-1.5 rounded-xl border border-navy-800 bg-navy-800/40 px-3 py-2 transition-all hover:border-slate-700 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10">
+          5 km
+          <svg className="h-3 w-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
 
-        <button className="flex items-center gap-1.5 px-3 py-2 bg-[#162238] border border-slate-800 rounded-lg active:scale-95 ml-auto text-slate-400">
-          Tri pa dènye
-          <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+        <button type="button" className="ml-auto flex items-center gap-1.5 rounded-xl border border-navy-800 bg-navy-800/40 px-3 py-2 text-slate-400 transition-all hover:border-slate-700 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10">
+          Triye pa distans
+          <svg className="h-3 w-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
       </div>
 
-      {/* 👥 LIS TRAVAYÈ YO */}
-      <div className="px-5 mt-3 flex-1 flex flex-col gap-3 max-w-md mx-auto w-full overflow-y-auto">
+      <div className="mx-auto mt-3 flex w-full max-w-md flex-1 flex-col gap-3 overflow-y-auto px-5">
         {MOCK_WORKERS.map((worker) => (
-          <div 
+          <button
             key={worker.id}
+            type="button"
             onClick={() => navigate(`/worker/${worker.id}`)}
-            className="w-full p-4 bg-[#162238] border border-slate-800/50 rounded-xl flex items-center justify-between cursor-pointer hover:border-slate-700/80 active:scale-[0.99] transition-all"
+            className="flex w-full items-center justify-between rounded-2xl border border-slate-800/60 bg-navy-800/30 p-4 text-left transition-all hover:border-slate-700 active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
           >
             <div className="flex items-center gap-3.5">
-              {/* Avatar Placeholder ak inisyal */}
-              <div className="w-12 h-12 bg-[#0B1528] border border-slate-800 rounded-xl flex items-center justify-center text-slate-400 font-black uppercase text-xs shadow-inner">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-navy-800 bg-navy-900 text-xs font-black uppercase text-gold-400 shadow-inner">
                 {worker.name.substring(0, 2)}
               </div>
-              
+
               <div className="flex flex-col gap-1">
-                <h3 className="text-xs font-black tracking-wide text-slate-100">{worker.name}</h3>
-                <p className="text-[10px] text-slate-400 font-bold">📍 {worker.distance} <span className="text-slate-600 mx-1">•</span> {worker.location}</p>
+                <h3 className="text-sm font-bold tracking-wide text-white">{worker.name}</h3>
+                <p className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                  <span>📍</span>
+                  {worker.distance}
+                  <span className="text-slate-700">•</span>
+                  {worker.location}
+                </p>
               </div>
             </div>
 
-            {/* Pri ak Ti Dot Status anba li */}
-            <div className="text-right flex flex-col items-end gap-1.5">
-              <span className="text-xs font-black text-amber-400 tracking-wide">{worker.rate}</span>
+            <div className="flex flex-col items-end gap-1.5 text-right">
+              <span className="text-xs font-black tracking-wide text-gold-400">{worker.rate}</span>
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${worker.dotColor} animate-pulse`}></span>
-                <span className={`text-[9px] font-extrabold uppercase tracking-wider ${worker.textColor}`}>{worker.status}</span>
+                <span className={`h-2 w-2 rounded-full ${worker.dotColor} ${worker.status === "Disponib" ? "animate-pulse" : ""}`} />
+                <span className={`text-[10px] font-extrabold uppercase tracking-wider ${worker.textColor}`}>
+                  {worker.status}
+                </span>
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
-      {/* 🧭 NAVIGASYON ANBA (Bottom Tab Bar) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-t border-slate-900 px-6 py-2 flex justify-between items-center z-40 max-w-md mx-auto">
-        <button type="button" onClick={() => navigate("/dashboard")} className="flex flex-col items-center gap-1 text-slate-500 hover:text-amber-400 transition-colors">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto flex max-w-md items-center justify-between border-t border-slate-900 bg-navy-950/95 px-6 py-2 backdrop-blur-md">
+        <button type="button" onClick={() => navigate("/dashboard")} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" aria-label="Akey">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
           <span className="text-[9px] font-bold uppercase tracking-wider">Akey</span>
         </button>
 
-        <button type="button" onClick={() => navigate("/search")} className="flex flex-col items-center gap-1 text-amber-400">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+        <button type="button" onClick={() => navigate("/search")} className="flex flex-col items-center gap-1 text-gold-400" aria-label="Rechèch aktif">
+          <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+            <path fillRule="evenodd" clipRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" />
           </svg>
           <span className="text-[9px] font-bold uppercase tracking-wider">Rechèch</span>
         </button>
 
-        <button type="button" onClick={() => navigate("/post-job")} className="flex flex-col items-center gap-1 text-slate-500 hover:text-amber-400 transition-colors">
-          <div className="w-8 h-8 bg-[#162238] border border-slate-800 rounded-xl flex items-center justify-center -mt-4 shadow-lg text-slate-400">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+        <button type="button" onClick={() => navigate("/post-job")} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" aria-label="Poste">
+          <div className="relative -mt-4 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-800 bg-navy-800 text-gold-400 shadow-lg">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
           </div>
-          <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5">Poste</span>
+          <span className="mt-0.5 text-[9px] font-bold uppercase tracking-wider">Poste</span>
         </button>
 
-        <button type="button" onClick={() => navigate("/notifications")} className="flex flex-col items-center gap-1 text-slate-500 hover:text-amber-400 transition-colors">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <button type="button" onClick={() => navigate("/notifications")} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" aria-label="Notifikasyon">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           <span className="text-[9px] font-bold uppercase tracking-wider">Notifikasyon</span>
         </button>
 
-        <button type="button" onClick={() => navigate("/profile")} className="flex flex-col items-center gap-1 text-slate-500 hover:text-amber-400 transition-colors">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <button type="button" onClick={() => navigate("/profile")} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" aria-label="Profil">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           <span className="text-[9px] font-bold uppercase tracking-wider">Profil</span>
         </button>
-      </div>
-
+      </nav>
     </div>
   );
 }
