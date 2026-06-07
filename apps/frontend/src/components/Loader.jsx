@@ -1,73 +1,25 @@
-import React, { memo, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
-// ===============================
-// 🎨 GLOBAL KEYFRAME (SAFE ONCE)
-// ===============================
-const KEYFRAME_STYLE = `
-@keyframes productionLoaderSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-`;
-
-let injected = false;
-
-function injectKeyframes() {
-  if (injected || typeof document === "undefined") return;
-
-  const style = document.createElement("style");
-  style.textContent = KEYFRAME_STYLE;
-  document.head.appendChild(style);
-
-  injected = true;
-}
-
-// ===============================
-// 🚀 LOADER
-// ===============================
-function Loader({ text = "Loading...", showProgress = true }) {
+function Loader({ text = "Chaje opòtinite...", showProgress = true }) {
   const [progress, setProgress] = useState(5);
-
   const rafRef = useRef(null);
-  const progressRef = useRef(5);
-  const lastUpdateRef = useRef(0); // Tracks time to normalize refresh rates
 
-  // Inject CSS once (StrictMode safe)
-  useEffect(() => {
-    injectKeyframes();
-  }, []);
-
-  // Progress animation engine
   useEffect(() => {
     if (!showProgress) return;
 
-    progressRef.current = 5;
     setProgress(5);
-    lastUpdateRef.current = performance.now();
+    let current = 5;
 
-    const animate = (timestamp) => {
-      // Calculate time passed since the last step
-      const delta = timestamp - lastUpdateRef.current;
-
-      // Only update roughly every 30ms (gives a smooth look without melting the CPU)
-      if (delta >= 30) {
-        const nextValue =
-          progressRef.current + (98 - progressRef.current) * 0.015; // Adjusted multiplier for time-throttling
-
-        progressRef.current = nextValue >= 98 ? 98 : nextValue;
-        lastUpdateRef.current = timestamp;
-
-        // Micro-optimization check
-        setProgress((prev) =>
-          Math.abs(prev - progressRef.current) < 0.01
-            ? prev
-            : progressRef.current
-        );
+    const animate = () => {
+      current += (98 - current) * 0.02;
+      
+      if (current >= 98) {
+        setProgress(98);
+        return;
       }
 
-      if (progressRef.current < 98) {
-        rafRef.current = requestAnimationFrame(animate);
-      }
+      setProgress(current);
+      rafRef.current = requestAnimationFrame(animate);
     };
 
     rafRef.current = requestAnimationFrame(animate);
@@ -75,7 +27,6 @@ function Loader({ text = "Loading...", showProgress = true }) {
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
       }
     };
   }, [showProgress]);
@@ -84,22 +35,35 @@ function Loader({ text = "Loading...", showProgress = true }) {
 
   return (
     <div
-      style={styles.container}
+      className="fixed inset-0 z-50 flex min-h-screen w-full flex-col items-center justify-center select-none bg-navy-900 p-6 text-center"
       role="status"
       aria-live="polite"
       aria-busy={!isComplete}
+      aria-label={isComplete ? "Chajman fini" : text}
     >
-      <div style={styles.glow} />
-      <div style={styles.spinner} />
-      <p style={styles.text}>{isComplete ? "Ready" : text}</p>
+      <div className="pointer-events-none absolute h-[340px] w-[340px] rounded-full bg-radial-gradient from-gold-400/10 to-transparent blur-[50px]" />
+      
+      <div 
+        className="h-10 w-10 animate-spin rounded-full border-4 border-slate-800 border-t-gold-400 will-change-transform" 
+        style={{ animationDuration: "0.8s" }}
+      />
+
+      <p className="mt-5 text-xs font-black uppercase tracking-widest text-slate-400">
+        {isComplete ? "Pre" : text}
+      </p>
 
       {showProgress && (
-        <div style={styles.progressBar} aria-hidden="true">
+        <div
+          className="mt-4 h-1 w-44 overflow-hidden rounded-full bg-slate-800"
+          role="progressbar"
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Pwogrè chajman"
+        >
           <div
-            style={{
-              ...styles.progressFill,
-              width: `${progress}%`,
-            }}
+            className="h-full bg-gradient-to-r from-amber-500 to-gold-400 transition-all duration-100 ease-out shadow-[0_0_12px_rgba(251,191,36,0.3)]"
+            style={{ width: `${progress}%` }}
           />
         </div>
       )}
@@ -107,64 +71,4 @@ function Loader({ text = "Loading...", showProgress = true }) {
   );
 }
 
-export default memo(Loader);
-
-// ===============================
-// 🎨 STYLES
-// ===============================
-const styles = Object.freeze({
-  container: {
-    width: "100%",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#0f172a",
-    color: "#fff",
-    fontFamily: "system-ui, -apple-system, sans-serif",
-    position: "relative",
-    overflow: "hidden",
-  },
-  glow: {
-    position: "absolute",
-    width: "340px",
-    height: "340px",
-    background: "radial-gradient(circle, rgba(59,130,246,0.18), transparent 60%)",
-    filter: "blur(45px)",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    pointerEvents: "none",
-  },
-  spinner: {
-    width: "44px",
-    height: "44px",
-    border: "4px solid #1e293b",
-    borderTop: "4px solid #3b82f6",
-    borderRadius: "50%",
-    animation: "productionLoaderSpin 0.85s linear infinite",
-    willChange: "transform",
-  },
-  text: {
-    marginTop: "16px",
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#94a3b8",
-    letterSpacing: "0.5px",
-  },
-  progressBar: {
-    width: "200px",
-    height: "4px",
-    background: "#1e293b",
-    borderRadius: "999px",
-    marginTop: "14px",
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    background: "linear-gradient(to right, #2563eb, #3b82f6)",
-    // Adjusted transition time to match the ~30ms frame-throttling cadence perfectly
-    transition: "width 0.1s linear", 
-  },
-});
+export default Loader;
