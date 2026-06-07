@@ -1,5 +1,5 @@
 /* ==================================================
-   🌍 JOBFAST i18n SYSTEM (PRODUCTION v3.6)
+   🌍 JOBFAST i18n SYSTEM (PRODUCTION v3.6 - PREMIUM OPTIMIZED)
    ================================================== */
 
 import i18n from "i18next";
@@ -117,12 +117,29 @@ const handleLanguageChange = (lng) => {
 i18n.on("languageChanged", handleLanguageChange);
 
 /* ==================================================
+   📍 CROSS-TAB SYNCHRONIZATION
+   ================================================== */
+
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORAGE_KEY && event.newValue) {
+      const targetLang = normalizeLang(event.newValue);
+      const current = i18n.resolvedLanguage || i18n.language;
+      
+      if (targetLang && targetLang !== current) {
+        cachedLang = targetLang;
+        i18n.changeLanguage(targetLang);
+      }
+    }
+  });
+}
+
+/* ==================================================
    📍 SWITCH LANGUAGE
    ================================================== */
 
 export const changeLanguage = (lang) => {
   const safeLang = normalizeLang(lang) || DEFAULT_LANGUAGE;
-
   const current = i18n.resolvedLanguage || i18n.language;
 
   if (current === safeLang) return;
@@ -144,15 +161,11 @@ export const getCurrentLanguage = () =>
   DEFAULT_LANGUAGE;
 
 /* ==================================================
-   📍 OPTIONAL CLEANUP (for microfrontends)
+   📍 OPTIONAL CLEANUP
    ================================================== */
 
 export const cleanupI18nListener = () => {
   i18n.off("languageChanged", handleLanguageChange);
 };
-
-/* ==================================================
-   📍 EXPORT
-   ================================================== */
 
 export default i18n;
