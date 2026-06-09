@@ -1,5 +1,5 @@
 import React from "react";
-import { AuthProvider } from "./Context/AuthContext"; // ✨ Nou mete gwo "C" nan Context!
+import { AuthProvider } from "./context/AuthContext"; // ✨ Ti "c" nan context, gwo "A" nan AuthContext
 import AppRoutes from "./routes/AppRoutes";
 import "./styles/global.css";
 
@@ -12,3 +12,5 @@ function App() {
 }
 
 export default App;
+
+
