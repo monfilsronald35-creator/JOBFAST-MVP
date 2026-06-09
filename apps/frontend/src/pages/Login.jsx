@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
-import { loginUser } from "../services/auth";
+import { login } from "../services/auth"; // ✨ Ranplase loginUser pa login
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function Login() {
 
     try {
       const isEmail = formData.identifier.includes("@");
-      const data = await loginUser({
+      const data = await login({ // ✨ Rele fonksyon login an dirèkteman isit la
         email: isEmail ? formData.identifier : undefined,
         phone: !isEmail ? formData.identifier : undefined,
         password: formData.password,

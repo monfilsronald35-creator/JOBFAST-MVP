@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
-import "./styles/master.css";
+import "./styles/global.css"; // <--- Nou ranje liy sa a isit la!
 
 const rootElement = document.getElementById("root");
 
