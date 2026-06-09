@@ -16,7 +16,7 @@ const LogoIcon = () => (
     <path d="M64 44V28h6v16h-6z M74 44V34h5v10h-5z M56 44V22h5v22h-5z" opacity="0.5" />
     <path d="M46 25h8v8h-8z" opacity="0.2" fill="#000" />
   </svg>
-);
+);  
 
 export default function SplashScreen() {
   const navigate = useNavigate();
