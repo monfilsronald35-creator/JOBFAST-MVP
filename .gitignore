@@ -12,7 +12,7 @@ infrastructure/
 scripts/
 tests/
 docs/
-
+package-lock.json
 node_modules/
 dist/
 build/
