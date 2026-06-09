@@ -1,7 +1,7 @@
 import React from "react";
-import { AuthProvider } from "./context/AuthContext"; 
+import { AuthProvider } from "./context/AuthContext";
 import AppRoutes from "./routes/AppRoutes";
-import "./styles/master.css"; 
+import "./styles/global.css";
 
 function App() {
   return (
@@ -11,4 +11,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;        
