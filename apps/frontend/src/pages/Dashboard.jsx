@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../components/CustomButton.jsx"; // ✨ Chanje an CustomButton.jsx
+import Button from "../components/Button.jsx"; // ✨ Nou remete l kòm Button.jsx ak gwo B!
 
 const LogoIcon = () => (
   <svg
