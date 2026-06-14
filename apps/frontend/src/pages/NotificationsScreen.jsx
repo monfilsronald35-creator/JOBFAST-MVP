@@ -1,275 +1,333 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
-  Briefcase, 
-  MessageSquare, 
-  Star, 
-  Clock, 
-  ChevronRight, 
-  Trash2, 
-  ArrowLeft,
-  Home,
-  Search,
-  Plus,
-  User
-} from 'lucide-react';
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bell, Briefcase, Wallet, Settings, ArrowLeft, Home, Search, Plus, User } from "lucide-react";
 
-const TRANSLATIONS = {
-  ht: {
-    title: "Notifikasyon",
-    newBadge: "Nouvo",
-    emptyState: "Ou pa gen okenn notifikasyon.",
-    clearAll: "Tout efase",
-    confirmClear: "Èske ou sèten ou vle efase tout notifikasyon yo?",
-    navHome: "Akeyi",
-    navSearch: "Rechèch",
-    navPost: "Poste",
-    navNotif: "Notifikasyon",
-    navProfile: "Profil",
-    timeJustNow: "Kounye a",
-    timeMinutes: "minit de sa",
-    timeHours: "èdtan de sa",
-    timeDays: "jou de sa",
-    timeYesterday: "Yè"
-  }
+const ROUTES = {
+  DASHBOARD: "/dashboard",
+  SEARCH: "/search",
+  POST_JOB: "/post-job",
+  PROFILE: "/profile",
+  NOTIFICATIONS: "/notifications",
+  LOGIN: "/login",
 };
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 'notif-1',
-    type: 'job_nearby',
-    title: 'Nouvo travay disponib toupre ou',
-    description: 'Mason - 2.5 km de ou',
-    createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-    unread: true,
-    category: 'Construction'
-  },
-  {
-    id: 'notif-2',
-    type: 'response',
-    title: 'Ronald Monfils te reponn ou',
-    description: 'Sou travay ou te poste a',
-    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    unread: true,
-    category: 'Communication'
-  },
-  {
-    id: 'notif-3',
-    type: 'service_nearby',
-    title: 'Nouvo sèvis disponib',
-    description: 'Plonbye disponib nan zòn ou',
-    createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    unread: false,
-    category: 'Services'
-  },
-  {
-    id: 'notif-4',
-    type: 'job_completed',
-    title: 'Travay fini',
-    description: 'Travay "Mason" a fini avèk siksè',
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    unread: false,
-    category: 'System'
-  }
+const FILTERS = [
+  { id: "all", label: "Tout" },
+  { id: "unread", label: "Li pa li" },
+  { id: "jobs", label: "Travay" },
+  { id: "payments", label: "Peman" },
+  { id: "system", label: "Sistèm" },
 ];
 
-export default function NotificationsScreen() {
+const DEFAULT_NOTIFICATIONS = [
+  {
+    id: "1",
+    type: "jobs",
+    title: "Nouvo demann travay",
+    message: 'Yon kliyan mande sèvis pou "Fondasyon Kay".',
+    time: "2 min ago",
+    unread: true,
+    priority: "high",
+  },
+  {
+    id: "2",
+    type: "payments",
+    title: "Peman resevwa",
+    message: "Ou resevwa $250 pou travay la fini.",
+    time: "35 min ago",
+    unread: true,
+    priority: "normal",
+  },
+  {
+    id: "3",
+    type: "system",
+    title: "Profil verifye",
+    message: "Kont ou verifye avèk siksè.",
+    time: "1 day ago",
+    unread: false,
+    priority: "low",
+  },
+];
+
+function NotificationsScreen() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
-  const t = TRANSLATIONS.ht;
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
 
-  const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(notif => notif.id === id ? { ...notif, unread: false } : notif)
-    );
-  };
+  useEffect(() => {
+    const controller = new AbortController();
 
-  const clearAll = () => {
-    if (window.confirm(t.confirmClear)) {
-      setNotifications([]);
+    const loadNotifications = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch("/api/notifications", {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!res.ok) throw new Error("Failed to load notifications");
+        const data = await res.json();
+
+        const sorted = Array.isArray(data)
+          ? [...data].sort((a, b) => Number(b.unread) - Number(a.unread))
+          : DEFAULT_NOTIFICATIONS;
+
+        setNotifications(sorted);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        setError("Erè pandan chajman notifikasyon yo");
+        setNotifications(DEFAULT_NOTIFICATIONS);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    loadNotifications();
+    return () => controller.abort();
+  }, []);
+
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => n.unread).length,
+    [notifications]
+  );
+
+  const filteredNotifications = useMemo(() => {
+    if (activeFilter === "all") return notifications;
+    if (activeFilter === "unread") return notifications.filter((n) => n.unread);
+    return notifications.filter((n) => n.type === activeFilter);
+  }, [activeFilter, notifications]);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      const res = await fetch(`/api/notifications/${id}/read`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to mark notification as read");
+
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+      );
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const formatTimeAgo = (isoString) => {
-    const diffInMs = new Date() - new Date(isoString);
-    const minutes = Math.floor(diffInMs / 60000);
-    
-    if (minutes < 1) return t.timeJustNow;
-    if (minutes < 60) return `${minutes} ${t.timeMinutes}`;
-    
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} ${t.timeHours}`;
-    
-    const days = Math.floor(hours / 24);
-    if (days === 1) return t.timeYesterday;
-    if (days < 7) return `${days} ${t.timeDays}`;
-    
-    return new Date(isoString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+  const handleMarkAllRead = async () => {
+    try {
+      const res = await fetch("/api/notifications/mark-all-read", {
+        method: "PATCH",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to mark all notifications as read");
+
+      setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const getIcon = (type) => {
+  const iconByType = (type) => {
     switch (type) {
-      case 'job_nearby':
-        return <Briefcase className="h-4 w-4 text-gold-400" />;
-      case 'response':
-        return <MessageSquare className="h-4 w-4 text-blue-400" />;
-      case 'service_nearby':
-        return <Bell className="h-4 w-4 text-indigo-400" />;
-      case 'job_completed':
-        return <Star className="h-4 w-4 text-emerald-400" />;
+      case "jobs":
+        return <Briefcase className="h-5 w-5" />;
+      case "payments":
+        return <Wallet className="h-5 w-5" />;
+      case "system":
+        return <Settings className="h-5 w-5" />;
       default:
-        return <Bell className="h-4 w-4 text-slate-400" />;
+        return <Bell className="h-5 w-5" />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-navy-900 text-white">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen w-full flex-col animate-fade-in select-none bg-navy-900 pb-24 font-sans text-white">
-      
-      <header className="mx-auto flex w-full max-w-md items-center justify-between px-5 pb-4 pt-6 shrink-0 z-50">
-        <div className="flex items-center gap-3">
+    <div className="flex min-h-screen w-full flex-col bg-navy-900 pb-24 font-sans text-text-inverse select-none">
+      <header className="border-b border-navy-800/60 bg-navy-800/40 px-5 pb-5 pt-6 shadow-xl">
+        <div className="mb-4 flex items-center justify-between">
           <button
             type="button"
             onClick={() => navigate(-1)}
             aria-label="Retounen"
-            className="rounded-xl border border-navy-800 bg-navy-800/60 p-2.5 text-slate-400 transition-all active:scale-95 hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+            className="rounded-xl bg-navy-800 p-2.5 text-slate-300 transition-all hover:text-gold-400 active:scale-95 focus:outline-none focus:ring-4 focus:ring-gold-100/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-base font-extrabold tracking-wide text-white">{t.title}</h1>
+
+          <div className="text-center">
+            <h1 className="text-sm font-extrabold uppercase tracking-widest text-slate-400">
+              Notifikasyon
+            </h1>
+            <p className="mt-1 text-xs text-slate-500" aria-live="polite">
+              {unreadCount} nouvo
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleMarkAllRead}
+            className="rounded-xl border border-slate-800 bg-navy-800 px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-300 transition-all hover:text-gold-400 active:scale-95 focus:outline-none focus:ring-4 focus:ring-gold-100/10"
+          >
+            Tout li
+          </button>
         </div>
-        
-        <div className="relative rounded-xl border border-navy-800 bg-navy-800/40 p-2.5">
-          <Bell className="h-4 w-4 text-gold-400" />
-          {notifications.some(n => n.unread) && (
-            <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" />
-          )}
+
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {FILTERS.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              onClick={() => setActiveFilter(filter.id)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all ${
+                activeFilter === filter.id
+                  ? "bg-gold-400 text-navy-900"
+                  : "border border-slate-800 bg-navy-800/40 text-slate-400"
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
         </div>
       </header>
 
-      <main className="mx-auto flex-1 w-full max-w-md overflow-y-auto px-5 space-y-3">
-        {notifications.length > 0 ? (
-          <>
-            {notifications.map((notif) => (
-              <button
-                key={notif.id}
-                type="button"
-                onClick={() => markAsRead(notif.id)}
-                aria-label={notif.title}
-                className={`flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition-all active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10
-                  ${notif.unread 
-                    ? 'bg-navy-800/40 border-gold-400/20 shadow-md' 
-                    : 'bg-navy-800/10 border-slate-800/40 hover:bg-navy-800/30' 
-                  }`}
+      {error ? (
+        <div className="mx-5 mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      ) : null}
+
+      <main className="flex-1 px-5 py-5">
+        {filteredNotifications.length > 0 ? (
+          <div className="space-y-3">
+            {filteredNotifications.map((notification) => (
+              <article
+                key={notification.id}
+                className={`rounded-2xl border p-4 transition-colors ${
+                  notification.unread
+                    ? "border-gold-400/20 bg-gold-400/5"
+                    : "border-navy-800/60 bg-navy-800/30"
+                }`}
               >
-                <div className="flex-shrink-0 rounded-xl border border-navy-800 bg-navy-900 p-2.5 shadow-inner">
-                  {getIcon(notif.type)}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <h3 className={`truncate text-sm tracking-wide ${notif.unread ? 'font-black text-white' : 'font-bold text-slate-300'}`}>
-                      {notif.title}
-                    </h3>
-                    {notif.unread && (
-                      <span className="shrink-0 rounded-full border border-gold-400/30 bg-gold-400/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold-400">
-                        {t.newBadge}
-                      </span>
-                    )}
+                <div className="flex gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-navy-800 text-slate-200">
+                    {iconByType(notification.type)}
                   </div>
-                  <p className="mb-2 text-xs font-medium leading-relaxed text-slate-400">
-                    {notif.description}
-                  </p>
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
-                    <Clock className="h-3 w-3" />
-                    <span>{formatTimeAgo(notif.createdAt)}</span>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h2 className="text-sm font-bold text-white">
+                          {notification.title}
+                        </h2>
+                        <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                          {notification.message}
+                        </p>
+                      </div>
+
+                      {notification.unread ? (
+                        <span
+                          className="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-gold-400"
+                          aria-label="Nouvo notifikasyon"
+                        />
+                      ) : null}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <p className="text-[11px] font-semibold text-slate-500">
+                        {notification.time}
+                      </p>
+
+                      <div className="flex items-center gap-2">
+                        {notification.unread ? (
+                          <button
+                            type="button"
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            className="rounded-full border border-slate-700 bg-navy-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-300 transition-all hover:border-gold-400/30 hover:text-gold-400"
+                          >
+                            Make li
+                          </button>
+                        ) : (
+                          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                            Li
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="self-center pl-1 text-slate-600">
-                  <ChevronRight className="h-4 w-4" />
-                </div>
-              </button>
+              </article>
             ))}
-
-            <div className="pb-6 pt-2">
-              <button
-                type="button"
-                onClick={clearAll}
-                className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-slate-800 bg-transparent py-3 text-xs font-bold uppercase tracking-widest text-slate-500 active:scale-95 transition-all hover:border-rose-500/40 hover:bg-rose-500/5 hover:text-rose-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-              >
-                <Trash2 className="h-4 w-4" />
-                {t.clearAll}
-              </button>
-            </div>
-          </>
+          </div>
         ) : (
-          <div className="animate-fade-in flex flex-col items-center justify-center py-32 space-y-4 text-slate-500">
-            <div className="rounded-2xl border border-navy-800 bg-navy-800/20 p-5">
-              <Bell className="h-8 w-8 text-slate-600" />
+          <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-navy-800 text-3xl">
+              <Bell className="h-7 w-7" />
             </div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{t.emptyState}</p>
+            <h2 className="text-lg font-black text-white">Pa gen notifikasyon</h2>
+            <p className="mt-2 max-w-xs text-sm text-slate-400">
+              Lè gen nouvèl, demand travay, oswa peman, y ap parèt isit la.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.DASHBOARD)}
+              className="mt-5 rounded-xl bg-gold-400 px-5 py-3 text-sm font-black uppercase tracking-wider text-navy-900 transition-all active:scale-95"
+            >
+              Ale akèy
+            </button>
           </div>
         )}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto flex max-w-md items-center justify-between border-t border-slate-900 bg-navy-950/95 px-6 py-2 backdrop-blur-md">
-        <button
-          type="button"
-          onClick={() => navigate("/dashboard")}
-          aria-label={t.navHome}
-          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-        >
+        <button onClick={() => navigate(ROUTES.DASHBOARD)} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" type="button" aria-label="Akey">
           <Home className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navHome}</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Akey</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => navigate("/search")}
-          aria-label={t.navSearch}
-          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-        >
+        <button onClick={() => navigate(ROUTES.SEARCH)} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" type="button" aria-label="Rechèch">
           <Search className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navSearch}</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Rechèch</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => navigate("/post-job")}
-          aria-label={t.navPost}
-          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-        >
+        <button onClick={() => navigate(ROUTES.POST_JOB)} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" type="button" aria-label="Paste">
           <div className="relative -mt-4 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-800 bg-navy-800 text-gold-400 shadow-lg">
-            <Plus className="h-5 w-5" strokeWidth={3} />
+            <Plus className="h-5 w-5" />
           </div>
-          <span className="mt-0.5 text-[9px] font-bold uppercase tracking-wider">{t.navPost}</span>
+          <span className="mt-0.5 text-[9px] font-bold uppercase tracking-wider">Paste</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => navigate("/notifications")}
-          aria-label={t.navNotif}
-          className="flex flex-col items-center gap-1 text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navNotif}</span>
+        <button onClick={() => navigate(ROUTES.NOTIFICATIONS)} className="flex flex-col items-center gap-1 text-gold-400" type="button" aria-label={`Notifikasyon, ${unreadCount} pa li`}>
+          <div className="relative">
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] text-white">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Notifikasyon</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => navigate("/profile")}
-          aria-label={t.navProfile}
-          className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-        >
+        <button onClick={() => navigate(ROUTES.PROFILE)} className="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-gold-400" type="button" aria-label="Profil">
           <User className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">{t.navProfile}</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Profil</span>
         </button>
       </nav>
     </div>
   );
 }
+
+export default React.memo(NotificationsScreen);

@@ -1,30 +1,126 @@
 {
+  "id": "/",
   "short_name": "JobFast",
   "name": "JobFast Global Marketplace",
-  "description": "Platfòm GPS elit pou konstriksyon, sèvis sou demann ak anyè biznis.",
+  "description": "Platfòm GPS elit pou konstriksyon, sèvis sou demann, pwofesyonèl endepandan ak anyè biznis.",
   "lang": "en-US",
+  "dir": "ltr",
+
   "start_url": "/",
+  "scope": "/",
+
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+
   "orientation": "portrait-primary",
+
   "theme_color": "#020617",
   "background_color": "#020617",
+
+  "categories": [
+    "business",
+    "productivity",
+    "utilities",
+    "maps",
+    "jobs"
+  ],
+
+  "prefer_related_applications": false,
+
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "JobFast home screen"
+    },
+    {
+      "src": "/screenshots/mobile-home.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "JobFast mobile screen"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Find Workers",
+      "short_name": "Workers",
+      "url": "/workers",
+      "description": "Find nearby workers"
+    },
+    {
+      "name": "Businesses",
+      "short_name": "Business",
+      "url": "/businesses",
+      "description": "Find nearby businesses"
+    },
+    {
+      "name": "Services",
+      "short_name": "Services",
+      "url": "/services",
+      "description": "Browse services"
+    }
+  ],
+
   "icons": [
     {
-      "src": "/favicons/icon-192x192.png",
+      "src": "/favicons/icon-72x72.png",
+      "sizes": "72x72",
       "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-192x192.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/favicons/icon-512x512.png",
-      "type": "image/png",
       "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/favicons/icon-maskable-512x512.png",
-      "type": "image/png",
       "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]

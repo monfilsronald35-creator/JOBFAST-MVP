@@ -1,129 +1,206 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
+import { login } from "../api/auth";
+import { initI18n, getCurrentLanguage } from "../i18n/i18n";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ identifier: "", password: "" });
+
+  const mounted = useRef(false);
+  const lastSubmit = useRef(0);
+
+  const [formData, setFormData] = useState({
+    identifier: "",
+    password: ""
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [langReady, setLangReady] = useState(false);
 
+  /* INIT SAFE */
+  useEffect(() => {
+    mounted.current = true;
+
+    (async () => {
+      try {
+        await initI18n();
+      } catch (e) {
+        console.warn("i18n init failed:", e);
+      } finally {
+        if (mounted.current) setLangReady(true);
+      }
+    })();
+
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  /* INPUT */
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+
+    setFormData((p) => ({
+      ...p,
+      [name]: value ?? ""
+    }));
+
+    if (error) setError("");
   };
 
-  const handleSubmit = async (e) => {                                                                                                                                                                                                                                              
+  /* VALIDATION */
+  const isValidEmail = (v = "") =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+  const isValidPhone = (v = "") =>
+    /^[0-9+\s]{6,15}$/.test(v);
+
+  /* SUBMIT SAFE */
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!mounted.current) return;
+
+    const now = Date.now();
+
+    if (now - lastSubmit.current < 1500) return;
+    lastSubmit.current = now;
+
+    if (loading) return;
+
+    const identifier = (formData.identifier || "").trim();
+    const password = (formData.password || "").trim();
+
+    if (!identifier || !password) {
+      setError("Tanpri ranpli tout chan yo.");
+      return;
+    }
+
+    const isEmail = isValidEmail(identifier);
+    const isPhone = isValidPhone(identifier);
+
+    if (!isEmail && !isPhone) {
+      setError("Antre yon email oswa nimewo telefòn valid.");
+      return;
+    }
+
+    if (typeof navigator !== "undefined" && navigator?.onLine === false) {
+      setError("Pa gen koneksyon entènèt.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const isEmail = formData.identifier.includes("@");
-      const data = await login({ // ✨ Rele fonksyon login an dirèkteman isit la
-        email: isEmail ? formData.identifier : undefined,
-        phone: !isEmail ? formData.identifier : undefined,
-        password: formData.password,
+      const res = await login({
+        email: isEmail ? identifier : undefined,
+        phone: !isEmail ? identifier : undefined,
+        password,
+        lang: getCurrentLanguage()
       });
 
-      if (data) navigate("/dashboard");
+      const token = res?.token;
+
+      if (!token) {
+        setError("Repons sèvè pa valab.");
+        return;
+      }
+
+      sessionStorage.setItem("token", token);
+
+      if (mounted.current) navigate("/dashboard");
+
     } catch (err) {
-      setError(err.response?.data?.message || "Idantifyan oswa modpas pa kòrèk. Tanpri reye ankò.");
+      if (mounted.current) {
+        setError(
+          err?.response?.data?.message ||
+          "Idantifyan oswa modpas pa kòrèk."
+        );
+      }
     } finally {
-      setLoading(false);
+      if (mounted.current) setLoading(false);
     }
   };
 
-  return (
-    <div className="flex min-h-screen flex-col justify-between bg-navy-900 px-6 py-12 font-sans">
-      <div className="h-12" />
+  /* LOADING */
+  if (!langReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg text-text-muted">
+        Loading system...
+      </div>
+    );
+  }
 
-      <div className="flex flex-col items-center text-center">
-        <h2 className="font-display text-3xl font-bold tracking-wide text-white">Byenveni</h2>
-        <p className="mt-2 text-sm text-slate-400">Kontinye ak kont ou</p>
+  return (
+    <div className="min-h-screen flex flex-col justify-center bg-bg px-6">
+
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-black text-text">Byenveni</h2>
+        <p className="text-sm text-text-muted mt-2">
+          Konekte ak kont ou
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mx-auto my-auto flex w-full max-w-sm flex-col gap-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto flex flex-col gap-4">
+
         {error && (
-          <div
-            role="alert"
-            className="animate-fade-in rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-xs font-semibold text-red-400"
-          >
+          <div className="jf-card border-red-500/30 text-red-400 text-xs text-center">
             {error}
           </div>
         )}
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="identifier" className="text-xs font-medium text-slate-400">
-            Telefòn oswa imèl
-          </label>
-          <input
-            id="identifier"
-            type="text"
-            name="identifier"
-            placeholder="Nimewo telefòn oswa imèl"
-            autoComplete="username"
-            value={formData.identifier}
-            onChange={handleChange}
-            required
-            className="w-full rounded-2xl border border-navy-700 bg-navy-800 px-4 py-4 text-sm placeholder-slate-500 transition-all focus:border-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-          />
-        </div>
+        <input
+          name="identifier"
+          value={formData.identifier}
+          onChange={handleChange}
+          placeholder="email oswa 509xxxx"
+          autoComplete="username"
+          className="jf-input"
+        />
 
-        <div className="relative flex flex-col gap-1">
-          <label htmlFor="password" className="text-xs font-medium text-slate-400">
-            Modpas
-          </label>
+        <div className="relative">
           <input
-            id="password"
-            type={showPassword ? "text" : "password"}
             name="password"
-            placeholder="Modpas"
-            autoComplete="current-password"
+            type={showPassword ? "text" : "password"}
             value={formData.password}
             onChange={handleChange}
-            required
-            className="w-full rounded-2xl border border-navy-700 bg-navy-800 px-4 py-4 pr-16 text-sm placeholder-slate-500 transition-all focus:border-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            className="jf-input pr-16"
           />
+
           <button
             type="button"
-            onClick={() => setShowPassword((prev) => !prev)}
-            aria-label={showPassword ? "Kache modpas" : "Montre modpas"}
-            aria-pressed={showPassword}
-            className="absolute right-4 top-10 text-xs font-bold text-slate-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+            onClick={() => setShowPassword((p) => !p)}
+            className="absolute right-3 top-3 text-xs text-text-muted"
           >
             {showPassword ? "Kache" : "Montre"}
           </button>
         </div>
 
-        <div className="mt-1 text-center">
-          <button
-            type="button"
-            onClick={() => navigate("/forgot-password")}
-            className="text-xs font-medium tracking-wide text-gold-400 transition-colors hover:text-gold-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
-          >
-            Mwen bliye modpas mwen
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/forgot-password")}
+          className="text-xs text-primary text-right"
+        >
+          Ou bliye modpas?
+        </button>
 
-        <Button type="submit" variant="primary" loading={loading} className="mt-2 w-full">
+        <Button type="submit" variant="primary" loading={loading} className="w-full">
           Konekte
         </Button>
-
-        <div className="my-1 text-center">
-          <p className="text-xs text-slate-500">Oswa</p>
-        </div>
 
         <button
           type="button"
           onClick={() => navigate("/register")}
-          className="w-full py-2 text-xs font-semibold tracking-wide text-gold-400 transition-colors hover:text-gold-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/10"
+          className="text-sm text-primary mt-2"
         >
-          Kreye yon nouvo kont
+          Kreye kont
         </button>
       </form>
-
-      <div className="h-12" />
     </div>
   );
 }

@@ -1,146 +1,180 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PlusCircle, Search, Zap, ShieldCheck } from "lucide-react";
-
-const FEATURE_ICONS = {
-  post: PlusCircle,
-  search: Search,
-  fast: Zap,
-  secure: ShieldCheck,
-};
+import { useAuth } from "../context/AuthContext";
 
 const TRANSLATIONS = {
   ht: {
     title: "JobFast",
-    subtitle: "Jwenn Travay ak Sèvis Rapid",
-    description: "Platfòm ki konekte travayè ak moun ki bezwen sèvis nan zòn Bávaro, Punta Cana.",
-    register: "Kreye kont gratis",
-    login: "Konekte",
+    subtitle: "Travay. Sèvis. Biznis. Kote w ye.",
+    description: "Tout nan yon sèl app.",
+    start: "KÒMANSE",
+    register: "Kreye Kont",
+    login: "Login",
     features: [
-      { id: "post", title: "Poste Travay", desc: "Pibliye travay ou bezwen fè byen fasil" },
-      { id: "search", title: "Chèche Sèvis", desc: "Jwenn plonbye, mason, oswa chef lakay" },
-      { id: "fast", title: "Repons Rapid", desc: "Konsilte epi resevwa òf nan kèk minit" },
-      { id: "secure", title: "Peman Sekirize", desc: "Tranzaksyon ak pwosesis ki garanti san pwoblèm" }
+      { id: "post", title: "Poste" },
+      { id: "search", title: "Chèche" },
+      { id: "fast", title: "Rapid" },
+      { id: "secure", title: "Sekirize" }
     ]
   },
   en: {
     title: "JobFast",
-    subtitle: "Find Jobs & Services Fast",
-    description: "Platform connecting workers with people needing services in Bávaro, Punta Cana.",
-    register: "Create free account",
+    subtitle: "Jobs. Services. Businesses. Near you.",
+    description: "All in one app.",
+    start: "GET STARTED",
+    register: "Sign up",
     login: "Login",
     features: [
-      { id: "post", title: "Post Jobs", desc: "Publish jobs you need done easily" },
-      { id: "search", title: "Find Services", desc: "Get plumbers, masons, or private chefs" },
-      { id: "fast", title: "Fast Response", desc: "Receive competitive offers quickly" },
-      { id: "secure", title: "Secure Payment", desc: "Safe and fully protected payment processing" }
+      { id: "post", title: "Post" },
+      { id: "search", title: "Search" },
+      { id: "fast", title: "Fast" },
+      { id: "secure", title: "Safe" }
     ]
   },
   es: {
     title: "JobFast",
-    subtitle: "Encuentra Trabajos y Servicios",
-    description: "Plataforma que conecta trabajadores con personas que necesitan servicios en Bávaro, Punta Cana.",
-    register: "Crear cuenta gratis",
-    login: "Iniciar sesión",
+    subtitle: "Trabajos. Servicios. Negocios.",
+    description: "Todo en una sola app.",
+    start: "EMPEZAR",
+    register: "Crear",
+    login: "Entrar",
     features: [
-      { id: "post", title: "Publicar Trabajos", desc: "Publica trabajos que necesitas hacer fácilmente" },
-      { id: "search", title: "Buscar Servicios", desc: "Encuentra plomeros, maestros o chefs" },
-      { id: "fast", title: "Respuesta Rápida", desc: "Recibe ofertas competitivas rápidamente" },
-      { id: "secure", title: "Pago Seguro", desc: "Procesamiento de pago totalmente seguro" }
+      { id: "post", title: "Publicar" },
+      { id: "search", title: "Buscar" },
+      { id: "fast", title: "Rápido" },
+      { id: "secure", title: "Seguro" }
     ]
   },
   fr: {
     title: "JobFast",
-    subtitle: "Trouvez des Travaux et Services",
-    description: "Plateforme qui relie les travailleurs avec des personnes ayant besoin de services à Bávaro, Punta Cana.",
-    register: "Créer un compte gratuit",
-    login: "Se connecter",
+    subtitle: "Travaux. Services. Entreprises.",
+    description: "Tout en une seule app.",
+    start: "COMMENCER",
+    register: "Créer",
+    login: "Connexion",
     features: [
-      { id: "post", title: "Publier des Travaux", desc: "Publiez les travaux à faire en quelques clics" },
-      { id: "search", title: "Trouver des Services", desc: "Trouvez des plombiers, maçons ou chefs" },
-      { id: "fast", title: "Réponse Rapide", desc: "Recevez des offres compétitives rapidement" },
-      { id: "secure", title: "Paiement Sécurisé", desc: "Traitement de paiement totalement sécurisé" }
+      { id: "post", title: "Publier" },
+      { id: "search", title: "Trouver" },
+      { id: "fast", title: "Rapide" },
+      { id: "secure", title: "Sûr" }
     ]
   }
 };
 
-const getDefaultLanguage = () => {
-  const browserLang = navigator.language?.slice(0, 2) || "ht";
-  return ["ht", "en", "es", "fr"].includes(browserLang) ? browserLang : "ht";
-};
-
-const getSavedLanguage = () => localStorage.getItem("jobfast-lang");
+const LANGS = ["ht", "en", "es", "fr"];
 
 export default function Home() {
   const navigate = useNavigate();
-  const [lang, setLang] = useState(getSavedLanguage() || getDefaultLanguage());
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.ht;
+  const auth = useAuth();
 
-  const changeLanguage = (language) => {
-    localStorage.setItem("jobfast-lang", language);
-    setLang(language);
-  };
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  const loading = auth?.loading ?? false;
 
-  const languageLabels = { ht: "HT", en: "EN", es: "ES", fr: "FR" };
+  const [lang, setLang] = useState("ht");
+
+  // SAFE REDIRECT (no loop, no flicker)
+  useEffect(() => {
+    if (loading) return;
+    if (!isAuthenticated) return;
+
+    const id = requestAnimationFrame(() => {
+      navigate("/dashboard", { replace: true });
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [isAuthenticated, loading, navigate]);
+
+  const safeLang = useMemo(
+    () => (LANGS.includes(lang) ? lang : "ht"),
+    [lang]
+  );
+
+  const t = useMemo(() => TRANSLATIONS[safeLang], [safeLang]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy-900 text-slate-400 text-xs">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <main className="flex min-h-screen w-full flex-col animate-fade-in items-center justify-center bg-navy-900 p-6 font-sans text-white select-none">
-      <section aria-label="Akèy JobFast" className="w-full max-w-sm text-center" role="region">
-        
-        <div className="flex justify-center gap-2 mb-10">
-          {['ht', 'en', 'es', 'fr'].map((l) => (
+    <main className="min-h-screen flex items-center justify-center bg-navy-900 px-5 text-white">
+      <div className="w-full max-w-sm flex flex-col justify-between min-h-[85vh]">
+
+        {/* LANGUAGE */}
+        <div className="flex bg-black/40 border border-slate-800/60 p-1 rounded-2xl mb-8">
+          {LANGS.map((l) => (
             <button
               key={l}
-              onClick={() => changeLanguage(l)}
-              aria-label={`Chanje lang an ${languageLabels[l]}`}
-              aria-current={lang === l ? 'true' : undefined}
-              className={`rounded-xl border px-3 py-1.5 text-xs font-black tracking-wider transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20 ${
-                lang === l 
-                  ? 'bg-gold-400 text-navy-950 shadow-md shadow-gold-400/10 border-gold-400' 
-                  : 'bg-navy-800/40 text-slate-400 border-slate-800/40 hover:text-white'
+              onClick={() => setLang(l)}
+              className={`flex-1 py-1.5 text-[11px] font-black rounded-xl transition active:scale-95 ${
+                safeLang === l
+                  ? "bg-gold-500 text-black"
+                  : "text-slate-400"
               }`}
             >
-              {languageLabels[l]}
+              {l.toUpperCase()}
             </button>
           ))}
         </div>
 
-        <h1 className="text-4xl font-black mb-1 tracking-tight text-white">{t.title}</h1>
-        <h2 className="text-xs font-black uppercase tracking-widest text-gold-400 mb-4">{t.subtitle}</h2>
-        <p className="text-xs font-medium mb-10 px-2 leading-relaxed text-slate-400">{t.description}</p>
+        {/* HEADER */}
+        <div className="text-center my-auto flex flex-col items-center justify-center py-6">
+          <div className="w-20 h-20 bg-navy-800 border-2 border-gold-500/20 rounded-3xl flex items-center justify-center text-4xl mb-5">
+            👷‍♂️
+          </div>
 
-        <div className="flex flex-col gap-3.5 mb-10">
-          <button 
-            onClick={() => navigate("/register")}
-            className="w-full py-4 active:scale-[0.98] bg-gold-400 rounded-2xl font-black text-xs shadow-lg shadow-gold-400/5 uppercase tracking-widest text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+          <h1 className="text-4xl font-black uppercase">
+            {t.title}<span className="text-gold-500">.</span>
+          </h1>
+
+          <p className="text-sm text-slate-300 mt-2 px-6 font-semibold">
+            {t.subtitle}
+          </p>
+
+          <p className="text-xs text-slate-500 mt-1">
+            {t.description}
+          </p>
+        </div>
+
+        {/* BUTTONS */}
+        <div className="space-y-3 w-full mt-6">
+          <button
+            onClick={() => navigate("/onboarding")}
+            className="w-full py-4 rounded-2xl bg-gold-500 text-black font-black text-xs active:scale-95 transition"
           >
-            {t.register}
+            {t.start}
           </button>
 
-          <button 
+          <button
             onClick={() => navigate("/login")}
-            className="w-full py-4 active:scale-[0.98] border border-slate-800 bg-navy-800/10 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-200 transition-all hover:border-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+            className="w-full py-4 rounded-2xl text-slate-300 font-bold text-xs uppercase active:scale-95 transition"
           >
             {t.login}
           </button>
+
+          <button
+            onClick={() => navigate("/register")}
+            className="w-full py-2 text-xs text-slate-500 active:scale-95 transition"
+          >
+            {t.register}
+          </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          {t.features.map((feature) => {
-            const IconComponent = FEATURE_ICONS[feature.id];
-            return (
-              <div key={feature.id} className="border border-slate-800/60 bg-navy-800/20 p-4 rounded-2xl text-left transition-all hover:border-slate-700">
-                <div className="flex h-9 w-9 items-center justify-center mb-3 rounded-xl border border-navy-800 bg-navy-900 text-gold-400 shadow-inner">
-                  {IconComponent && <IconComponent className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />}
-                </div>
-                <h3 className="font-bold text-xs mb-0.5 tracking-wide text-white">{feature.title}</h3>
-                <p className="text-[10px] font-medium leading-normal text-slate-400">{feature.desc}</p>
-              </div>
-            );
-          })}
+        {/* FEATURES */}
+        <div className="grid grid-cols-4 gap-2 mt-8 border-t border-slate-800/40 pt-6 opacity-40">
+          {t.features.map((f) => (
+            <div key={f.id} className="flex flex-col items-center text-center">
+              <span className="text-[9px] font-bold uppercase text-slate-400">
+                {f.title}
+              </span>
+            </div>
+          ))}
         </div>
-        
-      </section>
+
+      </div>
     </main>
   );
 }

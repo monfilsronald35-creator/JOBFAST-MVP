@@ -1,78 +1,103 @@
-import API from './api';
+import API from "./api";
 
-/**
- * 💼 JOBFAST POSTS & JOBS SERVICE
- * Jere tout operasyon CRUD pou opòtinite ak pòs travay sou backend lan.
- */
+/* ================= UTIL ================= */
+const now = () => Date.now();
 
-/**
- * Jwenn tout travay ak pòs ki disponib yo (ak filtè opsyonèl)
- * @param {Object} params - Filtè koutim (egzanp: { category: 'construction', nearby: true })
- */
-export const getAllJobs = async (params = {}) => {
+const getErrorMessage = (error, fallback) =>
+  error?.response?.data?.message ||
+  error?.response?.data?.error ||
+  error?.message ||
+  fallback;
+
+/* ================= RESPONSE WRAPPER ================= */
+const success = (data, meta = {}) => ({
+  success: true,
+  data,
+  meta,
+  timestamp: now(),
+});
+
+const fail = (error, fallback) => ({
+  success: false,
+  message: getErrorMessage(error, fallback),
+  status: error?.response?.status ?? null,
+  code: error?.response?.data?.code ?? null,
+  timestamp: now(),
+});
+
+/* ================= SAFE REQUEST ================= */
+const request = async (fn, fallback, meta = {}) => {
   try {
-    // Inifye anba '/posts' si se la tout done yo santralize sou backend lan
-    const { data } = await API.get('/posts', { params });
-    return data;
+    const res = await fn();
+    const data = res?.data;
+
+    if (
+      data == null ||
+      (typeof data === "object" &&
+        !Array.isArray(data) &&
+        Object.keys(data).length === 0)
+    ) {
+      return fail({}, "Invalid server response");
+    }
+
+    if (data?.success === false) {
+      return fail({}, data?.message || fallback);
+    }
+
+    return success(data, meta);
   } catch (error) {
-    const message = error.response?.data?.message || "Nou pa ka chaje lis opòtinite yo nan moman sa a.";
-    throw new Error(message);
+    return fail(error || {}, fallback);
   }
 };
 
-/**
- * Kreye yon nouvo pòs oswa travay
- * @param {Object} jobData - Done fòm kreyasyon an
- */
-export const createJob = async (jobData) => {
+/* ================= REQUEST DEDUP ================= */
+const pending = new Map();
+
+const makeKey = (name, payload = {}) => {
   try {
-    const { data } = await API.post('/posts/create', jobData);
-    return data;
-  } catch (error) {
-    const message = error.response?.data?.message || "Erè pandan kreyasyon pòs la. Tanpri verifye done yo.";
-    throw new Error(message);
+    return `${name}:${JSON.stringify(payload)}`;
+  } catch {
+    return `${name}:static`;
   }
 };
 
-/**
- * Jwenn detay konplè yon travay an patikilye selon ID li
- * @param {string} id - ID inik pòs la
- */
-export const getJobById = async (id) => {
-  try {
-    const { data } = await API.get(`/posts/${id}`);
-    return data;
-  } catch (error) {
-    const message = error.response?.data?.message || "Nou pa jwenn detay pou pòs sa a.";
-    throw new Error(message);
-  }
+const dedupe = (key, fn) => {
+  if (pending.has(key)) return pending.get(key);
+
+  const p = fn().finally(() => pending.delete(key));
+  pending.set(key, p);
+
+  return p;
 };
 
-/**
- * Mete ajou done yon travay (Si itilizatè a konekte a se pwopriyetè a)
- * @param {string} id - ID inik pòs la
- * @param {Object} jobData - Done pou modifye yo
- */
-export const updateJob = async (id, jobData) => {
-  try {
-    const { data } = await API.put(`/posts/${id}`, jobData);
-    return data;
-  } catch (error) {
-    const message = error.response?.data?.message || "Ou pa gen dwa pou modifye pòs sa a.";
-    throw new Error(message);
-  }
-};
+/* ================= JOBS API ================= */
 
-/**
- * Efase yon pòs nèt nan sistèm lan
- * @param {string} id - ID inik pòs la
- */
-export const deleteJob = async (id) => {
-  try {
-    const { data } = await API.delete(`/posts/${id}`);
-    return data;
-  } catch (error) {
-    const message = error.response?.data?.message || "Nou pa ka efase pòs sa a. Rezo w la ka gen pwoblèm.";
-    throw new Error(message);
-  }
-};
+/* GET ALL JOBS */
+export const getAllJobs = (params = {}) =>
+  dedupe(
+    makeKey("jobs:list", params),
+    () => request(() => API.get("/posts", { params }), "Failed to load jobs")
+  );
+
+/* CREATE JOB */
+export const createJob = (jobData) =>
+  dedupe(
+    makeKey("jobs:create", jobData),
+    () =>
+      request(() => API.post("/posts/create", jobData), "Failed to create job")
+  );
+
+/* GET JOB BY ID */
+export const getJobById = (id) =>
+  request(() => API.get(`/posts/${id}`), "Job not found");
+
+/* UPDATE JOB */
+export const updateJob = (id, jobData) =>
+  request(
+    () => API.put(`/posts/${id}`, jobData),
+    "You are not allowed to update this job"
+  );
+
+/* DELETE JOB */
+export const deleteJob = (id) =>
+  request(() => API.delete(`/posts/${id}`), "Failed to delete job");

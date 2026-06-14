@@ -1,41 +1,55 @@
-import React from "react";
-import { FolderOpen } from "lucide-react";
+import React, { memo } from "react";
+import clsx from "clsx";
 
-export default function EmptyState({
-  title = "Pa gen done yo jwenn",
-  message = "Pa gen anyen ki disponib pou moman sa a.",
-  actionLabel,
-  onAction,
-  icon: IconComponent = FolderOpen,
+const variants = {
+  primary:
+    "bg-gold-500 text-navy-900 shadow-md hover:bg-gold-400 focus-visible:ring-gold-300",
+  outline:
+    "border border-gray-300 bg-transparent text-gray-900 hover:bg-gray-50 focus-visible:ring-gray-300",
+  navy:
+    "bg-navy-800 text-white shadow-md hover:bg-navy-700 focus-visible:ring-navy-400",
+};
+
+const Button = memo(function Button({
+  children,
+  variant = "primary",
+  loading = false,
+  className = "",
+  type = "button",
+  disabled = false,
+  loadingText = "Ap trete...",
+  ...props
 }) {
-  const hasAction = typeof onAction === "function" && Boolean(actionLabel);
+  const isDisabled = loading || disabled;
 
   return (
-    <section
-      className="animate-fade-in flex w-full select-none flex-col items-center justify-center border border-dashed border-slate-800 bg-navy-800/10 p-8 text-center rounded-2xl"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <div className="rounded-2xl border border-navy-800 bg-navy-800/20 p-4 mb-4 text-slate-600">
-        <IconComponent className="h-8 w-8" strokeWidth={2} aria-hidden="true" />
-      </div>
-
-      <h2 className="text-sm font-black tracking-wide text-white">{title}</h2>
-
-      <p className="mt-1.5 max-w-[240px] text-xs font-medium leading-relaxed text-slate-400">
-        {message}
-      </p>
-
-      {hasAction && (
-        <button
-          type="button"
-          onClick={onAction}
-          className="mt-5 active:scale-95 rounded-xl bg-gold-400 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-navy-950 shadow-md shadow-gold-400/5 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
-        >
-          {actionLabel}
-        </button>
+    <button
+      type={type}
+      {...props}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      aria-disabled={isDisabled}
+      className={clsx(
+        "inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-[15px] font-semibold tracking-[-0.01em] transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white/10 dark:focus-visible:ring-offset-navy-900",
+        variants[variant] || variants.primary,
+        className
       )}
-    </section>
+    >
+      {loading ? (
+        <span className="flex items-center gap-2">
+          <span
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+            aria-hidden="true"
+          />
+          <span>{loadingText}</span>
+        </span>
+      ) : (
+        children
+      )}
+    </button>
   );
-}
+});
+
+Button.displayName = "Button";
+
+export default Button;

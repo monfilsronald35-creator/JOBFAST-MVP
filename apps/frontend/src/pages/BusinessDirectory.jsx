@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BUSINESS_CATEGORIES = [
+const FEATURED = ["restaurant", "hotel", "hospital", "company"];
+const STORAGE_KEY = "businessSearch";
+
+const DEFAULT_BUSINESS_CATEGORIES = [
   { id: "company", label: "Konpayi", icon: "🏢" },
   { id: "restaurant", label: "Restoran", icon: "🍴" },
   { id: "hospital", label: "Lopital", icon: "🏥" },
@@ -12,15 +15,91 @@ const BUSINESS_CATEGORIES = [
   { id: "mechanic", label: "Mekanisyen", icon: "🛠️" },
   { id: "guide", label: "Tour Guide", icon: "👤" },
   { id: "organization", label: "Organization", icon: "👥" },
+  { id: "school", label: "Lekòl", icon: "🏫" },
+  { id: "university", label: "Inivèsite", icon: "🎓" },
+  { id: "pharmacy", label: "Famasi", icon: "💊" },
+  { id: "supermarket", label: "Makèt", icon: "🛒" },
+  { id: "church", label: "Legliz", icon: "⛪" },
+  { id: "bank", label: "Bank", icon: "🏦" },
+  { id: "gas_station", label: "Gazolin", icon: "⛽" },
+  { id: "real_estate", label: "Imobilye", icon: "🏠" },
+  { id: "beauty", label: "Salon", icon: "💇" },
+  { id: "gym", label: "Gym", icon: "🏋️" },
 ];
 
 export default function BusinessDirectory() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredCategories = BUSINESS_CATEGORIES.filter((cat) =>
-    cat.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setSearchQuery(saved);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadCategories = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const res = await fetch("/api/business/categories");
+        if (!res.ok) throw new Error("Failed to load categories");
+        const data = await res.json();
+
+        if (!mounted) return;
+        setCategories(Array.isArray(data) && data.length ? data : DEFAULT_BUSINESS_CATEGORIES);
+      } catch {
+        if (!mounted) return;
+        setError("Erè pandan chajman kategori yo");
+        setCategories(DEFAULT_BUSINESS_CATEGORIES);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadCategories();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => a.label.localeCompare(b.label));
+  }, [categories]);
+
+  const filteredCategories = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
+    const list = q
+      ? sortedCategories.filter((cat) => cat.label.toLowerCase().includes(q))
+      : sortedCategories;
+
+    const featured = list.filter((cat) => FEATURED.includes(cat.id));
+    const others = list.filter((cat) => !FEATURED.includes(cat.id));
+
+    return [...featured, ...others];
+  }, [searchQuery, sortedCategories]);
+
+  const featuredCategories = useMemo(() => {
+    return filteredCategories.filter((cat) => FEATURED.includes(cat.id));
+  }, [filteredCategories]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0B1528] text-white">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#0B1528] pb-24 font-sans text-white select-none">
@@ -40,7 +119,7 @@ export default function BusinessDirectory() {
         <div className="h-9 w-9" />
       </div>
 
-      <div className="mx-auto mb-6 w-full max-w-md px-5">
+      <div className="mx-auto mb-4 w-full max-w-md px-5">
         <div className="relative flex items-center">
           <input
             type="text"
@@ -56,11 +135,26 @@ export default function BusinessDirectory() {
             </svg>
           </div>
         </div>
+
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-xs text-slate-500">{filteredCategories.length} kategori</p>
+          {featuredCategories.length > 0 ? (
+            <p className="text-xs text-amber-400">{featuredCategories.length} featured</p>
+          ) : null}
+        </div>
       </div>
 
       <div className="mx-auto mb-4 w-full max-w-md px-5">
         <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Kategori</h3>
       </div>
+
+      {error ? (
+        <div className="mx-auto mb-4 w-full max-w-md px-5">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            {error}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mx-auto flex-1 w-full max-w-md overflow-y-auto px-5">
         {filteredCategories.length > 0 ? (
@@ -78,8 +172,7 @@ export default function BusinessDirectory() {
                     {cat.icon}
                   </span>
                 </div>
-
-                <span className="block truncate w-full text-[11px] font-black tracking-wide text-slate-300 transition-colors group-hover:text-amber-400">
+                <span className="block w-full truncate text-[11px] font-black tracking-wide text-slate-300 transition-colors group-hover:text-amber-400">
                   {cat.label}
                 </span>
               </button>

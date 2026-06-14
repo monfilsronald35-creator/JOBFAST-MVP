@@ -1,190 +1,137 @@
-/* =========================================================================
-   🧩 JOBFAST ENTERPRISE SYSTEM — MASTER CORE CONSTANTS (v3.6)
-   🚀 ATOMIC TRUTH LAYER — SAFE FOR PRODUCTION & DYNAMIC FILTERS
-========================================================================= */
-
-/* =========================================================================
-   🔒 CORE ENUMS (ATOMIC TRUTH LAYER - PRIVATE CORE)
-========================================================================= */
-const STATUS = Object.freeze({
-  ONLINE: "online",
-  BUSY: "busy",
-  OFFLINE: "offline",
+export const DEVICE_STATUS = Object.freeze({
+  ACTIVE: "active",
+  INACTIVE: "inactive",
+  BLOCKED: "blocked",
 });
 
-const AVAILABILITY = Object.freeze({
-  AVAILABLE: "available",
-  UNAVAILABLE: "unavailable",
-  WORKING: "working",
-  ON_BREAK: "on_break",
+export const ACCOUNT_ACTIONS = Object.freeze({
+  CREATE: "create",
+  UPDATE: "update",
+  DELETE: "delete",
+  SUSPEND: "suspend",
+  RESTORE: "restore",
 });
 
-const JOB_STATUS = Object.freeze({
+export const PAYMENT_STATUS = Object.freeze({
   PENDING: "pending",
-  AVAILABLE: "available",
+  PROCESSING: "processing",
+  COMPLETED: "completed",
+  FAILED: "failed",
+  REFUNDED: "refunded",
+});
+
+export const PAYMENT_METHODS = Object.freeze({
+  CASH: "cash",
+  CARD: "card",
+  BANK_TRANSFER: "bank_transfer",
+  MOBILE_MONEY: "mobile_money",
+  WALLET: "wallet",
+});
+
+export const CHAT_MESSAGE_TYPES = Object.freeze({
+  TEXT: "text",
+  IMAGE: "image",
+  VIDEO: "video",
+  AUDIO: "audio",
+  FILE: "file",
+  LOCATION: "location",
+});
+
+export const CHAT_MESSAGE_STATUS = Object.freeze({
+  SENT: "sent",
+  DELIVERED: "delivered",
+  READ: "read",
+});
+
+export const SEARCH_SORT = Object.freeze({
+  NEWEST: "newest",
+  OLDEST: "oldest",
+  RATING: "rating",
+  DISTANCE: "distance",
+  PRICE_LOW: "price_low",
+  PRICE_HIGH: "price_high",
+});
+
+export const USER_GENDER = Object.freeze({
+  MALE: "male",
+  FEMALE: "female",
+  OTHER: "other",
+});
+
+export const SUPPORT_STATUS = Object.freeze({
+  OPEN: "open",
   ASSIGNED: "assigned",
   IN_PROGRESS: "in_progress",
-  COMPLETED: "completed",
-  CANCELLED: "cancelled",
+  RESOLVED: "resolved",
+  CLOSED: "closed",
 });
 
-const DOMAIN = Object.freeze({
-  STATUS,
-  AVAILABILITY,
-  JOB_STATUS,
-});
-
-/* =========================================================================
-   🔐 PUBLIC READ-ONLY CONTRACT LAYER
-========================================================================= */
-export const USER_STATE = Object.freeze({
-  STATUS: DOMAIN.STATUS,
-  AVAILABILITY: DOMAIN.AVAILABILITY,
-});
-
-export { JOB_STATUS }; // Single clean export pou evite redondans
-
-/* =========================================================================
-   👤 USER ROLES
-========================================================================= */
-export const USER_ROLES = Object.freeze({
-  ADMIN: "admin",
-  BOSS: "boss",
-  WORKER: "worker",
-  APPRENTICE: "apprentice",
-  DRIVER: "driver",
-  ENGINEER: "engineer",
-  PROVIDER: "provider",
-  USER: "user",
-});
-
-/* =========================================================================
-   🏢 BUSINESS TYPES
-========================================================================= */
-export const BUSINESS_TYPES = Object.freeze({
-  COMPANY: "company",
-  RESTAURANT: "restaurant",
-  HOSPITAL: "hospital",
-  CLINIC: "clinic",
-  HOTEL: "hotel",
-  OFFICE: "office",
-  LAWYER: "lawyer",
-  MECHANIC: "mechanic",
-  TOUR_GUIDE: "tour_guide",
-  ORGANIZATION: "organization",
-});
-
-/* =========================================================================
-   ⚙️ SERVICE CATEGORIES (DEEP FROZEN ARCHITECTURE)
-========================================================================= */
-export const SERVICE_CATEGORIES = Object.freeze({
-  CONSTRUCTION: Object.freeze([
-    "mason",
-    "carpenter",
-    "electrician",
-    "welder",
-    "painter",
-    "tiler",
-    "foreman",
-    "site_manager",
-    "architect",
-    "engineer",
-  ]),
-
-  ON_DEMAND: Object.freeze([
-    "chef_lakay",
-    "plumber",
-    "doctor",
-    "nurse",
-    "taxi",
-    "delivery",
-    "cleaning",
-    "videographer",
-    "designer",
-  ]),
-});
-
-/* =========================================================================
-   📍 LOCATION SYSTEM (PUNTA CANA / REGIONAL CORE)
-========================================================================= */
-export const LOCATION = Object.freeze({
-  LEVELS: Object.freeze({
-    CITY: "city",
-    STATE: "state",
-    COUNTRY: "country",
-  }),
-
-  DEFAULT: Object.freeze({
-    lat: 18.5601,  /* Sante liyen nan zòn Punta Cana / Bávaro Hub */
-    lng: -68.3725,
-    zoom: 10,
-  }),
-});
-
-/* =========================================================================
-   🔥 PRIORITY & NOTIFICATION SYSTEM
-========================================================================= */
-export const PRIORITY = Object.freeze({
+export const SUPPORT_PRIORITY = Object.freeze({
   LOW: "low",
-  NORMAL: "normal",
+  MEDIUM: "medium",
   HIGH: "high",
   URGENT: "urgent",
 });
 
-export const NOTIFICATION_TYPES = Object.freeze({
-  SYSTEM: "system",
-  JOB: "job",
-  SERVICE: "service",
-  MESSAGE: "message",
-  ALERT: "alert",
+export const SYSTEM_SETTINGS = Object.freeze({
+  APP_NAME: "JOBFAST",
+  APP_VERSION: "4.0.0",
+  DEFAULT_LANGUAGE: "en",
+  DEFAULT_CURRENCY: "USD",
 });
 
-/* =========================================================================
-   🔎 SEARCH ENGINE LIMITS
-========================================================================= */
-export const SEARCH_LIMITS = Object.freeze({
-  USERS: 20,
-  BUSINESSES: 20,
-  SERVICES: 15,
-  JOBS: 20,
+export const COLLECTION_NAMES = Object.freeze({
+  USERS: "users",
+  BUSINESSES: "businesses",
+  SERVICES: "services",
+  JOBS: "jobs",
+  REVIEWS: "reviews",
+  CHATS: "chats",
+  MESSAGES: "messages",
+  PAYMENTS: "payments",
+  TRANSACTIONS: "transactions",
+  WALLETS: "wallets",
+  REPORTS: "reports",
+  NOTIFICATIONS: "notifications",
+  SETTINGS: "settings",
+  DEVICES: "devices",
+  SUPPORT_TICKETS: "supportTickets",
 });
 
-/* =========================================================================
-   🎨 UI DESIGN SYSTEM CONFIG (STRICT LIMITS)
-========================================================================= */
-export const UI = Object.freeze({
-  MAX_MODAL_WIDTH: 500,
-  TOAST_DURATION: 3000,
-  ANIMATION_SPEED: 200,
+export const INDEX_NAMES = Object.freeze({
+  USERS_EMAIL: "users_email_idx",
+  USERS_PHONE: "users_phone_idx",
+  JOBS_LOCATION: "jobs_location_idx",
+  SERVICES_LOCATION: "services_location_idx",
+  BUSINESSES_LOCATION: "businesses_location_idx",
 });
 
-export const ENTITY_TYPES = Object.freeze({
-  USER: "user",
-  BUSINESS: "business",
-  SERVICE: "service",
-  JOB: "job",
-  LOCATION: "location",
+export const DEFAULT_VALUES = Object.freeze({
+  PAGE: 1,
+  LIMIT: 20,
+  MAX_LIMIT: 100,
+  RATING: 0,
+  BALANCE: 0,
 });
 
-/* =========================================================================
-   🧭 STATUS GROUPS (FILTER ENGINE LAYER)
-========================================================================= */
-export const STATUS_GROUPS = Object.freeze({
-  ACTIVE: Object.freeze([
-    STATUS.ONLINE,
-    AVAILABILITY.AVAILABLE,
-    JOB_STATUS.IN_PROGRESS,
-  ]),
+export const HTTP_METHODS = Object.freeze({
+  GET: "GET",
+  POST: "POST",
+  PUT: "PUT",
+  PATCH: "PATCH",
+  DELETE: "DELETE",
+});
 
-  INACTIVE: Object.freeze([
-    STATUS.OFFLINE,
-    AVAILABILITY.UNAVAILABLE,
-    JOB_STATUS.CANCELLED,
-  ]),
+export const MIME_TYPES = Object.freeze({
+  JPEG: "image/jpeg",
+  PNG: "image/png",
+  PDF: "application/pdf",
+  DOCX: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+});
 
-  BUSY: Object.freeze([
-    STATUS.BUSY,
-    AVAILABILITY.WORKING,
-    JOB_STATUS.ASSIGNED,
-  ]),
+export const TOKEN_TYPES = Object.freeze({
+  ACCESS: "access",
+  REFRESH: "refresh",
+  RESET_PASSWORD: "reset_password",
+  VERIFY_EMAIL: "verify_email",
 });

@@ -1,6 +1,6 @@
 // ======================================================
 // 🌍 src/pages/Register.jsx
-// 🚀 JOBFAST GLOBAL — REGISTER (TAILWIND + ROLE CARD)
+// 🚀 JOBFAST GLOBAL — REGISTER (ULTIMATE STABLE v5.2)
 // ======================================================
 
 import React, {
@@ -8,19 +8,16 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import RoleCard from "../components/RoleCard";
 
 // ======================================================
-// 📦 STATIC CONFIG (Wòl yo ak tout Emoji yo jan sa ye nan makèt la)
+// 📦 ROLES
 // ======================================================
 const ROLES_LIST = Object.freeze([
   { id: "boss", label: "Boss", icon: "🤠" },
@@ -31,15 +28,25 @@ const ROLES_LIST = Object.freeze([
   { id: "client", label: "Client", icon: "🧑" },
 ]);
 
+const ALLOWED_ROLES = new Set(ROLES_LIST.map(r => r.id));
+
 // ======================================================
 // 🧠 HELPERS
 // ======================================================
-const normalize = (value = "") => value.trim();
+const normalize = (v) =>
+  typeof v === "string" ? v.trim().replace(/\s+/g, " ") : "";
 
-const isValidForm = ({ fullName, emailOrPhone, password }) =>
-  normalize(fullName).length >= 3 &&
-  normalize(emailOrPhone).length >= 3 &&
-  normalize(password).length >= 6;
+const isValidForm = (f) => {
+  const fullName = normalize(f?.fullName);
+  const emailOrPhone = normalize(f?.emailOrPhone);
+  const password = normalize(f?.password);
+
+  return (
+    fullName.length >= 3 &&
+    emailOrPhone.length >= 5 &&
+    password.length >= 6
+  );
+};
 
 // ======================================================
 // 🚀 COMPONENT
@@ -51,225 +58,214 @@ function Register() {
     fullName: "",
     emailOrPhone: "",
     password: "",
-    accountType: "worker", // default kont kòmanse sou travayè
+    accountType: "worker",
   });
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [success, setSuccess] = useState("");
 
+  const mountedRef = useRef(true);
+  const abortRef = useRef(null);
+  const requestId = useRef(0);
+  const lastSubmitRef = useRef(0);
+
+  const redirectTimer = useRef(null);
+  const alertTimer = useRef(null);
+
   // ======================================================
-  // ⏱ AUTO CLEAR ALERTS
+  // CLEANUP
+  // ======================================================
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+
+      abortRef.current?.abort();
+
+      clearTimeout(redirectTimer.current);
+      clearTimeout(alertTimer.current);
+    };
+  }, []);
+
+  // ======================================================
+  // AUTO CLEAR ALERTS
   // ======================================================
   useEffect(() => {
     if (!errorMessage && !success) return;
 
-    const timer = setTimeout(() => {
-      setErrorMessage("");
-      setSuccess("");
-    }, 4000);
+    clearTimeout(alertTimer.current);
 
-    return () => clearTimeout(timer);
+    alertTimer.current = setTimeout(() => {
+      if (mountedRef.current) {
+        setErrorMessage("");
+        setSuccess("");
+      }
+    }, 3500);
+
+    return () => clearTimeout(alertTimer.current);
   }, [errorMessage, success]);
 
   // ======================================================
-  // 🔄 UPDATE FIELD
+  // UPDATE FIELD (SAFE)
   // ======================================================
   const updateField = useCallback((name, value) => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
-      [name]: value,
+      [name]: typeof value === "string" ? value : "",
     }));
   }, []);
 
-  // ======================================================
-  // 🔄 HANDLE CHANGE
-  // ======================================================
-  const handleChange = useCallback((event) => {
-    const { name, value } = event.target;
-
-    if (value.length === 1 && value === " ") {
-      return;
-    }
-
-    updateField(name, value);
+  const handleChange = useCallback((e) => {
+    updateField(e.currentTarget.name, e.currentTarget.value);
   }, [updateField]);
 
   // ======================================================
-  // 🧠 VALIDATION
+  // DERIVED STATE
   // ======================================================
-  const isDisabled = useMemo(() => {
-    return loading || !isValidForm(form);
-  }, [form, loading]);
+  const formValid = useMemo(() => isValidForm(form), [form]);
+  const isDisabled = useMemo(() => loading || !formValid, [loading, formValid]);
 
   // ======================================================
-  // 🚀 REGISTER ACTION
+  // REGISTER (HARDENED CORE)
   // ======================================================
   const handleRegister = useCallback(async () => {
-    if (loading || isDisabled) return;
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 600) return;
+    lastSubmitRef.current = now;
+
+    if (isDisabled) return;
+
+    // 🔒 SNAPSHOT LOCK (prevents mid-request mutation bugs)
+    const snapshot = Object.freeze({
+      fullName: normalize(form.fullName),
+      emailOrPhone: normalize(form.emailOrPhone),
+      password: normalize(form.password),
+      accountType: ALLOWED_ROLES.has(form.accountType)
+        ? form.accountType
+        : "worker",
+    });
+
+    if (!isValidForm(snapshot)) return;
 
     setLoading(true);
     setErrorMessage("");
     setSuccess("");
 
-    try {
-      const payload = {
-        fullName: normalize(form.fullName),
-        emailOrPhone: normalize(form.emailOrPhone),
-        password: normalize(form.password),
-        accountType: form.accountType,
-      };
+    requestId.current += 1;
+    const currentId = requestId.current;
 
-      const res = await API.post("/auth/register", payload);
-      console.log("✅ REGISTER SUCCESS:", res?.data);
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
+    try {
+      const res = await API.post(
+        "/auth/register",
+        snapshot,
+        { signal: abortRef.current.signal }
+      );
+
+      if (!mountedRef.current || currentId !== requestId.current) return;
 
       if (res?.data?.token) {
-        localStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("token", res.data.token);
       }
 
-      setSuccess("Account created successfully");
+      setSuccess(res?.data?.message || "Account created successfully");
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1200);
+      clearTimeout(redirectTimer.current);
+      redirectTimer.current = setTimeout(() => {
+        if (mountedRef.current) navigate("/");
+      }, 900);
 
     } catch (err) {
-      console.error(err);
+      if (!mountedRef.current) return;
+
+      if (err?.code === "ERR_CANCELED" || err?.name === "AbortError") return;
+
       setErrorMessage(
         err?.response?.data?.message ||
         err?.message ||
         "Registration failed"
       );
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
+      abortRef.current = null;
     }
-  }, [form, isDisabled, loading, navigate]);
+  }, [form, isDisabled, navigate]);
 
   // ======================================================
-  // ⌨️ ENTER SUBMIT
+  // ENTER HANDLER (STRICT CONTROL)
   // ======================================================
-  const handleKeyDown = useCallback((event) => {
-    if (event.key === "Enter" && !loading) {
-      handleRegister();
-    }
-  }, [handleRegister, loading]);
+  const handleKeyDown = useCallback((e) => {
+    if (e.target.tagName === "BUTTON") return; // avoid double submit
+
+    if (e.key !== "Enter") return;
+    if (isDisabled) return;
+
+    e.preventDefault();
+    handleRegister();
+  }, [handleRegister, isDisabled]);
 
   // ======================================================
-  // 🎨 UI WITH TAILWIND (Fits perfectly with image_30.png)
+  // UI
   // ======================================================
   return (
-    <main className="min-h-screen bg-navy-900 text-text-inverse flex flex-col justify-between p-6 font-sans relative overflow-hidden">
-      {/* Efè limyè Radial nan background lan */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,136,229,0.15),transparent_60%)] pointer-events-none"></div>
+    <main
+      className="min-h-screen bg-navy-900 text-white flex flex-col justify-between p-6 relative overflow-hidden"
+      onKeyDown={handleKeyDown}
+    >
 
-      {/* Header ak bouton tounen nan Splash lan */}
-      <div className="flex items-center justify-between pt-2 relative z-10 w-full max-w-sm mx-auto">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="text-xl p-2 active:scale-95 transition-all text-text-muted hover:text-text-inverse"
-          aria-label="Tounen"
-        >
-          ⬅️
-        </button>
-        <h1 className="text-lg font-display font-bold tracking-wide">Kreye Kont</h1>
-        <div className="w-8"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,136,229,0.15),transparent_60%)] pointer-events-none" />
+
+      <div className="flex items-center justify-between max-w-sm mx-auto w-full z-10">
+        <button onClick={() => navigate(-1)} className="text-xl">⬅️</button>
+        <h1 className="font-bold text-lg">Kreye Kont</h1>
+        <div className="w-8" />
       </div>
 
-      <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-center z-10 my-4">
-        
-        {/* TÈKS ENTWODIKSYON */}
-        <div className="text-left mb-4">
-          <p className="text-xs text-text-muted font-medium tracking-wide">Chwazi wòl ou</p>
-        </div>
+      <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-center z-10">
 
-        {/* 🎛️ SEKSYON RÔLE CARD (GRID KONEKTE DIRÈK) */}
-        <div className="grid grid-cols-3 gap-y-4 gap-x-2 justify-items-center w-full mb-6 bg-navy-900/50 p-1 rounded-2xl">
-          {ROLES_LIST.map((item) => (
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          {ROLES_LIST.map(r => (
             <RoleCard
-              key={item.id}
-              title={item.label}
-              icon={item.icon}
-              selected={form.accountType === item.id}
-              onClick={() => updateField("accountType", item.id)}
+              key={r.id}
+              title={r.label}
+              icon={r.icon}
+              selected={form.accountType === r.id}
+              onClick={() => updateField("accountType", r.id)}
             />
           ))}
         </div>
 
-        {/* ALÈT YO */}
-        {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-danger-50 border border-danger-500/30 text-danger-500 text-xs text-center font-medium animate-fade-in">
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div className="mb-3 text-center text-xs text-red-400">{errorMessage}</div>}
+        {success && <div className="mb-3 text-center text-xs text-green-400">{success}</div>}
 
-        {success && (
-          <div className="mb-4 p-3 rounded-xl bg-success-50 border border-success-600/30 text-success-500 text-xs text-center font-medium animate-fade-in">
-            {success}
-          </div>
-        )}
-
-        {/* FÒM NAN NÈT */}
         <div className="flex flex-col gap-3">
-          <input
-            type="text"
-            name="fullName"
-            value={form.fullName}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Non konplè"
-            autoComplete="name"
-            aria-label="Full Name"
-            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
-          />
 
-          <input
-            type="text"
-            name="emailOrPhone"
-            value={form.emailOrPhone}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Nimewo telefòn oswa imèl"
-            autoComplete="username"
-            aria-label="Email or Phone"
-            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
-          />
+          <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Non konplè" className="p-3 rounded bg-navy-800" />
 
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Modpas"
-            autoComplete="new-password"
-            aria-label="Password"
-            className="w-full bg-navy-800 border border-navy-700 rounded-xl py-4 px-4 text-sm text-text-inverse placeholder-text-muted focus:outline-none focus:border-brand-500 focus:shadow-glow transition-all"
-          />
+          <input name="emailOrPhone" value={form.emailOrPhone} onChange={handleChange} placeholder="Email oswa phone" className="p-3 rounded bg-navy-800" />
 
-          {/* GWO BOUTON JÒN LAN (Kòrèk selon MVP) */}
+          <input type="password" name="password" value={form.password} onChange={handleChange} placeholder="Modpas" className="p-3 rounded bg-navy-800" />
+
           <button
             type="button"
-            onClick={handleRegister}
             disabled={isDisabled}
-            aria-busy={loading}
-            className={`
-              w-full font-display font-bold py-4 rounded-xl shadow-card text-sm tracking-wide mt-3 text-center transition-all duration-200
-              ${isDisabled 
-                ? "bg-gold-500/50 text-navy-900/60 cursor-not-allowed" 
-                : "bg-gold-400 text-navy-900 active:scale-95 hover:bg-gold-300 cursor-pointer"}
-            `}
+            onClick={handleRegister}
+            className={`p-4 rounded font-bold transition ${
+              isDisabled
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-yellow-400 text-black active:scale-95"
+            }`}
           >
             {loading ? "Y ap kreye kont..." : "Kreye Kont"}
           </button>
+
         </div>
       </div>
 
-      {/* LYEN LOGIN LAN NAN FON AN */}
-      <p className="text-center text-xs text-text-muted mb-2 relative z-10">
-        Deja gen kont?{" "}
-        <Link to="/login" className="text-brand-400 hover:underline font-bold ml-1">
-          Login
-        </Link>
+      <p className="text-center text-xs text-gray-400 mb-2">
+        Deja gen kont? <Link to="/login" className="text-blue-400 font-bold">Login</Link>
       </p>
     </main>
   );

@@ -1,50 +1,83 @@
-import API from './api';
+import API from "./api";
 
-/**
- * 👤 JOBFAST USER & PROFILE SERVICE
- * Jere tout operasyon ki gen rapò ak pwofil, kontak, ak estati travayè yo.
- */
+/* ================= UTIL ================= */
+const now = () => Date.now();
 
-/**
- * Jwenn pwofil konplè itilizatè ki konekte aktyèl la
- */
-export const getMyProfile = async () => {
+const getErrorMessage = (error, fallback) =>
+  error?.response?.data?.message ||
+  error?.response?.data?.error ||
+  error?.message ||
+  fallback;
+
+/* ================= RESPONSE WRAPPER ================= */
+const success = (data, meta = {}) => ({
+  success: true,
+  data,
+  meta,
+  timestamp: now(),
+});
+
+const fail = (error, fallback) => ({
+  success: false,
+  message: getErrorMessage(error, fallback),
+  status: error?.response?.status ?? null,
+  code: error?.response?.data?.code ?? null,
+  timestamp: now(),
+});
+
+/* ================= SAFE REQUEST ================= */
+const request = async (fn, fallback, meta = {}) => {
   try {
-    const { data } = await API.get('/users/profile');
-    return data;
+    const res = await fn();
+    const data = res?.data;
+
+    if (
+      data == null ||
+      (typeof data === "object" &&
+        !Array.isArray(data) &&
+        Object.keys(data).length === 0)
+    ) {
+      return fail(null, "Invalid server response");
+    }
+
+    return success(data, meta);
   } catch (error) {
-    const message = error.response?.data?.message || "Nou pa ka chaje enfòmasyon pwofil ou nan moman sa a.";
-    throw new Error(message);
+    return fail(error || {}, fallback);
   }
 };
 
-/**
- * Mete ajou estati disponibilite travayè a (disponib, busy, working, offline)
- * @param {string} status - Nouvo estati a
- */
-export const updateUserStatus = async (status) => {
-  try {
-    // Nou asire estati a pase an ti lèt (lowercase) pou liyen ak STATUS_CONFIG nou nan UI a
-    const normalizedStatus = typeof status === "string" ? status.toLowerCase() : status;
-    
-    const { data } = await API.patch('/users/status', { status: normalizedStatus });
-    return data;
-  } catch (error) {
-    const message = error.response?.data?.message || "Erè pandan n t ap mete ajou estati disponiblite w.";
-    throw new Error(message);
+/* ================= USER PROFILE SERVICE ================= */
+
+/* GET MY PROFILE */
+export const getMyProfile = () =>
+  request(
+    () => API.get("/users/profile"),
+    "Unable to load profile"
+  );
+
+/* STATUS VALIDATION */
+const VALID_STATUS = ["available", "busy", "working", "offline"];
+
+/* UPDATE USER STATUS */
+export const updateUserStatus = (status) => {
+  const normalized =
+    typeof status === "string" ? status.toLowerCase() : status;
+
+  if (!VALID_STATUS.includes(normalized)) {
+    return Promise.resolve(
+      fail(null, "Invalid status value")
+    );
   }
+
+  return request(
+    () => API.patch("/users/status", { status: normalized }),
+    "Unable to update status"
+  );
 };
 
-/**
- * Mete ajou enfòmasyon pwofil yo (Non, Bio, Telefòn, Kote w ye, elatriye)
- * @param {Object} userData - Done pou modifye yo
- */
-export const updateProfile = async (userData) => {
-  try {
-    const { data } = await API.put('/users/profile', userData);
-    return data;
-  } catch (error) {
-    const message = error.response?.data?.message || "Nou pa ka sove chanjman sa yo. Verifye si fòma yo bon.";
-    throw new Error(message);
-  }
-};
+/* UPDATE PROFILE */
+export const updateProfile = (userData) =>
+  request(
+    () => API.put("/users/profile", userData),
+    "Unable to update profile"
+  );

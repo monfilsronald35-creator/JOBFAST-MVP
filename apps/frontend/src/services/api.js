@@ -1,66 +1,157 @@
 import axios from "axios";
 
-// 1. KREYASYON INSTANS API
-// Piske backend JobFast-RD a ap deplwaye sou Render, nou itilize varyab anviwònman (.env)
+/* ================= CONFIG ================= */
+export const STORAGE_KEY = "jobfast_user";
+
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://jobfast-backend.onrender.com/v1";
+
+/* ================= AXIOS INSTANCE ================= */
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://jobfast-backend.onrender.com/v1",
-  timeout: 15000, // 15 segonn maksimòm pou yon demann anpeche aplikasyon an bloke si rezo a dous
+  baseURL: BASE_URL,
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
-    "Accept": "application/json",
+    Accept: "application/json",
   },
 });
 
-// 2. REQUEST INTERCEPTOR: ATRAKSYON TOKEN OTOMATIK
+/* ================= SAFE PARSE ================= */
+const safeParse = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+/* ================= STORAGE HELPERS ================= */
+const getStoredUser = () => {
+  if (typeof window === "undefined") return null;
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? safeParse(saved) : null;
+};
+
+const getToken = () => getStoredUser()?.token || null;
+const getRefreshToken = () => getStoredUser()?.refreshToken || null;
+
+/* ================= LOGOUT ================= */
+const triggerLogout = () => {
+  if (typeof window === "undefined") return;
+
+  localStorage.removeItem(STORAGE_KEY);
+  window.dispatchEvent(new Event("auth:logout"));
+};
+
+/* ================= REFRESH CONTROL ================= */
+let isRefreshing = false;
+let refreshQueue = [];
+
+/* safer queue handling */
+const subscribe = (cb) => refreshQueue.push(cb);
+
+const resolveQueue = (token) => {
+  refreshQueue.forEach((cb) => cb(token));
+  refreshQueue = [];
+};
+
+/* ================= REQUEST INTERCEPTOR ================= */
 API.interceptors.request.use(
   (config) => {
-    try {
-      // Nou rekipere done itilizatè a ki gen token an anndan estrikti inivèsèl nou an
-      const savedUser = localStorage.getItem("jobfast_user");
-      
-      if (savedUser) {
-        const { token } = JSON.parse(savedUser);
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      }
-    } catch (err) {
-      console.error("[JOBFAST API]: Erè nan lekti token nan depo a:", err);
+    const token = getToken();
+
+    config.headers = config.headers || {};
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// 3. RESPONSE INTERCEPTOR: JESYON ERÈ AK SESYON EKSPYRE (401)
+/* ================= RESPONSE INTERCEPTOR ================= */
 API.interceptors.response.use(
   (response) => response,
-  (error) => {
-    const { response: res, code } = error;
+  async (error) => {
+    const { response: res, config, code } = error;
 
-    // Jere ka kote sèvè Render la ap pran tan pou l leve (Cold Start) oswa rezo a koupe
-    if (code === "ECONNABORTED" || !res) {
-      console.warn("[JOBFAST API]: Rezo a dous oswa sèvè a ap demare...");
+    /* ================= NETWORK / TIMEOUT ================= */
+    if (!res || code === "ECONNABORTED") {
+      console.warn("[JOBFAST API]: Network / timeout / cold start");
+      return Promise.reject(error);
     }
 
-    // Si token an envalid oswa sesyon an ekspire (401)
-    if (res?.status === 401) {
-      console.error("[JOBFAST API]: Sesyon an ekspire (401 Unauthorized). Clean-up an kour...");
-      
+    /* ================= 401 HANDLING ================= */
+    if (res.status === 401) {
+      config._retry = config._retry || 0;
+
+      /* prevent infinite retry loop */
+      if (config._retry >= 1) {
+        triggerLogout();
+        return Promise.reject(error);
+      }
+
+      config._retry += 1;
+
+      const refreshToken = getRefreshToken();
+
+      if (!refreshToken) {
+        triggerLogout();
+        return Promise.reject(error);
+      }
+
+      /* ================= QUEUE IF ALREADY REFRESHING ================= */
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          subscribe((token) => {
+            if (!token) return reject(error);
+
+            config.headers.Authorization = `Bearer ${token}`;
+            resolve(API(config));
+          });
+        });
+      }
+
+      isRefreshing = true;
+
       try {
-        // Efase done sesyon yo pou fòse aplikasyon an redirije sou paj Login grasa useAuth
-        localStorage.removeItem("jobfast_user");
-        
-        // Evite window.location.href toudenkou pou pa kase UX la, 
-        // n ap kite sistèm ProtectedRoute nan AppRoutes la jere rediksyon an dous
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.reload(); // Sa ap reset eta a epi jete l nan login otomatikman
+        const refreshRes = await axios.post(
+          `${BASE_URL}/auth/refresh`,
+          { refreshToken }
+        );
+
+        const newToken = refreshRes?.data?.token;
+
+        if (!newToken) throw new Error("Invalid refresh response");
+
+        /* ================= UPDATE STORAGE SAFELY ================= */
+        const user = getStoredUser();
+
+        if (user) {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              ...user,
+              token: newToken,
+            })
+          );
         }
+
+        /* ================= RESOLVE QUEUE ================= */
+        resolveQueue(newToken);
+
+        config.headers.Authorization = `Bearer ${newToken}`;
+        return API(config);
       } catch (err) {
-        console.error("[JOBFAST API]: Erè pandan netwayaj sesyon:", err);
+        resolveQueue(null);
+        triggerLogout();
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
       }
     }
 

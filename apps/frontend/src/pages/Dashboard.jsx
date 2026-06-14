@@ -1,69 +1,257 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import Button from "../components/Button.jsx"; // ✨ Nou remete l kòm Button.jsx ak gwo B!
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { MapPin, Clock, RefreshCcw } from "lucide-react";
+import API from "../api/axios";
 
-const LogoIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 100 100"
-    fill="currentColor"
-    className="h-20 w-20 text-gold-400 drop-shadow-[0_0_22px_rgba(245,197,24,0.22)] sm:h-24 sm:w-24"
-    aria-hidden="true"
-  >
-    <path d="M50 15C32 15 20 28 18 42h64C80 28 68 15 50 15z" />
-    <path d="M12 44h76v4H12z" />
-    <path d="M50 11c-2 0-3 2-3 4h6c0-2-1-4-3-4z" />
-    <path d="M64 44V28h6v16h-6z M74 44V34h5v10h-5z M56 44V22h5v22h-5z" opacity="0.5" />
-    <path d="M46 25h8v8h-8z" opacity="0.2" fill="#000" />
-  </svg>
-);  
+// ================= GLOBAL CACHE =================
+let jobsCache = null;
+let cacheTime = 0;
+const CACHE_TTL = 15000;
 
-export default function SplashScreen() {
-  const navigate = useNavigate();
+export default function Dashboard() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null); // 🔥 UX upgrade
 
+  const abortRef = useRef(null);
+  const mountedRef = useRef(true);
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef(null);
+  const inFlightRef = useRef(false);
+
+  // ================= CLEANUP =================
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+
+      abortRef.current?.abort();
+      abortRef.current = null;
+
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+
+      inFlightRef.current = false;
+    };
+  }, []);
+
+  // ================= FETCH =================
+  const fetchJobs = useCallback(async (isRetry = false) => {
+    const now = Date.now();
+    const hasCache = jobsCache && now - cacheTime < CACHE_TTL;
+
+    // 🔥 prevent overlap but allow retry override
+    if (inFlightRef.current && !isRetry) return;
+    inFlightRef.current = true;
+
+    try {
+      if (!mountedRef.current) return;
+
+      setError("");
+
+      // ================= CACHE HIT =================
+      if (!isRetry && hasCache) {
+        setJobs(jobsCache);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      // ================= ABORT SAFETY =================
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      const res = await API.get("/jobs", {
+        signal: controller.signal,
+      });
+
+      if (!mountedRef.current) return;
+
+      const data = Array.isArray(res?.data) ? res.data : [];
+
+      // ================= CACHE UPDATE =================
+      jobsCache = data;
+      cacheTime = now;
+
+      setJobs(data);
+      setLastUpdated(now); // 🔥 UX indicator
+
+      retryCountRef.current = 0;
+      setRetrying(false);
+
+    } catch (err) {
+      if (!mountedRef.current) return;
+
+      const canceled =
+        err?.code === "ERR_CANCELED" ||
+        err?.name === "CanceledError";
+
+      if (canceled) return;
+
+      retryCountRef.current += 1;
+
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Erè pandan chajman travay yo"
+      );
+
+      const canRetry =
+        retryCountRef.current <= 2 &&
+        !retryTimerRef.current;
+
+      if (canRetry) {
+        setRetrying(true);
+
+        const delay = Math.min(1500 * retryCountRef.current, 5000);
+
+        clearTimeout(retryTimerRef.current);
+
+        retryTimerRef.current = setTimeout(() => {
+          retryTimerRef.current = null;
+
+          if (!mountedRef.current) return;
+
+          // 🔥 safe retry gate (no overlap)
+          if (!inFlightRef.current) {
+            fetchJobs(true);
+          }
+        }, delay);
+      } else {
+        setRetrying(false);
+      }
+
+    } finally {
+      inFlightRef.current = false;
+
+      if (mountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  // ================= INIT =================
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  // ================= REFRESH =================
+  const handleRefresh = useCallback(() => {
+    retryCountRef.current = 0;
+    setRetrying(false);
+    setError("");
+
+    clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = null;
+
+    abortRef.current?.abort();
+    abortRef.current = null;
+
+    fetchJobs(true);
+  }, [fetchJobs]);
+
+  // ================= UI =================
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-navy-900 px-6 py-12 font-sans text-text-inverse select-none">
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-400/8 blur-[120px]" />
+    <div className="space-y-6">
 
-      <div className="h-4" />
+      {/* HEADER */}
+      <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-white">Byenveni 👋</h2>
+          <p className="text-slate-400 text-sm">
+            Men travay ki disponib bò kote w.
+          </p>
 
-      <div className="z-10 flex max-w-sm flex-col items-center text-center animate-fade-in">
-        <div className="mb-5 transition-transform duration-300 hover:scale-105">
-          <LogoIcon />
+          {retrying && (
+            <p className="text-xs text-amber-400 mt-1">
+              Rekoneksyon...
+            </p>
+          )}
+
+          {lastUpdated && (
+            <p className="text-[10px] text-slate-500 mt-1">
+              Dènye mizajou: {new Date(lastUpdated).toLocaleTimeString()}
+            </p>
+          )}
         </div>
 
-        <h1 className="mb-4 text-4xl font-black tracking-[0.14em] text-gold-400">
-          JOBFAST
-        </h1>
-
-        <p className="max-w-[280px] text-sm font-medium leading-relaxed text-text-muted">
-          Travay. Sèvis. Biznis. Kote w ye. Tout nan yon sèl app.
-        </p>
+        <button
+          onClick={handleRefresh}
+          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
+        >
+          <RefreshCcw className="w-5 h-5 text-amber-400" />
+        </button>
       </div>
 
-      <div className="z-10 flex w-full max-w-sm flex-col gap-4">
-        <Button variant="primary" onClick={() => navigate("/onboarding")} className="w-full">
-          Kòmanse
-        </Button>
-
-        <div className="mt-2 flex flex-col items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate("/login")}
-            className="text-sm font-semibold text-text-inverse transition-colors hover:text-gold-400 focus:outline-none focus:ring-4 focus:ring-gold-100/20"
-          >
-            Login
-          </button>
-
-          <button
-            type="button"
-            onClick={() => navigate("/register")}
-            className="text-sm font-semibold text-text-inverse transition-colors hover:text-gold-400 focus:outline-none focus:ring-4 focus:ring-gold-100/20"
-          >
-            Kreye Kont
-          </button>
+      {/* ERROR */}
+      {error && (
+        <div className="text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+          {error}
         </div>
-      </div>
+      )}
+
+      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+        Travay ki pre w
+      </h3>
+
+      {/* LOADING */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-24 bg-slate-800/50 rounded-2xl animate-pulse"
+            />
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="text-slate-400 text-sm text-center py-10">
+          Pa gen travay disponib kounye a
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {jobs.map((job, idx) => (
+            <div
+              key={job.id || job._id || idx}
+              className="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 hover:border-amber-500/30 transition"
+            >
+              <div className="flex justify-between items-start">
+
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-xl">
+                    👷‍♂️
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-100">
+                      {job?.title || "Untitled job"}
+                    </h4>
+
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                      <MapPin className="w-3 h-3" />
+                      {job?.company || "Unknown"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="block font-bold text-amber-500">
+                    {job?.price || "N/A"}
+                  </span>
+
+                  <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {job?.time || "Just now"}
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

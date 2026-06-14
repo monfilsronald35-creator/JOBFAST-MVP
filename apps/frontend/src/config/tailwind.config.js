@@ -1,114 +1,122 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { 
-  CheckCircle, 
-  Clock, 
-  AlertCircle,
-  ArrowLeft
-} from "lucide-react";
-import Button from "../components/Button";
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
 
-const STATUS_OPTIONS = [
-  {
-    id: "available",
-    title: "DISPONIB",
-    description: "Mwen disponib pou travay toupre m. AI va distribye òf rapid.",
-    icon: CheckCircle,
-    badgeClass: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+  theme: {
+    extend: {
+
+      /* ================= COLORS SYSTEM ================= */
+      colors: {
+        navy: {
+          950: "#050B18",
+          900: "#0B1528",
+          800: "#162238",
+          700: "#1F2C44",
+        },
+
+        gold: {
+          400: "#F5C542",
+          500: "#E6B93A",
+          600: "#C99A2E",
+        },
+
+        success: "#22C55E",
+        warning: "#F59E0B",
+        danger: "#EF4444",
+        info: "#3B82F6",
+      },
+
+      /* ================= TYPOGRAPHY ================= */
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+
+      /* ================= ANIMATIONS ================= */
+      animation: {
+        "fade-in": "fadeIn 0.4s ease-in-out",
+        "slide-up": "slideUp 0.3s ease-out",
+        "pulse-soft": "pulseSoft 2s infinite",
+        "bounce-soft": "bounceSoft 1.8s infinite",
+      },
+
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(12px)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 },
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: 1 },
+          "50%": { opacity: 0.6 },
+        },
+        bounceSoft: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-4px)" },
+        },
+      },
+
+      /* ================= SHADOW SYSTEM ================= */
+      boxShadow: {
+        soft: "0 10px 30px rgba(0,0,0,0.3)",
+        glow: "0 0 20px rgba(245, 197, 66, 0.25)",
+        card: "0 8px 25px rgba(0,0,0,0.25)",
+
+        stripe: "0 12px 35px rgba(50, 50, 93, 0.15)",
+        chat: "0 4px 12px rgba(0,0,0,0.2)",
+        map: "0 6px 20px rgba(0,0,0,0.25)",
+      },
+
+      /* ================= BORDER RADIUS ================= */
+      borderRadius: {
+        xl2: "1.25rem",
+        xxl: "1.75rem",
+        full2: "2rem",
+      },
+
+      /* ================= SPACING ================= */
+      spacing: {
+        18: "4.5rem",
+        22: "5.5rem",
+        26: "6.5rem",
+      },
+
+      /* ================= BREAKPOINTS ================= */
+      screens: {
+        xs: "360px",
+        sm: "480px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+      },
+
+      /* ================= Z-INDEX SYSTEM ================= */
+      zIndex: {
+        60: "60",
+        70: "70",
+        80: "80",
+        90: "90",
+        100: "100",
+      },
+
+      /* ================= UI TOKENS ================= */
+
+      dropShadow: {
+        stripe: "0 10px 20px rgba(0,0,0,0.12)",
+      },
+
+      backgroundImage: {
+        "chat-pattern":
+          "radial-gradient(circle at 20px 20px, rgba(255,255,255,0.05) 1px, transparent 0)",
+      },
+    },
   },
-  {
-    id: "busy",
-    title: "OKIPE",
-    description: "Mwen gen travay kounye a. Mwen pa resevwa nouvo òf pou yon ti moman.",
-    icon: Clock,
-    badgeClass: "border-blue-500/30 bg-blue-500/10 text-blue-400"
-  },
-  {
-    id: "unavailable",
-    title: "PA DISPONIB",
-    description: "Mwen pa disponib pou yon peryòd. Pwofil la p ap vizib nan rechèch yo.",
-    icon: AlertCircle,
-    badgeClass: "border-rose-500/30 bg-rose-500/10 text-rose-400"
-  }
-];
 
-export default function AvailabilityStatus() {
-  const navigate = useNavigate();
-  const [selectedStatus, setSelectedStatus] = useState("available");
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSaveStatus = () => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      navigate("/dashboard");
-    }, 800);
-  };
-
-  return (
-    <div className="flex min-h-screen w-full flex-col animate-fade-in select-none bg-navy-900 pb-10 font-sans text-white justify-between">
-      
-      <header className="border-b border-slate-800/60 mx-auto flex max-w-sm w-full items-center justify-between px-5 pb-4 pt-6">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Retounen nan paj anvan an"
-          className="rounded-xl border border-slate-800/40 bg-navy-800/40 p-2.5 text-slate-400 transition-all hover:text-white active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
-        >
-          <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
-        </button>
-        <h1 className="text-xs font-black tracking-widest uppercase text-slate-200">Estatu Disponibilite</h1>
-        <div className="h-9 w-9" />
-      </header>
-
-      <main className="flex-1 flex flex-col gap-6 px-5 py-6 max-w-sm mx-auto w-full">
-        <p className="leading-relaxed px-1 text-xs font-medium text-slate-400">
-          Chwazi estati ou an tan reyèl pou sistèm AI JobFast la ka distribye travay ak opòtinite yo avèk presizyon.
-        </p>
-
-        <div className="flex flex-col gap-3">
-          {STATUS_OPTIONS.map((option) => {
-            const IconComponent = option.icon;
-            const isSelected = selectedStatus === option.id;
-            
-            return (
-              <button
-                key={option.id}
-                onClick={() => setSelectedStatus(option.id)}
-                aria-label={`Mete estati a kòm ${option.title}`}
-                aria-current={isSelected ? "true" : undefined}
-                className={`flex items-start gap-4 rounded-2xl border p-4 text-left transition-all active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20 ${
-                  isSelected 
-                    ? "border-gold-400 bg-navy-800/30 shadow-md shadow-gold-400/5" 
-                    : "border-slate-800/60 bg-navy-800/10 hover:border-slate-700"
-                }`}
-              >
-                <div className={`rounded-xl border p-2.5 shrink-0 ${option.badgeClass}`}>
-                  <IconComponent className="h-4 w-4" strokeWidth={2.5} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className={`text-xs font-black tracking-wide uppercase ${isSelected ? "text-gold-400" : "text-white"}`}>
-                    {option.title}
-                  </h3>
-                  <p className="mt-1 text-[10px] font-medium leading-normal text-slate-400">
-                    {option.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </main>
-
-      <footer className="mx-auto max-w-sm w-full px-5">
-        <Button
-          loading={isSaving}
-          onClick={handleSaveStatus}
-          variant="primary"
-          className="w-full py-4 active:scale-[0.98] bg-gold-400 rounded-2xl font-black text-xs uppercase tracking-widest text-navy-950 shadow-lg shadow-gold-400/5 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
-        >
-          Mete estati a ajou
-        </Button>
-      </footer>
-    </div>
-  );
-}
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    require("@tailwindcss/aspect-ratio"),
+  ],
+};

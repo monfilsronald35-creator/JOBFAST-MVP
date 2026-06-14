@@ -1,14 +1,9 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Loader from "./Loader";
+import Loader from "../components/Loader";
 
-function ProtectedRoute({
-  children,
-  fallback,
-  redirectTo = "/login",
-  replace = true,
-}) {
+function ProtectedRoute({ children, redirectTo = "/login", replace = true }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -16,10 +11,10 @@ function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    return fallback ?? <Navigate to={redirectTo} replace={replace} />;
+    return <Navigate to={redirectTo} replace={replace} />;
   }
 
-  return children || null;
+  return children;
 }
 
 export default ProtectedRoute;

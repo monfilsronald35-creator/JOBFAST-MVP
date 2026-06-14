@@ -1,27 +1,22 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Globe } from "lucide-react";
-import { changeLanguage } from "../i18n";
+import { Globe, ChevronDown } from "lucide-react";
 
 const LANGUAGES = Object.freeze([
   { code: "es", label: "Español" },
   { code: "en", label: "English" },
   { code: "ht", label: "Kreyòl" },
-  { code: "fr", label: "Français" }
+  { code: "fr", label: "Français" },
 ]);
 
 function LanguageSelector({ compact = false }) {
   const { i18n } = useTranslation();
-  const currentLanguage = i18n?.language ?? "es";
+  const currentLanguage = (i18n?.language || "es").slice(0, 2);
 
   const handleChange = (event) => {
     const newLanguage = event.target.value;
-    const activeLanguage = i18n?.language ?? "es";
-
-    if (!newLanguage || newLanguage === activeLanguage) return;
-
+    if (!newLanguage || newLanguage === currentLanguage) return;
     i18n?.changeLanguage?.(newLanguage);
-    changeLanguage?.(newLanguage);
   };
 
   return (
@@ -35,22 +30,27 @@ function LanguageSelector({ compact = false }) {
         onChange={handleChange}
         aria-label="Chwazi lang aplikasyon an"
         className={`
-          appearance-none w-full bg-navy-950 border border-slate-800/60 text-xs font-black uppercase tracking-wider text-slate-300 rounded-xl outline-none transition-all duration-200 cursor-pointer
-          pl-10 pr-8 focus:border-gold-400 focus:ring-4 focus:ring-gold-400/10 focus-visible:ring-4 focus-visible:ring-gold-400/20
-          ${compact ? "py-2.5 text-[10px] tracking-widest max-w-[140px]" : "py-3.5"}
+          w-full appearance-none rounded-xl border border-slate-800/60 bg-navy-950
+          pl-10 pr-8 text-xs font-black uppercase tracking-wider text-slate-300
+          outline-none transition-all duration-200 cursor-pointer
+          focus:border-gold-400 focus:ring-4 focus:ring-gold-400/10
+          focus-visible:ring-4 focus-visible:ring-gold-400/20
+          ${compact ? "max-w-[140px] py-2.5 text-[10px] tracking-widest" : "py-3.5"}
         `}
       >
         {LANGUAGES.map(({ code, label }) => (
-          <option key={code} value={code} className="bg-navy-950 text-white font-sans normal-case tracking-normal text-sm">
+          <option
+            key={code}
+            value={code}
+            className="bg-navy-950 text-white font-sans normal-case tracking-normal text-sm"
+          >
             {label}
           </option>
         ))}
       </select>
 
       <div className="pointer-events-none absolute right-3.5 flex items-center text-slate-500">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="h-3 w-3">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
+        <ChevronDown className="h-3.5 w-3.5" strokeWidth={3} />
       </div>
     </div>
   );

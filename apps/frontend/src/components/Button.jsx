@@ -1,49 +1,107 @@
-import React, { memo } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, Search, Plus, Bell, User } from "lucide-react";
 
-const Button = memo(
-  ({
-    children,
-    variant = "primary",
-    loading = false,
-    className = "",
-    type = "button",
-    ...props
-  }) => {
-    const baseStyles =
-      "inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-[15px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-smooth active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
+const NAV_ITEMS = [
+  { path: "/", label: "Akèy", icon: Home, end: true },
+  { path: "/search", label: "Chèche", icon: Search },
+  { path: "/create-post", label: "Poste", icon: Plus, center: true },
+  { path: "/notifications", label: "Notifikasyon", icon: Bell },
+  { path: "/profile", label: "Pwofil", icon: User },
+];
 
-    const variants = {
-      primary:
-        "bg-gold-500 text-navy-900 shadow-soft hover:bg-gold-400 hover:shadow-card focus:ring-4 focus:ring-gold-100",
-      outline:
-        "border border-border bg-transparent text-text-primary hover:border-brand-300 hover:bg-brand-50 focus:ring-4 focus:ring-brand-100",
-      navy:
-        "bg-navy-800 text-white shadow-soft hover:bg-navy-700 focus:ring-4 focus:ring-navy-100",
-    };
+export default function BottomNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const currentVariant = variants[variant] || variants.primary;
+  const itemRefs = useRef([]);
+  const indicatorRef = useRef(null);
 
-    return (
-      <button
-        type={type}
-        {...props}
-        disabled={loading || props.disabled}
-        aria-busy={loading}
-        className={`${baseStyles} ${currentVariant} ${className}`}
-      >
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
-            <span>Ap trete...</span>
-          </span>
-        ) : (
-          children
-        )}
-      </button>
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const vibrate = () => {
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
+
+  /* ================= ACTIVE DETECTION ================= */
+  useEffect(() => {
+    const index = NAV_ITEMS.findIndex((item) =>
+      item.end
+        ? location.pathname === item.path
+        : location.pathname.startsWith(item.path)
     );
-  }
-);
 
-Button.displayName = "Button";
+    if (index !== -1) setActiveIndex(index);
+  }, [location.pathname]);
 
-export default Button;
+  /* ================= PIXEL-PERFECT INDICATOR ================= */
+  useEffect(() => {
+    const el = itemRefs.current[activeIndex];
+    const indicator = indicatorRef.current;
+
+    if (!el || !indicator) return;
+
+    const { offsetLeft, offsetWidth } = el;
+
+    indicator.style.transform = `translateX(${offsetLeft}px)`;
+    indicator.style.width = `${offsetWidth}px`;
+  }, [activeIndex]);
+
+  return (
+    <nav
+      aria-label="Main navigation"
+      className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/40 border-t border-white/10 pb-[env(safe-area-inset-bottom)]"
+    >
+      {/* 🔥 DYNAMIC INDICATOR */}
+      <div className="absolute top-0 left-0 h-[3px] w-full">
+        <div
+          ref={indicatorRef}
+          className="h-[3px] bg-gradient-to-r from-gold-400 to-yellow-500 transition-all duration-300 ease-out rounded-full"
+        />
+      </div>
+
+      <div className="flex h-16 items-center justify-around relative">
+        {NAV_ITEMS.map((item, index) => {
+          const Icon = item.icon;
+
+          const isActive = index === activeIndex;
+
+          /* ================= CENTER BUTTON ================= */
+          if (item.center) {
+            return (
+              <button
+                key={item.path}
+                onClick={() => {
+                  vibrate();
+                  navigate(item.path);
+                }}
+                className="relative -top-5 h-14 w-14 rounded-2xl bg-gold-400 text-black shadow-xl active:scale-90 transition"
+              >
+                <Icon className="h-6 w-6 mx-auto" />
+              </button>
+            );
+          }
+
+          return (
+            <button
+              key={item.path}
+              ref={(el) => (itemRefs.current[index] = el)}
+              onClick={() => {
+                vibrate();
+                navigate(item.path);
+              }}
+              className={`flex flex-col items-center justify-center w-full transition ${
+                isActive ? "text-gold-400 scale-105" : "text-gray-400"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-medium">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}

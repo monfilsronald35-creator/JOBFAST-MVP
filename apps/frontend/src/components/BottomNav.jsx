@@ -1,74 +1,101 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home, Search, Plus, Bell, User } from "lucide-react";
 
 const NAV_ITEMS = [
-  { path: "/", label: "Akèy", icon: Home, exact: true },
+  { path: "/", label: "Akèy", icon: Home, end: true },
   { path: "/search", label: "Chèche", icon: Search },
-  { path: "/create-post", label: "Poste", icon: Plus, isCenterButton: true },
-  { path: "/notifications", label: "Notifikasyon", icon: Bell, hasBadge: true },
+  { path: "/create-post", label: "Poste", icon: Plus, center: true },
+  { path: "/notifications", label: "Notifikasyon", icon: Bell },
   { path: "/profile", label: "Pwofil", icon: User },
 ];
 
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentPath = location.pathname;
+
+  const itemRefs = useRef([]);
+  const indicatorRef = useRef(null);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const vibrate = () => {
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
+
+  /* ================= ACTIVE DETECTION ================= */
+  useEffect(() => {
+    const index = NAV_ITEMS.findIndex((item) =>
+      item.end
+        ? location.pathname === item.path
+        : location.pathname.startsWith(item.path)
+    );
+
+    if (index !== -1) setActiveIndex(index);
+  }, [location.pathname]);
+
+  /* ================= PIXEL-PERFECT INDICATOR ================= */
+  useEffect(() => {
+    const el = itemRefs.current[activeIndex];
+    const indicator = indicatorRef.current;
+
+    if (!el || !indicator) return;
+
+    const { offsetLeft, offsetWidth } = el;
+
+    indicator.style.transform = `translateX(${offsetLeft}px)`;
+    indicator.style.width = `${offsetWidth}px`;
+  }, [activeIndex]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 select-none border-t border-slate-800/60 bg-navy-900/95 pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.6)] backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-sm items-center justify-between px-6">
-        {NAV_ITEMS.map((item) => {
-          const IconComponent = item.icon;
-          
-          const isActive = item.exact 
-            ? currentPath === item.path 
-            : currentPath.startsWith(item.path);
+    <nav
+      aria-label="Main navigation"
+      className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/40 border-t border-white/10 pb-[env(safe-area-inset-bottom)]"
+    >
+      {/* 🔥 DYNAMIC INDICATOR */}
+      <div className="absolute top-0 left-0 h-[3px] w-full">
+        <div
+          ref={indicatorRef}
+          className="h-[3px] bg-gradient-to-r from-gold-400 to-yellow-500 transition-all duration-300 ease-out rounded-full"
+        />
+      </div>
 
-          if (item.isCenterButton) {
+      <div className="flex h-16 items-center justify-around relative">
+        {NAV_ITEMS.map((item, index) => {
+          const Icon = item.icon;
+
+          const isActive = index === activeIndex;
+
+          /* ================= CENTER BUTTON ================= */
+          if (item.center) {
             return (
-              <div key={item.path} className="relative flex flex-col items-center justify-center -top-3">
-                <button
-                  onClick={() => navigate(item.path)}
-                  aria-label={item.label}
-                  className="flex h-12 w-12 active:scale-90 items-center justify-center rounded-2xl bg-gold-400 text-navy-950 shadow-lg shadow-gold-400/20 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
-                >
-                  <IconComponent className="h-6 w-6" strokeWidth={3} />
-                </button>
-                <span className={`mt-1 text-[9px] font-black uppercase tracking-wider ${
-                  isActive ? "text-gold-400" : "text-slate-500"
-                }`}>
-                  {item.label}
-                </span>
-              </div>
+              <button
+                key={item.path}
+                onClick={() => {
+                  vibrate();
+                  navigate(item.path);
+                }}
+                className="relative -top-5 h-14 w-14 rounded-2xl bg-gold-400 text-black shadow-xl active:scale-90 transition"
+              >
+                <Icon className="h-6 w-6 mx-auto" />
+              </button>
             );
           }
 
           return (
             <button
               key={item.path}
-              onClick={() => navigate(item.path)}
-              aria-label={item.label}
-              className="flex flex-col items-center justify-center gap-1 w-14 h-full active:scale-95 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+              ref={(el) => (itemRefs.current[index] = el)}
+              onClick={() => {
+                vibrate();
+                navigate(item.path);
+              }}
+              className={`flex flex-col items-center justify-center w-full transition ${
+                isActive ? "text-gold-400 scale-105" : "text-gray-400"
+              }`}
             >
-              <div className="relative flex items-center justify-center">
-                <IconComponent
-                  className={`h-5 w-5 transition-colors duration-200 ${
-                    isActive ? "text-gold-400" : "text-slate-400 hover:text-white"
-                  }`}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
-                
-                {item.hasBadge && (
-                  <span className="animate-pulse absolute -right-0.5 -top-0.5 flex h-2 w-2 rounded-full bg-rose-500 ring-2 ring-navy-900" />
-                )}
-              </div>
-              
-              <span
-                className={`text-[9px] font-black uppercase tracking-wider transition-colors duration-200 ${
-                  isActive ? "text-gold-400" : "text-slate-500"
-                }`}
-              >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-medium">
                 {item.label}
               </span>
             </button>

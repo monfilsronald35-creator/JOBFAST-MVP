@@ -1,182 +1,271 @@
-import React, { useState } from "react";
+
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Briefcase, 
-  Building2, 
-  Zap, 
-  MapPin, 
-  Calendar, 
-  Trash2, 
-  Plus, 
+import {
+  Briefcase,
+  Building2,
+  Zap,
+  MapPin,
+  Plus,
   AlertTriangle,
-  Pencil
+  Search,
+  RefreshCcw,
 } from "lucide-react";
 
+// ================= DATA =================
 const INITIAL_POSTS = [
   {
     id: 1,
-    title: "Need Mason in Bavaro",
+    title: "Bezwen Mason nan Bávaro",
     type: "construction",
     category: "Mason",
     status: "OPEN",
-    location: "Bavaro, Punta Cana",
-    createdAt: "2026-05-07",
-    timestamp: new Date("2026-05-07").getTime(),
+    location: "Bávaro, Punta Cana",
+    createdAt: "2026-06-10",
+    timestamp: new Date("2026-06-10").getTime(),
   },
   {
     id: 2,
-    title: "Hotel Reception Job",
+    title: "Resepsyonis pou Hotel",
     type: "business",
     category: "Hotel",
     status: "OPEN",
-    location: "Punta Cana",
-    createdAt: "2026-05-06",
-    timestamp: new Date("2026-05-06").getTime(),
+    location: "Punta Cana Centro",
+    createdAt: "2026-06-09",
+    timestamp: new Date("2026-06-09").getTime(),
   },
   {
     id: 3,
-    title: "Chef Lakay Needed",
+    title: "Chef Lakay solid Bezwen",
     type: "service",
     category: "Chef",
     status: "CLOSED",
-    location: "Veron",
-    createdAt: "2026-05-05",
-    timestamp: new Date("2026-05-05").getTime(),
+    location: "Verón",
+    createdAt: "2026-06-05",
+    timestamp: new Date("2026-06-05").getTime(),
   },
 ];
 
-const STATUS_CONFIG = {
-  OPEN: { label: "OPEN", classes: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" },
-  CLOSED: { label: "CLOSED", classes: "bg-rose-500/10 border-rose-500/30 text-rose-400" },
-  DEFAULT: { label: "UNKNOWN", classes: "bg-slate-500/10 border-slate-500/30 text-slate-400" },
+// ================= CONFIG =================
+const STATUS = {
+  OPEN: {
+    label: "LOUVRI",
+    className: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+  },
+  CLOSED: {
+    label: "FÈMEN",
+    className: "bg-rose-500/10 border-rose-500/20 text-rose-400",
+  },
 };
 
-const TYPE_ICONS = {
+const ICONS = {
   construction: Briefcase,
   business: Building2,
   service: Zap,
 };
 
-const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
+// ================= HELPERS =================
+const sortNewest = (arr = []) =>
+  [...arr].sort((a, b) => (b?.timestamp || 0) - (a?.timestamp || 0));
 
-const sortPosts = (posts) => [...posts].sort((a, b) => b.timestamp - a.timestamp);
-
+// ================= COMPONENT =================
 export default function MyPosts() {
   const navigate = useNavigate();
+  const abortRef = useRef(null);
+
   const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
 
-  const sortedPosts = sortPosts(posts);
-  const totalPosts = sortedPosts.length;
+  // ================= FILTER (OPTIMIZED) =================
+  const filteredPosts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = sortNewest(posts);
 
-  const requestDelete = (id) => setPendingDelete(id);
+    if (!q) return list;
 
-  const confirmDelete = () => {
-    if (pendingDelete == null) return;
-    setPosts((prev) => prev.filter((p) => p.id !== pendingDelete));
-    setPendingDelete(null);
-  };
+    return list.filter((p) => {
+      const title = p?.title?.toLowerCase() || "";
+      const category = p?.category?.toLowerCase() || "";
+      return title.includes(q) || category.includes(q);
+    });
+  }, [posts, search]);
 
-  const cancelDelete = () => setPendingDelete(null);
+  // ================= REFRESH =================
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setError("");
 
-  const requestEdit = (post) => {
-    // Navigate ak pòs la pou modifye
-    navigate(`/edit-post?id=${post.id}`, { state: { post } });
-  };
+    abortRef.current?.abort?.();
+    abortRef.current = new AbortController();
+
+    try {
+      await new Promise((r) => setTimeout(r, 300));
+      setPosts((prev) => [...prev]);
+    } catch {
+      setError("Erè pandan refresh");
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
+  // ================= DELETE =================
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete || deleting) return;
+
+    setDeleting(true);
+    setError("");
+
+    const id = pendingDelete;
+
+    try {
+      await new Promise((r) => setTimeout(r, 200));
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      setPendingDelete(null);
+    } catch {
+      setError("Echèk efasman");
+    } finally {
+      setDeleting(false);
+    }
+  }, [pendingDelete, deleting]);
+
+  // ================= EDIT =================
+  const requestEdit = useCallback(
+    (post) => {
+      navigate(`/post-job?edit=${post.id}`, {
+        state: { post },
+      });
+    },
+    [navigate]
+  );
+
+  // ================= ESC CLOSE =================
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape" && !deleting) {
+        setPendingDelete(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [deleting]);
+
+  // ================= CLEANUP =================
+  useEffect(() => {
+    return () => abortRef.current?.abort?.();
+  }, []);
 
   return (
-    <div className="flex min-h-screen w-full flex-col animate-fade-in select-none bg-navy-900 px-6 py-10 font-sans text-white">
-      
-      <header className="mx-auto mb-8 flex w-full max-w-sm items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Pòs Mwen Yo</h1>
-          <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">
-            {totalPosts} pòs pibliye
-          </p>
-        </div>
-        <button
-          onClick={() => navigate("/create-post")}
-          aria-label="Kreye yon nouvo pòs"
-          className="flex h-10 w-10 active:scale-95 items-center justify-center rounded-xl bg-gold-400 text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
-        >
-          <Plus className="h-5 w-5" strokeWidth={3} />
-        </button>
-      </header>
+    <div className="min-h-screen w-full bg-navy-900 px-6 py-10 text-white pb-28 select-none font-sans">
 
-      <main className="mx-auto flex-1 w-full max-w-sm space-y-4">
-        {totalPosts === 0 ? (
-          <div className="flex flex-col items-center justify-center border border-dashed border-slate-800 bg-navy-800/10 p-6 py-24 text-center rounded-2xl">
-            <div className="rounded-2xl border border-navy-800 bg-navy-800/20 p-4 mb-4">
-              <Briefcase className="h-8 w-8 text-slate-600" />
-            </div>
-            <h3 className="font-bold text-sm text-white">Pa gen okenn pòs</h3>
-            <p className="mt-1 text-xs max-w-[240px] leading-relaxed text-slate-400">
-              Pibliye premye pòs ou sou JobFast pou ou ka kòmanse resevwa òf rapid.
+      {/* HEADER */}
+      <header className="mx-auto max-w-sm mb-6 animate-fade-in">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight">Pòs Mwen Yo</h1>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+              {filteredPosts.length} pòs pibliye
             </p>
+          </div>
+
+          <div className="flex gap-2">
             <button
-              onClick={() => navigate("/create-post")}
-              className="mt-5 active:scale-95 rounded-xl bg-gold-400 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-navy-950 transition-all hover:bg-gold-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+              onClick={handleRefresh}
+              aria-label="Refresh paj la"
+              className="h-11 w-11 bg-navy-800 border border-slate-800/60 rounded-2xl flex items-center justify-center active:scale-95 transition"
             >
-              Kreye yon pòs
+              <RefreshCcw className={`w-4 h-4 text-slate-400 ${refreshing ? "animate-spin text-gold-500" : ""}`} />
+            </button>
+
+            <button
+              onClick={() => navigate("/post-job")}
+              aria-label="Kreye nouvo pòs"
+              className="h-11 w-11 bg-gold-500 text-black rounded-2xl flex items-center justify-center active:scale-95 transition shadow-lg shadow-gold-500/10"
+            >
+              <Plus size={18} strokeWidth={3} />
             </button>
           </div>
+        </div>
+
+        {/* SEARCH */}
+        <div className="mt-4 flex items-center gap-2 bg-navy-800/60 border border-slate-800/40 p-3 rounded-2xl focus-within:border-slate-700 transition">
+          <Search className="w-4 h-4 text-slate-500" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Chèche nan pòs ou yo..."
+            className="bg-transparent outline-none text-sm w-full placeholder-slate-500 text-slate-200"
+          />
+        </div>
+
+        {error && (
+          <div className="mt-3 text-xs font-semibold text-rose-400 bg-rose-500/5 border border-rose-500/10 p-2.5 rounded-xl text-center animate-fade-in">
+            ⚠️ {error}
+          </div>
+        )}
+      </header>
+
+      {/* LIST */}
+      <main className="mx-auto max-w-sm space-y-4">
+        {filteredPosts.length === 0 ? (
+          <div className="text-center text-slate-500 py-20 border border-dashed border-slate-800/60 rounded-2xl bg-navy-800/10 p-6 flex flex-col items-center animate-fade-in">
+            <Briefcase className="w-8 h-8 text-slate-700 mb-3" />
+            <h3 className="text-sm font-bold text-slate-400">Pa gen okenn pòs</h3>
+            <p className="text-[11px] text-slate-500 max-w-[220px] mt-1 leading-relaxed">
+              Pa gen anyen ki koresponn ak rechèch ou a, oswa ou poko kreye okenn piblikasyon.
+            </p>
+          </div>
         ) : (
-          sortedPosts.map((post) => {
-            const status = getStatusConfig(post.status);
-            const IconComponent = TYPE_ICONS[post.type] || Briefcase;
-            
+          filteredPosts.map((post) => {
+            const status = STATUS[post.status] || STATUS.OPEN;
+            const Icon = ICONS[post.type] || Briefcase;
+
             return (
-              <article 
-                key={post.id} 
-                className="relative overflow-hidden rounded-2xl border border-slate-800/60 bg-navy-800/20 p-5 transition-all hover:border-slate-700"
+              <article
+                key={post.id}
+                className="bg-navy-800/20 p-5 rounded-2xl border border-slate-800/60 hover:border-slate-700/60 transition-all duration-200"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-navy-800 bg-navy-900 text-gold-400 shadow-inner">
-                      <IconComponent className="h-4 w-4" strokeWidth={2.5} />
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex gap-3 min-w-0">
+                    <div className="w-10 h-10 bg-navy-900 border border-slate-800/80 shrink-0 rounded-xl flex items-center justify-center text-gold-500 shadow-inner">
+                      <Icon className="w-4 h-4" strokeWidth={2.5} />
                     </div>
+
                     <div className="min-w-0">
-                      <h3 className="truncate text-sm font-black tracking-wide text-white">
-                        {post.title}
-                      </h3>
-                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                        {post.category}
-                      </p>
+                      <h3 className="text-sm font-black text-white truncate tracking-wide">{post.title}</h3>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5">{post.category}</p>
                     </div>
                   </div>
 
-                  <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${status.classes}`}>
+                  <span
+                    className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border shrink-0 ${status.className}`}
+                  >
                     {status.label}
                   </span>
                 </div>
 
-                <div className="mt-4 flex flex-col gap-1.5 border-t border-slate-800/40 pt-3 text-xs font-semibold text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500" />
-                    <span className="truncate">{post.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500">
-                    <Calendar className="h-3.5 w-3.5 shrink-0" />
-                    <span>Pibliye: {post.createdAt}</span>
-                  </div>
+                <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-400 border-t border-slate-800/40 pt-3">
+                  <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span className="truncate text-slate-300">{post.location || "N/A"}</span>
                 </div>
 
-                <div className="mt-4 flex justify-end gap-2">
+                <div className="mt-4 flex gap-2 border-t border-slate-800/20 pt-3">
                   <button
                     onClick={() => requestEdit(post)}
-                    aria-label={`Modifye pòs ${post.title}`}
-                    className="flex items-center gap-1.5 active:scale-95 rounded-xl border border-transparent bg-blue-500/10 px-3.5 py-2 text-xs font-bold text-blue-400 transition-all hover:bg-blue-500/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+                    className="flex-1 bg-blue-500/10 hover:bg-blue-500/15 text-blue-400 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition"
                   >
-                    <Pencil className="h-3.5 w-3.5" />
-                    <span>Modifye</span>
+                    Modifye
                   </button>
+
                   <button
-                    onClick={() => requestDelete(post.id)}
-                    aria-label={`Efase pòs ${post.title}`}
-                    className="flex items-center gap-1.5 active:scale-95 rounded-xl border border-transparent bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-400 transition-all hover:bg-rose-500/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+                    onClick={() => setPendingDelete(post.id)}
+                    className="flex-1 bg-rose-500/10 hover:bg-rose-500/15 text-rose-400 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    <span>Efase</span>
+                    Efase
                   </button>
                 </div>
               </article>
@@ -185,38 +274,40 @@ export default function MyPosts() {
         )}
       </main>
 
+      {/* MODAL */}
       {pendingDelete && (
         <div
-          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-6 backdrop-blur-sm"
-          onClick={cancelDelete}
-          role="dialog"
-          aria-modal="true"
+          onClick={() => !deleting && setPendingDelete(null)}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center px-6 z-50 backdrop-blur-sm animate-fade-in"
         >
           <div
-            className="w-full max-w-xs rounded-2xl border border-slate-800 bg-navy-900 p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
+            className="bg-navy-900 p-6 rounded-2xl w-full max-w-xs border border-slate-800 shadow-2xl"
           >
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-400 mb-4">
-              <AlertTriangle className="h-6 w-6" />
+              <AlertTriangle className="w-6 h-6" />
             </div>
-            
-            <h3 className="text-center text-base font-black tracking-wide text-white">Efase pòs sa a?</h3>
-            <p className="mt-2 text-center text-xs font-medium leading-relaxed text-slate-400">
-              Aksyon sa a se pèmanan. Ou p ap kapab rekipere pòs sa a ankò si ou efase li.
+
+            <h3 className="text-center font-black tracking-wide text-white">Efase pòs sa?</h3>
+            <p className="mt-2 text-center text-xs font-medium leading-relaxed text-slate-400 px-1">
+              Aksyon sa a se pèmanan. Ou p ap kapab rekipere pòs sa a ankò si ou konfime.
             </p>
-            
-            <div className="mt-6 flex gap-3">
+
+            <div className="flex gap-3 mt-6">
               <button
-                onClick={cancelDelete}
-                className="flex-1 active:scale-95 rounded-xl border border-slate-800 bg-navy-800/40 py-3 text-xs font-bold uppercase tracking-widest text-slate-300 transition-all hover:bg-navy-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+                disabled={deleting}
+                onClick={() => setPendingDelete(null)}
+                className="flex-1 bg-navy-800 border border-slate-800 text-slate-300 py-3 rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 transition disabled:opacity-50"
               >
                 Anile
               </button>
+
               <button
+                disabled={deleting}
                 onClick={confirmDelete}
-                className="flex-1 active:scale-95 rounded-xl bg-rose-500 py-3 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-rose-600 shadow-md shadow-rose-500/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
+                className="flex-1 bg-rose-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 transition disabled:opacity-50 shadow-md shadow-rose-500/10"
               >
-                Efase
+                {deleting ? "Efasman..." : "Efase"}
               </button>
             </div>
           </div>
