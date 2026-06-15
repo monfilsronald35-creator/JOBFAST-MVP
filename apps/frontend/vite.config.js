@@ -1,4 +1,4 @@
-import { defineConfig } from "vite"; // Korije 'Import' -> 'import' ak ti lèt
+import { defineConfig } from "vite"; 
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -37,6 +37,9 @@ export default defineConfig({
     emptyOutDir: true,
 
     rollupOptions: {
+      // 👑 KOREKSYON: Sa a ap fòse Rollup inyore bloka socket la pou Vercel ka pase san erè!
+      external: ["socket.io-client"],
+      
       output: {
         manualChunks: {
           vendor: [
