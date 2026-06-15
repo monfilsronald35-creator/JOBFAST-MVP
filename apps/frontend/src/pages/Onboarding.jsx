@@ -2,7 +2,7 @@ import React, { useState, memo } from "react"; // Korije 'Import' -> 'import'
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
 
-import onboardingWorkers from "../assets/images/onboarding-workers.png";
+import onboardingWorkers from "../assets/images/onboarding-1.png";
 
 function Onboarding() {
   const navigate = useNavigate();
