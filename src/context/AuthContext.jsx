@@ -7,12 +7,16 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import io from "socket.io-client";
+// 👑 KOREKSYON 1: Akolad sa yo ap debloke Rollup sou Vercel nèt!
+import { io } from "socket.io-client"; 
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "jobfast_user";
 
-const socket = io("http://localhost:5000", {
+// 👑 KOREKSYON 2: Dinamik URL - Si w sou Render l ap pran lyen an, si w lokal l ap pran localhost
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const socket = io(API_URL, {
   autoConnect: false,
   reconnection: true,
   reconnectionAttempts: 5,
@@ -156,7 +160,8 @@ export function AuthProvider({ children }) {
     if (!current?._id) return;
 
     try {
-      const res = await fetch("http://localhost:5000/api/stripe/bind", {
+      // 👑 KOREKSYON 3: API_URL ranplase localhost pou Stripe ka mache an liy
+      const res = await fetch(`${API_URL}/api/stripe/bind`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
