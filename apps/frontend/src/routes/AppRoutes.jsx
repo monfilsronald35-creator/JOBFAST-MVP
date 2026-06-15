@@ -10,13 +10,13 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx"; // 🔄 Ajoute .jsx si l se yon ffeil React Component/Context
 
 // ======================================================
 // 🧠 CORE UI
 // ======================================================
 import MainLayout from "../components/MainLayout.jsx";
-import Loader from "../components/Loader";
+import Loader from "../components/Loader.jsx"; // 🔄 Fòse .jsx isit la pou anpeche Vite bloke
 
 // ======================================================
 // 📱 PUBLIC PAGES
@@ -48,7 +48,6 @@ const AdminAI = lazy(() => import("../admin/AdminAI.jsx"));
    🧠 ROUTE GUARDS
 ====================================================== */
 
-// 🔐 AUTH GUARD (USER LOGGED IN)
 const AuthGate = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -58,7 +57,6 @@ const AuthGate = ({ children }) => {
   return <MainLayout>{children}</MainLayout>;
 };
 
-// 🚫 GUEST ONLY (LOGIN / REGISTER)
 const GuestGate = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -68,7 +66,6 @@ const GuestGate = ({ children }) => {
   return children;
 };
 
-// 👑 ADMIN ONLY
 const AdminGate = ({ children }) => {
   const { user, isAuthenticated, loading } = useAuth();
 
@@ -87,12 +84,8 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Suspense fallback={<Loader text="Loading application..." />}>
-
         <Routes>
-
-          {/* ======================================================
-              🌍 PUBLIC ROUTES
-          ====================================================== */}
+          {/* 🌍 PUBLIC ROUTES */}
           <Route path="/" element={<SplashScreen />} />
           <Route path="/onboarding" element={<Onboarding />} />
 
@@ -108,9 +101,7 @@ function AppRoutes() {
             </GuestGate>
           } />
 
-          {/* ======================================================
-              🔐 USER ROUTES (PROTECTED)
-          ====================================================== */}
+          {/* 🔐 USER ROUTES (PROTECTED) */}
           <Route path="/dashboard" element={
             <AuthGate>
               <Dashboard />
@@ -141,9 +132,7 @@ function AppRoutes() {
             </AuthGate>
           } />
 
-          {/* ======================================================
-              👑 ADMIN ROUTES (ENTERPRISE LEVEL)
-          ====================================================== */}
+          {/* 👑 ADMIN ROUTES */}
           <Route path="/admin" element={
             <AdminGate>
               <AdminDashboard />
@@ -174,13 +163,9 @@ function AppRoutes() {
             </AdminGate>
           } />
 
-          {/* ======================================================
-              ❌ FALLBACK ROUTE
-          ====================================================== */}
+          {/* ❌ FALLBACK ROUTE */}
           <Route path="*" element={<Navigate to="/" replace />} />
-
         </Routes>
-
       </Suspense>
     </BrowserRouter>
   );
