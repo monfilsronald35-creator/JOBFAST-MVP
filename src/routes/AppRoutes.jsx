@@ -10,13 +10,13 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import { useAuth } from "../context/AuthContext.jsx"; // 🔄 Ajoute .jsx si l se yon ffeil React Component/Context
+import { useAuth } from "../context/AuthContext.jsx";
 
 // ======================================================
 // 🧠 CORE UI
 // ======================================================
 import MainLayout from "../components/MainLayout.jsx";
-import Loader from "../components/Loader.jsx"; // 🔄 Fòse .jsx isit la pou anpeche Vite bloke
+import Loader from "../components/Loader.jsx";
 
 // ======================================================
 // 📱 PUBLIC PAGES
@@ -36,16 +36,30 @@ import ProfileScreen from "../pages/ProfileScreen.jsx";
 import SearchScreen from "../pages/SearchScreen.jsx";
 
 // ======================================================
-// 🔐 ADMIN (LAZY LOADED)
+// 👑 ADMIN PAGES (LAZY LOADED)
 // ======================================================
-const AdminDashboard = lazy(() => import("../admin/AdminDashboard.jsx"));
-const AdminUsers = lazy(() => import("../admin/AdminUsers.jsx"));
-const AdminAnalytics = lazy(() => import("../admin/AdminAnalytics.jsx"));
-const AdminLogs = lazy(() => import("../admin/AdminLogs.jsx"));
-const AdminAI = lazy(() => import("../admin/AdminAI.jsx"));
+const AdminDashboard = lazy(() =>
+  import("../pages/admin/AdminDashboard.jsx")
+);
+
+const AdminUsers = lazy(() =>
+  import("../pages/admin/AdminUsers.jsx")
+);
+
+const AdminJobs = lazy(() =>
+  import("../pages/admin/AdminJobs.jsx")
+);
+
+const AdminSupport = lazy(() =>
+  import("../pages/admin/AdminSupport.jsx")
+);
+
+const AdminSettings = lazy(() =>
+  import("../pages/admin/AdminSettings.jsx")
+);
 
 /* ======================================================
-   🧠 ROUTE GUARDS
+   🔐 ROUTE GUARDS
 ====================================================== */
 
 const AuthGate = ({ children }) => {
@@ -71,7 +85,8 @@ const AdminGate = ({ children }) => {
 
   if (loading) return <Loader text="Loading admin panel..." />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role !== "admin") return <Navigate to="/dashboard" replace />;
+  if (user?.role !== "admin")
+    return <Navigate to="/dashboard" replace />;
 
   return <MainLayout>{children}</MainLayout>;
 };
@@ -85,86 +100,127 @@ function AppRoutes() {
     <BrowserRouter>
       <Suspense fallback={<Loader text="Loading application..." />}>
         <Routes>
+
           {/* 🌍 PUBLIC ROUTES */}
           <Route path="/" element={<SplashScreen />} />
           <Route path="/onboarding" element={<Onboarding />} />
 
-          <Route path="/register" element={
-            <GuestGate>
-              <RegisterScreen />
-            </GuestGate>
-          } />
+          <Route
+            path="/register"
+            element={
+              <GuestGate>
+                <RegisterScreen />
+              </GuestGate>
+            }
+          />
 
-          <Route path="/login" element={
-            <GuestGate>
-              <LoginScreen />
-            </GuestGate>
-          } />
+          <Route
+            path="/login"
+            element={
+              <GuestGate>
+                <LoginScreen />
+              </GuestGate>
+            }
+          />
 
-          {/* 🔐 USER ROUTES (PROTECTED) */}
-          <Route path="/dashboard" element={
-            <AuthGate>
-              <Dashboard />
-            </AuthGate>
-          } />
+          {/* 🔐 USER ROUTES */}
+          <Route
+            path="/dashboard"
+            element={
+              <AuthGate>
+                <Dashboard />
+              </AuthGate>
+            }
+          />
 
-          <Route path="/post-job" element={
-            <AuthGate>
-              <PostJobScreen />
-            </AuthGate>
-          } />
+          <Route
+            path="/post-job"
+            element={
+              <AuthGate>
+                <PostJobScreen />
+              </AuthGate>
+            }
+          />
 
-          <Route path="/status" element={
-            <AuthGate>
-              <AvailabilityStatus />
-            </AuthGate>
-          } />
+          <Route
+            path="/status"
+            element={
+              <AuthGate>
+                <AvailabilityStatus />
+              </AuthGate>
+            }
+          />
 
-          <Route path="/profile" element={
-            <AuthGate>
-              <ProfileScreen />
-            </AuthGate>
-          } />
+          <Route
+            path="/profile"
+            element={
+              <AuthGate>
+                <ProfileScreen />
+              </AuthGate>
+            }
+          />
 
-          <Route path="/search" element={
-            <AuthGate>
-              <SearchScreen />
-            </AuthGate>
-          } />
+          <Route
+            path="/search"
+            element={
+              <AuthGate>
+                <SearchScreen />
+              </AuthGate>
+            }
+          />
 
           {/* 👑 ADMIN ROUTES */}
-          <Route path="/admin" element={
-            <AdminGate>
-              <AdminDashboard />
-            </AdminGate>
-          } />
+          <Route
+            path="/admin"
+            element={
+              <AdminGate>
+                <AdminDashboard />
+              </AdminGate>
+            }
+          />
 
-          <Route path="/admin/users" element={
-            <AdminGate>
-              <AdminUsers />
-            </AdminGate>
-          } />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminGate>
+                <AdminUsers />
+              </AdminGate>
+            }
+          />
 
-          <Route path="/admin/analytics" element={
-            <AdminGate>
-              <AdminAnalytics />
-            </AdminGate>
-          } />
+          <Route
+            path="/admin/jobs"
+            element={
+              <AdminGate>
+                <AdminJobs />
+              </AdminGate>
+            }
+          />
 
-          <Route path="/admin/logs" element={
-            <AdminGate>
-              <AdminLogs />
-            </AdminGate>
-          } />
+          <Route
+            path="/admin/support"
+            element={
+              <AdminGate>
+                <AdminSupport />
+              </AdminGate>
+            }
+          />
 
-          <Route path="/admin/ai" element={
-            <AdminGate>
-              <AdminAI />
-            </AdminGate>
-          } />
+          <Route
+            path="/admin/settings"
+            element={
+              <AdminGate>
+                <AdminSettings />
+              </AdminGate>
+            }
+          />
 
-          {/* ❌ FALLBACK ROUTE */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* ❌ FALLBACK */}
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+
         </Routes>
       </Suspense>
     </BrowserRouter>
