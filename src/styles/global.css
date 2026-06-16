@@ -1,13 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* =========================================================================
-   🌍 JOBFAST GLOBAL ENTERPRISE SYSTEM — MASTER CORE CSS
-   🚀 FULL FLOW MVP VISUAL ALIGNMENT (PRODUCTION READY v3.7 PATCHED)
+🌍 JOBFAST GLOBAL ENTERPRISE SYSTEM — MASTER CORE CSS
+🚀 FULL FLOW MVP VISUAL ALIGNMENT (PRODUCTION READY v3.7 PATCHED)
 ========================================================================= */
 
 /* =========================================================================
-   🔥 BRAND PALETTE MATRIX & VARIABLES
+🔥 BRAND PALETTE MATRIX & VARIABLES
 ========================================================================= */
 :root {
-  --color-bg: #020617;
+  --color-bg: #050B18;
   --color-surface: #0b1329;
   --color-surface-soft: #111c44;
   --color-border: rgba(255, 255, 255, 0.06);
@@ -25,14 +29,12 @@
   --color-status-working: #3b82f6;
   --color-status-unavailable: #ef4444;
 
-  /* Typography scale */
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
   --text-lg: 1.125rem;
   --text-xl: 1.25rem;
 
-  /* Spacing system */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -49,12 +51,23 @@
 }
 
 /* =========================================================================
-   🌍 RESET + ACCESSIBILITY
+RESET + ACCESSIBILITY
 ========================================================================= */
-*, *::before, *::after {
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Gid solid pou tout koki a nèt */
+html,
+body,
+#root {
+  min-height: 100vh;
+  width: 100%;
 }
 
 html {
@@ -63,39 +76,29 @@ html {
 }
 
 body {
-  min-height: 100vh;
   background: var(--color-bg);
   color: var(--color-text);
   font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  
+  /* Koreksyon final: Netwaye tout maj fose navigatè yo */
+  margin: 0;
+
+  /* Kontwòl Defile solid pou ekran mobil ak entènèt */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-/* Focus accessibility (IMPORTANT) */
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* =========================================================================
-   📦 APP LAYOUT
-========================================================================= */
+/* Koreksyon final: Entegrasyon Flexbox pou sipòte React Router ak Layout yo parfe */
 #root {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 /* =========================================================================
-   🎨 CARDS
+JOBFAST COMPONENTS
 ========================================================================= */
+
 .jf-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -109,13 +112,25 @@ body {
   border-color: rgba(245, 158, 11, 0.25);
 }
 
-/* =========================================================================
-   🟡 BUTTON FIXED
-========================================================================= */
+.jf-input {
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-button);
+  padding: 14px 16px;
+  width: 100%;
+  font-size: var(--text-sm);
+}
+
+.jf-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.08);
+}
+
 .btn-primary {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
-  font-weight: 900; /* FIXED (font-[900] invalid CSS) */
+  font-weight: 900;
   font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.075em;
@@ -134,56 +149,6 @@ body {
   transform: scale(0.98);
 }
 
-/* =========================================================================
-   ⚙️ INPUTS
-========================================================================= */
-.jf-input {
-  background: rgba(2, 6, 23, 0.6);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  border-radius: var(--radius-button);
-  padding: 14px 16px;
-  width: 100%;
-  font-size: var(--text-sm);
-}
-
-.jf-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.08);
-}
-
-/* =========================================================================
-   🔘 STATUS SYSTEM (FIXED BUG)
-========================================================================= */
-.status-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--text-xs);
-  font-weight: 800;
-  text-transform: uppercase;
-  padding: 6px 12px;
-  border-radius: 999px;
-}
-
-/* dot */
-.status-indicator::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-/* FIXED BUG: rgba color typo corrected */
-.status-indicator.unavailable {
-  color: var(--color-status-unavailable);
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-}
-
-/* =========================================================================
-   ✨ GLASS EFFECT
-========================================================================= */
 .glass {
   background: rgba(2, 6, 23, 0.65);
   border: 1px solid var(--color-border);
@@ -191,24 +156,18 @@ body {
 }
 
 /* =========================================================================
-   📜 SCROLLBAR
+SCROLLBAR
 ========================================================================= */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-surface-soft) transparent;
-}
 
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-surface-soft);
   border-radius: 10px;
 }
 
-/* =========================================================================
-   📱 RESPONSIVE SYSTEM (MISSING PART ADDED)
-========================================================================= */
 @media (max-width: 768px) {
   .jf-card {
     padding: 16px;
@@ -217,4 +176,21 @@ body {
   .btn-primary {
     width: 100%;
   }
+}
+
+/* =========================================================================
+GLOBAL HTML ELEMENT RESETS
+========================================================================= */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
