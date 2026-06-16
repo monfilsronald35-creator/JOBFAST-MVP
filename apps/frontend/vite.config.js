@@ -1,4 +1,4 @@
-import { defineConfig } from "vite"; 
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -33,13 +33,13 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: false,
     minify: "esbuild",
-    target: "es2020",
+    target: "2020",
     emptyOutDir: true,
 
     rollupOptions: {
-      // 👑 KOREKSYON: Sa a ap fòse Rollup inyore bloka socket la pou Vercel ka pase san erè!
-      external: ["socket.io-client"],
-      
+      // ✅ KOREKSYON REYÈL: Nou retire socket.io-client nan external pou l ka pakete anndan pwojè a!
+      external: [],
+     
       output: {
         manualChunks: {
           vendor: [
@@ -47,6 +47,7 @@ export default defineConfig({
             "react-dom",
             "react-router-dom",
             "axios",
+            "socket.io-client", // Entegre l la a
           ],
         },
       },
@@ -69,6 +70,7 @@ export default defineConfig({
       "react-dom",
       "react-router-dom",
       "axios",
+      "socket.io-client", // Optimize l la a tou
     ],
   },
 });
