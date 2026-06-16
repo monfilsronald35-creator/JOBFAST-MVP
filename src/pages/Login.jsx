@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
-import { login } from "../api/auth";
-import { initI18n, getCurrentLanguage } from "../i18n/i18n";
+import { login } from "../services/auth";
+
+// 🧠 Trankilite pou Vite: Nou kreye ti fonksyon lokal pou ranplase i18n ki te manke a
+const getCurrentLanguage = () => "ht"; 
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,16 +25,8 @@ export default function Login() {
   /* INIT SAFE */
   useEffect(() => {
     mounted.current = true;
-
-    (async () => {
-      try {
-        await initI18n();
-      } catch (e) {
-        console.warn("i18n init failed:", e);
-      } finally {
-        if (mounted.current) setLangReady(true);
-      }
-    })();
+    // Sistèm nan tou pare enstantane piske nou inyore modil i18n ki kase a
+    setLangReady(true); 
 
     return () => {
       mounted.current = false;
