@@ -3,8 +3,9 @@
 import React, { memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
-// Enpòte logo a dirèkteman depi nan assets ou yo
-import logoJobfast from "../assets/logo.png"; 
+
+// Korije chemen an pou l pran imaj ofisyèl la nan bon katab la
+import splashImg from "../assets/images/splash.png"; 
 
 function SplashScreen() {
   const navigate = useNavigate();
@@ -22,18 +23,18 @@ function SplashScreen() {
       <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-yellow-500/10 blur-[100px] z-0" />
       <div className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[100px] z-0" />
 
-      {/* Top Spacer pou estrikti Layout la */}
+      {/* Top Spacer pou kenbe estrikti a balanse */}
       <div className="h-4 z-10" />
 
       {/* Sant Ekran an: Logo + Tit + Slogan */}
       <section className="relative z-10 flex flex-col items-center text-center max-w-sm w-full my-auto">
-        {/* Kontenè Logo a ak gwosè fise nèt */}
-        <div className="mb-6 flex items-center justify-center w-28 h-28 filter drop-shadow-[0_10px_20px_rgba(234,179,8,0.2)]">
+        {/* Kontenè Imaj la - fise solid pou l responsive san l pa janm deformation */}
+        <div className="mb-6 flex items-center justify-center w-36 h-36 filter drop-shadow-[0_10px_25px_rgba(234,179,8,0.25)]">
           <img 
-            src={logoJobfast} 
-            alt="JOBFAST Logo" 
+            src={splashImg} 
+            alt="JOBFAST Splash" 
             className="w-full h-full object-contain"
-            style={{ width: '112px', height: '112px' }}
+            style={{ width: '144px', height: '144px' }}
           />
         </div>
 
@@ -50,7 +51,7 @@ function SplashScreen() {
         </p>
       </section>
 
-      {/* Pati Anba: Bouton aksyon yo */}
+      {/* Pati Anba: Bouton yo chita pwòp san deplase */}
       <section className="relative z-10 w-full max-w-xs flex flex-col gap-3.5 mt-auto">
         <Button
           variant="primary"
