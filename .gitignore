@@ -4,7 +4,6 @@ modules/
 prisma/
 wallet/
 global/
-admin/
 firebase/
 microservices/
 docker/
