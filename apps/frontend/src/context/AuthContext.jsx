@@ -8,7 +8,7 @@ import React, {
   useCallback,
 } from "react";
 // 👑 KOREKSYON 1: Akolad sa yo ap debloke Rollup sou Vercel nèt!
-import { io } from "socket.io-client"; 
+import { io } from "socket.io-client";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "jobfast_user";
@@ -228,3 +228,4 @@ export function useAuth() {
 }
 
 export default AuthContext;
+
