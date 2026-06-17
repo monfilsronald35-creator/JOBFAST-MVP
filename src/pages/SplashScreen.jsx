@@ -1,10 +1,9 @@
 // src/pages/SplashScreen.jsx
-
 import React, { memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "../components/Button.jsx";
 
-import logo from "../assets/icons/logo.svg";
+// Enpòtasyon ofisyèl depi nan katab images la
+import splashImg from "../assets/images/splash.png"; 
 
 function SplashScreen() {
   const navigate = useNavigate();
@@ -14,83 +13,69 @@ function SplashScreen() {
   }, []);
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#050B18] text-white font-sans">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F]" />
+    <main className="relative min-h-screen w-full bg-[#050B18] text-white overflow-hidden flex flex-col justify-between items-center px-6 py-10 select-none">
+      
+      {/* BACKGROUND EFFECTS */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] z-0" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-yellow-500/10 blur-[100px] z-0" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[100px] z-0" />
 
-      {/* Glow Effects */}
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[180px]" />
+      {/* TOP SPACER */}
+      <div className="h-4 z-10" />
 
-      <div className="pointer-events-none absolute bottom-[-120px] left-1/2 h-[350px] w-[350px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[140px]" />
+      {/* CENTER CONTENT: LOGO + TIT + SLOGAN */}
+      <section className="relative z-10 flex flex-col items-center text-center max-w-md w-full my-auto">
+        
+        {/* LOGO - Gwosè MVP domine ekran an (w-56 / w-64) ak bèl lonbraj */}
+        <div className="mb-6 flex items-center justify-center">
+          <img
+            src={splashImg}
+            alt="JOBFAST Logo"
+            className="w-56 h-56 md:w-64 md:h-64 object-contain filter drop-shadow-[0_15px_35px_rgba(234,179,8,0.35)]"
+          />
+        </div>
 
-      {/* Decorative Stars */}
-      <div className="pointer-events-none absolute inset-0 opacity-20">
-        <div className="absolute left-10 top-20 h-1 w-1 rounded-full bg-white" />
-        <div className="absolute right-20 top-40 h-1 w-1 rounded-full bg-yellow-400" />
-        <div className="absolute left-24 top-72 h-1 w-1 rounded-full bg-white" />
-        <div className="absolute right-12 top-1/3 h-1 w-1 rounded-full bg-white" />
-      </div>
+        {/* TITLE - Tèks jeyan ak bèl enpak */}
+        <h1 className="text-6xl md:text-7xl font-black tracking-tight">
+          <span className="text-yellow-400">JOB</span>
+          <span className="text-white">FAST</span>
+        </h1>
 
-      {/* Content */}
-      <div className="relative z-10 flex min-h-dvh flex-col justify-between px-6 py-10">
-        {/* Top Spacer */}
-        <div />
+        {/* SLOGAN - Espasmt-5 ki pi aere jan w mande l la */}
+        <p className="mt-5 max-w-[280px] text-lg md:text-xl font-medium leading-relaxed text-slate-300">
+          Travay. Sèvis. Biznis. Kote w ye.
+          <br />
+          Tout nan yon sèl app.
+        </p>
+      </section>
 
-        {/* Center Section */}
-        <section className="flex flex-col items-center text-center">
-          {/* Logo */}
-          <div className="mb-5 flex select-none items-center justify-center">
-            <img
-              src={logo}
-              alt="JOBFAST Logo"
-              loading="eager"
-              draggable={false}
-              className="h-28 w-28 object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
-            />
-          </div>
+      {/* BOTTOM ACTIONS */}
+      <section className="relative z-10 w-full max-w-sm flex flex-col gap-4 mt-auto">
+        
+        {/* BOUTON NATIF HTML - Ranplase Button.jsx pou evite chanjman stil */}
+        <button
+          onClick={() => navigate("/onboarding")}
+          className="w-full py-4 rounded-2xl bg-yellow-400 text-[#041126] text-lg font-extrabold shadow-xl hover:bg-yellow-500 active:scale-98 transition"
+        >
+          KÒMANSE
+        </button>
 
-          {/* Title */}
-          <h1 className="mr-[-0.2em] select-none font-sora text-4xl sm:text-5xl font-black tracking-[0.2em] text-yellow-400">
-            JOBFAST
-          </h1>
+        <button
+          type="button"
+          onClick={() => navigate("/login")}
+          className="w-full py-2 text-lg font-semibold text-white transition duration-150 hover:text-yellow-400"
+        >
+          Login
+        </button>
 
-          {/* Slogan */}
-          <p className="mt-5 max-w-[260px] px-2 font-poppins text-sm font-medium leading-relaxed text-slate-300">
-            Travay. Sèvis. Biznis. Kote w ye.
-            <br />
-            Tout nan yon sèl app.
-          </p>
-        </section>
-
-        {/* Bottom Actions */}
-        <section className="z-20 mx-auto flex w-full max-w-sm flex-col gap-4">
-          <Button
-            variant="primary"
-            className="w-full py-4 font-sora font-bold tracking-wide text-[#050B18]"
-            onClick={() => navigate("/onboarding")}
-          >
-            KÒMANSE
-          </Button>
-
-          <button
-            type="button"
-            aria-label="Ale sou paj login"
-            onClick={() => navigate("/login")}
-            className="w-full py-2 font-poppins text-base font-semibold text-white transition-all duration-200 hover:text-yellow-400"
-          >
-            Login
-          </button>
-
-          <button
-            type="button"
-            aria-label="Kreye yon nouvo kont"
-            onClick={() => navigate("/register")}
-            className="w-full py-1 font-poppins text-sm font-medium text-slate-400 transition-all duration-200 hover:text-white"
-          >
-            Kreye Kont
-          </button>
-        </section>
-      </div>
+        <button
+          type="button"
+          onClick={() => navigate("/register")}
+          className="w-full py-1 text-base font-medium text-slate-400 transition duration-150 hover:text-white"
+        >
+          Kreye Kont
+        </button>
+      </section>
     </main>
   );
 }

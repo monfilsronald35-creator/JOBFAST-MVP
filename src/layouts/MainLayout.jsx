@@ -3,25 +3,38 @@ import PropTypes from "prop-types";
 import { MapPin, Navigation, Cpu } from "lucide-react";
 
 import Navbar from "./Navbar";
-import BottomNavigation from "./BottomNavigation";
+import BottomNav from "./BottomNav";
 
 const CURRENT_YEAR = new Date().getFullYear();
+
+/* =====================================================
+   FOOTER
+===================================================== */
 
 const Footer = memo(function Footer() {
   return (
     <footer
+      role="contentinfo"
       aria-label="Footer information"
       className="
-        mt-auto
         w-full
         select-none
         border-t
-        border-slate-800/40
-        bg-navy-950/40
+        border-white/5
+        bg-[#0b1329]/40
         backdrop-blur-sm
       "
     >
-      <div className="mx-auto max-w-5xl px-6 py-6 text-center">
+      <div
+        className="
+          mx-auto
+          max-w-5xl
+          px-6
+          py-6
+          pb-[max(env(safe-area-inset-bottom),24px)]
+          text-center
+        "
+      >
         <div
           className="
             flex
@@ -39,34 +52,47 @@ const Footer = memo(function Footer() {
         >
           <div className="flex items-center gap-1">
             <MapPin
-              className="h-3 w-3 text-gold-400/80"
+              className="h-3 w-3 text-amber-500/80"
               strokeWidth={2.5}
             />
             <span>GPS Network</span>
           </div>
 
-          <span className="hidden sm:inline text-slate-700">•</span>
+          <span className="hidden sm:inline text-slate-700">
+            •
+          </span>
 
           <div className="flex items-center gap-1">
             <Navigation
-              className="h-3 w-3 text-gold-400/80"
+              className="h-3 w-3 text-amber-500/80"
               strokeWidth={2.5}
             />
             <span>Toupre w</span>
           </div>
 
-          <span className="hidden sm:inline text-slate-700">•</span>
+          <span className="hidden sm:inline text-slate-700">
+            •
+          </span>
 
           <div className="flex items-center gap-1">
             <Cpu
-              className="h-3 w-3 text-gold-400/80"
+              className="h-3 w-3 text-amber-500/80"
               strokeWidth={2.5}
             />
             <span>Sèvis sou demand</span>
           </div>
         </div>
 
-        <p className="mt-3 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+        <p
+          className="
+            mt-3
+            text-[10px]
+            font-bold
+            uppercase
+            tracking-wider
+            text-slate-600
+          "
+        >
           © {CURRENT_YEAR} JOBFAST.RD — Tout dwa rezève.
         </p>
       </div>
@@ -76,6 +102,10 @@ const Footer = memo(function Footer() {
 
 Footer.displayName = "Footer";
 
+/* =====================================================
+   MAIN LAYOUT
+===================================================== */
+
 function MainLayout({ children }) {
   return (
     <div
@@ -83,27 +113,27 @@ function MainLayout({ children }) {
         flex
         min-h-[100dvh]
         flex-col
-        overflow-x-hidden
-        bg-gradient-to-b
-        from-navy-950
-        to-navy-900
+        bg-[#050B18]
         font-sans
-        text-white
+        text-slate-100
         antialiased
       "
     >
+      {/* TOP NAVBAR */}
       <Navbar />
 
+      {/* PAGE CONTENT */}
       <main
         role="main"
+        aria-label="Page content"
         className="
-          w-full
           flex-1
+          w-full
           px-4
           py-6
-          pb-28
+          pb-[calc(64px+max(env(safe-area-inset-bottom),16px))]
           md:px-6
-          md:pb-12
+          lg:pb-10
         "
       >
         <div
@@ -112,7 +142,6 @@ function MainLayout({ children }) {
             flex
             w-full
             max-w-5xl
-            flex-1
             flex-col
           "
         >
@@ -120,10 +149,14 @@ function MainLayout({ children }) {
         </div>
       </main>
 
-      <Footer />
+      {/* DESKTOP FOOTER */}
+      <div className="hidden lg:block">
+        <Footer />
+      </div>
 
+      {/* MOBILE BOTTOM NAV */}
       <div className="lg:hidden">
-        <BottomNavigation />
+        <BottomNav />
       </div>
     </div>
   );

@@ -1,11 +1,17 @@
+import tailwindcssForms from "@tailwindcss/forms";
+import tailwindcssTypography from "@tailwindcss/typography";
+import tailwindcssAspectRatio from "@tailwindcss/aspect-ratio";
+
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
 
   theme: {
     extend: {
-
-      /* ================= COLORS SYSTEM ================= */
+      /* ================= COLORS SYSTEM ================= */ 
       colors: {
         navy: {
           950: "#050B18",
@@ -41,30 +47,43 @@ module.exports = {
 
       keyframes: {
         fadeIn: {
-          "0%": { opacity: 0 },
-          "100%": { opacity: 1 },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
+
         slideUp: {
-          "0%": { transform: "translateY(12px)", opacity: 0 },
-          "100%": { transform: "translateY(0)", opacity: 1 },
+          "0%": {
+            transform: "translateY(12px)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "translateY(0)",
+            opacity: "1",
+          },
         },
+
         pulseSoft: {
-          "0%, 100%": { opacity: 1 },
-          "50%": { opacity: 0.6 },
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.6" },
         },
+
         bounceSoft: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-4px)" },
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-4px)",
+          },
         },
       },
 
       /* ================= SHADOW SYSTEM ================= */
       boxShadow: {
         soft: "0 10px 30px rgba(0,0,0,0.3)",
-        glow: "0 0 20px rgba(245, 197, 66, 0.25)",
+        glow: "0 0 20px rgba(245,197,66,0.25)",
         card: "0 8px 25px rgba(0,0,0,0.25)",
 
-        stripe: "0 12px 35px rgba(50, 50, 93, 0.15)",
+        stripe: "0 12px 35px rgba(50,50,93,0.15)",
         chat: "0 4px 12px rgba(0,0,0,0.2)",
         map: "0 6px 20px rgba(0,0,0,0.25)",
       },
@@ -92,7 +111,7 @@ module.exports = {
         xl: "1280px",
       },
 
-      /* ================= Z-INDEX SYSTEM ================= */
+      /* ================= Z-INDEX ================= */
       zIndex: {
         60: "60",
         70: "70",
@@ -102,7 +121,6 @@ module.exports = {
       },
 
       /* ================= UI TOKENS ================= */
-
       dropShadow: {
         stripe: "0 10px 20px rgba(0,0,0,0.12)",
       },
@@ -115,8 +133,8 @@ module.exports = {
   },
 
   plugins: [
-    require("@tailwindcss/forms"),
-    require("@tailwindcss/typography"),
-    require("@tailwindcss/aspect-ratio"),
+    tailwindcssForms,
+    tailwindcssTypography,
+    tailwindcssAspectRatio,
   ],
 };

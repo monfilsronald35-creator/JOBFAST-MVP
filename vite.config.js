@@ -1,4 +1,4 @@
-import { defineConfig } from "vite"; 
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,7 +12,15 @@ export default defineConfig({
   plugins: [react()],
 
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    __APP_VERSION__: JSON.stringify(
+      process.env.npm_package_version || "1.0.0"
+    ),
+  },
+
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
 
   server: {
@@ -29,17 +37,24 @@ export default defineConfig({
     },
   },
 
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "axios",
+      "socket.io-client",
+    ],
+  },
+
   build: {
     outDir: "dist",
-    sourcemap: false,
-    minify: "esbuild",
-    target: "es2020",
     emptyOutDir: true,
+    sourcemap: false,
+    target: "es2020",
+    minify: "esbuild",
 
     rollupOptions: {
-      // 👑 KOREKSYON: Sa a ap fòse Rollup inyore bloka socket la pou Vercel ka pase san erè!
-      external: ["socket.io-client"],
-      
       output: {
         manualChunks: {
           vendor: [
@@ -47,6 +62,7 @@ export default defineConfig({
             "react-dom",
             "react-router-dom",
             "axios",
+            "socket.io-client",
           ],
         },
       },
@@ -55,20 +71,5 @@ export default defineConfig({
 
   esbuild: {
     drop: ["console", "debugger"],
-  },
-
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-
-  optimizeDeps: {
-    include: [
-      "react",
-      "react-dom",
-      "react-router-dom",
-      "axios",
-    ],
   },
 });
