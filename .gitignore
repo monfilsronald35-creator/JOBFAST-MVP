@@ -27,3 +27,5 @@ realtime
 security 
 shared-ui 
 shared
+.vercel
+.env*
