@@ -1,104 +1,116 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* =========================================================================
-🌍 JOBFAST GLOBAL ENTERPRISE SYSTEM — MASTER CORE CSS
-🚀 FULL FLOW MVP VISUAL ALIGNMENT (PRODUCTION READY v3.7 PATCHED)
-========================================================================= */
+@layer base {
+  @font-face {
+    font-family: "Inter";
+    /* Ranje chemen an pou Vercel ka jwenn font lan san mank */
+    src: url("../assets/fonts/Inter-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
 
-/* =========================================================================
-🔥 BRAND PALETTE MATRIX & VARIABLES
-========================================================================= */
-:root {
-  --color-bg: #050B18;
-  --color-surface: #0b1329;
-  --color-surface-soft: #111c44;
-  --color-border: rgba(255, 255, 255, 0.06);
+  :root {
+    --color-bg: #020617; /* Sync ak nwa pwofon MainLayout la */
+    --color-surface: #0f172a; /* Sync ak gri/ble fonse a */
+    --color-surface-soft: #1e293b;
+    --color-border: rgba(255, 255, 255, 0.08);
 
-  --color-text: #f8fafc;
-  --color-text-soft: #cbd5e1;
-  --color-text-muted: #64748b;
+    --color-text: #f8fafc;
+    --color-text-soft: #cbd5e1;
+    --color-text-muted: #64748b;
 
-  --color-primary: #f59e0b;
-  --color-primary-hover: #d97706;
-  --color-primary-contrast: #020617;
+    --color-primary: #f59e0b; /* Bèl jòn/amber an */
+    --color-primary-hover: #d97706;
+    --color-primary-contrast: #020617;
 
-  --color-status-available: #10b981;
-  --color-status-busy: #f59e0b;
-  --color-status-working: #3b82f6;
-  --color-status-unavailable: #ef4444;
+    --color-status-available: #10b981;
+    --color-status-busy: #f59e0b;
+    --color-status-working: #3b82f6;
+    --color-status-unavailable: #ef4444;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-md: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
 
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
 
-  --radius-screen: 32px;
-  --radius-card: 16px;
-  --radius-button: 12px;
+    --radius-screen: 32px;
+    --radius-card: 16px;
+    --radius-button: 12px;
 
-  --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 📐 GARANTI ABSOLI POU LOGO, IMAJ AK SVG YO PA DEFOÒME */
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Anpeche yo kraze oswa plat */
+    flex-shrink: 0;      /* Bloke yo pou Flexbox pa fòse yo vin piti */
+  }
+
+  button {
+    font-family: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
-/* =========================================================================
-RESET + ACCESSIBILITY
-========================================================================= */
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* Gid solid pou tout koki a nèt */
-html,
-body,
-#root {
-  min-height: 100vh;
-  width: 100%;
-}
-
-html {
-  scroll-behavior: smooth;
-  color-scheme: dark;
-}
-
-body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: Inter, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  
-  /* Koreksyon final: Netwaye tout maj fose navigatè yo */
-  margin: 0;
-
-  /* Kontwòl Defile solid pou ekran mobil ak entènèt */
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-/* Koreksyon final: Entegrasyon Flexbox pou sipòte React Router ak Layout yo parfe */
-#root {
-  display: flex;
-  flex-direction: column;
-}
-
-/* =========================================================================
-JOBFAST COMPONENTS
-========================================================================= */
-
+/* KAD YO (CARDS) */
 .jf-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -112,6 +124,7 @@ JOBFAST COMPONENTS
   border-color: rgba(245, 158, 11, 0.25);
 }
 
+/* ANTRE YO (INPUTS) */
 .jf-input {
   background: rgba(2, 6, 23, 0.6);
   border: 1px solid var(--color-border);
@@ -127,6 +140,7 @@ JOBFAST COMPONENTS
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.08);
 }
 
+/* BOUTON YO */
 .btn-primary {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
@@ -155,10 +169,6 @@ JOBFAST COMPONENTS
   backdrop-filter: blur(20px);
 }
 
-/* =========================================================================
-SCROLLBAR
-========================================================================= */
-
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -176,21 +186,4 @@ SCROLLBAR
   .btn-primary {
     width: 100%;
   }
-}
-
-/* =========================================================================
-GLOBAL HTML ELEMENT RESETS
-========================================================================= */
-img {
-  max-width: 100%;
-  display: block;
-}
-
-button {
-  font-family: inherit;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
