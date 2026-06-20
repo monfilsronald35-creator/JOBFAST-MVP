@@ -1,0 +1,209 @@
+{
+  "app": {
+    "name": "JOBFAST",
+    "welcome": "Bienvenue sur JOBFAST",
+    "loading": "Chargement...",
+    "version": "Version {{version}}"
+  },
+
+  "common": {
+    "search": "Rechercher",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "next": "Suivant",
+    "back": "Retour",
+    "submit": "Envoyer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "view": "Voir",
+    "ok": "OK",
+    "yes": "Oui",
+    "no": "Non",
+    "retry": "Réessayer",
+    "loading": "Veuillez patienter...",
+    "all": "Tout"
+  },
+
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié",
+    "createAccount": "Créer un compte"
+  },
+
+  "user": {
+    "profile": {
+      "title": "Profil",
+      "edit": "Modifier le profil",
+      "bio": "Bio",
+      "location": "Localisation",
+      "availability": "Disponibilité",
+      "distance": "Distance",
+      "skills": "Compétences",
+      "services": "Services",
+      "business": "Entreprise"
+    },
+
+    "status": {
+      "available": "Disponible",
+      "busy": "Occupé",
+      "working": "En travail",
+      "offline": "Hors ligne"
+    }
+  },
+
+  "categories": {
+    "construction": {
+      "title": "Construction",
+      "roles": {
+        "boss": "Chef",
+        "worker": "Ouvrier",
+        "assistant": "Assistant",
+        "apprentice": "Apprenti",
+        "engineer": "Ingénieur",
+        "mason": "Maçon",
+        "carpenter": "Charpentier",
+        "electrician": "Électricien",
+        "painter": "Peintre",
+        "tiler": "Carreleur",
+        "welder": "Soudeur"
+      },
+      "actions": {
+        "findWorkers": "Trouver des ouvriers à proximité",
+        "findJobs": "Trouver des emplois en construction"
+      }
+    },
+
+    "services": {
+      "title": "Services à la demande",
+      "list": {
+        "chef": "Chef privé",
+        "plumber": "Plombier",
+        "doctor": "Médecin",
+        "nurse": "Infirmier",
+        "taxi": "Taxi",
+        "delivery": "Livraison",
+        "cleaning": "Nettoyage",
+        "videographer": "Vidéaste",
+        "designer": "Designer"
+      },
+      "actions": {
+        "request": "Demander un service",
+        "findNearby": "Trouver des services à proximité"
+      }
+    }
+  },
+
+  "business": {
+    "title": "Annuaire des entreprises",
+    "categories": {
+      "companies": "Entreprises",
+      "restaurants": "Restaurants",
+      "hospitals": "Hôpitaux",
+      "clinics": "Cliniques",
+      "hotels": "Hôtels",
+      "offices": "Bureaux",
+      "lawyers": "Avocats",
+      "mechanics": "Mécaniciens",
+      "tourGuides": "Guides touristiques",
+      "organizations": "Organisations"
+    }
+  },
+
+  "location": {
+    "title": "Localisation",
+    "current": "Position actuelle",
+
+    "gps": {
+      "enable": "Activer le GPS",
+      "accuracy": "Précision : {{accuracy}}m"
+    },
+
+    "distance": {
+      "sorting": "Tri par distance",
+      "nearby": "Résultats à proximité",
+      "within": "Dans un rayon de {{radius}} km",
+      "km": "{{distance}} km",
+      "m": "{{distance}} m",
+      "mi": "{{distance}} mi"
+    },
+
+    "map": {
+      "clusters": "Groupes sur la carte",
+      "view": "Voir sur la carte"
+    },
+
+    "fields": {
+      "city": "Ville",
+      "state": "Département",
+      "country": "Pays",
+      "coordinates": "Coordonnées"
+    },
+
+    "actions": {
+      "searchNearby": "Rechercher à proximité"
+    }
+  },
+
+  "notifications": {
+    "title": "Notifications",
+
+    "types": {
+      "job": "Alerte emploi",
+      "service": "Alerte service",
+      "business": "Alerte entreprise",
+      "match": "Nouveau match",
+      "nearby": "Travailleur à proximité"
+    },
+
+    "actions": {
+      "markAll": "Tout marquer comme lu",
+      "clearAll": "Tout effacer"
+    }
+  },
+
+  "jobs": {
+    "title": "Emplois",
+
+    "actions": {
+      "find": "Trouver des emplois",
+      "post": "Publier un emploi",
+      "apply": "Postuler",
+      "details": "Voir les détails"
+    },
+
+    "status": {
+      "available": "Emploi disponible",
+      "completed": "Terminé",
+      "active": "Actif"
+    },
+
+    "nearby": {
+      "workers": "Travailleurs à proximité"
+    }
+  },
+
+  "search": {
+    "placeholder": "Rechercher travailleurs, entreprises ou services...",
+    "results": "{{count}} résultats",
+    "noResults": "Aucun résultat",
+    "searching": "Recherche en cours..."
+  },
+
+  "errors": {
+    "general": "Une erreur est survenue. Veuillez réessayer.",
+    "network": "Erreur réseau",
+    "auth": "Non autorisé",
+    "notFound": "Introuvable"
+  },
+
+  "monitoring": {
+    "cacheSize": "Cache : {{size}}",
+    "cacheUsage": "Utilisation : {{usage}}%"
+  }
+}

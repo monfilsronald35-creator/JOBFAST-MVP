@@ -1,0 +1,197 @@
+{
+  "meta": {
+    "version": "2.0.0",
+    "domain": "global_marketplace",
+    "description": "Unified system for construction, services, business listings, geo matching and notifications",
+    "scale": "production",
+    "language": "multi",
+    "timezoneSupport": true
+  },
+
+  "businessCategories": [
+    { "id": "company", "label": "Company" },
+    { "id": "restaurant", "label": "Restaurant" },
+    { "id": "hospital", "label": "Hospital" },
+    { "id": "clinic", "label": "Clinic" },
+    { "id": "hotel", "label": "Hotel" },
+    { "id": "office", "label": "Office" },
+    { "id": "lawyer", "label": "Lawyer" },
+    { "id": "mechanic", "label": "Mechanic" },
+    { "id": "tour_guide", "label": "Tour Guide" },
+    { "id": "organization", "label": "Organization" }
+  ],
+
+  "serviceTypes": [
+    { "id": "chef", "label": "Chef" },
+    { "id": "plumber", "label": "Plumber" },
+    { "id": "doctor", "label": "Doctor" },
+    { "id": "nurse", "label": "Nurse" },
+    { "id": "taxi", "label": "Taxi Driver" },
+    { "id": "delivery", "label": "Delivery" },
+    { "id": "cleaning", "label": "Cleaning Service" },
+    { "id": "videographer", "label": "Videographer" },
+    { "id": "designer", "label": "Designer" },
+
+    
+    { "id": "electrician", "label": "Electrician" },
+    { "id": "mason", "label": "Mason" },
+    { "id": "driver", "label": "Driver" },
+    { "id": "mechanic", "label": "Mechanic" },
+    { "id": "security", "label": "Security Guard" },
+    { "id": "cleaner", "label": "Cleaner" }
+  ],
+
+  "construction": {
+    "enabled": true,
+
+    "roles": [
+      {
+        "id": "boss",
+        "label": "Boss / Contractor",
+        "canHire": true,
+        "permissions": ["hire", "fire", "assign_tasks", "post_jobs"]
+      },
+      {
+        "id": "site_manager",
+        "label": "Site Manager",
+        "permissions": ["manage_site", "assign_tasks"]
+      },
+      {
+        "id": "foreman",
+        "label": "Foreman",
+        "permissions": ["coordinate_workers", "report_progress"]
+      },
+      {
+        "id": "assistant",
+        "label": "Assistant",
+        "permissions": ["assist_tasks"]
+      },
+      {
+        "id": "worker",
+        "label": "Worker",
+        "permissions": ["execute_tasks"]
+      },
+      {
+        "id": "engineer",
+        "label": "Engineer",
+        "permissions": ["technical_review", "validation"]
+      },
+      {
+        "id": "architect",
+        "label": "Architect",
+        "permissions": ["design", "planning"]
+      },
+      {
+        "id": "electrician",
+        "label": "Electrician",
+        "permissions": ["electrical_work"]
+      },
+      {
+        "id": "plumber",
+        "label": "Plumber",
+        "permissions": ["plumbing_work"]
+      },
+      {
+        "id": "mason",
+        "label": "Mason",
+        "permissions": ["bricklaying", "concrete"]
+      }
+    ],
+
+    "availabilityStatus": [
+      {
+        "id": "available",
+        "label": "Available for Work",
+        "isDefault": true,
+        "visibleInSearch": true
+      },
+      {
+        "id": "busy",
+        "label": "Busy / Working",
+        "visibleInSearch": true
+      },
+      {
+        "id": "unavailable",
+        "label": "Not Available",
+        "visibleInSearch": false
+      }
+    ]
+  },
+
+  "locationEngine": {
+    "enabled": true,
+
+    "features": [
+      "gps",
+      "distance_sorting",
+      "map_clustering",
+      "city_state_country_normalization",
+      "geo_fencing",
+      "nearby_search"
+    ],
+
+    "precision": "high",
+    "maxRadiusKm": 50,
+    "defaultRadiusKm": 5
+  },
+
+  "notifications": {
+    "broadcastToAll": true,
+
+    "priorityLevels": [
+      "low",
+      "normal",
+      "high",
+      "urgent"
+    ],
+
+    "rules": [
+      "new_user_joined",
+      "new_job_posted",
+      "service_request_created",
+      "construction_hiring",
+      "user_became_available",
+      "nearby_worker_found"
+    ],
+
+    "deliveryModes": [
+      "push",
+      "in_app",
+      "sms"
+    ]
+  },
+
+  "searchSystem": {
+    "enabled": true,
+
+    "filters": [
+      "category",
+      "serviceType",
+      "constructionRole",
+      "availabilityStatus",
+      "distance"
+    ],
+
+    "sorting": [
+      "nearest",
+      "highest_rating",
+      "most_active",
+      "newest"
+    ]
+  },
+
+  "profileSystem": {
+    "fields": [
+      "name",
+      "photo",
+      "bio",
+      "category",
+      "serviceType",
+      "constructionRole",
+      "location",
+      "availabilityStatus",
+      "rating",
+      "verified"
+    ]
+  }
+}

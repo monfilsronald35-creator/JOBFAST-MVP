@@ -23,17 +23,3 @@ build/
 Thumbs.db
 *.log
 .vercel
-
-packages/
-modules/
-prisma/
-wallet/
-global/
-firebase/
-microservices/
-docker/
-infrastructure/
-scripts/
-tests/
-docs/
-package-lock.json

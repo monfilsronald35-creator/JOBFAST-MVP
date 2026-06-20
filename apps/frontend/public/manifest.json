@@ -1,0 +1,73 @@
+{
+  "id": "/",
+  "short_name": "JobFast",
+  "name": "JobFast Global Marketplace",
+  "description": "Platfòm GPS elit pou konstriksyon, sèvis sou demann, pwofesyonèl endepandan ak anyè biznis.",
+  "lang": "en-US",
+  "dir": "ltr",
+
+  "start_url": "/",
+  "scope": "/",
+
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+
+  "orientation": "portrait-primary",
+
+  "theme_color": "#020617",
+  "background_color": "#020617",
+
+  "categories": [
+    "business",
+    "productivity",
+    "utilities",
+    "maps",
+    "jobs"
+  ],
+
+  "prefer_related_applications": false,
+
+  "shortcuts": [
+    {
+      "name": "Find Workers",
+      "short_name": "Workers",
+      "url": "/workers",
+      "description": "Find nearby workers"
+    },
+    {
+      "name": "Businesses",
+      "short_name": "Business",
+      "url": "/businesses",
+      "description": "Find nearby businesses"
+    },
+    {
+      "name": "Services",
+      "short_name": "Services",
+      "url": "/services",
+      "description": "Browse services"
+    }
+  ],
+
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/src/assets/images/splash.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/src/assets/images/splash.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
