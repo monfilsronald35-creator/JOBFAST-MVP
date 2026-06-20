@@ -1,0 +1,44 @@
+{
+  "name": "jobfast-global-mvp",
+  "version": "1.0.0",
+  "description": "JOBFAST GLOBAL MVP API - ENTERPRISE PRODUCTION READY",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.22.2",
+    "helmet": "^8.2.0",
+    "mongoose": "^8.15.0",
+    "morgan": "^1.10.1",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "keywords": [
+    "jobfast",
+    "mvp",
+    "backend",
+    "express",
+    "api",
+    "services",
+    "construction",
+    "gps",
+    "jobs",
+    "mongodb",
+    "mongoose",
+    "winston"
+  ],
+  "author": "Monfils Ronald",
+  "license": "MIT"
+}

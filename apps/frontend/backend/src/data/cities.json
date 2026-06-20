@@ -1,0 +1,114 @@
+[
+  {
+    "city": "Punta Cana",
+    "state": "La Altagracia",
+    "country": "Dominican Republic",
+    "lat": 18.5601,
+    "lng": -68.3725
+  },
+  {
+    "city": "Bavaro",
+    "state": "La Altagracia",
+    "country": "Dominican Republic",
+    "lat": 18.629,
+    "lng": -68.4055
+  },
+  {
+    "city": "Higuey",
+    "state": "La Altagracia",
+    "country": "Dominican Republic",
+    "lat": 18.615,
+    "lng": -68.7079
+  },
+  {
+    "city": "Santo Domingo",
+    "state": "Distrito Nacional",
+    "country": "Dominican Republic",
+    "lat": 18.4861,
+    "lng": -69.9312
+  },
+  {
+    "city": "Santiago",
+    "state": "Santiago",
+    "country": "Dominican Republic",
+    "lat": 19.4517,
+    "lng": -70.697
+  },
+  {
+    "city": "La Romana",
+    "state": "La Romana",
+    "country": "Dominican Republic",
+    "lat": 18.4273,
+    "lng": -68.9728
+  },
+  {
+    "city": "Puerto Plata",
+    "state": "Puerto Plata",
+    "country": "Dominican Republic",
+    "lat": 19.7934,
+    "lng": -70.6884
+  },
+  {
+    "city": "Cap-Haitien",
+    "state": "Nord",
+    "country": "Haiti",
+    "lat": 19.7594,
+    "lng": -72.1982
+  },
+  {
+    "city": "Port-au-Prince",
+    "state": "Ouest",
+    "country": "Haiti",
+    "lat": 18.5944,
+    "lng": -72.3074
+  },
+  {
+    "city": "Gonaives",
+    "state": "Artibonite",
+    "country": "Haiti",
+    "lat": 19.4482,
+    "lng": -72.6893
+  },
+  {
+    "city": "Les Cayes",
+    "state": "Sud",
+    "country": "Haiti",
+    "lat": 18.1933,
+    "lng": -73.746
+  },
+  {
+    "city": "Jacmel",
+    "state": "Sud-Est",
+    "country": "Haiti",
+    "lat": 18.2343,
+    "lng": -72.5354
+  },
+  {
+    "city": "Miami",
+    "state": "Florida",
+    "country": "USA",
+    "lat": 25.7617,
+    "lng": -80.1918
+  },
+  {
+    "city": "New York",
+    "state": "New York",
+    "country": "USA",
+    "lat": 40.7128,
+    "lng": -74.006
+  },
+  {
+    "city": "Montreal",
+    "state": "Quebec",
+    "country": "Canada",
+    "lat": 45.5019,
+    "lng": -73.5674
+  },
+  {
+    "city": "Paris",
+    "state": "Ile-de-France",
+    "country": "France",
+    "lat": 48.8566,
+    "lng": 2.3522
+  }
+]

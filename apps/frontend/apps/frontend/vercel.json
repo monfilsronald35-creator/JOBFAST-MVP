@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "version": 2,
   "cleanUrls": true,
   "framework": "vite",
@@ -25,33 +24,3 @@
     }
   ]
 }
-=======
-
-  "version": 2,
-
-  "builds": [
-
-    {
-
-      "src": "server.js",
-
-      "use": "@vercel/node"
-
-    }
-
-  ],
-
-  "routes": [
-
-    {
-
-      "src": "/(.*)",
-
-      "dest": "server.js"
-
-    }
-
-  ]
-
-}
->>>>>>> b3b8ede1334541d81385d4841583e2e13a7a427d
