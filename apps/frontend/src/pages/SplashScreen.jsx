@@ -2,8 +2,16 @@
 import React, { memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Enpòtasyon ofisyèl depi nan katab images la
-import splashImg from "../assets/images/splash.png"; 
+// Placeholder SVG logo instead of missing image
+const SplashLogo = () => (
+  <svg viewBox="0 0 200 200" className="w-full h-full">
+    <circle cx="100" cy="100" r="90" fill="#EAB308" fillOpacity="0.1" />
+    <circle cx="100" cy="100" r="70" fill="#EAB308" fillOpacity="0.2" />
+    <circle cx="100" cy="100" r="50" fill="#EAB308" fillOpacity="0.3" />
+    <text x="100" y="90" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#EAB308">JOB</text>
+    <text x="100" y="130" textAnchor="middle" fontSize="40" fontWeight="bold" fill="white">FAST</text>
+  </svg>
+); 
 
 function SplashScreen() {
   const navigate = useNavigate();
@@ -28,11 +36,9 @@ function SplashScreen() {
         
         {/* LOGO - Gwosè MVP domine ekran an (w-56 / w-64) ak bèl lonbraj */}
         <div className="mb-6 flex items-center justify-center">
-          <img
-            src={splashImg}
-            alt="JOBFAST Logo"
-            className="w-56 h-56 md:w-64 md:h-64 object-contain filter drop-shadow-[0_15px_35px_rgba(234,179,8,0.35)]"
-          />
+          <div className="w-56 h-56 md:w-64 md:h-64 object-contain filter drop-shadow-[0_15px_35px_rgba(234,179,8,0.35)]">
+            <SplashLogo />
+          </div>
         </div>
 
         {/* TITLE - Tèks jeyan ak bèl enpak */}

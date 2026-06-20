@@ -1,6 +1,38 @@
 // ======================================================
-// ⭐ DEFAULT VALUES
+// 👤 USER ROLES
 // ======================================================
+
+export const USER_ROLES = Object.freeze({
+  USER: "user",
+  WORKER: "worker",
+  BUSINESS: "business",
+  ADMIN: "admin",
+});
+
+export const USER_ROLE_VALUES = Object.freeze(
+  Object.values(USER_ROLES)
+);
+
+// ======================================================
+// 📋 ACCOUNT STATUS
+// ======================================================
+
+export const ACCOUNT_STATUS = Object.freeze({
+  PENDING: "pending",
+  ACTIVE: "active",
+  SUSPENDED: "suspended",
+  DELETED: "deleted",
+});
+
+export const ACCOUNT_STATUS_VALUES = Object.freeze(
+  Object.values(ACCOUNT_STATUS)
+);
+
+// ======================================================
+// 📍 DEFAULT VALUES
+// ======================================================
+
+export const DEFAULT_RADIUS_KM = 10;
 
 export const DEFAULTS = Object.freeze({
   LANGUAGE: "es",

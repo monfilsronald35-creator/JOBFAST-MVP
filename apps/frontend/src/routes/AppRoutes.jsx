@@ -63,6 +63,7 @@ function AppRoutes() {
           {/* Auth Routes */}
           <Route path="/register" element={<GuestGate><RegisterScreen /></GuestGate>} />
           <Route path="/login" element={<GuestGate><LoginScreen /></GuestGate>} />
+          <Route path="/forgot-password" element={<GuestGate><div className="p-8 text-center"><h2 className="text-2xl font-bold mb-4">Forgot Password</h2><p className="text-slate-400">Feature coming soon</p></div></GuestGate>} />
 
           {/* Protected User Routes */}
           <Route path="/dashboard" element={<AuthGate><Dashboard /></AuthGate>} />
@@ -70,6 +71,16 @@ function AppRoutes() {
           <Route path="/status" element={<AuthGate><AvailabilityStatus /></AuthGate>} />
           <Route path="/profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/search" element={<AuthGate><SearchScreen /></AuthGate>} />
+          
+          {/* Additional Protected Routes (Placeholders) */}
+          <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
+          <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
+          <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/notifications" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/chat/:id" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/rating/:id" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/booking/:id" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/map" element={<AuthGate><SearchScreen /></AuthGate>} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />

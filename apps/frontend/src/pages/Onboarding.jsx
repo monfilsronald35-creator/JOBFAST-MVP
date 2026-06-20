@@ -2,7 +2,15 @@ import React, { useState, memo } from "react"; // Korije 'Import' -> 'import'
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
 
-import onboardingWorkers from "../assets/images/onboarding-1.png";
+// Placeholder SVG for onboarding image
+const OnboardingImage = () => (
+  <svg viewBox="0 0 200 200" className="w-full h-full">
+    <rect x="20" y="20" width="160" height="160" rx="20" fill="#EAB308" fillOpacity="0.1" />
+    <circle cx="100" cy="70" r="30" fill="#EAB308" fillOpacity="0.3" />
+    <rect x="60" y="110" width="80" height="50" rx="10" fill="#EAB308" fillOpacity="0.2" />
+    <text x="100" y="140" textAnchor="middle" fontSize="20" fill="#EAB308">JOBFAST</text>
+  </svg>
+);
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -13,19 +21,19 @@ function Onboarding() {
       title: "Byenveni nan JOBFAST",
       description:
         "Platfòm ki konekte travayè, kliyan, biznis ak sèvis nan zòn ou.",
-      image: onboardingWorkers,
+      image: <OnboardingImage />,
     },
     {
       title: "Jwenn Sèvis Pi Vit",
       description:
         "Lokalize travayè kalifye, sèvis konstriksyon ak pwofesyonèl verifye toupre ou gras ak teknoloji GPS an tan reyèl.",
-      image: onboardingWorkers,
+      image: <OnboardingImage />,
     },
     {
       title: "Devlope Aktivite Ou",
       description:
         "Jere pwofil ou, resevwa notifikasyon enpòtan, jwenn nouvo opòtinite epi fè biznis ou grandi avèk JOBFAST.",
-      image: onboardingWorkers,
+      image: <OnboardingImage />,
     },
   ];
 
@@ -90,11 +98,9 @@ function Onboarding() {
           className="mx-auto flex w-full max-w-sm flex-col items-center text-center animate-fade-in"
         >
           <div className="mb-8 flex justify-center">
-            <img
-              src={slides[currentSlide].image}
-              alt="Onboarding JobFast"
-              className="max-h-[260px] w-full object-contain drop-shadow-[0_16px_35px_rgba(0,0,0,0.55)]"
-            />
+            <div className="max-h-[260px] w-full object-contain drop-shadow-[0_16px_35px_rgba(0,0,0,0.55)]">
+              {slides[currentSlide].image}
+            </div>
           </div>
 
           <h2 className="mb-3 px-4 text-xl font-black tracking-tight text-white font-sora">

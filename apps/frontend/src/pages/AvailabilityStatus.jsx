@@ -61,7 +61,8 @@ export default function AvailabilityStatus() {
 
     try {
       // 1. API update (MongoDB)
-      await fetch("http://localhost:5000/api/user/status", {
+      const API_URL = import.meta.env.VITE_API_URL || "/api/v1";
+      await fetch(`${API_URL}/user/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
