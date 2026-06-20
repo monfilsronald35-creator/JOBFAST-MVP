@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 
 function Loader({ text = "Chaje opòtinite...", showProgress = true }) {
