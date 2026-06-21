@@ -23,12 +23,18 @@ const RoleCard = ({ title, icon: Icon, selected = false, disabled = false, onCli
             : "border-slate-800/60 bg-navy-800/20 text-slate-400 group-hover:border-slate-700 group-hover:text-white group-hover:-translate-y-0.5",
         ].join(" ")}
       >
-        {Icon && (
-          <Icon
-            className="h-5 w-5"
-            strokeWidth={selected ? 2.5 : 2}
-            aria-hidden="true"
-          />
+        {typeof Icon === "string" || React.isValidElement(Icon) ? (
+          <span className="text-2xl leading-none" aria-hidden="true">
+            {Icon}
+          </span>
+        ) : (
+          Icon && (
+            <Icon
+              className="h-5 w-5"
+              strokeWidth={selected ? 2.5 : 2}
+              aria-hidden="true"
+            />
+          )
         )}
       </div>
 

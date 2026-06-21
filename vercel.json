@@ -1,29 +1,16 @@
 {
-
-  "version": 2,
-
-  "builds": [
-
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm install --prefix apps/frontend && npm run build --prefix apps/frontend",
+  "outputDirectory": "apps/frontend/dist",
+  "installCommand": "npm install --prefix apps/frontend",
+  "rewrites": [
     {
-
-      "src": "server.js",
-
-      "use": "@vercel/node"
-
-    }
-
-  ],
-
-  "routes": [
-
+      "source": "/api/v1/:path*",
+      "destination": "https://jobfast-backend.onrender.com/api/v1/:path*"
+    },
     {
-
-      "src": "/(.*)",
-
-      "dest": "server.js"
-
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-
   ]
-
 }

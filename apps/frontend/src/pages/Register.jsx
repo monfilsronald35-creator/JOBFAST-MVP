@@ -13,8 +13,11 @@ import React, {
 } from "react";
 
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api/axios";
+import { register as registerRequest } from "../services/auth";
+import { useAuth } from "../context/AuthContext.jsx";
 import RoleCard from "../components/RoleCard";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ======================================================
 // 📦 ROLES
@@ -53,6 +56,7 @@ const isValidForm = (f) => {
 // ======================================================
 function Register() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
   const [form, setForm] = useState({
     fullName: "",
@@ -77,6 +81,8 @@ function Register() {
   // CLEANUP
   // ======================================================
   useEffect(() => {
+    mountedRef.current = true;
+
     return () => {
       mountedRef.current = false;
 
@@ -154,33 +160,49 @@ function Register() {
     requestId.current += 1;
     const currentId = requestId.current;
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
+    const isEmail = EMAIL_REGEX.test(snapshot.emailOrPhone);
+
+    const payload = {
+      name: snapshot.fullName,
+      email: isEmail ? snapshot.emailOrPhone : undefined,
+      phone: isEmail ? undefined : snapshot.emailOrPhone,
+      password: snapshot.password,
+      role: snapshot.accountType,
+      accountType: "individual",
+    };
 
     try {
-      const res = await API.post(
-        "/auth/register",
-        snapshot,
-        { signal: abortRef.current.signal }
-      );
+      const res = await registerRequest(payload);
 
       if (!mountedRef.current || currentId !== requestId.current) return;
 
-      if (res?.data?.token) {
-        sessionStorage.setItem("token", res.data.token);
+      if (!res?.success) {
+        setErrorMessage(res?.message || "Registration failed");
+        return;
       }
 
-      setSuccess(res?.data?.message || "Account created successfully");
+      if (res.token) {
+        sessionStorage.setItem("token", res.token);
+      }
 
-      clearTimeout(redirectTimer.current);
-      redirectTimer.current = setTimeout(() => {
-        if (mountedRef.current) navigate("/");
-      }, 900);
+      setSuccess(res?.message || "Kont ou kreye ak siksè!");
 
+      // Auto-login: si backend voye token + user, nou konekte itilizatè a dirèkteman
+      if (res.token && res.user) {
+        authLogin({ ...res.user, token: res.token });
+
+        clearTimeout(redirectTimer.current);
+        redirectTimer.current = setTimeout(() => {
+          if (mountedRef.current) navigate("/dashboard");
+        }, 700);
+      } else {
+        clearTimeout(redirectTimer.current);
+        redirectTimer.current = setTimeout(() => {
+          if (mountedRef.current) navigate("/login");
+        }, 900);
+      }
     } catch (err) {
       if (!mountedRef.current) return;
-
-      if (err?.code === "ERR_CANCELED" || err?.name === "AbortError") return;
 
       setErrorMessage(
         err?.response?.data?.message ||
@@ -191,7 +213,7 @@ function Register() {
       if (mountedRef.current) setLoading(false);
       abortRef.current = null;
     }
-  }, [form, isDisabled, navigate]);
+  }, [form, isDisabled, navigate, authLogin]);
 
   // ======================================================
   // ENTER HANDLER (STRICT CONTROL)

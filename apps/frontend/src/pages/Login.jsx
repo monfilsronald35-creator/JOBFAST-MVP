@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
-import { login } from "../services/auth";
+import { login as loginRequest } from "../services/auth";
+import { useAuth } from "../context/AuthContext.jsx";
 
 // 🧠 Trankilite pou Vite: Nou kreye ti fonksyon lokal pou ranplase i18n ki te manke a
 const getCurrentLanguage = () => "ht"; 
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
   const mounted = useRef(false);
   const lastSubmit = useRef(0);
@@ -89,21 +91,27 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await login({
+      const res = await loginRequest({
         email: isEmail ? identifier : undefined,
         phone: !isEmail ? identifier : undefined,
         password,
         lang: getCurrentLanguage()
       });
 
-      const token = res?.token;
+      if (!res?.success) {
+        setError(res?.message || "Idantifyan oswa modpas pa kòrèk.");
+        return;
+      }
 
-      if (!token) {
+      const { token, user } = res;
+
+      if (!token || !user) {
         setError("Repons sèvè pa valab.");
         return;
       }
 
       sessionStorage.setItem("token", token);
+      authLogin({ ...user, token });
 
       if (mounted.current) navigate("/dashboard");
 
