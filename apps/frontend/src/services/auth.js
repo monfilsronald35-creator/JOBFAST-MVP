@@ -1,11 +1,40 @@
 import API from "../api/axios";
 
 /* ================= UTIL ================= */
-const getErrorMessage = (error, fallback) =>
-  error?.response?.data?.message ||
-  error?.response?.data?.error ||
-  error?.message ||
-  fallback;
+const getErrorMessage = (error, fallback) => {
+  const data = error?.response?.data;
+  return (
+    data?.error?.message ||
+    data?.message ||
+    (typeof data?.error === "string" ? data.error : null) ||
+    error?.message ||
+    fallback
+  );
+};
+
+/* ================= AUTH RESPONSE NORMALIZER ================= */
+// Backend voye: { success, meta, data: { token, user, message } }
+// Nou retounen yon fòm plat: { success, token, user, message, code }
+const normalizeAuth = (result) => {
+  if (!result?.success) {
+    return {
+      success: false,
+      message: result?.message || "Operasyon echwe.",
+      code: result?.code ?? null,
+      status: result?.status ?? null,
+    };
+  }
+
+  const body = result.data || {};
+  const payload = body?.data ?? body;
+
+  return {
+    success: true,
+    token: payload?.token || null,
+    user: payload?.user || null,
+    message: payload?.message || body?.message || null,
+  };
+};
 
 const now = () => Date.now();
 
@@ -131,25 +160,23 @@ const updateStoredUser = (updater) => {
 
 /* LOGIN */
 export const login = (credentials) =>
-  dedupeRequest(
-    makeKey("login", { email: credentials?.email }),
-    () =>
-      request(
-        () => API.post("/auth/login", credentials),
-        "Login failed."
-      )
-  );
+  dedupeRequest(makeKey("login", { email: credentials?.email }), async () => {
+    const res = await request(
+      () => API.post("/auth/login", credentials),
+      "Login failed."
+    );
+    return normalizeAuth(res);
+  });
 
 /* REGISTER */
 export const register = (userData) =>
-  dedupeRequest(
-    makeKey("register", { email: userData?.email }),
-    () =>
-      request(
-        () => API.post("/auth/register", userData),
-        "Registration failed."
-      )
-  );
+  dedupeRequest(makeKey("register", { email: userData?.email }), async () => {
+    const res = await request(
+      () => API.post("/auth/register", userData),
+      "Registration failed."
+    );
+    return normalizeAuth(res);
+  });
 
 /* GET CURRENT USER */
 export const getCurrentUser = () =>

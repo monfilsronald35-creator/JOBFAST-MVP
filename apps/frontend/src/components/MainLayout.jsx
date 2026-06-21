@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import {
   Home,
   Search,
@@ -21,13 +22,14 @@ const NAV_ITEMS = [
 
 export default function MainLayout() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const navItems = useMemo(() => NAV_ITEMS, []);
   const userLocation = "Bavaro, Punta Cana";
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem("jobfast_user");
-    navigate("/login");
-  }, [navigate]);
+    logout();
+    navigate("/login", { replace: true });
+  }, [logout, navigate]);
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans antialiased pb-20 md:pb-0 md:pl-64">

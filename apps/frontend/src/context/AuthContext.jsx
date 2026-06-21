@@ -13,15 +13,19 @@ import { io } from "socket.io-client";
 const AuthContext = createContext(null);
 const STORAGE_KEY = "jobfast_user";
 
-// 👑 KOREKSYON 2: Dinamik URL - Si w sou Render l ap pran lyen an, si w lokal l ap pran localhost
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// Socket URL separe ak REST base la pou yo pa antre an konfli.
+// An pwodiksyon, si VITE_SOCKET_URL pa defini, socket la konekte sou menm orijin nan.
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || undefined;
+const API_URL = import.meta.env.VITE_API_URL || "";
 
-const socket = io(API_URL, {
+const socketOptions = {
   autoConnect: false,
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
-});
+};
+
+const socket = SOCKET_URL ? io(SOCKET_URL, socketOptions) : io(socketOptions);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -123,18 +127,23 @@ export function AuthProvider({ children }) {
   }, [user?._id, user?.role]);
 
   const login = useCallback((data) => {
-    if (!data?._id) return;
+    if (!data) return;
 
-    setUser(data);
-    userRef.current = data;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // Backend la voye `id`; nou normalize li an `_id` pou rès app la.
+    const normalized = { ...data, _id: data._id || data.id || null };
+
+    if (!normalized._id) return;
+
+    setUser(normalized);
+    userRef.current = normalized;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
 
     if (!socket.connected) {
       socket.connect();
     } else {
       socket.emit("auth:join", {
-        userId: data._id,
-        role: data.role,
+        userId: normalized._id,
+        role: normalized.role,
       });
     }
   }, []);
