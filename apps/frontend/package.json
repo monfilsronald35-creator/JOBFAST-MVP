@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "jobfast-frontend",
   "version": "1.0.0",
   "description": "JOBFAST GLOBAL FRONTEND - PRODUCTION READY v3.6",
@@ -48,27 +47,4 @@
   ],
   "author": "Monfils Ronald",
   "license": "MIT"
-=======
-  "name": "jobfast",
-  "version": "1.0.0",
-  "private": true,
-  "description": "JOBFAST GLOBAL — Marketplace + Services + Workforce System",
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "prod": "node server.js"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "mongoose": "^8.15.0",
-    "socket.io-client": "^4.8.3",
-    "winston": "^3.13.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
-  }
->>>>>>> b3b8ede1334541d81385d4841583e2e13a7a427d
 }
