@@ -62,6 +62,48 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    // ================= CATEGORY SYSTEM =================
+    category: {
+      type: String,
+      enum: [
+        'business_directory',
+        'marketplace',
+        'services_on_demand',
+        'tourism',
+        'creator_economy',
+        'impact_ngo',
+      ],
+      default: null,
+      index: true,
+    },
+
+    profession: {
+      type: String,
+      default: null,
+      index: true,
+    },
+
+    profileMetadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+
+    profileCompleteness: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
+
+    categoryDetails: [
+      {
+        category: String,
+        profession: String,
+        metadata: mongoose.Schema.Types.Mixed,
+        joinedAt: { type: Date, default: Date.now },
+      },
+    ],
+
     // ================= BUSINESS =================
     businessType: {
       type: String,
@@ -152,10 +194,13 @@ userSchema.index({ email: 1 }, { unique: true });
 
 // 🔍 FILTER INDEXES
 userSchema.index({ role: 1 });
+userSchema.index({ category: 1 });
+userSchema.index({ profession: 1 });
 userSchema.index({ businessType: 1 });
 userSchema.index({ constructionRole: 1 });
 userSchema.index({ status: 1 });
 userSchema.index({ serviceIntent: 1 });
+userSchema.index({ profileCompleteness: 1 });
 userSchema.index({ profession: 1 });
 
 // 🔥 FAST SEARCH INDEXES

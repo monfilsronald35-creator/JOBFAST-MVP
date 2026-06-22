@@ -10,7 +10,7 @@ import Loader from "@/components/Loader.jsx";
 // Auth & Public Pages
 import SplashScreen from "@/pages/SplashScreen.jsx";
 import Onboarding from "@/pages/Onboarding.jsx";
-import RegisterScreen from "@/pages/Register.jsx";
+import RegisterScreen from "@/pages/Register/index.jsx";
 import LoginScreen from "@/pages/Login.jsx";
 
 // Protected Pages
@@ -19,6 +19,7 @@ import PostJobScreen from "@/pages/PostJobScreen.jsx";
 import AvailabilityStatus from "@/pages/AvailabilityStatus.jsx";
 import ProfileScreen from "@/pages/ProfileScreen.jsx";
 import SearchScreen from "@/pages/SearchScreen.jsx";
+import NotificationsCenter from "@/pages/NotificationsCenter.jsx";
 
 // Admin Pages (Lazy Loaded for better performance)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
@@ -76,7 +77,7 @@ function AppRoutes() {
           <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/notifications" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
           <Route path="/chat/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/rating/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/booking/:id" element={<AuthGate><Dashboard /></AuthGate>} />

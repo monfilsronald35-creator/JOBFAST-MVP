@@ -75,6 +75,96 @@
   },
 
   "categories": {
+    "title": "Kategori",
+    "select": "Chwazi kategori w",
+    "selectProfession": "Chwazi pwofesyon ou",
+    "fillDetails": "Ranpli detay pwofesyonèl yo",
+    "description": "{{description}}",
+
+    "business_directory": {
+      "label": "Sipèvizè Biznis",
+      "description": "Konpayi, Estabilisyon ak Entèpriz",
+      "professions": {
+        "company": "Konpayi",
+        "restaurant": "Restoran",
+        "hospital": "Lopital",
+        "clinic": "Klinik",
+        "hotel": "Otèl",
+        "office": "Biwo",
+        "lawyer": "Avoka",
+        "mechanic": "Mekanisyen",
+        "tour_guide": "Gid touris",
+        "organization": "Òganizasyon"
+      }
+    },
+
+    "marketplace": {
+      "label": "Mache Yelektwòn",
+      "description": "Vann ak Achte Pwodwi",
+      "professions": {
+        "seller": "Vendè",
+        "property": "Propiete",
+        "vehicle": "Machin",
+        "goods": "Pwodwi",
+        "services": "Sèvis"
+      }
+    },
+
+    "services_on_demand": {
+      "label": "Sèvis sou Demann",
+      "description": "Mande Pwofesyonèl pou Sèvis",
+      "professions": {
+        "chef": "Chèf lakay",
+        "plumber": "Plonbye",
+        "doctor": "Doktè",
+        "nurse": "Enfèmyè",
+        "taxi": "Taksi",
+        "delivery": "Delivre",
+        "cleaning": "Netwayaj",
+        "videographer": "Videograf",
+        "designer": "Desen",
+        "construction": "Konstriksyon"
+      }
+    },
+
+    "tourism": {
+      "label": "Turizm",
+      "description": "Vwayaj ak Lodman",
+      "professions": {
+        "hotel": "Otèl",
+        "resort": "Rezò",
+        "guide": "Gid",
+        "restaurant": "Restoran",
+        "transport": "Tranpòtasyon",
+        "activity": "Aktivite"
+      }
+    },
+
+    "creator_economy": {
+      "label": "Atís ak Kreyatè",
+      "description": "Mizik, Atizana ak Desen",
+      "professions": {
+        "musician": "Mizisyen",
+        "artist": "Atís",
+        "designer": "Desen",
+        "content_creator": "Kreyatè Kontan",
+        "photographer": "Fotograf",
+        "writer": "Ekriven"
+      }
+    },
+
+    "impact_ngo": {
+      "label": "Òganizasyon Sosyal",
+      "description": "Sante, Edikasyon ak Sipò",
+      "professions": {
+        "ngo": "ONG",
+        "charity": "Charite",
+        "health_organization": "Òganizasyon Sante",
+        "education": "Edikasyon",
+        "social_support": "Sipò Sosyal"
+      }
+    },
+
     "construction": {
       "title": "Konstriksyon",
       "roles": {
@@ -115,6 +205,132 @@
       }
     }
   },
+
+  "registration": {
+    "title": "Kreye Kont",
+    "step": "Etap {{current}} / {{total}}",
+    "progress": "{{percent}}% fini",
+    "selectCategory": "Chwazi kategori w",
+    "selectProfession": "Chwazi pwofesyon ou",
+    "basicInfo": "Enfòmasyon de baz",
+    "professionalDetails": "Detay pwofesyonèl",
+    "name": "Non konplè",
+    "email": "Imèl",
+    "phone": "Nimewo telefòn",
+    "location": "Kote",
+    "password": "Modpas",
+    "confirmPassword": "Konfime modpas",
+    "requiredFields": "Chan obligatwa",
+    "optionalFields": "Chan opsyonèl",
+    "next": "Pwochen",
+    "back": "Retounen",
+    "submit": "Kreye Kont",
+    "success": "Kont kreye avèk siksè",
+    "error": "Erè pandan kreyasyon kont la"
+  },
+
+  "professionFields": {
+    "businessName": "Non biznis",
+    "industry": "Endistri",
+    "businessType": "Tip biznis",
+    "employees": "Nimewo travayè",
+    "yearEstablished": "Ane etabli",
+    "website": "Sitwèb",
+    "description": "Deskripsyon",
+    "contactPerson": "Moun kontak",
+    "restaurantName": "Non restoran",
+    "cuisine": "Kalite manje",
+    "seatingCapacity": "Nimewo chèz",
+    "hours": "Jem louvè",
+    "specialties": "Espesyalite",
+    "hospitalName": "Non lopital",
+    "services": "Sèvis",
+    "beds": "Nimewo kabann",
+    "emergencyService": "Sèvis ijans",
+    "clinicName": "Non klinik",
+    "specialization": "Espesyalizasyon",
+    "doctors": "Nimewo doktè",
+    "hotelName": "Non otèl",
+    "rooms": "Nimeyo chanm",
+    "stars": "Nivewo zetwal",
+    "amenities": "Fasilite",
+    "price": "Pri",
+    "pricePerNight": "Pri pa nwit",
+    "phone": "Telefòn",
+    "officeName": "Non biwo",
+    "squareFeet": "Metraj kare",
+    "fullName": "Non konplè",
+    "barNumber": "Nimewo ba",
+    "yearsExperience": "Zan eksperyans",
+    "shopName": "Non boutik",
+    "vehicleTypes": "Tip veyikil",
+    "languages": "Lang",
+    "certifications": "Sètifika",
+    "organizationName": "Non òganizasyon",
+    "mission": "Misyon",
+    "foundedYear": "Ane fondasyon",
+    "members": "Nimewo manm",
+    "storeName": "Non magazin",
+    "productCategories": "Kategori pwodwi",
+    "yearsInBusiness": "Zan an biznis",
+    "bio": "Bio",
+    "propertyType": "Tip propiete",
+    "bedrooms": "Nimewo chanm",
+    "bathrooms": "Nimeyo twalèt",
+    "make": "Mak",
+    "model": "Modèl",
+    "year": "Ane",
+    "mileage": "Kilomèt",
+    "condition": "Kondisyon",
+    "color": "Koulè",
+    "transmission": "Transmisyon",
+    "productName": "Non pwodwi",
+    "category": "Kategori",
+    "quantity": "Kantite",
+    "priceRange": "Anplitid pri",
+    "serviceArea": "Zòn sèvis",
+    "availability": "Disponibilite",
+    "cuisineTypes": "Tip Kwizin",
+    "serviceTypes": "Tip sèvis",
+    "licenseNumber": "Nimewo lisans",
+    "consultationFee": "Frè konsiltasyon",
+    "certification": "Sètifika",
+    "hourlyRate": "Pri dèn",
+    "vehicleType": "Tip veyikil",
+    "ratePerKm": "Pri pa km",
+    "teamSize": "Gwosè ekip",
+    "portfolio": "Porfoliyo",
+    "designType": "Tip desen",
+    "designSpecialty": "Espesyalite desen",
+    "platform": "Platfòm",
+    "followers": "Abonne",
+    "niche": "Nik",
+    "sponsorshipFee": "Frè sponsorasyon",
+    "socialLinks": "Lyen sosyal",
+    "pricePerPiece": "Pri pa moso",
+    "genres": "Janm mizik",
+    "spotifyUrl": "URL Spotify",
+    "bookingFee": "Frè rezèvasyon",
+    "artType": "Tip atizana",
+    "resortName": "Non rezò",
+    "companyName": "Non konpayi",
+    "capacity": "Kapasite",
+    "activityName": "Non aktivite",
+    "type": "Tip",
+    "maxParticipants": "Maksimòn patisipan",
+    "pricePerPerson": "Pri pa moun",
+    "registrationNumber": "Nimewo enjistreman",
+    "cause": "Kòz",
+    "programs": "Pwogram",
+    "students": "Elèv",
+    "teachers": "Pwofesè",
+    "staff": "Pèsonèl",
+    "supportType": "Tip sipò",
+    "beneficiaries": "Benefisyè",
+    "genre": "Janm",
+    "pricePerWord": "Pri pa mo",
+    "role": "Wòl"
+  }
 
   "business": {
     "title": "Lis Biznis",

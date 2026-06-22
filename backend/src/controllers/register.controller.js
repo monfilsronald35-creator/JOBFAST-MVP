@@ -2,6 +2,8 @@
 // 🚀 JOBFAST ENTERPRISE SYSTEM — REGISTER CONTROLLER (INTERNATIONAL SCALE)
 // =========================================================================
 import crypto from 'crypto';
+import { CATEGORIES, PROFESSION_METADATA, getRequiredFields } from '../config/categories.js';
+import { notifyNewCategoryMember } from '../services/matchingService.js';
 
 // ⚙️ GLOBAL IN-MEMORY DATABASE MATRIX (Pou MVP la pa gen over-engineering)
 // Sa a pèmèt nou stoke done yo nan memwa sèvè a pou tès yo kouri rapid fwa sa a.
@@ -16,18 +18,21 @@ export const registerController = async (req, res, next) => {
   const requestId = req.id || crypto.randomUUID(); // Tracking inik entènasyonal
 
   try {
-    const { 
-      name, 
-      email, 
-      password, 
+    const {
+      name,
+      email,
+      password,
       accountType, // 'individual' (pou moun) oswa 'business' (pou konpayi)
       role,        // boss, worker, plumber, restaurant, hospital, elatriye.
-      city, 
-      state 
+      category,    // 6 main categories: business_directory, marketplace, etc.
+      profession,  // Specific profession within category
+      profileMetadata, // Category-specific profile data
+      city,
+      state
     } = req.body;
 
     // 1. 🛡️ DATA SANITIZATION & MANDATORY FIELDS CHECK
-    if (!name || !email || !password || !accountType || !role || !city || !state) {
+    if (!name || !email || !password || !accountType || !city || !state) {
       return res.status(400).json({
         success: false,
         error: {
@@ -78,7 +83,55 @@ export const registerController = async (req, res, next) => {
       });
     }
 
-    // 4. 📍 LOCATION INJECTION & COORDINATES SIMULATION (GPS READY)
+    // 4. 🏷️ CATEGORY & PROFESSION VALIDATION
+    let userCategory = category || role; // Fallback to role if category not provided
+    let userProfession = profession || role;
+    let categoryMetadata = profileMetadata || {};
+
+    if (userCategory) {
+      const categoryExists = Object.values(CATEGORIES).some(cat => cat.id === userCategory);
+      if (!categoryExists) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "INVALID_CATEGORY",
+            message: `Kategori '${userCategory}' pa valid nan JOBFAST.`,
+            requestId
+          }
+        });
+      }
+
+      if (userProfession) {
+        const professionValid = CATEGORIES[Object.keys(CATEGORIES).find(k => CATEGORIES[k].id === userCategory)]?.professions?.includes(userProfession);
+        if (!professionValid) {
+          return res.status(400).json({
+            success: false,
+            error: {
+              code: "INVALID_PROFESSION",
+              message: `Pwofesyon '${userProfession}' pa valid pou kategori '${userCategory}'.`,
+              requestId
+            }
+          });
+        }
+
+        // Validate required fields for profession
+        const requiredFields = getRequiredFields(userProfession);
+        for (const field of requiredFields) {
+          if (!categoryMetadata[field]) {
+            return res.status(400).json({
+              success: false,
+              error: {
+                code: "MISSING_REQUIRED_FIELD",
+                message: `Chan '${field}' obligatwa pou pwofesyon '${userProfession}'.`,
+                requestId
+              }
+            });
+          }
+        }
+      }
+    }
+
+    // 5. 📍 LOCATION INJECTION & COORDINATES SIMULATION (GPS READY)
     // Nou simule kowòdone GPS Bavaro/Punta Cana daprè foto a pou sistèm distance sorting lan
     const gpsLocation = {
       city: city.trim(),
@@ -90,18 +143,28 @@ export const registerController = async (req, res, next) => {
       }
     };
 
-    // 5. 🏗️ MATRIX PROFILE CONSTRUCTOR (Daprè bèl foto MVP a)
+    // 6. 🏗️ MATRIX PROFILE CONSTRUCTOR (Daprè bèl foto MVP a)
     const userId = `usr_${crypto.randomBytes(8).toString('hex')}`;
-    
+
+    // Calculate profile completeness
+    const totalFields = userProfession ? (getRequiredFields(userProfession)?.length || 0) + 5 : 5; // +5 for basic fields
+    const filledFields = 5 + Object.keys(categoryMetadata).filter(k => categoryMetadata[k]).length;
+    const profileCompleteness = Math.round((filledFields / totalFields) * 100);
+
     const newUser = {
       id: userId,
+      _id: userId,
       name: name.trim(),
       email: cleanEmail,
       password: crypto.createHash('sha256').update(password).digest('hex'), // Sekirize modpas la nan kòd
-      accountType, 
-      role: role.toLowerCase().trim(),
+      accountType,
+      role: role?.toLowerCase().trim() || userProfession?.toLowerCase().trim() || "user",
+      category: userCategory,
+      profession: userProfession,
+      profileMetadata: categoryMetadata,
+      profileCompleteness,
       tier: "free", // Default pwofil tier
-      
+
       // 📍 GPS Location Core
       location: gpsLocation,
 
@@ -121,14 +184,27 @@ export const registerController = async (req, res, next) => {
     // Sove nouvo kont lan nan memwa a
     usersDatabase.set(userId, newUser);
 
-    // 📢 6. SIMULATION MATCH NOTIFICATION LOG (Daprè nòt misyon w lan)
+    // 📢 7. TRIGGER MATCHING SERVICE
+    try {
+      // Notify users in the same category about this new registration
+      setImmediate(() => {
+        notifyNewCategoryMember(newUser).catch(err =>
+          console.error('Error notifying about new member:', err.message)
+        );
+      });
+    } catch (err) {
+      console.error('Matching service error (non-blocking):', err.message);
+    }
     console.log(`\n📢 [MATCH NOTIFICATION ALERT]`);
     console.log(`👤 New Registration: ${newUser.name}`);
     console.log(`💼 Role: ${newUser.role}`);
+    console.log(`🏷️ Category: ${newUser.category}`);
+    console.log(`📋 Profession: ${newUser.profession}`);
     console.log(`📍 Location: ${newUser.location.city}, ${newUser.location.state}`);
+    console.log(`📊 Profile Completeness: ${newUser.profileCompleteness}%`);
     console.log(`🟢 Status: ${newUser.availability}\n`);
 
-    // 7. 📦 RESPONSE MATRIX
+    // 8. 📦 RESPONSE MATRIX
     return res.status(201).json({
       success: true,
       meta: {
@@ -140,9 +216,15 @@ export const registerController = async (req, res, next) => {
         message: "Pwofil ou kreye ak siksè nan rezo entènasyonal JOBFAST la!",
         userId: newUser.id,
         user: {
+          id: newUser.id,
+          _id: newUser._id,
           name: newUser.name,
           email: newUser.email,
           role: newUser.role,
+          category: newUser.category,
+          profession: newUser.profession,
+          profileMetadata: newUser.profileMetadata,
+          profileCompleteness: newUser.profileCompleteness,
           accountType: newUser.accountType,
           availability: newUser.availability,
           location: newUser.location,

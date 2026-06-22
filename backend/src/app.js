@@ -9,6 +9,7 @@ import { env } from './config/env.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/users.routes.js';
 import jobRoutes from './routes/jobs.routes.js';
+import notificationRoutes from './routes/notifications.routes.js';
 
 // ✅ CHEMEN KORÈK LA: Nou retire "/middlewares" paske fichye a nan menm nivo ak app.js
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
@@ -56,6 +57,7 @@ const API_PREFIX = env.API_PREFIX || '/api/v1';
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/jobs`, jobRoutes);
+app.use(`${API_PREFIX}/notifications`, notificationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
