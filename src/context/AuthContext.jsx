@@ -36,6 +36,12 @@ export function AuthProvider({ children }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       parsed = saved ? JSON.parse(saved) : null;
+
+      // Backend retounen user.id, men AuthContext itilize _id
+      // Map id to _id pou konsistans
+      if (parsed?.user?.id && !parsed?.user?._id) {
+        parsed.user._id = parsed.user.id;
+      }
     } catch {
       parsed = null;
     }

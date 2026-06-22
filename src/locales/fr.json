@@ -22,7 +22,24 @@
     "no": "Non",
     "retry": "Réessayer",
     "loading": "Veuillez patienter...",
-    "all": "Tout"
+    "all": "Tout",
+    "start": "COMMENCER",
+    "skip": "Passer"
+  },
+
+  "onboarding": {
+    "slide1": {
+      "title": "Bienvenue sur JOBFAST",
+      "description": "Plateforme qui connecte travailleurs, clients, entreprises et services dans votre zone."
+    },
+    "slide2": {
+      "title": "Trouver des Services Plus Vite",
+      "description": "Localisez des travailleurs qualifiés, services de construction et professionnels vérifiés près de vous grâce à la technologie GPS en temps réel."
+    },
+    "slide3": {
+      "title": "Développez Votre Activité",
+      "description": "Gérez votre profil, recevez des notifications importantes, trouvez de nouvelles opportunités et faites grandir votre entreprise avec JOBFAST."
+    }
   },
 
   "auth": {

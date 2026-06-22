@@ -1,6 +1,7 @@
 // src/pages/SplashScreen.jsx
-import React, { memo, useEffect } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { changeLanguage } from "../i18n";
 
 // Placeholder SVG logo instead of missing image
 const SplashLogo = () => (
@@ -15,6 +16,18 @@ const SplashLogo = () => (
 
 function SplashScreen() {
   const navigate = useNavigate();
+  const [selectedLang, setSelectedLang] = useState("ht");
+
+  const languages = [
+    { code: "ht", name: "Kreyòl", flag: "🇭🇹" },
+    { code: "fr", name: "Français", flag: "🇫🇷" },
+    { code: "es", name: "Español", flag: "🇪🇸" }
+  ];
+
+  const handleLanguageChange = async (langCode) => {
+    setSelectedLang(langCode);
+    await changeLanguage(langCode);
+  };
 
   useEffect(() => {
     document.title = "JOBFAST";
@@ -30,6 +43,25 @@ function SplashScreen() {
 
       {/* TOP SPACER */}
       <div className="h-4 z-10" />
+
+      {/* LANGUAGE SELECTOR */}
+      <div className="relative z-10 w-full max-w-sm mx-auto mb-4">
+        <div className="flex justify-center gap-2">
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code)}
+              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                selectedLang === lang.code
+                  ? "bg-yellow-400 text-black scale-105"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }`}
+            >
+              {lang.flag} {lang.name}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* CENTER CONTENT: LOGO + TIT + SLOGAN */}
       <section className="relative z-10 flex flex-col items-center text-center max-w-md w-full my-auto">
