@@ -22,7 +22,24 @@
     "no": "Non",
     "retry": "Refè",
     "loading": "Tanpri tann...",
-    "all": "Tout"
+    "all": "Tout",
+    "start": "KÒMANSE",
+    "skip": "Sote"
+  },
+
+  "onboarding": {
+    "slide1": {
+      "title": "Byenveni nan JOBFAST",
+      "description": "Platfòm ki konekte travayè, kliyan, biznis ak sèvis nan zòn ou."
+    },
+    "slide2": {
+      "title": "Jwenn Sèvis Pi Vit",
+      "description": "Lokalize travayè kalifye, sèvis konstriksyon ak pwofesyonèl verifye toupre ou gras ak teknoloji GPS an tan reyèl."
+    },
+    "slide3": {
+      "title": "Devlope Aktivite Ou",
+      "description": "Jere pwofil ou, resevwa notifikasyon enpòtan, jwenn nouvo opòtinite epi fè biznis ou grandi avèk JOBFAST."
+    }
   },
 
   "auth": {

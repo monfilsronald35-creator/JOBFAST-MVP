@@ -29,6 +29,42 @@
     }
   },
 
+  "common": {
+    "search": "Buscar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "submit": "Enviar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "view": "Ver",
+    "ok": "OK",
+    "yes": "Sí",
+    "no": "No",
+    "retry": "Reintentar",
+    "loading": "Por favor espere...",
+    "all": "Todos",
+    "start": "COMENZAR",
+    "skip": "Saltar"
+  },
+
+  "onboarding": {
+    "slide1": {
+      "title": "Bienvenido a JOBFAST",
+      "description": "Plataforma que conecta trabajadores, clientes, empresas y servicios en su zona."
+    },
+    "slide2": {
+      "title": "Encontrar Servicios Más Rápido",
+      "description": "Localice trabajadores calificados, servicios de construcción y profesionales verificados cerca de usted gracias a la tecnología GPS en tiempo real."
+    },
+    "slide3": {
+      "title": "Desarrolle Su Actividad",
+      "description": "Gestione su perfil, reciba notificaciones importantes, encuentre nuevas oportunidades y haga crecer su negocio con JOBFAST."
+    }
+  },
+
   "ui": {
     "actions": {
       "search": "Buscar",

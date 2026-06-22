@@ -158,24 +158,44 @@ function Register() {
     abortRef.current = new AbortController();
 
     try {
+      // Map frontend fields to backend expected fields
+      const backendData = {
+        name: snapshot.fullName,
+        email: snapshot.emailOrPhone,
+        password: snapshot.password,
+        accountType: "individual", // Backend expects 'individual' or 'business'
+        role: snapshot.accountType, // boss, worker, apprentice, etc.
+        city: "Bavaro", // Default city for MVP
+        state: "Punta Cana" // Default state for MVP
+      };
+
       const res = await API.post(
         "/auth/register",
-        snapshot,
+        backendData,
         { signal: abortRef.current.signal }
       );
 
       if (!mountedRef.current || currentId !== requestId.current) return;
 
-      if (res?.data?.token) {
-        sessionStorage.setItem("token", res.data.token);
+      // Backend returns { success: true, data: { userId, user } }
+      const user = res?.data?.user || res?.data;
+
+      // Map user.id to _id pou AuthContext ka itilize
+      if (user?.id && !user?._id) {
+        user._id = user.id;
+      }
+
+      // Sove user nan localStorage pou AuthContext ka itilize
+      if (user) {
+        localStorage.setItem("jobfast_user", JSON.stringify({ token: null, user }));
       }
 
       setSuccess(res?.data?.message || "Account created successfully");
 
       clearTimeout(redirectTimer.current);
       redirectTimer.current = setTimeout(() => {
-        if (mountedRef.current) navigate("/");
-      }, 900);
+        if (mountedRef.current) navigate("/login");
+      }, 1500);
 
     } catch (err) {
       if (!mountedRef.current) return;
