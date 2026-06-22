@@ -1,5 +1,6 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { PROFESSION_METADATA } from '../../constants/categories';
+import AvatarUpload from '../../components/AvatarUpload';
 
 function Step4_ProfessionalDetails({
   profession,
@@ -12,6 +13,12 @@ function Step4_ProfessionalDetails({
 }) {
   const profData = PROFESSION_METADATA[profession];
   const fieldTypes = profData?.fieldTypes || {};
+  const [photoFile, setPhotoFile] = useState(null);
+
+  const handlePhotoChange = useCallback((file, preview) => {
+    setPhotoFile(file);
+    onMetadataChange('profilePhoto', preview);
+  }, [onMetadataChange]);
 
   const renderField = useCallback((fieldName, isRequired) => {
     const fieldType = fieldTypes[fieldName] || 'text';
@@ -147,6 +154,19 @@ function Step4_ProfessionalDetails({
 
   return (
     <div className="w-full space-y-6">
+      {/* Photo Upload */}
+      <div className="bg-gray-800/30 p-4 rounded-lg">
+        <h3 className="text-sm font-bold text-yellow-400 mb-3">Foto Pwofil</h3>
+        <AvatarUpload
+          onPhotoChange={handlePhotoChange}
+          initialPhoto={metadata.profilePhoto}
+          userName={metadata.fullName || 'User'}
+        />
+        <p className="text-xs text-gray-400 text-center">
+          Foto a pral montre sou pwofil ou ak nan rezilta rechèch
+        </p>
+      </div>
+
       {requiredFields.length > 0 && (
         <div>
           <h3 className="text-sm font-bold text-yellow-400 mb-3">Jaden Obligatwa</h3>

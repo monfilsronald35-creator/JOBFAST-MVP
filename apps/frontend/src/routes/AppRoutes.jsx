@@ -20,6 +20,9 @@ import AvailabilityStatus from "@/pages/AvailabilityStatus.jsx";
 import ProfileScreen from "@/pages/ProfileScreen.jsx";
 import SearchScreen from "@/pages/SearchScreen.jsx";
 import NotificationsCenter from "@/pages/NotificationsCenter.jsx";
+import HomeMarketplace from "@/pages/HomeMarketplace.jsx";
+import CategoryMarketplace from "@/pages/CategoryMarketplace.jsx";
+import UserProfileDisplay from "@/pages/UserProfileDisplay.jsx";
 
 // Admin Pages (Lazy Loaded for better performance)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
@@ -60,6 +63,7 @@ function AppRoutes() {
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout><SplashScreen /></PublicLayout>} />
           <Route path="/onboarding" element={<PublicLayout><Onboarding /></PublicLayout>} />
+          <Route path="/home" element={<PublicLayout><HomeMarketplace /></PublicLayout>} />
 
           {/* Auth Routes */}
           <Route path="/register" element={<GuestGate><RegisterScreen /></GuestGate>} />
@@ -68,9 +72,11 @@ function AppRoutes() {
 
           {/* Protected User Routes */}
           <Route path="/dashboard" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/marketplace" element={<AuthGate><HomeMarketplace /></AuthGate>} />
+          <Route path="/marketplace/:categoryId" element={<AuthGate><CategoryMarketplace /></AuthGate>} />
           <Route path="/post-job" element={<AuthGate><PostJobScreen /></AuthGate>} />
           <Route path="/status" element={<AuthGate><AvailabilityStatus /></AuthGate>} />
-          <Route path="/profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
+          <Route path="/profile" element={<AuthGate><UserProfileDisplay /></AuthGate>} />
           <Route path="/search" element={<AuthGate><SearchScreen /></AuthGate>} />
           
           {/* Additional Protected Routes (Placeholders) */}

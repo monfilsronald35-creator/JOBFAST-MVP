@@ -88,6 +88,11 @@ const userSchema = new mongoose.Schema(
       default: {},
     },
 
+    profilePhoto: {
+      type: String,
+      default: null,
+    },
+
     profileCompleteness: {
       type: Number,
       min: 0,
