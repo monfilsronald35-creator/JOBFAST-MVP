@@ -1,5 +1,6 @@
 import React, { useState, memo } from "react"; // Korije 'Import' -> 'import'
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Button from "../components/Button.jsx";
 
 // Placeholder SVG for onboarding image
@@ -14,25 +15,23 @@ const OnboardingImage = () => (
 
 function Onboarding() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = [
     {
-      title: "Byenveni nan JOBFAST",
-      description:
-        "Platfòm ki konekte travayè, kliyan, biznis ak sèvis nan zòn ou.",
+      title: t("onboarding.slide1.title"),
+      description: t("onboarding.slide1.description"),
       image: <OnboardingImage />,
     },
     {
-      title: "Jwenn Sèvis Pi Vit",
-      description:
-        "Lokalize travayè kalifye, sèvis konstriksyon ak pwofesyonèl verifye toupre ou gras ak teknoloji GPS an tan reyèl.",
+      title: t("onboarding.slide2.title"),
+      description: t("onboarding.slide2.description"),
       image: <OnboardingImage />,
     },
     {
-      title: "Devlope Aktivite Ou",
-      description:
-        "Jere pwofil ou, resevwa notifikasyon enpòtan, jwenn nouvo opòtinite epi fè biznis ou grandi avèk JOBFAST.",
+      title: t("onboarding.slide3.title"),
+      description: t("onboarding.slide3.description"),
       image: <OnboardingImage />,
     },
   ];
@@ -133,7 +132,7 @@ function Onboarding() {
             className="w-full py-4 font-sora font-bold tracking-wide text-[#050B18]"
             onClick={handleNext}
           >
-            {currentSlide === slides.length - 1 ? "KÒMANSE" : "Suivant"}
+            {currentSlide === slides.length - 1 ? t("common.start") : t("common.next")}
           </Button>
 
           {currentSlide < slides.length - 1 ? (
@@ -142,7 +141,7 @@ function Onboarding() {
               onClick={handleSkip}
               className="text-sm font-medium text-slate-400 transition hover:text-white font-poppins"
             >
-              Sote
+              {t("common.skip")}
             </button>
           ) : (
             <div className="h-5" />

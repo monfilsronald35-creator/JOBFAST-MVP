@@ -1,0 +1,132 @@
+{
+  "rankingEngine": {
+    "usesWeight": true,
+    "usesBoost": true,
+    "usesMarketSignals": true,
+    "usesTrustScore": true,
+    "usesVerificationScore": true,
+    "usesDistancePenalty": true,
+    "usesTimeDecay": true,
+    "usesIntentBoost": true,
+    "usesContextMemory": true,
+    "usesSupplyDemandBalance": true,
+
+    "normalization": {
+      "minScore": 0,
+      "maxScore": 1,
+      "clampScores": true,
+      "nanProtection": true,
+      "safeDivide": true,
+      "overflowGuard": true
+    },
+
+    "safeDefaults": {
+      "activityScore": 0.5,
+      "demandScore": 0.5,
+      "supplyScore": 0.5,
+      "trustScore": 0.6,
+      "verificationScore": 0.5,
+      "intentBoost": 1.0,
+      "contextMemoryScore": 0.5
+    },
+
+    "boostMapping": {
+      "tourism": 1.4,
+      "capital": 1.6,
+      "local": 1.0,
+      "international_hub": 1.7,
+      "business_hotspot": 1.3
+    },
+
+    "signalWeights": {
+      "marketSignals": 0.25,
+      "trust": 0.2,
+      "distance": 0.2,
+      "demand": 0.2,
+      "intent": 0.15
+    },
+
+    "formula": "normalize((weight * boost.factor * ((activityScore * signalWeights.marketSignals) + (demandScore * signalWeights.demand) + (trustScore * signalWeights.trust) + (verificationScore * 0.15) + (contextMemoryScore * 0.15) + (intentBoost * signalWeights.intent))) - (clamp(distanceKm / maxRadiusKm,0,1) * signalWeights.distance))"
+  },
+
+  "aiLayer": {
+    "enabled": true,
+
+    "signals": [
+      "user_search_intent",
+      "historical_click_behavior",
+      "repeat_interactions",
+      "service_match_probability",
+      "geo_density_pressure"
+    ],
+
+    "integration": {
+      "affectsRanking": true,
+      "boostInjectionEnabled": true,
+      "signalFusionMode": "weighted_merge"
+    },
+
+    "intentBoostRules": {
+      "high_intent_search": 1.3,
+      "browse_mode": 1.0,
+      "low_intent": 0.8
+    },
+
+    "contextMemory": {
+      "enabled": true,
+      "memoryDecayPerDay": 0.02,
+      "repeatUserBoost": 1.2
+    }
+  },
+
+  "geoFallbackSystem": {
+    "cityFallback": true,
+    "regionFallback": true,
+    "countryFallback": true,
+
+    "noMatchStrategy": "best_nearby_match",
+    "distanceExpansionSteps": [5, 10, 25, 50],
+
+    "fallbackPenalty": {
+      "region": 0.9,
+      "country": 0.7
+    }
+  },
+
+  "trustSystem": {
+    "enabled": true,
+    "decayPerDay": 0.01,
+
+    "factors": {
+      "ratingWeight": 0.5,
+      "reportPenalty": -0.4,
+      "verificationBoost": 0.4,
+      "activityBoost": 0.2
+    },
+
+    "fraudDetection": {
+      "enabled": true,
+      "flags": [
+        "fake_location",
+        "spam_activity",
+        "rapid_account_creation",
+        "rating_manipulation"
+      ]
+    }
+  },
+
+  "rankingPostProcessor": {
+    "enabled": true,
+    "steps": [
+      "sort_desc",
+      "top_percentile_boost",
+      "outlier_removal",
+      "final_clamp"
+    ],
+
+    "topBoost": {
+      "top1Percent": 1.2,
+      "top5Percent": 1.1
+    }
+  }
+}

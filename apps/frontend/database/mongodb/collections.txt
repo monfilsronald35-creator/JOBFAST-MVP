@@ -1,0 +1,382 @@
+
+// ======================================================
+// 📂 database/mongodb/collections.txt
+// ✅ MVP SAFE VERSION
+// ✅ NO UNUSED COLLECTIONS
+// ✅ NO OVERENGINEERING
+// ✅ READY FOR MONGODB ATLAS
+// ✅ CONSTRUCTION READY
+// ✅ SERVICES READY
+// ✅ BUSINESS DIRECTORY READY
+// ======================================================
+
+
+
+
+
+// ======================================================
+// 👤 COLLECTION: users
+// ======================================================
+//
+// PURPOSE:
+// - Authentication
+// - Worker profiles
+// - Construction workers
+// - Businesses
+// - Service providers
+// - Availability system
+// - GPS location
+// - Online users
+// - Verified accounts
+//
+// USED FOR:
+// - Companies
+// - Restaurants
+// - Hospitals
+// - Clinics
+// - Hotels
+// - Offices
+// - Lawyers
+// - Mechanics
+// - Tour guides
+// - Organizations
+// - Construction workers
+// - Service providers
+//
+// IMPORTANT FIELDS:
+//
+// _id
+// fullName
+// email
+// password
+// phone
+// avatar
+// bio
+//
+// constructionRole
+// businessType
+// serviceCategory
+//
+// isAvailable
+// isOnline
+// verified
+//
+// skills
+// experienceLevel
+//
+// location
+//
+// createdAt
+// updatedAt
+//
+// OPTIONAL FUTURE FIELDS:
+//
+// lastSeen
+// premium
+// language
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// 💼 COLLECTION: jobs
+// ======================================================
+//
+// PURPOSE:
+// - Job posts
+// - Service requests
+// - Business posts
+// - Construction marketplace
+//
+// USED FOR:
+// - Construction hiring
+// - Services on demand
+// - Business directory
+// - Nearby jobs
+// - Nearby workers
+// - Urgent jobs
+//
+// IMPORTANT FIELDS:
+//
+// _id
+// userId
+//
+// title
+// description
+//
+// type
+//
+// businessType
+// serviceCategory
+// constructionRole
+//
+// location
+//
+// budget
+//
+// requiredSkills
+// experienceLevel
+//
+// status
+// isAvailable
+// isUrgent
+//
+// boosted
+//
+// views
+// applications
+//
+// tags
+//
+// expiresAt
+//
+// createdAt
+// updatedAt
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// 🔔 COLLECTION: notifications
+// ======================================================
+//
+// PURPOSE:
+// - Real-time alerts
+// - Nearby jobs notifications
+// - Nearby services notifications
+// - Availability notifications
+//
+// IMPORTANT FIELDS:
+//
+// _id
+// userId
+// title
+// message
+// type
+// read
+// data
+//
+// createdAt
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// 💬 COLLECTION: messages
+// ======================================================
+//
+// PURPOSE:
+// - Chat system
+// - Worker/client messages
+// - Company communication
+//
+// IMPORTANT FIELDS:
+//
+// _id
+// senderId
+// receiverId
+// message
+// seen
+//
+// createdAt
+//
+// OPTIONAL FUTURE FIELDS:
+//
+// conversationId
+// attachments
+// deletedFor
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// ⭐ COLLECTION: reviews
+// ======================================================
+//
+// PURPOSE:
+// - Ratings
+// - Worker reputation
+// - Business reviews
+//
+// IMPORTANT FIELDS:
+//
+// _id
+// userId
+// reviewerId
+// rating
+// comment
+//
+// createdAt
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// ❤️ COLLECTION: saves
+// ======================================================
+//
+// PURPOSE:
+// - Save posts
+// - Save workers
+// - Save businesses
+//
+// IMPORTANT FIELDS:
+//
+// _id
+// userId
+// jobId
+//
+// createdAt
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// 📍 LOCATION ENGINE NOTES
+// ======================================================
+//
+// GEOJSON STRUCTURE:
+//
+// location: {
+//   type: "Point",
+//
+//   coordinates: [
+//     longitude,
+//     latitude
+//   ],
+//
+//   address: "",
+//   city: "",
+//   state: "",
+//   country: ""
+// }
+//
+// IMPORTANT:
+//
+// ✅ ALWAYS:
+// [longitude, latitude]
+//
+// ❌ NEVER:
+// [latitude, longitude]
+//
+// EXAMPLE:
+//
+// coordinates: [
+//   -68.9729,
+//   18.5601
+// ]
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// ✅ MVP COLLECTIONS ONLY
+// ======================================================
+//
+// KEEP ONLY:
+//
+// ✅ users
+// ✅ jobs
+// ✅ notifications
+// ✅ messages
+// ✅ reviews
+// ✅ saves
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// 🏢 OPTIONAL SAFE COLLECTIONS FOR FUTURE
+// ======================================================
+//
+// ⚠ DO NOT CREATE NOW
+// ⚠ CREATE ONLY WHEN NEEDED
+//
+// future collections:
+//
+// reports
+// payments
+// subscriptions
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// ❌ NOT NEEDED FOR MVP
+// ======================================================
+//
+// ❌ repositories/
+// ❌ services/
+// ❌ schemas/
+// ❌ microservices/
+// ❌ kafka/
+// ❌ redis-cluster/
+// ❌ analytics-engine/
+// ❌ ai-engine/
+// ❌ queue-workers/
+// ❌ event-sourcing/
+// ❌ enterprise-modules/
+//
+// ======================================================
+
+
+
+
+
+
+// ======================================================
+// ✅ FINAL RESULT
+// ======================================================
+//
+// ✅ SIMPLE
+// ✅ FAST
+// ✅ CLEAN
+// ✅ GEO READY
+// ✅ CONSTRUCTION READY
+// ✅ SERVICES READY
+// ✅ BUSINESS READY
+// ✅ NOTIFICATION READY
+// ✅ SEARCH READY
+// ✅ CHAT READY
+// ✅ MVP SAFE
+// ✅ NO IMPORT ERRORS
+// ✅ NO UNUSED COLLECTIONS
+// ✅ EASY TO SCALE LATER
+//
+// ======================================================

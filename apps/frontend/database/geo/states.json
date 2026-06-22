@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "domain": "geo_mvp_system",
+    "description": "Simple geo system for marketplace MVP (clean + fast + no bug)"
+  },
+
+  "businessCategories": [
+    { "id": "company", "label": "Company" },
+    { "id": "restaurant", "label": "Restaurant" },
+    { "id": "hospital", "label": "Hospital" },
+    { "id": "clinic", "label": "Clinic" },
+    { "id": "hotel", "label": "Hotel" },
+    { "id": "office", "label": "Office" },
+    { "id": "lawyer", "label": "Lawyer" },
+    { "id": "mechanic", "label": "Mechanic" },
+    { "id": "tour_guide", "label": "Tour Guide" },
+    { "id": "organization", "label": "Organization" }
+  ],
+
+  "serviceJobs": [
+    "chef",
+    "plumber",
+    "doctor",
+    "nurse",
+    "taxi",
+    "delivery",
+    "cleaning",
+    "videographer",
+    "designer"
+  ],
+
+  "constructionRoles": [
+    {
+      "id": "boss",
+      "label": "Boss / Contractor",
+      "canHire": true
+    },
+    {
+      "id": "site_manager",
+      "label": "Site Manager"
+    },
+    {
+      "id": "foreman",
+      "label": "Foreman"
+    },
+    {
+      "id": "assistant",
+      "label": "Assistant Worker"
+    },
+    {
+      "id": "worker",
+      "label": "General Worker"
+    },
+    {
+      "id": "engineer",
+      "label": "Engineer"
+    },
+    {
+      "id": "architect",
+      "label": "Architect"
+    },
+    {
+      "id": "electrician",
+      "label": "Electrician"
+    },
+    {
+      "id": "plumber",
+      "label": "Plumber"
+    },
+    {
+      "id": "mason",
+      "label": "Mason"
+    }
+  ],
+
+  "availabilityStatus": [
+    {
+      "id": "available",
+      "label": "Available",
+      "visible": true
+    },
+    {
+      "id": "busy",
+      "label": "Busy",
+      "visible": true
+    },
+    {
+      "id": "in_job",
+      "label": "In Job",
+      "visible": true
+    },
+    {
+      "id": "offline",
+      "label": "Not Available",
+      "visible": false
+    }
+  ],
+
+  "locationEngine": {
+    "enabled": true,
+    "features": [
+      "gps",
+      "distance_sorting",
+      "map_clustering",
+      "city_state_country_normalization"
+    ],
+
+    "rules": {
+      "defaultRadiusKm": 20,
+      "maxRadiusKm": 50,
+      "priority": ["city", "state", "country"]
+    }
+  },
+
+  "searchSystem": {
+    "enabled": true,
+    "filters": [
+      "category",
+      "service",
+      "construction_role",
+      "availability",
+      "distance"
+    ]
+  },
+
+  "notifications": {
+    "enabled": true,
+    "sendToAllUsers": true,
+    "types": [
+      "new_job",
+      "job_request",
+      "worker_available",
+      "service_request"
+    ]
+  }
+}

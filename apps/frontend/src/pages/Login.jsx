@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Button from "../components/Button.jsx";
-import { login } from "../services/auth";
-
-// 🧠 Trankilite pou Vite: Nou kreye ti fonksyon lokal pou ranplase i18n ki te manke a
-const getCurrentLanguage = () => "ht"; 
+import { login } from "../services/auth"; 
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const mounted = useRef(false);
   const lastSubmit = useRef(0);
@@ -68,7 +67,7 @@ export default function Login() {
     const password = (formData.password || "").trim();
 
     if (!identifier || !password) {
-      setError("Tanpri ranpli tout chan yo.");
+      setError(t("auth.fillAllFields"));
       return;
     }
 
@@ -76,12 +75,12 @@ export default function Login() {
     const isPhone = isValidPhone(identifier);
 
     if (!isEmail && !isPhone) {
-      setError("Antre yon email oswa nimewo telefòn valid.");
+      setError(t("auth.invalidEmailOrPhone"));
       return;
     }
 
     if (typeof navigator !== "undefined" && navigator?.onLine === false) {
-      setError("Pa gen koneksyon entènèt.");
+      setError(t("errors.network"));
       return;
     }
 
@@ -93,17 +92,25 @@ export default function Login() {
         email: isEmail ? identifier : undefined,
         phone: !isEmail ? identifier : undefined,
         password,
-        lang: getCurrentLanguage()
+        lang: t("common.lang") || "ht"
       });
 
-      const token = res?.token;
+      // Backend retounen { success: true, data: { token, user } }
+      const token = res?.data?.token || res?.token;
+      const user = res?.data?.user || res?.user;
 
       if (!token) {
-        setError("Repons sèvè pa valab.");
+        setError(t("errors.invalidResponse"));
         return;
       }
 
-      sessionStorage.setItem("token", token);
+      // Map user.id to _id pou AuthContext ka itilize
+      if (user?.id && !user?._id) {
+        user._id = user.id;
+      }
+
+      // Sove token ak user nan localStorage pou AuthContext ka itilize
+      localStorage.setItem("jobfast_user", JSON.stringify({ token, user }));
 
       if (mounted.current) navigate("/dashboard");
 
@@ -111,7 +118,7 @@ export default function Login() {
       if (mounted.current) {
         setError(
           err?.response?.data?.message ||
-          "Idantifyan oswa modpas pa kòrèk."
+          t("auth.invalidCredentials")
         );
       }
     } finally {
@@ -123,7 +130,7 @@ export default function Login() {
   if (!langReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg text-text-muted">
-        Loading system...
+        {t("app.loading")}
       </div>
     );
   }
@@ -132,9 +139,9 @@ export default function Login() {
     <div className="min-h-screen flex flex-col justify-center bg-bg px-6">
 
       <div className="text-center mb-8">
-        <h2 className="text-xl font-black text-text">Byenveni</h2>
+        <h2 className="text-xl font-black text-text">{t("auth.welcome")}</h2>
         <p className="text-sm text-text-muted mt-2">
-          Konekte ak kont ou
+          {t("auth.loginToAccount")}
         </p>
       </div>
 
@@ -150,7 +157,7 @@ export default function Login() {
           name="identifier"
           value={formData.identifier}
           onChange={handleChange}
-          placeholder="email oswa 509xxxx"
+          placeholder={t("auth.emailOrPhone")}
           autoComplete="username"
           className="jf-input"
         />
@@ -161,7 +168,7 @@ export default function Login() {
             type={showPassword ? "text" : "password"}
             value={formData.password}
             onChange={handleChange}
-            placeholder="••••••••"
+            placeholder={t("auth.password")}
             autoComplete="current-password"
             className="jf-input pr-16"
           />
@@ -171,7 +178,7 @@ export default function Login() {
             onClick={() => setShowPassword((p) => !p)}
             className="absolute right-3 top-3 text-xs text-text-muted"
           >
-            {showPassword ? "Kache" : "Montre"}
+            {showPassword ? t("common.hide") : t("common.show")}
           </button>
         </div>
 
@@ -180,11 +187,11 @@ export default function Login() {
           onClick={() => navigate("/forgot-password")}
           className="text-xs text-primary text-right"
         >
-          Ou bliye modpas?
+          {t("auth.forgotPassword")}
         </button>
 
         <Button type="submit" variant="primary" loading={loading} className="w-full">
-          Konekte
+          {t("auth.login")}
         </Button>
 
         <button
@@ -192,7 +199,7 @@ export default function Login() {
           onClick={() => navigate("/register")}
           className="text-sm text-primary mt-2"
         >
-          Kreye kont
+          {t("auth.createAccount")}
         </button>
       </form>
     </div>

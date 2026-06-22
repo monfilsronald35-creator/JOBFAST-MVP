@@ -51,11 +51,11 @@ export const env = Object.freeze({
   PORT: number('PORT', 5000),
   API_PREFIX: required('API_PREFIX', '/api/v1'),
 
-  JWT_SECRET: required('JWT_SECRET'),
+  JWT_SECRET: required('JWT_SECRET', 'jobfast-secret-key-development-only'),
   ENCRYPTION_KEY: required('ENCRYPTION_KEY', ''),
   BCRYPT_SALT_ROUNDS: number('BCRYPT_SALT_ROUNDS', 10),
 
-  DB_URL: required('DB_URL'),
+  DB_URL: required('DB_URL', 'mongodb://localhost:27017/jobfast'),
 
   CORS_ORIGIN: list('CORS_ORIGIN', ['*']),
 
