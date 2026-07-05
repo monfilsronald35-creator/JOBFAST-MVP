@@ -53,15 +53,23 @@ export const env = Object.freeze({
 
   JWT_SECRET: required('JWT_SECRET', 'jobfast-secret-key-development-only'),
   ENCRYPTION_KEY: required('ENCRYPTION_KEY', ''),
-  BCRYPT_SALT_ROUNDS: number('BCRYPT_SALT_ROUNDS', 10),
+  BCRYPT_SALT_ROUNDS: number('BCRYPT_SALT_ROUNDS', 12),
 
   DB_URL: required('DB_URL', 'mongodb://localhost:27017/jobfast'),
 
   CORS_ORIGIN: list('CORS_ORIGIN', ['*']),
+
+  // Admin emails — comma-separated list of emails that receive admin role
+  ADMIN_EMAILS: list('ADMIN_EMAILS', []),
 
   FEATURE_MARKETPLACE: bool('FEATURE_MARKETPLACE', true),
   FEATURE_SERVICES: bool('FEATURE_SERVICES', true),
 
   RATE_LIMIT_MAX: number('RATE_LIMIT_MAX', 100),
   MAX_RADIUS_KM: number('MAX_RADIUS_KM', 50),
+
+  // ── Stripe (required before financial features go live) ───────────────────
+  STRIPE_SECRET_KEY:      required('STRIPE_SECRET_KEY', ''),
+  STRIPE_PUBLISHABLE_KEY: required('STRIPE_PUBLISHABLE_KEY', ''),
+  STRIPE_WEBHOOK_SECRET:  required('STRIPE_WEBHOOK_SECRET', ''),
 });

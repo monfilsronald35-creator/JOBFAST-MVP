@@ -4,9 +4,10 @@
 
 import express from 'express';
 
-// 🚀 Enpòtasyon kontwolè yo (Fiks san sous-folder)
 import { loginController } from '../controllers/login.controller.js';
 import { registerController } from '../controllers/register.controller.js';
+import { authMiddleware } from '../middlewares/authMiddleware.js';
+import { usersDatabase } from '../controllers/register.controller.js';
 
 const router = express.Router();
 
@@ -57,18 +58,27 @@ function rateLimit(req, res, next) {
 router.post('/register', rateLimit, registerController);
 router.post('/login', rateLimit, loginController);
 
-// ======================================================
-// 🔒 ENDPOINTS TEMPORAIRE (SAN MIDDLEWARE POU DEBLOKE RENDER)
-// ======================================================
-router.get('/me', (req, res) => {
-  res.status(200).json({
+// ── Authenticated endpoints ───────────────────────────────────────────────────
+router.get('/me', authMiddleware, (req, res) => {
+  // Resolve user from in-memory store (ADR-001: in-memory auth for MVP)
+  const user = Array.from(usersDatabase.values()).find(
+    (u) => u.id === req.user.id || u.userId === req.user.id
+  );
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  const { password: _pw, ...safeUser } = user;
+
+  return res.status(200).json({
     success: true,
-    message: 'User profile endpoint ready (Otantifikasyon tanporè)',
+    data: { user: { ...safeUser, _id: safeUser.id } },
   });
 });
 
-router.post('/logout', (req, res) => {
-  res.status(200).json({
+router.post('/logout', authMiddleware, (req, res) => {
+  return res.status(200).json({
     success: true,
     message: 'Session closed successfully.',
   });

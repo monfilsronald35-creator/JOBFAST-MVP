@@ -14,8 +14,8 @@ import fr from "../locales/fr.json";
    📍 CONFIG
    ================================================== */
 
-export const SUPPORTED_LANGUAGES = ["es", "en", "ht", "fr"];
-export const DEFAULT_LANGUAGE = "es";
+export const SUPPORTED_LANGUAGES = ["ht", "fr", "en", "es"];
+export const DEFAULT_LANGUAGE = "ht";
 export const STORAGE_KEY = "jobfast_language";
 
 const LANG_SET = new Set(SUPPORTED_LANGUAGES);

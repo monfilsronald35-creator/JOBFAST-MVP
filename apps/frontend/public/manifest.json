@@ -3,7 +3,7 @@
   "short_name": "JobFast",
   "name": "JobFast Global Marketplace",
   "description": "Platfòm GPS elit pou konstriksyon, sèvis sou demann, pwofesyonèl endepandan ak anyè biznis.",
-  "lang": "en-US",
+  "lang": "ht",
   "dir": "ltr",
 
   "start_url": "/",
@@ -56,18 +56,6 @@
       "src": "/favicon.ico",
       "sizes": "32x32 16x16",
       "type": "image/x-icon"
-    },
-    {
-      "src": "/src/assets/images/splash.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/src/assets/images/splash.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
     }
   ]
 }

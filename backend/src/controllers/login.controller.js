@@ -1,12 +1,17 @@
 // =========================================================================
-// 🚀 JOBFAST ENTERPRISE SYSTEM — AUTHENTICATION CONTROLLER (PRODUCTION READY)
+// JOBFAST — AUTHENTICATION CONTROLLER
 // =========================================================================
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
+import { usersDatabase } from './register.controller.js';
 
 /**
- * @desc    Otantifikasyon Itilizatè & Jenerasyon Sesyon Token (Matche ak MVP Flow)
- * @route   POST /api/v1/auth/login
- * @access  Public
+ * POST /api/v1/auth/login
+ * Authenticates a user against the in-memory usersDatabase (ADR-001).
+ * Admin emails (ADMIN_EMAILS env var) bypass the password check only when
+ * no registered user exists for that email.
  */
 export const loginController = async (req, res, next) => {
   const requestId = req.id || crypto.randomUUID();
@@ -14,90 +19,92 @@ export const loginController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // 1. 🛡️ VALIDASYON SEWER
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        error: {
-          code: "MISSING_CREDENTIALS",
-          message: "Operasyon echwe. Imèl ak modpas la obligatwa.",
-          requestId
-        }
+        error: { code: 'MISSING_CREDENTIALS', message: 'Imèl ak modpas obligatwa.', requestId },
       });
     }
 
     const cleanEmail = email.trim().toLowerCase();
-
-    // 2. 🔍 VERIFIKASYON FÒMA IMÈL
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailRegex.test(cleanEmail)) {
       return res.status(400).json({
         success: false,
-        error: {
-          code: "INVALID_EMAIL_FORMAT",
-          message: "Fòma imèl sa a pa valab nan sistèm lan.",
-          requestId
-        }
+        error: { code: 'INVALID_EMAIL_FORMAT', message: 'Fòma imèl sa a pa valab.', requestId },
       });
     }
 
     if (password.length < 6) {
       return res.status(401).json({
         success: false,
-        error: {
-          code: "INVALID_CREDENTIALS",
-          message: "Idantifyan yo pa kòrèk. Verifye enfòmasyon ou yo.",
-          requestId
-        }
+        error: { code: 'INVALID_CREDENTIALS', message: 'Idantifyan yo pa kòrèk.', requestId },
       });
     }
 
-    // Tcheke si se email admin ou
-    const isMockAdmin = cleanEmail === 'admin@jobfast.com' || cleanEmail === 'ronald@jobfast.com';
+    // Look up user in in-memory store (populated by Register flow)
+    const dbUser = Array.from(usersDatabase.values()).find(
+      (u) => u.email === cleanEmail || u.emailOrPhone === cleanEmail
+    );
 
-    // 3. 🔑 SECURE SESSION GENERATION
-    const accessToken = crypto.randomBytes(64).toString('hex');
+    // Admin email check — read from env (never raw process.env)
+    const adminEmails = env.ADMIN_EMAILS || [];
+    const isAdminEmail = adminEmails.includes(cleanEmail);
 
-    // 4. 📦 RESPONSE MATRIX MATRIX (KORÈK E PLEN DAPRÈ FOTO MVP A)
+    if (dbUser) {
+      // Verify password with bcrypt (passwords stored as bcrypt hash since registration fix)
+      const passwordValid = await bcrypt.compare(password, dbUser.password);
+      if (!passwordValid) {
+        return res.status(401).json({
+          success: false,
+          error: { code: 'INVALID_CREDENTIALS', message: 'Idantifyan yo pa kòrèk.', requestId },
+        });
+      }
+    } else if (!isAdminEmail) {
+      // No user found and not an admin email — reject
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: 'Idantifyan yo pa kòrèk.', requestId },
+      });
+    }
+
+    const userId   = dbUser?.userId || dbUser?.id || `uid_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    const role     = dbUser?.role   || (isAdminEmail ? 'admin' : 'worker');
+    const userName = dbUser?.name   || dbUser?.fullName || (isAdminEmail ? 'Admin JOBFAST' : 'Itilizatè JOBFAST');
+
+    const accessToken = jwt.sign(
+      { id: userId, email: cleanEmail, role },
+      env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    const { password: _pw, ...safeDbUser } = dbUser || {};
+
     return res.status(200).json({
       success: true,
-      meta: {
-        version: "1.0.0",
-        timestamp: new Date().toISOString(),
-        requestId
-      },
+      meta: { version: '1.0.0', timestamp: new Date().toISOString(), requestId },
       data: {
         token: accessToken,
-        token_type: "Bearer",
-        expires_in: "24h",
+        token_type: 'Bearer',
+        expires_in: '24h',
         user: {
-          id: crypto.randomBytes(12).toString('hex'),
-          name: isMockAdmin ? "Ronald Monfils" : "User JobFast",
+          id: userId,
+          _id: userId,
+          name: userName,
           email: cleanEmail,
-          // Matche ak wòl ki nan foto a (Boss, Worker, Apprentice, Engineer, elatriye)
-          role: isMockAdmin ? "admin" : "Boss", 
-          tier: "premium",
-          profileComplete: true,
-          // 📍 Done GPS ak Kote ki parèt sou ekran lakay la nan foto a
-          location: {
-            city: "Bavaro",
-            state: "Punta Cana",
-            coordinates: { lat: 18.5944, lng: -68.3744 }
-          },
-          // 📊 Estatistik Pwofil ki parèt sou Ekran Pwofil MVP a
-          stats: {
-            totalJobs: 24,
-            rating: 4.8,
-            memberSince: "Jan 2024",
-            skills: ["Mason", "Beton", "Tiling", "Plomberie"]
-          },
-          lastLogin: new Date()
-        }
-      }
+          role,
+          tier: dbUser?.tier || 'free',
+          profileComplete: !!dbUser,
+          location: dbUser?.location || { city: 'Haiti', state: '', coordinates: { lat: 18.5944, lng: -72.3074 } },
+          stats: dbUser?.stats || { totalJobs: 0, rating: 0, memberSince: new Date().getFullYear().toString() },
+          lastLogin: new Date().toISOString(),
+          ...(dbUser ? safeDbUser : {}),
+        },
+      },
     });
 
   } catch (error) {
-    console.error(`[AUTH FATAL ERROR] [RID: ${requestId}] Context: ${error.message}`);
     next(error);
   }
 };

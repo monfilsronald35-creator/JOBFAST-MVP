@@ -59,7 +59,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['user', 'worker', 'business', 'admin'],
       default: 'user',
-      index: true,
     },
 
     // ================= CATEGORY SYSTEM =================
@@ -74,13 +73,11 @@ const userSchema = new mongoose.Schema(
         'impact_ngo',
       ],
       default: null,
-      index: true,
     },
 
     profession: {
       type: String,
       default: null,
-      index: true,
     },
 
     profileMetadata: {
@@ -125,7 +122,6 @@ const userSchema = new mongoose.Schema(
         'organization',
       ],
       default: null,
-      index: true,
     },
 
     // ================= CONSTRUCTION =================
@@ -144,7 +140,6 @@ const userSchema = new mongoose.Schema(
         'architect',
       ],
       default: null,
-      index: true,
     },
 
     // ================= SERVICES =================
@@ -158,17 +153,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['looking_job', 'offering_service', 'hiring', 'none'],
       default: 'none',
-      index: true,
     },
-
-    profession: { type: String, default: '', index: true },
 
     // ================= STATUS =================
     status: {
       type: String,
       enum: ['available', 'busy', 'working', 'offline'],
       default: 'available',
-      index: true,
     },
 
     isAvailable: {
@@ -206,7 +197,6 @@ userSchema.index({ constructionRole: 1 });
 userSchema.index({ status: 1 });
 userSchema.index({ serviceIntent: 1 });
 userSchema.index({ profileCompleteness: 1 });
-userSchema.index({ profession: 1 });
 
 // 🔥 FAST SEARCH INDEXES
 userSchema.index({ services: 1, isAvailable: 1 });
@@ -236,7 +226,7 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (err) {
@@ -253,7 +243,7 @@ userSchema.pre('findOneAndUpdate', async function (next) {
       update?.$set?.password || update?.password;
 
     if (password) {
-      const salt = await bcrypt.genSalt(10);
+      const salt = await bcrypt.genSalt(12);
       const hashed = await bcrypt.hash(password, salt);
 
       if (update.$set) {

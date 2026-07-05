@@ -1,33 +1,30 @@
 import React, { useMemo, useCallback } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Home,
-  Search,
-  PlusSquare,
-  Bell,
-  User,
   MapPin,
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext.jsx";
+import { getRoleNav, getRoleConfig } from "@/config/roleConfig";
 
-const NAV_ITEMS = [
-  { label: "Akeyi", path: "/dashboard", icon: Home, end: true },
-  { label: "Rechèch", path: "/search", icon: Search },
-  { label: "Paste", path: "/post-job", icon: PlusSquare, badge: 3 },
-  { label: "Notifikasyon", path: "/notifications", icon: Bell, badge: 3 },
-  { label: "Profil", path: "/profile", icon: User },
-];
-
-export default function MainLayout() {
+export default function MainLayout({ children }) {
   const navigate = useNavigate();
-  const navItems = useMemo(() => NAV_ITEMS, []);
-  const userLocation = "Bavaro, Punta Cana";
+  const { user, logout } = useAuth();
+
+  const roleKey = user?.role ?? "worker";
+  const navItems = useMemo(() => getRoleNav(roleKey), [roleKey]);
+  const roleConfig = useMemo(() => getRoleConfig(roleKey), [roleKey]);
+
+  // Derive location from user data; fall back to country-level default
+  const userCity    = user?.location?.city    || user?.location?.state || "";
+  const userCountry = user?.location?.country || "Haiti";
+  const userLocation = userCity ? `${userCity}, ${userCountry}` : userCountry;
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem("jobfast_user");
+    logout();        // disconnects socket, clears state, removes localStorage
     navigate("/login");
-  }, [navigate]);
+  }, [logout, navigate]);
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans antialiased pb-20 md:pb-0 md:pl-64">
@@ -102,13 +99,16 @@ export default function MainLayout() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-800 text-center text-[10px] text-slate-500">
-          v5.0 © JobFast
+        <div className="p-4 border-t border-slate-800 text-center text-[10px] text-slate-500 space-y-1">
+          <div className="font-semibold text-slate-400">
+            {roleConfig.icon} {roleConfig.label}
+          </div>
+          <div>v1.0 © JobFast</div>
         </div>
       </aside>
 
       <main className="flex-1 mt-16 p-4 md:p-8 max-w-7xl w-full mx-auto">
-        <Outlet />
+        {children}
       </main>
 
       <nav

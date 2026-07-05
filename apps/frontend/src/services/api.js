@@ -3,9 +3,11 @@ import axios from "axios";
 /* ================= CONFIG ================= */
 export const STORAGE_KEY = "jobfast_user";
 
+// Uses the same env var as api/axios.jsx so all requests target the same server.
 const BASE_URL =
+  import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  "https://jobfast-backend.onrender.com/v1";
+  "http://localhost:5000/api/v1";
 
 /* ================= AXIOS INSTANCE ================= */
 const API = axios.create({

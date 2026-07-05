@@ -8,7 +8,9 @@ import bcrypt from "bcryptjs";
 import { usersDatabase } from "../controllers/register.controller.js";
 import { HTTP_STATUS } from "../config/constants.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+import { env } from "../config/env.js";
+
+const JWT_SECRET = env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d";
 const REFRESH_TOKEN_EXPIRES_IN = "30d";
 
@@ -16,16 +18,17 @@ const REFRESH_TOKEN_EXPIRES_IN = "30d";
 // 🔐 HELPER FUNCTIONS
 // ======================================================
 
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+// Payload uses `id` so authMiddleware.js (which checks decoded.id) can verify tokens
+const generateToken = (userId, email = null, role = 'worker') => {
+  return jwt.sign({ id: userId, email, role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-const generateRefreshToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
+const generateRefreshToken = (userId, email = null, role = 'worker') => {
+  return jwt.sign({ id: userId, email, role }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
 };
 
 const hashPassword = async (password) => {
-  return await bcrypt.hash(password, 10);
+  return await bcrypt.hash(password, 12);
 };
 
 const comparePassword = async (password, hashedPassword) => {
@@ -53,8 +56,8 @@ const login = async ({ emailOrPhone, password, ipAddress, userAgent }) => {
   }
 
   // Generate tokens
-  const token = generateToken(user.id);
-  const refreshToken = generateRefreshToken(user.id);
+  const token = generateToken(user.id, user.email, user.accountType || 'worker');
+  const refreshToken = generateRefreshToken(user.id, user.email, user.accountType || 'worker');
 
   // Return user data without password
   const { password: _, ...userWithoutPassword } = user;
@@ -104,8 +107,8 @@ const register = async ({ fullName, emailOrPhone, password, accountType, ipAddre
   usersDatabase.set(userId, newUser);
 
   // Generate tokens
-  const token = generateToken(userId);
-  const refreshToken = generateRefreshToken(userId);
+  const token = generateToken(userId, newUser.email, newUser.accountType || 'worker');
+  const refreshToken = generateRefreshToken(userId, newUser.email, newUser.accountType || 'worker');
 
   // Return user data without password
   const { password: _, ...userWithoutPassword } = newUser;

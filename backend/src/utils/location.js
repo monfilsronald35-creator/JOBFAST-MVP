@@ -317,3 +317,66 @@ export const createMapClusterPayload =
         item.distanceKm || null
     }));
   };
+
+/* ==================================================
+   📍 CLUSTER MARKERS (grid-based)
+   Groups map markers that are within gridSizeKm of
+   each other into clusters for map performance.
+   Returns array of { id, lat, lng, count, items[] }
+   ================================================== */
+
+export const clusterMarkers = (
+  items = [],
+  gridSizeKm = 1.5
+) => {
+  const clusters = [];
+  const assigned = new Set();
+
+  items.forEach((item, idx) => {
+    if (assigned.has(idx)) return;
+
+    const loc = item.location || {};
+    const lat = toNumber(loc.lat ?? loc.latitude);
+    const lng = toNumber(loc.lng ?? loc.longitude);
+
+    if (!lat && !lng) return;
+
+    const cluster = {
+      id:    `cluster-${idx}`,
+      lat,
+      lng,
+      count: 1,
+      items: [item],
+    };
+
+    assigned.add(idx);
+
+    items.forEach((other, otherIdx) => {
+      if (assigned.has(otherIdx)) return;
+      const oLoc = other.location || {};
+      const oLat = toNumber(oLoc.lat ?? oLoc.latitude);
+      const oLng = toNumber(oLoc.lng ?? oLoc.longitude);
+      if (!oLat && !oLng) return;
+
+      const dist = calculateDistanceKm(lat, lng, oLat, oLng);
+      if (dist !== null && dist <= gridSizeKm) {
+        cluster.items.push(other);
+        cluster.count += 1;
+        assigned.add(otherIdx);
+        // Recenter cluster to centroid
+        cluster.lat = cluster.items.reduce((s, it) => {
+          const l = it.location || {};
+          return s + toNumber(l.lat ?? l.latitude);
+        }, 0) / cluster.count;
+        cluster.lng = cluster.items.reduce((s, it) => {
+          const l = it.location || {};
+          return s + toNumber(l.lng ?? l.longitude);
+        }, 0) / cluster.count;
+      }
+    });
+
+    clusters.push(cluster);
+  });
+
+  return clusters;
+};

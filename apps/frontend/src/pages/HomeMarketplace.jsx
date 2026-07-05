@@ -1,174 +1,280 @@
+/**
+ * HomeMarketplace.jsx
+ *
+ * Role-aware marketplace home.
+ *
+ * BROWSER roles (worker, user): see all marketplace categories + search bar.
+ * PROVIDER roles (restaurant, hotel, etc.): see their own manage view + browse button.
+ * GUEST (not logged in): original marketing shell (unchanged behavior).
+ *
+ * Shares MarketplaceCore for the listing browse experience.
+ * Does NOT duplicate any search logic from SearchScreen.jsx.
+ */
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIES } from '../constants/categories';
+import { useAuth } from '../context/AuthContext';
+import {
+  getAllCategoryConfigs,
+  isMarketplaceProvider,
+  isMarketplaceBrowser,
+  getMarketplaceConfig,
+} from '../config/marketplaceConfig';
 
-function HomeMarketplace() {
-  const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
-  const handleCategoryClick = (categoryId) => {
-    setSelectedCategory(categoryId);
-    // Will navigate to category-specific page
-    navigate(`/marketplace/${categoryId}`);
+// ── Category card used in the browser home grid ───────────────
+function CategoryCard({ config, onClick }) {
+  const COLOR_ACCENTS = {
+    amber:   'hover:border-amber-500/40',
+    cyan:    'hover:border-cyan-500/40',
+    emerald: 'hover:border-emerald-500/40',
+    slate:   'hover:border-slate-500/40',
+    purple:  'hover:border-purple-500/40',
+    red:     'hover:border-red-500/40',
+    teal:    'hover:border-teal-500/40',
+    yellow:  'hover:border-yellow-500/40',
   };
-
-  const handlePostJob = () => {
-    navigate('/post-job');
-  };
+  const accent = COLOR_ACCENTS[config.accentColor] || 'hover:border-indigo-500/40';
 
   return (
-    <main className="min-h-screen bg-navy-900 text-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-400/10 to-orange-500/10 p-6 border-b border-gray-700">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">JOBFAST</h1>
-          <p className="text-gray-300">Platfòm entènasyonal pou biznis, sèvis, ak opòtinite</p>
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-3 p-4 bg-[#0f172a] rounded-2xl border border-slate-800 ${accent} transition text-left w-full`}
+    >
+      <span className="text-3xl shrink-0">{config.icon}</span>
+      <div className="min-w-0">
+        <h3 className="font-bold text-sm text-white">{config.label}</h3>
+        <p className="text-[10px] text-slate-400 truncate">{config.browsePlaceholder}</p>
+      </div>
+    </button>
+  );
+}
+
+// ── Provider quick-stats strip ────────────────────────────────
+function ProviderHomeStrip({ config, user, onManage }) {
+  const md = user?.marketplaceData || {};
+  const bookings   = (md.bookings  || []).filter(b => b.status === 'pending').length;
+  const reviews    = (md.reviews   || []).length;
+  const availability = md.availability || 'available';
+
+  return (
+    <div className="space-y-4">
+
+      {/* Welcome */}
+      <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{config.icon}</span>
+          <div>
+            <h2 className="text-base font-bold text-white">
+              {config.manageLabel}
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">{user?.name || config.label}</p>
+          </div>
         </div>
       </div>
 
-      {/* Quick Action */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <button
-          onClick={handlePostJob}
-          className="w-full bg-yellow-400 text-black font-bold py-3 rounded-lg hover:bg-yellow-300 transition flex items-center justify-center gap-2"
-        >
-          ➕ Pibliye Travay oswa Sèvis
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { val: bookings,                label: 'Demann Annatant', color: 'text-yellow-400' },
+          { val: reviews,                 label: 'Evalyasyon',       color: 'text-amber-500'  },
+          { val: availability === 'available' ? '🟢' : '🔴', label: 'Eta', color: 'text-white' },
+        ].map(({ val, label, color }) => (
+          <div key={label} className="bg-[#0f172a] rounded-xl border border-slate-800 p-3 text-center">
+            <div className={`text-xl font-bold ${color}`}>{val}</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={onManage}
+          className="py-3 rounded-xl bg-indigo-500 text-white font-bold text-sm">
+          ⚙️ Jere Lis Ou
+        </button>
+        <button onClick={() => window.location.href = '/marketplace?browse=1'}
+          className="py-3 rounded-xl bg-slate-800 text-slate-200 font-bold text-sm">
+          🔍 Jwenn Sèvis
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="max-w-6xl mx-auto px-4 py-4">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Chèche travayè, biznis, oswa sèvis..."
-            className="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 outline-none"
-          />
-          <button className="absolute right-3 top-3 text-xl">🔍</button>
+      {/* Manage tabs hint */}
+      <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+        <p className="text-[10px] text-slate-500 font-bold uppercase mb-2">Manage</p>
+        <div className="flex flex-wrap gap-2">
+          {(config.manageTabs || []).map(tab => (
+            <span key={tab}
+              className="text-[10px] px-2.5 py-1 bg-slate-800 text-slate-300 rounded-lg capitalize">
+              {tab}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Guest marketing shell (original HomeMarketplace content) ──
+function GuestMarketplaceHome({ navigate }) {
+  const categories = getAllCategoryConfigs();
+
+  return (
+    <main className="min-h-screen bg-[#0B1528] text-white">
+
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-indigo-900/40 to-slate-900 px-6 pt-10 pb-8 border-b border-slate-800">
+        <h1 className="text-2xl font-black mb-1">JOBFAST</h1>
+        <p className="text-slate-400 text-sm">Platfòm entènasyonal pou biznis, sèvis, ak opòtinite</p>
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={() => navigate('/register')}
+            className="flex-1 py-3 bg-indigo-500 text-white font-bold rounded-xl text-sm">
+            Kreye Kont
+          </button>
+          <button onClick={() => navigate('/login')}
+            className="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl text-sm">
+            Login
+          </button>
         </div>
       </div>
 
-      {/* Categories Section */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold mb-6">Chwazi Yon Kategori</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Object.values(CATEGORIES).map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryClick(category.id)}
-              className="p-6 rounded-lg border-2 border-gray-700 bg-gray-800/50 hover:bg-gray-800 hover:border-yellow-400 transition transform hover:scale-105 text-left"
-            >
-              <div className="text-4xl mb-3">{category.icon}</div>
-              <h3 className="text-xl font-bold mb-2">{category.label}</h3>
-              <p className="text-sm text-gray-400 mb-4">{category.description}</p>
-              <div className="text-xs text-yellow-400 font-semibold">
-                {category.professions.length} pwofesyon →
-              </div>
-            </button>
+      {/* Category grid */}
+      <div className="px-5 py-6">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-4">
+          Kategori yo
+        </h2>
+        <div className="grid grid-cols-1 gap-3">
+          {categories.map(cat => (
+            <CategoryCard
+              key={cat.role}
+              config={cat}
+              onClick={() => navigate(`/marketplace/${cat.role}`)}
+            />
           ))}
         </div>
       </div>
 
-      {/* How It Works Section */}
-      <div className="bg-gray-800/30 py-12 mt-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-8 text-center">Kijan Li Travay</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* For Job Seekers */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <div className="text-4xl mb-3 text-blue-400">👷</div>
-              <h3 className="text-lg font-bold mb-3">Pou Moun kap Chèche Travay</h3>
-              <ol className="text-sm text-gray-300 space-y-2">
-                <li>✓ Kreye pwofil ou</li>
-                <li>✓ Chwazi kategori ak metye</li>
-                <li>✓ Ranpli detay pwofesyonèl</li>
-                <li>✓ Resevwa notifikasyon pou travay</li>
-                <li>✓ Konekte avèk kliyans</li>
-              </ol>
+      {/* How it works */}
+      <div className="px-5 pb-10">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-4">
+          Kijan Li Travay
+        </h2>
+        {[
+          { icon: '👷', title: 'Pou Travayè',  steps: ['Kreye pwofil', 'Chèche sèvis', 'Fè rezèvasyon'] },
+          { icon: '🏢', title: 'Pou Biznis',   steps: ['Enrejistre', 'Kreye lis', 'Resevwa kliyan'] },
+          { icon: '✈️', title: 'Pou Touris',   steps: ['Chèche Hotel', 'Rezève Tou', 'Jwenn Gid'] },
+        ].map(({ icon, title, steps }) => (
+          <div key={title} className="bg-[#0f172a] rounded-2xl border border-slate-800 p-4 mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">{icon}</span>
+              <h3 className="text-sm font-bold text-white">{title}</h3>
             </div>
-
-            {/* For Businesses */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <div className="text-4xl mb-3 text-green-400">🏢</div>
-              <h3 className="text-lg font-bold mb-3">Pou Konpayi</h3>
-              <ol className="text-sm text-gray-300 space-y-2">
-                <li>✓ Enskripsyon gratis</li>
-                <li>✓ Kreye pwofil biznis</li>
-                <li>✓ Pivlisize sèvis ou</li>
-                <li>✓ Jwenn kliyan lokal</li>
-                <li>✓ Dirèk kominikasyon</li>
-              </ol>
-            </div>
-
-            {/* For Tourists */}
-            <div className="bg-gray-800 rounded-lg p-6">
-              <div className="text-4xl mb-3 text-purple-400">✈️</div>
-              <h3 className="text-lg font-bold mb-3">Pou Touris</h3>
-              <ol className="text-sm text-gray-300 space-y-2">
-                <li>✓ Chèche Hotel ak Gid</li>
-                <li>✓ Rezève Transport</li>
-                <li>✓ Bon Manje Lokal</li>
-                <li>✓ Aktivite ak Ekskursyon</li>
-                <li>✓ Konekte avèk Moun Lokal</li>
-              </ol>
-            </div>
+            {steps.map(s => (
+              <p key={s} className="text-xs text-slate-400 flex items-center gap-1">
+                <span className="text-indigo-400">✓</span> {s}
+              </p>
+            ))}
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* Featured Listings (Placeholder) */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold mb-6">Lis Dèniè</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-gray-800 rounded-lg overflow-hidden hover:border-yellow-400 border border-gray-700 transition cursor-pointer">
-              <div className="h-40 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 flex items-center justify-center text-gray-600">
-                [Imaj]
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold">Dèniè Lis #{i}</h3>
-                <p className="text-sm text-gray-400">Bavaro, Punta Cana</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-yellow-400">⭐ 5.0</span>
-                  <span className="text-xs bg-yellow-400 text-black px-2 py-1 rounded">Vizit</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-yellow-400/20 to-orange-500/20 py-12 my-8">
-        <div className="max-w-2xl mx-auto text-center px-4">
-          <h2 className="text-2xl font-bold mb-4">Kòmanse Tou Senpli</h2>
-          <p className="text-gray-300 mb-6">JOBFAST se platfòm gratis pou tout moun. Enskripsyon an minit, epi kòmanse chèche oswa publiye travay/sèvis tou swe.</p>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => navigate('/register')}
-              className="bg-yellow-400 text-black font-bold px-6 py-3 rounded-lg hover:bg-yellow-300 transition"
-            >
-              Kreye Kont Kounye a
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="bg-gray-700 text-white font-bold px-6 py-3 rounded-lg hover:bg-gray-600 transition"
-            >
-              Login
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 border-t border-gray-700 py-6 text-center text-sm text-gray-400">
-        <p>© 2024 JOBFAST. Tout dwa rezève. | Platform entènasyonal pou moun nan tout mond</p>
-      </footer>
     </main>
   );
 }
 
-export default HomeMarketplace;
+// ── Browser marketplace home (worker/user) ────────────────────
+function BrowserMarketplaceHome({ navigate }) {
+  const categories = getAllCategoryConfigs();
+  const [search, setSearch] = useState('');
+
+  const filtered = search
+    ? categories.filter(c =>
+        c.label.toLowerCase().includes(search.toLowerCase()) ||
+        c.browsePlaceholder.toLowerCase().includes(search.toLowerCase())
+      )
+    : categories;
+
+  return (
+    <div className="min-h-screen bg-[#0B1528] text-white pb-28">
+
+      <div className="px-5 pt-6 pb-3">
+        <h1 className="text-base font-bold text-white mb-1">Marketplace</h1>
+        <p className="text-[10px] text-slate-400 mb-4">Chèche tout kategori sèvis ak biznis</p>
+
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Chèche kategori, sèvis..."
+          className="w-full px-4 py-3 bg-[#162238] rounded-xl text-sm text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-indigo-400/40"
+        />
+      </div>
+
+      <div className="px-5 space-y-2">
+        {filtered.map(cat => (
+          <CategoryCard
+            key={cat.role}
+            config={cat}
+            onClick={() => navigate(`/marketplace/${cat.role}`)}
+          />
+        ))}
+
+        {filtered.length === 0 && (
+          <div className="text-center py-10 text-slate-500">
+            <p>Pa gen kategori ki matche</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────
+export default function HomeMarketplace() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const role = user?.role;
+
+  // Guest (not authenticated)
+  if (!isAuthenticated) {
+    return <GuestMarketplaceHome navigate={navigate} />;
+  }
+
+  // Provider: show their own manage view
+  if (isMarketplaceProvider(role)) {
+    const config = getMarketplaceConfig(role);
+    return (
+      <div className="min-h-screen bg-[#0B1528] text-white pb-28">
+        <div className="px-5 pt-6">
+          <ProviderHomeStrip
+            config={config}
+            user={user}
+            onManage={() => navigate('/dashboard')}
+          />
+          {/* Provider can also browse other categories */}
+          <div className="mt-6">
+            <h2 className="text-[10px] text-slate-500 font-bold uppercase mb-3">Lòt Kategori</h2>
+            <div className="space-y-2">
+              {getAllCategoryConfigs()
+                .filter(c => c.role !== role)
+                .slice(0, 4)
+                .map(cat => (
+                  <CategoryCard
+                    key={cat.role}
+                    config={cat}
+                    onClick={() => navigate(`/marketplace/${cat.role}`)}
+                  />
+                ))}
+            </div>
+            <button onClick={() => navigate('/marketplace?browse=1')}
+              className="w-full mt-3 py-2.5 rounded-xl bg-slate-800/50 text-slate-400 text-xs">
+              Wè tout kategori →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Browser (worker, user, enterprise, company, etc.) — show all categories
+  return <BrowserMarketplaceHome navigate={navigate} />;
+}

@@ -8,6 +8,7 @@ dist/
 build/
 .next/
 .out/
+vite.config.js.timestamp-*.mjs
 
 # 🤫 Sekirite ak Kle Sekrè (Pa janm moute .env ou sou GitHub!)
 .env
@@ -37,3 +38,4 @@ scripts/
 tests/
 docs/
 
+                                                                                                                                                                                                                                                                           

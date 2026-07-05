@@ -2,40 +2,26 @@
    🚀 ADMIN SERVICE (ULTRA PRO V3 - ENTERPRISE READY)
 ====================================================== */
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const WS_URL = process.env.REACT_APP_WS_URL || "ws://localhost:5000";
+const API_URL = (import.meta.env?.VITE_API_URL || "http://localhost:5000").replace(/\/api\/v1$/, '');
+const WS_URL  = API_URL.replace(/^http/, 'ws');
 
 /* ======================================================
    🔐 AUTH SYSTEM (JWT + REFRESH READY)
 ====================================================== */
 
-const getAccessToken = () => {
-  try {
-    return localStorage.getItem("access_token") || "";
-  } catch {
-    return "";
-  }
+const STORAGE_KEY = "jobfast_user";
+
+const _getStored = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch { return null; }
 };
 
-const getRefreshToken = () => {
-  try {
-    return localStorage.getItem("refresh_token") || "";
-  } catch {
-    return "";
-  }
-};
-
-const getUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    return null;
-  }
-};
+const getAccessToken  = () => _getStored()?.token || "";
+const getRefreshToken = () => _getStored()?.refreshToken || "";
+const getUser         = () => _getStored()?.user || null;
 
 export const assertAdmin = (user = getUser()) => {
   if (!user) throw new Error("Unauthorized");
-  if (user.role !== "admin") throw new Error("Admin access required");
+  if (!['admin', 'super_admin'].includes(user.role)) throw new Error("Admin access required");
   return true;
 };
 
@@ -57,10 +43,14 @@ const refreshAccessToken = async () => {
   if (!res.ok) throw new Error("Refresh failed");
 
   const data = await res.json();
+  const newToken = data.token || data.accessToken;
 
-  localStorage.setItem("access_token", data.accessToken);
+  const stored = _getStored();
+  if (stored) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...stored, token: newToken }));
+  }
 
-  return data.accessToken;
+  return newToken;
 };
 
 /* ======================================================

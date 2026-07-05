@@ -1,4 +1,4 @@
-// ======================================================
+﻿// ======================================================
 // 🛡️ JOBFAST ADMIN ROUTES (AI CORE ENTERPRISE MAX + FULL SYSTEM)
 // ======================================================
 
@@ -27,6 +27,25 @@ import {
   verifyUser,
   suspendUser,
   banUser,
+
+  // Governance
+  exportAuditLogs,
+  getFeatureFlags,
+  updateFeatureFlag,
+  getModerationQueue,
+  moderateItem,
+  getFraudDashboard,
+  runFraudScan,
+  getDisputeQueue,
+  updateDisputeStatus,
+  getCountryConfig,
+  updateCountryConfig,
+  getPermissionMatrix,
+  updatePermissionMatrix,
+  getConsentLogs,
+  updateUserConsent,
+  getGovernanceHealth,
+  getSecurityEvents,
 
   aiAdminGateway,
 
@@ -277,5 +296,36 @@ router.get("/health", adminHealthCheck);
 // - real-time fraud blocking
 // - predictive scaling engine
 // - zero-admin automation mode
+
+// ======================================================
+// GOVERNANCE ROUTES
+// ======================================================
+
+router.get("/governance/audit-logs", getAuditLogs);
+router.get("/governance/audit-logs/export", exportAuditLogs);
+
+router.get("/governance/feature-flags", getFeatureFlags);
+router.post("/governance/feature-flags/:id", updateFeatureFlag);
+
+router.get("/governance/moderation", getModerationQueue);
+router.post("/governance/moderation/:type/:id", moderateItem);
+
+router.get("/governance/fraud", getFraudDashboard);
+router.post("/governance/fraud/scan", runFraudScan);
+
+router.get("/governance/disputes", getDisputeQueue);
+router.patch("/governance/disputes/:id", updateDisputeStatus);
+
+router.get("/governance/countries", getCountryConfig);
+router.patch("/governance/countries/:code", updateCountryConfig);
+
+router.get("/governance/permissions", getPermissionMatrix);
+router.patch("/governance/permissions/:role", updatePermissionMatrix);
+
+router.get("/governance/consent", getConsentLogs);
+router.patch("/governance/consent/:userId", updateUserConsent);
+
+router.get("/governance/health", getGovernanceHealth);
+router.get("/governance/security", getSecurityEvents);
 
 export default router;

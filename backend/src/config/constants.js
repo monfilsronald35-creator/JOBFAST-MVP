@@ -1,12 +1,27 @@
+
+
 // ======================================================
 // 👤 USER ROLES
 // ======================================================
 
 export const USER_ROLES = Object.freeze({
-  USER: "user",
-  WORKER: "worker",
-  BUSINESS: "business",
-  ADMIN: "admin",
+  // ── Existing roles (unchanged) ──
+  USER:             "user",
+  WORKER:           "worker",
+  BUSINESS:         "business",       // legacy alias → company
+  ADMIN:            "admin",
+  // ── Extended roles ──
+  COMPANY:          "company",
+  ENTERPRISE:       "enterprise",
+  RESTAURANT:       "restaurant",
+  HOTEL:            "hotel",
+  RENTAL:           "rental",
+  OFFICE:           "office",
+  HOSPITAL:         "hospital",
+  CLINIC:           "clinic",
+  TOURISM:          "tourism",
+  SERVICE_PROVIDER: "service_provider",
+  SUPER_ADMIN:      "super_admin",
 });
 
 export const USER_ROLE_VALUES = Object.freeze(
@@ -35,7 +50,7 @@ export const ACCOUNT_STATUS_VALUES = Object.freeze(
 export const DEFAULT_RADIUS_KM = 10;
 
 export const DEFAULTS = Object.freeze({
-  LANGUAGE: "es",
+  LANGUAGE: "ht",
   CURRENCY: "USD",
   USER_ROLE: USER_ROLES.USER,
   ACCOUNT_STATUS: ACCOUNT_STATUS.PENDING,

@@ -28,7 +28,9 @@ export default defineConfig({
     strictPort: true,
     open: true,
     proxy: {
-      "/v1": {
+      // Proxy relative /api/v1 requests to the backend (only useful when
+      // VITE_API_URL is not set and the frontend uses relative paths).
+      "/api/v1": {
         target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
@@ -57,13 +59,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: [
-            "react",
-            "react-dom",
-            "react-router-dom",
-            "axios",
-            "socket.io-client",
-          ],
+          vendor: ["react", "react-dom", "react-router-dom"],
+          network: ["axios", "socket.io-client"],
+          icons: ["lucide-react"],
         },
       },
     },

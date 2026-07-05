@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -10,6 +10,18 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/users.routes.js';
 import jobRoutes from './routes/jobs.routes.js';
 import notificationRoutes from './routes/notifications.routes.js';
+import searchRoutes from './routes/search.routes.js';
+import workersRoutes from './routes/workers.routes.js';
+import companyRoutes from './routes/company.routes.js';
+import enterpriseRoutes from './routes/enterprise.routes.js';
+import marketplaceRoutes from './routes/marketplace.routes.js';
+import locationRoutes    from './routes/location.routes.js';
+import reputationRoutes  from './routes/reputation.routes.js';
+import adminRoutes       from './routes/admin.routes.js';
+import walletRoutes      from './routes/wallet.routes.js';
+import paymentRoutes     from './routes/payment.routes.js';
+import escrowRoutes      from './routes/escrow.routes.js';
+import payoutRoutes      from './routes/payout.routes.js';
 
 // ✅ CHEMEN KORÈK LA: Nou retire "/middlewares" paske fichye a nan menm nivo ak app.js
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
@@ -58,6 +70,18 @@ app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/jobs`, jobRoutes);
 app.use(`${API_PREFIX}/notifications`, notificationRoutes);
+app.use(`${API_PREFIX}/search`, searchRoutes);
+app.use(`${API_PREFIX}/workers`, workersRoutes);
+app.use(`${API_PREFIX}/company`, companyRoutes);
+app.use(`${API_PREFIX}/enterprise`, enterpriseRoutes);
+app.use(`${API_PREFIX}/marketplace`, marketplaceRoutes);
+app.use(`${API_PREFIX}/location`,    locationRoutes);
+app.use(`${API_PREFIX}/reputation`,  reputationRoutes);
+app.use(`${API_PREFIX}/admin`,      adminRoutes);
+app.use(`${API_PREFIX}/wallet`,     walletRoutes);
+app.use(`${API_PREFIX}/payments`,   paymentRoutes);
+app.use(`${API_PREFIX}/escrow`,     escrowRoutes);
+app.use(`${API_PREFIX}/payouts`,    payoutRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

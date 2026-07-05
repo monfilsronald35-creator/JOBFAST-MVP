@@ -1,7 +1,8 @@
-// =========================================================================
+﻿// =========================================================================
 // 🚀 JOBFAST ENTERPRISE SYSTEM — REGISTER CONTROLLER (INTERNATIONAL SCALE)
 // =========================================================================
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import { CATEGORIES, PROFESSION_METADATA, getRequiredFields } from '../config/categories.js';
 import { notifyNewCategoryMember } from '../services/matchingService.js';
 
@@ -136,10 +137,10 @@ export const registerController = async (req, res, next) => {
     const gpsLocation = {
       city: city.trim(),
       state: state.trim(),
-      country: "Dominican Republic", // Oubyen "Haiti" selon zòn nan
+      country: "Haiti",
       coordinates: {
-        latitude: 18.5944 + (Math.random() - 0.5) * 0.02, // Similasyon ti varyasyon GPS
-        longitude: -68.3744 + (Math.random() - 0.5) * 0.02
+        latitude: 18.5432 + (Math.random() - 0.5) * 0.02,
+        longitude: -72.3395 + (Math.random() - 0.5) * 0.02
       }
     };
 
@@ -156,7 +157,7 @@ export const registerController = async (req, res, next) => {
       _id: userId,
       name: name.trim(),
       email: cleanEmail,
-      password: crypto.createHash('sha256').update(password).digest('hex'), // Sekirize modpas la nan kòd
+      password: await bcrypt.hash(password, 12),
       accountType,
       role: role?.toLowerCase().trim() || userProfession?.toLowerCase().trim() || "user",
       category: userCategory,
@@ -238,3 +239,4 @@ export const registerController = async (req, res, next) => {
     next(error); // Voye l dirèkteman bay ErrorHandler.js
   }
 };
+

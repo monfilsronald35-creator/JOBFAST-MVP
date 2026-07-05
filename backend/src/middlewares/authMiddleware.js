@@ -5,6 +5,7 @@
 
 import jwt from "jsonwebtoken";
 import { HTTP_STATUS, USER_ROLES } from "../config/constants.js";
+import { env } from "../config/env.js";
 
 // ======================================================
 // 🔎 TOKEN EXTRACTION (SAFE)
@@ -31,7 +32,7 @@ const getTokenFromHeader = (req) => {
 
 const verifyToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    return jwt.verify(token, env.JWT_SECRET);
   } catch (error) {
     return null;
   }

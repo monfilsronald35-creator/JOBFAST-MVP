@@ -1,6 +1,7 @@
-import React, { Suspense, lazy } from "react";
+﻿import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext.jsx";
+import { getRoleDefaultPath } from "@/config/roleConfig";
 
 // Layouts & UI Components
 import MainLayout from "@/components/MainLayout.jsx";
@@ -30,28 +31,38 @@ const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers.jsx"));
 const AdminJobs = lazy(() => import("@/pages/admin/AdminJobs.jsx"));
 const AdminSupport = lazy(() => import("@/pages/admin/AdminSupport.jsx"));
 const AdminSettings = lazy(() => import("@/pages/admin/AdminSettings.jsx"));
+const AdminGovernance = lazy(() => import("@/pages/admin/AdminGovernance.jsx"));
 
-// Security Gates
+// ── Security Gates ────────────────────────────────────────────────────────
+// AuthGate: any authenticated user; admin/super_admin are redirected to /admin
 const AuthGate = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <Loader text="Loading session..." />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const role = user?.role;
+  if (role === "admin" || role === "super_admin") {
+    return <Navigate to="/admin" replace />;
+  }
   return <MainLayout>{children}</MainLayout>;
 };
 
+// GuestGate: unauthenticated only; redirects to role-specific default path on login
 const GuestGate = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <Loader text="Loading application..." />;
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) {
+    return <Navigate to={getRoleDefaultPath(user?.role)} replace />;
+  }
   return <PublicLayout>{children}</PublicLayout>;
 };
 
+// AdminGate: admin AND super_admin only
 const AdminGate = ({ children }) => {
   const { user, isAuthenticated, loading } = useAuth();
   if (loading) return <Loader text="Loading admin panel..." />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  // Verify user role
-  if (user?.role !== "admin") return <Navigate to="/dashboard" replace />;
+  const isAdminRole = user?.role === "admin" || user?.role === "super_admin";
+  if (!isAdminRole) return <Navigate to="/dashboard" replace />;
   return <MainLayout>{children}</MainLayout>;
 };
 
@@ -95,6 +106,7 @@ function AppRoutes() {
           <Route path="/admin/jobs" element={<AdminGate><AdminJobs /></AdminGate>} />
           <Route path="/admin/support" element={<AdminGate><AdminSupport /></AdminGate>} />
           <Route path="/admin/settings" element={<AdminGate><AdminSettings /></AdminGate>} />
+          <Route path="/admin/governance" element={<AdminGate><AdminGovernance /></AdminGate>} />
 
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" replace />} />

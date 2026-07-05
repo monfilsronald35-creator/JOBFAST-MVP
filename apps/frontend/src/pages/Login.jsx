@@ -95,9 +95,9 @@ export default function Login() {
         lang: t("common.lang") || "ht"
       });
 
-      // Backend retounen { success: true, data: { token, user } }
-      const token = res?.data?.token || res?.token;
-      const user = res?.data?.user || res?.user;
+      // services/auth.js wraps axios response in success(data), so token is at res.data.data.token
+      const token = res?.data?.data?.token || res?.data?.token || res?.token;
+      const user  = res?.data?.data?.user  || res?.data?.user  || res?.user;
 
       if (!token) {
         setError(t("errors.invalidResponse"));

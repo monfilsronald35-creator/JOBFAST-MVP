@@ -50,7 +50,8 @@ export const verifyUser = asyncHandler(async (req, res) => {
 });
 
 export const banUser = asyncHandler(async (req, res) => {
-  const user = await userService.updateStatus(req.params.id, ACCOUNT_STATUS.BANNED);
+  // ACCOUNT_STATUS has no BANNED — map to DELETED (permanent) per governance
+  const user = await userService.updateStatus(req.params.id, ACCOUNT_STATUS.DELETED);
 
   return res.status(HTTP_STATUS.OK).json({
     success: true,
