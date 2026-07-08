@@ -24,7 +24,16 @@
     "loading": "Veuillez patienter...",
     "all": "Tout",
     "start": "COMMENCER",
-    "skip": "Passer"
+    "skip": "Passer",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "lang": "fr",
+    "select": "Choisir...",
+    "optional": "optionnel",
+    "required": "obligatoire",
+    "continue": "Continuer",
+    "finish": "Terminer",
+    "confirm": "Confirmer"
   },
 
   "onboarding": {
@@ -49,8 +58,15 @@
     "email": "Email",
     "password": "Mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
-    "forgotPassword": "Mot de passe oublié",
-    "createAccount": "Créer un compte"
+    "forgotPassword": "Mot de passe oublié ?",
+    "createAccount": "Créer un compte",
+    "welcome": "Bon retour",
+    "loginToAccount": "Connectez-vous à votre compte pour continuer",
+    "emailOrPhone": "Email ou numéro de téléphone",
+    "noAccount": "Pas de compte ?",
+    "fillAllFields": "Veuillez remplir tous les champs",
+    "invalidEmailOrPhone": "Email ou téléphone invalide",
+    "invalidCredentials": "Email ou mot de passe incorrect"
   },
 
   "user": {
@@ -214,9 +230,57 @@
 
   "errors": {
     "general": "Une erreur est survenue. Veuillez réessayer.",
-    "network": "Erreur réseau",
+    "network": "Pas de réseau. Connexion échouée.",
     "auth": "Non autorisé",
-    "notFound": "Introuvable"
+    "notFound": "Introuvable",
+    "invalidResponse": "Réponse du serveur invalide"
+  },
+
+  "splash": {
+    "slogan": "Travail. Services. Business.\nOù que vous soyez — tout dans une seule app.",
+    "start": "COMMENCER",
+    "login": "Se Connecter",
+    "register": "Créer un Compte",
+    "chooseLanguage": "Choisir votre langue"
+  },
+
+  "registration": {
+    "title": "Créer un Compte",
+    "step": "Étape {{current}} / {{total}}",
+    "progress": "{{percent}}% complété",
+    "chooseCategory": "Choisissez Votre Catégorie",
+    "chooseAccountType": "Sélectionnez la catégorie qui vous correspond le mieux",
+    "selectCategory": "Choisissez votre catégorie",
+    "selectRole": "Choisissez votre rôle",
+    "selectProfession": "Choisissez votre profession",
+    "basicInfo": "Informations de Base",
+    "professionalDetails": "Détails Professionnels",
+    "profileStep": "Profil Professionnel",
+    "name": "Nom complet",
+    "email": "Email",
+    "phone": "Numéro de téléphone",
+    "location": "Localisation",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "requiredFields": "Champs obligatoires",
+    "optionalFields": "Champs optionnels",
+    "next": "Suivant",
+    "back": "Retour",
+    "submit": "Créer un Compte",
+    "success": "Compte créé avec succès !",
+    "error": "Erreur lors de la création du compte",
+    "fillRequired": "Veuillez remplir tous les champs obligatoires",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "country": "Pays",
+    "zone": "Région / État",
+    "city": "Ville",
+    "experienceLevel": "Niveau d'Expérience",
+    "hourlyRate": "Tarif Horaire",
+    "currency": "Devise",
+    "specialties": "Spécialités",
+    "photoProfile": "Photo de Profil",
+    "photoHint": "Votre photo apparaîtra sur votre profil"
   },
 
   "monitoring": {

@@ -6,29 +6,6 @@
     "version": "Versión {{version}}"
   },
 
-  "system": {
-    "status": {
-      "online": "En línea",
-      "offline": "Desconectado",
-      "error": "Error",
-      "maintenance": "Mantenimiento"
-    },
-
-    "feedback": {
-      "success": "Éxito",
-      "error": "Error",
-      "warning": "Advertencia",
-      "info": "Información"
-    },
-
-    "loading": {
-      "global": "Cargando...",
-      "jobs": "Cargando empleos...",
-      "location": "Obteniendo ubicación...",
-      "search": "Buscando..."
-    }
-  },
-
   "common": {
     "search": "Buscar",
     "save": "Guardar",
@@ -47,102 +24,118 @@
     "loading": "Por favor espere...",
     "all": "Todos",
     "start": "COMENZAR",
-    "skip": "Saltar"
+    "skip": "Saltar",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "lang": "es",
+    "select": "Elegir...",
+    "optional": "opcional",
+    "required": "obligatorio",
+    "continue": "Continuar",
+    "finish": "Finalizar",
+    "confirm": "Confirmar"
   },
 
   "onboarding": {
     "slide1": {
       "title": "Bienvenido a JOBFAST",
-      "description": "Plataforma que conecta trabajadores, clientes, empresas y servicios en su zona."
+      "description": "Plataforma que conecta trabajadores, clientes, empresas y servicios en tu zona."
     },
     "slide2": {
-      "title": "Encontrar Servicios Más Rápido",
-      "description": "Localice trabajadores calificados, servicios de construcción y profesionales verificados cerca de usted gracias a la tecnología GPS en tiempo real."
+      "title": "Encuentra Servicios Más Rápido",
+      "description": "Localiza trabajadores calificados, servicios de construcción y profesionales verificados cerca de ti con tecnología GPS en tiempo real."
     },
     "slide3": {
-      "title": "Desarrolle Su Actividad",
-      "description": "Gestione su perfil, reciba notificaciones importantes, encuentre nuevas oportunidades y haga crecer su negocio con JOBFAST."
-    }
-  },
-
-  "ui": {
-    "actions": {
-      "search": "Buscar",
-      "save": "Guardar",
-      "cancel": "Cancelar",
-      "close": "Cerrar",
-      "next": "Siguiente",
-      "back": "Atrás",
-      "submit": "Enviar",
-      "edit": "Editar",
-      "delete": "Eliminar",
-      "view": "Ver",
-      "retry": "Reintentar"
-    },
-
-    "states": {
-      "ok": "OK",
-      "yes": "Sí",
-      "no": "No",
-      "loading": "Por favor espera...",
-      "all": "Todo"
-    },
-
-    "empty": {
-      "jobs": "No hay empleos disponibles",
-      "services": "No hay servicios disponibles",
-      "business": "No se encontraron negocios",
-      "notifications": "Aún no hay notificaciones",
-      "search": "No se encontraron resultados"
+      "title": "Desarrolla Tu Actividad",
+      "description": "Gestiona tu perfil, recibe notificaciones importantes, encuentra nuevas oportunidades y haz crecer tu negocio con JOBFAST."
     }
   },
 
   "auth": {
-    "states": {
-      "loggedIn": "Sesión iniciada",
-      "loggedOut": "Sesión cerrada",
-      "pending": "Autenticando...",
-      "failed": "Autenticación fallida"
-    },
-
-    "actions": {
-      "login": "Iniciar sesión",
-      "register": "Registrarse",
-      "logout": "Cerrar sesión",
-      "createAccount": "Crear cuenta",
-      "forgotPassword": "Olvidé mi contraseña"
-    },
-
-    "fields": {
-      "email": "Correo electrónico",
-      "password": "Contraseña",
-      "confirmPassword": "Confirmar contraseña"
-    }
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "createAccount": "Registrarse",
+    "welcome": "Bienvenido de nuevo",
+    "loginToAccount": "Inicia sesión en tu cuenta para continuar",
+    "emailOrPhone": "Correo electrónico o teléfono",
+    "noAccount": "¿No tienes cuenta?",
+    "fillAllFields": "Por favor completa todos los campos",
+    "invalidEmailOrPhone": "Correo o teléfono inválido",
+    "invalidCredentials": "Correo o contraseña incorrectos"
   },
 
-  "validation": {
-    "required": "Este campo es obligatorio",
-    "emailInvalid": "Formato de correo inválido",
-    "minLength": "Mínimo {{count}} caracteres",
-    "maxLength": "Máximo {{count}} caracteres"
+  "errors": {
+    "general": "Algo salió mal. Inténtalo de nuevo.",
+    "network": "Sin red. La conexión falló.",
+    "auth": "No autorizado",
+    "notFound": "No encontrado",
+    "invalidResponse": "Respuesta del servidor inválida"
+  },
+
+  "splash": {
+    "slogan": "Trabajo. Servicios. Negocios.\nDonde estés — todo en una app.",
+    "start": "COMENZAR",
+    "login": "Iniciar Sesión",
+    "register": "Crear Cuenta",
+    "chooseLanguage": "Elige tu idioma"
+  },
+
+  "registration": {
+    "title": "Crear Cuenta",
+    "step": "Paso {{current}} / {{total}}",
+    "progress": "{{percent}}% completado",
+    "chooseCategory": "Elige Tu Categoría",
+    "chooseAccountType": "Selecciona la categoría que mejor te describe",
+    "selectCategory": "Elige tu categoría",
+    "selectRole": "Elige tu rol",
+    "selectProfession": "Elige tu profesión",
+    "basicInfo": "Información Básica",
+    "professionalDetails": "Detalles Profesionales",
+    "profileStep": "Perfil Profesional",
+    "name": "Nombre completo",
+    "email": "Correo electrónico",
+    "phone": "Número de teléfono",
+    "location": "Ubicación",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "requiredFields": "Campos obligatorios",
+    "optionalFields": "Campos opcionales",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "submit": "Crear Cuenta",
+    "success": "¡Cuenta creada con éxito!",
+    "error": "Error al crear la cuenta",
+    "fillRequired": "Por favor completa todos los campos obligatorios",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "country": "País",
+    "zone": "Región / Estado",
+    "city": "Ciudad",
+    "experienceLevel": "Nivel de Experiencia",
+    "hourlyRate": "Tarifa por Hora",
+    "currency": "Moneda",
+    "specialties": "Especialidades",
+    "photoProfile": "Foto de Perfil",
+    "photoHint": "Tu foto aparecerá en tu perfil"
   },
 
   "user": {
     "profile": {
       "title": "Perfil",
       "edit": "Editar perfil",
-
-      "fields": {
-        "bio": "Biografía",
-        "location": "Ubicación",
-        "availability": "Disponibilidad",
-        "distance": "Distancia",
-        "skills": "Habilidades",
-        "services": "Servicios",
-        "business": "Negocio"
-      }
+      "bio": "Biografía",
+      "location": "Ubicación",
+      "availability": "Disponibilidad",
+      "distance": "Distancia",
+      "skills": "Habilidades",
+      "services": "Servicios",
+      "business": "Negocio"
     },
-
     "status": {
       "available": "Disponible",
       "busy": "Ocupado",
@@ -152,54 +145,116 @@
   },
 
   "categories": {
+    "title": "Categorías",
+    "select": "Elige tu categoría",
+    "selectProfession": "Elige tu profesión",
+    "fillDetails": "Completa tus detalles profesionales",
     "construction": {
       "title": "Construcción",
-
       "roles": {
-        "boss": "Maestro de obra",
-        "worker": "Obrero",
-        "assistant": "Ayudante",
-        "apprentice": "Aprendiz",
-        "engineer": "Ingeniero",
         "mason": "Albañil",
         "carpenter": "Carpintero",
         "electrician": "Electricista",
         "painter": "Pintor",
+        "welder": "Soldador",
+        "plumber": "Plomero",
         "tiler": "Colocador de baldosas",
-        "welder": "Soldador"
-      },
-
-      "actions": {
-        "findWorkers": "Buscar trabajadores cercanos",
-        "findJobs": "Buscar trabajos de construcción"
+        "ironworker": "Herrero",
+        "roofer": "Techador",
+        "general_worker": "Obrero General"
       }
     },
-
     "services": {
-      "title": "Servicios a demanda",
-
-      "items": {
-        "chef": "Chef privado",
-        "plumber": "Plomero",
+      "title": "Servicios a Demanda",
+      "roles": {
+        "chef": "Chef / Cocinero",
         "doctor": "Médico",
-        "nurse": "Enfermero/a",
-        "taxi": "Taxi",
-        "delivery": "Delivery",
+        "nurse": "Enfermero(a)",
+        "lawyer": "Abogado",
+        "taxi": "Taxista",
+        "delivery": "Repartidor",
         "cleaning": "Limpieza",
         "videographer": "Videógrafo",
-        "designer": "Diseñador"
-      },
-
-      "actions": {
-        "request": "Solicitar servicio",
-        "findNearby": "Buscar servicios cercanos"
+        "designer": "Diseñador",
+        "photographer": "Fotógrafo",
+        "mechanic": "Mecánico",
+        "musician": "Músico"
       }
     }
   },
 
+  "location": {
+    "title": "Ubicación",
+    "current": "Ubicación actual",
+    "gps": {
+      "enable": "Activar GPS",
+      "accuracy": "Precisión: {{accuracy}}m"
+    },
+    "distance": {
+      "sorting": "Ordenar por distancia",
+      "nearby": "Resultados cercanos",
+      "within": "Dentro de {{radius}} km",
+      "km": "{{distance}} km",
+      "m": "{{distance}} m",
+      "mi": "{{distance}} mi"
+    },
+    "map": {
+      "clusters": "Grupos en el mapa",
+      "view": "Ver en el mapa"
+    },
+    "fields": {
+      "city": "Ciudad",
+      "state": "Estado / Región",
+      "country": "País",
+      "coordinates": "Coordenadas"
+    },
+    "actions": {
+      "searchNearby": "Buscar cerca"
+    }
+  },
+
+  "notifications": {
+    "title": "Notificaciones",
+    "types": {
+      "job": "Alerta de empleo",
+      "service": "Alerta de servicio",
+      "business": "Alerta de negocio",
+      "match": "Nueva coincidencia",
+      "nearby": "Trabajador cercano disponible"
+    },
+    "actions": {
+      "markAll": "Marcar todo como leído",
+      "clearAll": "Eliminar todo"
+    }
+  },
+
+  "jobs": {
+    "title": "Empleos",
+    "actions": {
+      "find": "Buscar empleos",
+      "post": "Publicar empleo",
+      "apply": "Postularse",
+      "details": "Ver detalles"
+    },
+    "status": {
+      "available": "Empleo disponible",
+      "completed": "Empleo completado",
+      "active": "Empleo activo"
+    },
+    "nearby": {
+      "workers": "Trabajadores cercanos"
+    }
+  },
+
+  "search": {
+    "placeholder": "Buscar trabajadores, negocios o servicios...",
+    "results": "{{count}} resultados",
+    "noResults": "No se encontraron resultados",
+    "searching": "Buscando..."
+  },
+
   "business": {
     "title": "Directorio de negocios",
-
     "categories": {
       "companies": "Empresas",
       "restaurants": "Restaurantes",
@@ -214,102 +269,12 @@
     }
   },
 
-  "location": {
-    "title": "Ubicación",
-    "current": "Ubicación actual",
-
-    "gps": {
-      "enable": "Activar GPS",
-      "accuracy": "Precisión: {{accuracy}}m"
-    },
-
-    "distance": {
-      "sorting": "Ordenar por distancia",
-      "nearby": "Resultados cercanos",
-      "within": "Dentro de {{radius}} km",
-      "km": "{{distance}} km",
-      "m": "{{distance}} m",
-      "mi": "{{distance}} mi"
-    },
-
-    "map": {
-      "clusters": "Grupos en el mapa",
-      "view": "Ver en el mapa"
-    },
-
-    "fields": {
-      "city": "Ciudad",
-      "state": "Provincia/Estado",
-      "country": "País",
-      "coordinates": "Coordenadas"
-    },
-
-    "actions": {
-      "searchNearby": "Buscar cerca"
-    }
-  },
-
-  "notifications": {
-    "title": "Notificaciones",
-
-    "types": {
-      "job": "Alerta de empleo",
-      "service": "Alerta de servicio",
-      "business": "Alerta de negocio",
-      "match": "Nueva coincidencia encontrada",
-      "nearby": "Trabajador cercano disponible"
-    },
-
-    "actions": {
-      "markAll": "Marcar todo como leído",
-      "clearAll": "Eliminar todo"
-    }
-  },
-
-  "jobs": {
-    "title": "Empleos",
-
-    "actions": {
-      "find": "Buscar empleos",
-      "post": "Publicar empleo",
-      "apply": "Postularse",
-      "details": "Ver detalles"
-    },
-
-    "status": {
-      "available": "Empleo disponible",
-      "completed": "Empleo completado",
-      "active": "Empleo activo"
-    },
-
-    "nearby": {
-      "workers": "Trabajadores cercanos"
-    }
-  },
-
-  "search": {
-    "placeholder": "Buscar trabajadores, negocios o servicios...",
-    "results": {
-      "one": "{{count}} resultado",
-      "other": "{{count}} resultados"
-    },
-    "noResults": "No se encontraron resultados",
-    "searching": "Buscando..."
-  },
-
   "time": {
     "now": "Ahora",
     "today": "Hoy",
     "yesterday": "Ayer",
     "minutesAgo": "Hace {{count}} min",
     "hoursAgo": "Hace {{count}} horas"
-  },
-
-  "errors": {
-    "general": "Algo salió mal. Inténtalo de nuevo.",
-    "network": "Error de red",
-    "auth": "No autorizado",
-    "notFound": "No encontrado"
   },
 
   "monitoring": {

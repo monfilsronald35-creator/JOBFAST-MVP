@@ -24,7 +24,16 @@
     "loading": "Tanpri tann...",
     "all": "Tout",
     "start": "KÒMANSE",
-    "skip": "Sote"
+    "skip": "Sote",
+    "hide": "Kache",
+    "show": "Montre",
+    "lang": "ht",
+    "select": "Chwazi...",
+    "optional": "opsyonèl",
+    "required": "obligatwa",
+    "continue": "Kontinye",
+    "finish": "Fini",
+    "confirm": "Konfime"
   },
 
   "onboarding": {
@@ -49,8 +58,15 @@
     "email": "Imèl",
     "password": "Modpas",
     "confirmPassword": "Konfime modpas",
-    "forgotPassword": "Ou bliye modpas",
-    "createAccount": "Kreye kont"
+    "forgotPassword": "Ou bliye modpas?",
+    "createAccount": "Kreye kont",
+    "welcome": "Byenvini ankò",
+    "loginToAccount": "Konekte nan kont ou pou kontinye",
+    "emailOrPhone": "Imèl oswa nimewo telefòn",
+    "noAccount": "Ou pa gen kont?",
+    "fillAllFields": "Ranpli tout chan yo",
+    "invalidEmailOrPhone": "Imèl oswa nimewo an pa valid",
+    "invalidCredentials": "Imèl oswa modpas mal"
   },
 
   "user": {
@@ -210,10 +226,14 @@
     "title": "Kreye Kont",
     "step": "Etap {{current}} / {{total}}",
     "progress": "{{percent}}% fini",
+    "chooseCategory": "Chwazi Kategori Ou",
+    "chooseAccountType": "Chwazi kategori ki pi dekri ou a",
     "selectCategory": "Chwazi kategori w",
+    "selectRole": "Chwazi wòl ou",
     "selectProfession": "Chwazi pwofesyon ou",
-    "basicInfo": "Enfòmasyon de baz",
-    "professionalDetails": "Detay pwofesyonèl",
+    "basicInfo": "Enfòmasyon de Baz",
+    "professionalDetails": "Detay Pwofesyonèl",
+    "profileStep": "Pwofil Pwofesyonèl",
     "name": "Non konplè",
     "email": "Imèl",
     "phone": "Nimewo telefòn",
@@ -225,8 +245,20 @@
     "next": "Pwochen",
     "back": "Retounen",
     "submit": "Kreye Kont",
-    "success": "Kont kreye avèk siksè",
-    "error": "Erè pandan kreyasyon kont la"
+    "success": "Kont kreye avèk siksè!",
+    "error": "Erè pandan kreyasyon kont la",
+    "fillRequired": "Tanpri ranpli tout chan obligatwa yo",
+    "alreadyHaveAccount": "Ou deja gen kont?",
+    "passwordMismatch": "Modpas yo pa menm",
+    "country": "Peyi",
+    "zone": "Rejyon / Depatman",
+    "city": "Vil",
+    "experienceLevel": "Nivo Eksperyans",
+    "hourlyRate": "Tarif pa Èdtan",
+    "currency": "Lajan",
+    "specialties": "Espesyalite",
+    "photoProfile": "Foto Pwofil",
+    "photoHint": "Foto ou pral parèt sou pwofil ou"
   },
 
   "professionFields": {
@@ -430,9 +462,18 @@
 
   "errors": {
     "general": "Gen yon erè ki rive. Eseye ankò.",
-    "network": "Erè rezo",
+    "network": "Pa gen rezo. Koneksyon an echwe.",
     "auth": "Otorizasyon echwe",
-    "notFound": "Pa jwenn"
+    "notFound": "Pa jwenn",
+    "invalidResponse": "Repons sèvè a pa valid"
+  },
+
+  "splash": {
+    "slogan": "Travay. Sèvis. Biznis.\nKote w ye — tout nan yon sèl app.",
+    "start": "KÒMANSE",
+    "login": "Konekte",
+    "register": "Kreye Kont",
+    "chooseLanguage": "Chwazi lang ou"
   },
 
   "monitoring": {

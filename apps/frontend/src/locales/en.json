@@ -6,107 +6,136 @@
     "version": "Version {{version}}"
   },
 
-  "system": {
-    "status": {
-      "online": "Online",
-      "offline": "Offline",
-      "error": "Error",
-      "maintenance": "Maintenance"
-    },
-
-    "feedback": {
-      "success": "Success",
-      "error": "Error",
-      "warning": "Warning",
-      "info": "Info"
-    },
-
-    "loading": {
-      "global": "Loading...",
-      "jobs": "Loading jobs...",
-      "location": "Getting location...",
-      "search": "Searching..."
-    }
+  "common": {
+    "search": "Search",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "retry": "Retry",
+    "loading": "Please wait...",
+    "all": "All",
+    "start": "GET STARTED",
+    "skip": "Skip",
+    "hide": "Hide",
+    "show": "Show",
+    "lang": "en",
+    "select": "Choose...",
+    "optional": "optional",
+    "required": "required",
+    "continue": "Continue",
+    "finish": "Finish",
+    "confirm": "Confirm"
   },
 
-  "ui": {
-    "actions": {
-      "search": "Search",
-      "save": "Save",
-      "cancel": "Cancel",
-      "close": "Close",
-      "next": "Next",
-      "back": "Back",
-      "submit": "Submit",
-      "edit": "Edit",
-      "delete": "Delete",
-      "view": "View",
-      "retry": "Retry"
+  "onboarding": {
+    "slide1": {
+      "title": "Welcome to JOBFAST",
+      "description": "Platform connecting workers, clients, businesses and services in your area."
     },
-
-    "states": {
-      "ok": "OK",
-      "yes": "Yes",
-      "no": "No",
-      "loading": "Please wait...",
-      "all": "All"
+    "slide2": {
+      "title": "Find Services Faster",
+      "description": "Locate qualified workers, construction services and verified professionals near you with real-time GPS technology."
     },
-
-    "empty": {
-      "jobs": "No jobs available",
-      "services": "No services available",
-      "business": "No businesses found",
-      "notifications": "No notifications yet",
-      "search": "No results found"
+    "slide3": {
+      "title": "Grow Your Activity",
+      "description": "Manage your profile, receive important notifications, find new opportunities and grow your business with JOBFAST."
     }
   },
 
   "auth": {
-    "states": {
-      "loggedIn": "Logged in",
-      "loggedOut": "Logged out",
-      "pending": "Authenticating...",
-      "failed": "Authentication failed"
-    },
-
-    "actions": {
-      "login": "Login",
-      "register": "Register",
-      "logout": "Logout",
-      "createAccount": "Create Account",
-      "forgotPassword": "Forgot Password"
-    },
-
-    "fields": {
-      "email": "Email",
-      "password": "Password",
-      "confirmPassword": "Confirm Password"
-    }
+    "login": "Sign In",
+    "register": "Sign Up",
+    "logout": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "createAccount": "Sign Up",
+    "welcome": "Welcome back",
+    "loginToAccount": "Sign in to your account to continue",
+    "emailOrPhone": "Email or phone number",
+    "noAccount": "Don't have an account?",
+    "fillAllFields": "Please fill in all fields",
+    "invalidEmailOrPhone": "Invalid email or phone number",
+    "invalidCredentials": "Invalid email or password"
   },
 
-  "validation": {
-    "required": "This field is required",
-    "emailInvalid": "Invalid email format",
-    "minLength": "Minimum {{count}} characters",
-    "maxLength": "Maximum {{count}} characters"
+  "errors": {
+    "general": "Something went wrong. Please try again.",
+    "network": "No network. Connection failed.",
+    "auth": "Unauthorized",
+    "notFound": "Not found",
+    "invalidResponse": "Invalid server response"
+  },
+
+  "splash": {
+    "slogan": "Work. Services. Business.\nWherever you are — all in one app.",
+    "start": "GET STARTED",
+    "login": "Sign In",
+    "register": "Create Account",
+    "chooseLanguage": "Choose your language"
+  },
+
+  "registration": {
+    "title": "Create Account",
+    "step": "Step {{current}} / {{total}}",
+    "progress": "{{percent}}% complete",
+    "chooseCategory": "Choose Your Category",
+    "chooseAccountType": "Select the category that best describes you",
+    "selectCategory": "Choose your category",
+    "selectRole": "Choose your role",
+    "selectProfession": "Choose your profession",
+    "basicInfo": "Basic Information",
+    "professionalDetails": "Professional Details",
+    "profileStep": "Professional Profile",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone number",
+    "location": "Location",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "requiredFields": "Required fields",
+    "optionalFields": "Optional fields",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Create Account",
+    "success": "Account created successfully!",
+    "error": "Registration failed",
+    "fillRequired": "Please fill in all required fields",
+    "alreadyHaveAccount": "Already have an account?",
+    "passwordMismatch": "Passwords do not match",
+    "country": "Country",
+    "zone": "Region / State",
+    "city": "City",
+    "experienceLevel": "Experience Level",
+    "hourlyRate": "Hourly Rate",
+    "currency": "Currency",
+    "specialties": "Specialties",
+    "photoProfile": "Profile Photo",
+    "photoHint": "Your photo will appear on your profile"
   },
 
   "user": {
     "profile": {
       "title": "Profile",
       "edit": "Edit Profile",
-
-      "fields": {
-        "bio": "Bio",
-        "location": "Location",
-        "availability": "Availability",
-        "distance": "Distance",
-        "skills": "Skills",
-        "services": "Services",
-        "business": "Business"
-      }
+      "bio": "Bio",
+      "location": "Location",
+      "availability": "Availability",
+      "distance": "Distance",
+      "skills": "Skills",
+      "services": "Services",
+      "business": "Business"
     },
-
     "status": {
       "available": "Available",
       "busy": "Busy",
@@ -116,54 +145,116 @@
   },
 
   "categories": {
+    "title": "Categories",
+    "select": "Choose your category",
+    "selectProfession": "Choose your profession",
+    "fillDetails": "Fill in your professional details",
     "construction": {
       "title": "Construction",
-
       "roles": {
-        "boss": "Boss",
-        "worker": "Worker",
-        "assistant": "Assistant",
-        "apprentice": "Apprentice",
-        "engineer": "Engineer",
         "mason": "Mason",
         "carpenter": "Carpenter",
         "electrician": "Electrician",
         "painter": "Painter",
+        "welder": "Welder",
+        "plumber": "Plumber",
         "tiler": "Tiler",
-        "welder": "Welder"
-      },
-
-      "actions": {
-        "findWorkers": "Find Workers Nearby",
-        "findJobs": "Find Construction Jobs"
+        "ironworker": "Iron Worker",
+        "roofer": "Roofer",
+        "general_worker": "General Worker"
       }
     },
-
     "services": {
       "title": "Services On Demand",
-
-      "items": {
-        "chef": "Private Chef",
-        "plumber": "Plumber",
+      "roles": {
+        "chef": "Chef / Cook",
         "doctor": "Doctor",
         "nurse": "Nurse",
-        "taxi": "Taxi",
+        "lawyer": "Lawyer",
+        "taxi": "Taxi Driver",
         "delivery": "Delivery",
         "cleaning": "Cleaning",
         "videographer": "Videographer",
-        "designer": "Designer"
-      },
-
-      "actions": {
-        "request": "Request Service",
-        "findNearby": "Find Services Nearby"
+        "designer": "Designer",
+        "photographer": "Photographer",
+        "mechanic": "Mechanic",
+        "musician": "Musician"
       }
     }
   },
 
+  "location": {
+    "title": "Location",
+    "current": "Current Location",
+    "gps": {
+      "enable": "Enable GPS",
+      "accuracy": "Accuracy: {{accuracy}}m"
+    },
+    "distance": {
+      "sorting": "Sort by distance",
+      "nearby": "Nearby results",
+      "within": "Within {{radius}} km",
+      "km": "{{distance}} km",
+      "m": "{{distance}} m",
+      "mi": "{{distance}} mi"
+    },
+    "map": {
+      "clusters": "Map clusters",
+      "view": "View on map"
+    },
+    "fields": {
+      "city": "City",
+      "state": "State / Region",
+      "country": "Country",
+      "coordinates": "Coordinates"
+    },
+    "actions": {
+      "searchNearby": "Search nearby"
+    }
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "types": {
+      "job": "Job Alert",
+      "service": "Service Alert",
+      "business": "Business Alert",
+      "match": "New Match Found",
+      "nearby": "Nearby Worker Available"
+    },
+    "actions": {
+      "markAll": "Mark all as read",
+      "clearAll": "Clear all"
+    }
+  },
+
+  "jobs": {
+    "title": "Jobs",
+    "actions": {
+      "find": "Find Jobs",
+      "post": "Post a Job",
+      "apply": "Apply",
+      "details": "View Details"
+    },
+    "status": {
+      "available": "Job Available",
+      "completed": "Job Completed",
+      "active": "Active Job"
+    },
+    "nearby": {
+      "workers": "Workers Nearby"
+    }
+  },
+
+  "search": {
+    "placeholder": "Search workers, businesses or services...",
+    "results": "{{count}} results",
+    "noResults": "No results found",
+    "searching": "Searching..."
+  },
+
   "business": {
     "title": "Business Directory",
-
     "categories": {
       "companies": "Companies",
       "restaurants": "Restaurants",
@@ -178,102 +269,12 @@
     }
   },
 
-  "location": {
-    "title": "Location",
-    "current": "Current Location",
-
-    "gps": {
-      "enable": "Enable GPS",
-      "accuracy": "Accuracy: {{accuracy}}m"
-    },
-
-    "distance": {
-      "sorting": "Distance Sorting",
-      "nearby": "Nearby Results",
-      "within": "Within {{radius}} km",
-      "km": "{{distance}} km",
-      "m": "{{distance}} m",
-      "mi": "{{distance}} mi"
-    },
-
-    "map": {
-      "clusters": "Map Clusters",
-      "view": "View on Map"
-    },
-
-    "fields": {
-      "city": "City",
-      "state": "State",
-      "country": "Country",
-      "coordinates": "Coordinates"
-    },
-
-    "actions": {
-      "searchNearby": "Search Nearby"
-    }
-  },
-
-  "notifications": {
-    "title": "Notifications",
-
-    "types": {
-      "job": "Job Alert",
-      "service": "Service Alert",
-      "business": "Business Alert",
-      "match": "New Match Found",
-      "nearby": "Nearby Worker Available"
-    },
-
-    "actions": {
-      "markAll": "Mark all as read",
-      "clearAll": "Clear all"
-    }
-  },
-
-  "jobs": {
-    "title": "Jobs",
-
-    "actions": {
-      "find": "Find Jobs",
-      "post": "Post a Job",
-      "apply": "Apply",
-      "details": "View Details"
-    },
-
-    "status": {
-      "available": "Job Available",
-      "completed": "Job Completed",
-      "active": "Active Job"
-    },
-
-    "nearby": {
-      "workers": "Workers Nearby"
-    }
-  },
-
-  "search": {
-    "placeholder": "Search workers, businesses or services...",
-    "results": {
-      "one": "{{count}} result",
-      "other": "{{count}} results"
-    },
-    "noResults": "No results found",
-    "searching": "Searching..."
-  },
-
   "time": {
     "now": "Now",
     "today": "Today",
     "yesterday": "Yesterday",
     "minutesAgo": "{{count}} min ago",
     "hoursAgo": "{{count}} hours ago"
-  },
-
-  "errors": {
-    "general": "Something went wrong. Please try again.",
-    "network": "Network error",
-    "auth": "Unauthorized",
-    "notFound": "Not found"
   },
 
   "monitoring": {

@@ -9,7 +9,6 @@ import {
 } from '../../constants/categories';
 import { useAuth } from '../../context/AuthContext';
 import ROLE_CONFIGS, {
-  ROLE_PROFESSION_PRESETS,
   ROLE_PROFESSIONS,
   getRoleDefaultPath,
 } from '../../config/roleConfig';
@@ -37,15 +36,18 @@ function Register() {
   const [successMessage, setSuccessMessage] = useState('');
 
   const [formData, setFormData] = useState({
-    role:            '',  // platform role from ROLES (e.g. "restaurant")
-    category:        '',  // derived: PROFESSION_METADATA[profession].category
-    profession:      '',  // profession key from categories.js
+    role:            '',
+    category:        '',
+    profession:      '',
     fullName:        '',
     email:           '',
     phone:           '',
     password:        '',
     confirmPassword: '',
     location:        '',
+    country:         'ht',
+    zone:            '',
+    city:            '',
     profileMetadata: {},
   });
 
@@ -86,30 +88,20 @@ function Register() {
 
   // ── Step 1: Role selected ───────────────────────────────────
   const handleRoleSelect = useCallback((selectedRole) => {
-    const presetProfession = ROLE_PROFESSION_PRESETS[selectedRole];
     updateFormData('role', selectedRole);
     updateFormData('profession', '');
     updateFormData('category', '');
-
-    if (presetProfession) {
-      // Single-profession role: auto-set profession + category, skip Step 2
-      const profMeta = PROFESSION_METADATA[presetProfession];
-      updateFormData('profession', presetProfession);
-      updateFormData('category', profMeta?.category || '');
-      setCurrentStep(STEPS.BASIC_INFO);
-    } else {
-      // Multi-profession role: show profession picker
-      setCurrentStep(STEPS.PROFESSION);
-    }
+    setCurrentStep(STEPS.PROFESSION);
   }, [updateFormData]);
 
-  // ── Step 2: Profession selected (multi-profession roles) ────
-  const handleProfessionSelect = useCallback((professionId) => {
+  // ── Step 2: Sub-role selected ────────────────────────────────
+  const handleProfessionSelect = useCallback((professionId, jobRoleId) => {
     const profMeta = PROFESSION_METADATA[professionId];
     updateFormData('profession', professionId);
     updateFormData('category', profMeta?.category || '');
+    if (jobRoleId) updateMetadata('jobRole', jobRoleId);
     setCurrentStep(STEPS.BASIC_INFO);
-  }, [updateFormData]);
+  }, [updateFormData, updateMetadata]);
 
   // ── Step 3: Basic info confirmed ────────────────────────────
   const handleBasicInfoNext = useCallback((basicData) => {
@@ -117,7 +109,10 @@ function Register() {
     updateFormData('email', basicData.email);
     updateFormData('phone', basicData.phone);
     updateFormData('password', basicData.password);
-    updateFormData('location', basicData.location);
+    updateFormData('country', basicData.country || 'ht');
+    updateFormData('zone', basicData.zone || '');
+    updateFormData('city', basicData.city || '');
+    updateFormData('location', basicData.city || basicData.location || '');
     setCurrentStep(STEPS.PROFESSIONAL);
   }, [updateFormData]);
 
@@ -146,8 +141,9 @@ function Register() {
         profession:      formData.profession,
         profileMetadata: formData.profileMetadata,
         accountType:     'individual',
-        city:            formData.location || 'Port-au-Prince',
-        state:           'Ouest',
+        city:            formData.city || formData.location || 'Port-au-Prince',
+        state:           formData.zone || 'Ouest',
+        country:         formData.country || 'ht',
       };
 
       const res = await API.post('/auth/register', registrationData, {
@@ -214,16 +210,7 @@ function Register() {
       updateFormData('category', '');
       setCurrentStep(STEPS.CATEGORY);
     } else if (currentStep === STEPS.BASIC_INFO) {
-      const isMulti = ROLE_PROFESSION_PRESETS[formData.role] === null;
-      if (isMulti) {
-        setCurrentStep(STEPS.PROFESSION);
-      } else {
-        // Single-profession: skip back over Step 2
-        updateFormData('role', '');
-        updateFormData('profession', '');
-        updateFormData('category', '');
-        setCurrentStep(STEPS.CATEGORY);
-      }
+      setCurrentStep(STEPS.PROFESSION);
     } else if (currentStep === STEPS.PROFESSIONAL) {
       setCurrentStep(STEPS.BASIC_INFO);
     }
