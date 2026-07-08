@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Button from "../components/Button.jsx";
-import { login } from "../services/auth"; 
+import { login } from "../services/auth";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { login: authLogin } = useAuth();
 
   const mounted = useRef(false);
   const lastSubmit = useRef(0);
@@ -119,7 +121,8 @@ export default function Login() {
 
       if (user?.id && !user?._id) user._id = user.id;
 
-      localStorage.setItem("jobfast_user", JSON.stringify({ token, user }));
+      // Update AuthContext so AuthGate recognises the session immediately
+      authLogin({ ...user, token });
 
       if (mounted.current) navigate("/dashboard");
 

@@ -13,14 +13,18 @@ import { io } from "socket.io-client";
 const AuthContext = createContext(null);
 const STORAGE_KEY = "jobfast_user";
 
-// 👑 KOREKSYON 2: Dinamik URL - Si w sou Render l ap pran lyen an, si w lokal l ap pran localhost
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// Socket URL: direct to Render backend (Vercel proxy doesn't support WebSockets)
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ||
+  (import.meta.env.PROD
+    ? "https://jobfast-backend.onrender.com"
+    : "http://localhost:5000");
 
-const socket = io(API_URL, {
+const socket = io(SOCKET_URL, {
   autoConnect: false,
   reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
+  reconnectionAttempts: 3,
+  reconnectionDelay: 2000,
+  transports: ["websocket", "polling"],
 });
 
 export function AuthProvider({ children }) {
