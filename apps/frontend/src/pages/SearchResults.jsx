@@ -5,12 +5,8 @@ import { useNavigate } from "react-router-dom";
    🟢 SOCKET PLACEHOLDER (READY FOR BACKEND)
 ====================================================== */
 const socket = {
-  on: (event, cb) => {
-    console.log(`[SOCKET LISTEN] ${event}`);
-  },
-  off: (event) => {
-    console.log(`[SOCKET OFF] ${event}`);
-  },
+  on: (_event, _cb) => {},
+  off: (_event) => {},
 };
 
 /* ======================================================

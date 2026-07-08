@@ -1,17 +1,10 @@
-import React, { useState, memo } from "react"; // Korije 'Import' -> 'import'
+import React, { useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Button from "../components/Button.jsx";
-
-// Placeholder SVG for onboarding image
-const OnboardingImage = () => (
-  <svg viewBox="0 0 200 200" className="w-full h-full">
-    <rect x="20" y="20" width="160" height="160" rx="20" fill="#EAB308" fillOpacity="0.1" />
-    <circle cx="100" cy="70" r="30" fill="#EAB308" fillOpacity="0.3" />
-    <rect x="60" y="110" width="80" height="50" rx="10" fill="#EAB308" fillOpacity="0.2" />
-    <text x="100" y="140" textAnchor="middle" fontSize="20" fill="#EAB308">JOBFAST</text>
-  </svg>
-);
+import img1 from "../assets/images/onboarding-1.png";
+import img2 from "../assets/images/onboarding-2.png";
+import img3 from "../assets/images/onboarding-3.png";
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -22,17 +15,17 @@ function Onboarding() {
     {
       title: t("onboarding.slide1.title"),
       description: t("onboarding.slide1.description"),
-      image: <OnboardingImage />,
+      image: img1,
     },
     {
       title: t("onboarding.slide2.title"),
       description: t("onboarding.slide2.description"),
-      image: <OnboardingImage />,
+      image: img2,
     },
     {
       title: t("onboarding.slide3.title"),
       description: t("onboarding.slide3.description"),
-      image: <OnboardingImage />,
+      image: img3,
     },
   ];
 
@@ -97,9 +90,11 @@ function Onboarding() {
           className="mx-auto flex w-full max-w-sm flex-col items-center text-center animate-fade-in"
         >
           <div className="mb-8 flex justify-center">
-            <div className="max-h-[260px] w-full object-contain drop-shadow-[0_16px_35px_rgba(0,0,0,0.55)]">
-              {slides[currentSlide].image}
-            </div>
+            <img
+              src={slides[currentSlide].image}
+              alt={slides[currentSlide].title}
+              className="max-h-[260px] w-full object-contain drop-shadow-[0_16px_35px_rgba(0,0,0,0.55)]"
+            />
           </div>
 
           <h2 className="mb-3 px-4 text-xl font-black tracking-tight text-white font-sora">

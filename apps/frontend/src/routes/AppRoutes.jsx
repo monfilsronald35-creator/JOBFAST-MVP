@@ -53,7 +53,7 @@ const GuestGate = ({ children }) => {
   if (isAuthenticated) {
     return <Navigate to={getRoleDefaultPath(user?.role)} replace />;
   }
-  return <PublicLayout>{children}</PublicLayout>;
+  return <>{children}</>;
 };
 
 // AdminGate: admin AND super_admin only
@@ -72,8 +72,8 @@ function AppRoutes() {
       <Suspense fallback={<Loader text="Loading application..." />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<PublicLayout><SplashScreen /></PublicLayout>} />
-          <Route path="/onboarding" element={<PublicLayout><Onboarding /></PublicLayout>} />
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/home" element={<PublicLayout><HomeMarketplace /></PublicLayout>} />
 
           {/* Auth Routes */}

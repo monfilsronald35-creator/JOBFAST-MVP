@@ -156,9 +156,10 @@ function Register() {
 
       if (!mountedRef.current) return;
 
-      // Response shape: { success, meta, data: { message, userId, user: {...} } }
+      // Response shape: { success, meta, data: { message, token, user: {...} } }
       const responseBody = res?.data;
       const userObj      = responseBody?.data?.user;
+      const regToken     = responseBody?.data?.token;
       const successMsg   = responseBody?.data?.message || 'Kont kreye avèk siksè!';
 
       setSuccessMessage(successMsg);
@@ -167,8 +168,8 @@ function Register() {
         // Ensure _id is present for AuthContext.login() compatibility
         if (userObj.id && !userObj._id) userObj._id = userObj.id;
 
-        // Store flat user object so user?.role resolves correctly in components
-        authLogin(userObj);
+        // Include token so API interceptor can attach Authorization header
+        authLogin(regToken ? { ...userObj, token: regToken } : userObj);
 
         setTimeout(() => {
           if (mountedRef.current) navigate(getRoleDefaultPath(userObj.role));

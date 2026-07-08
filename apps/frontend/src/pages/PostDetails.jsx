@@ -345,8 +345,8 @@ function PostDetails({
       try { 
         await navigator.share({ title: post.title, text: post.description, url: currentUrl }); 
         return;
-      } catch (err) { 
-        console.log("Navigator share dismissed/failed", err); 
+      } catch {
+        // share dismissed or failed — fall through to clipboard
       }
     }
     

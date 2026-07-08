@@ -2,17 +2,7 @@
 import React, { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { changeLanguage } from "../i18n";
-
-// Placeholder SVG logo instead of missing image
-const SplashLogo = () => (
-  <svg viewBox="0 0 200 200" className="w-full h-full">
-    <circle cx="100" cy="100" r="90" fill="#EAB308" fillOpacity="0.1" />
-    <circle cx="100" cy="100" r="70" fill="#EAB308" fillOpacity="0.2" />
-    <circle cx="100" cy="100" r="50" fill="#EAB308" fillOpacity="0.3" />
-    <text x="100" y="90" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#EAB308">JOB</text>
-    <text x="100" y="130" textAnchor="middle" fontSize="40" fontWeight="bold" fill="white">FAST</text>
-  </svg>
-); 
+import splashImg from "../assets/images/splash.png";
 
 function SplashScreen() {
   const navigate = useNavigate();
@@ -66,11 +56,13 @@ function SplashScreen() {
       {/* CENTER CONTENT: LOGO + TIT + SLOGAN */}
       <section className="relative z-10 flex flex-col items-center text-center max-w-md w-full my-auto">
         
-        {/* LOGO - Gwosè MVP domine ekran an (w-56 / w-64) ak bèl lonbraj */}
+        {/* LOGO */}
         <div className="mb-6 flex items-center justify-center">
-          <div className="w-56 h-56 md:w-64 md:h-64 object-contain filter drop-shadow-[0_15px_35px_rgba(234,179,8,0.35)]">
-            <SplashLogo />
-          </div>
+          <img
+            src={splashImg}
+            alt="JOBFAST"
+            className="w-56 h-56 md:w-64 md:h-64 object-contain drop-shadow-[0_15px_35px_rgba(234,179,8,0.40)]"
+          />
         </div>
 
         {/* TITLE - Tèks jeyan ak bèl enpak */}
