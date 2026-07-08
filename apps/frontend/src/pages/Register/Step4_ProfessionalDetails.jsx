@@ -1,9 +1,9 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { PROFESSION_METADATA } from '../../constants/categories';
 import AvatarUpload from '../../components/AvatarUpload';
 
 // Fields handled by dedicated sections — skip in dynamic field loop
-const SKIP_FIELDS = new Set(['fullName', 'location', 'role', 'yearsExperience', 'hourlyRate']);
+const SKIP_FIELDS = new Set(['fullName', 'location', 'role', 'yearsExperience', 'hourlyRate', 'phone', 'specialties']);
 
 // Real options for every 'select' fieldType
 const FIELD_OPTIONS = {
@@ -47,6 +47,99 @@ const EXP_OPTIONS = [
 
 const CURRENCIES = ['HTG', 'USD', 'EUR', 'DOP'];
 
+// Specialties per profession category — comprehensive list for search indexing
+const SPECIALTIES_BY_CATEGORY = {
+  services_on_demand: {
+    construction: [
+      'Albani (Maçonnerie)','Blòk Albani','Brik Albani','Albani Konplè',
+      'Karla (Carrelage)','Pent (Peinture)','Elektrisite','Plonbri (Plomberie)',
+      'Chapant (Charpente)','Soudaj (Soudure)','Kouvèti (Toiture)','Fè (Ferraillage)',
+      'Betòn (Béton)','Demolisyon','Renovasyon','Finisaj','Estime Travay','Jesyon Chantye',
+      'Drenaj (Drainage)','Endwisaj (Enduit)','Eskalatye (Escalier)','Pòt/Fènèt',
+    ],
+    plumber: [
+      'Tiyo Dlo (Tuyauterie)','Sistèm Egou','Enstale WC/Douch','Reparasyon Tiyo',
+      'Chanfon Dlo Cho','Ponp Dlo','Foraj Pui','Tanvèsyon',
+    ],
+    chef: [
+      'Manje Ayisyen','Manje Karayibeyen','Patisri/Gato','Griyad (BBQ)','Manje Frans',
+      'Manje Italyen','Manje Entenasyonal','Jis/Boisson','Traiteur/Evènman',
+      'Manje Midi/Lajounen','Manje Vegan','Dekorasyon Gato','Sushi/Japonè',
+    ],
+    doctor: [
+      'Medisin Jeneral','Pedyatri','Chiriji','Kardyoloji','Dèmatoloji',
+      'Òtopedi','Ginekoloji','Neroloji','Pisikiatri','Oftalmo',
+      'ORL (Zòrèy/Nen/Gòj)','Gastro','Edikoloji','Ijans',
+    ],
+    nurse: [
+      'Swen Jeneral','Swen Blesi','Swen Panseman','Swen Domisil','Swen Vye Moun',
+      'Swen Timoun','Asistans Medikal','Prèlvman San','Swen Apre Operasyon',
+    ],
+    taxi: [
+      'Taksi Vil','Taksi Ayewopò','Transpò Prive','Kourses Lontan (Long Distans)',
+      'Transpò Medikal','Ekspres/Rapid','Tou-ristik','VIP/Luks',
+    ],
+    delivery: [
+      'Livrezon Manje','Livrezon Pake/Kolis','Livrezon Rapid','Livrezon Ekspres',
+      'Livrezon Entènasyonal','Kourye Dokiman','Transpò Machandiz',
+    ],
+    cleaning: [
+      'Netwayaj Kay','Netwayaj Biwo','Netwayaj Pwofesyonèl','Dezenfeksyon',
+      'Netwayaj Apre Konstriksyon','Lavaj Machin','Netwayaj Piscine',
+      'Sèvis Mènaj Chak Semèn','Netwayaj Vitrin/Vit',
+    ],
+    videographer: [
+      'Maryaj/Wedding','Evènman Kiltirèl','Videyo Mizik','Reklam Biznis',
+      'Film/Kout Metraj','Livestream','Dokimantè','Videyo Edikasyon',
+      'Pòtre/Portrait Video','Drone/Aerial',
+    ],
+    designer: [
+      'Logo & Branding','Flyer/Afich','Meni Restoran','Kalandriye',
+      'Dikora Enteryè','Wèb Design','Sosyal Medya','Mòd/Fashion',
+      'Anvlopèl/Papye Tèt Lèt','3D/Rendering',
+    ],
+    photographer: [
+      'Maryaj/Wedding','Pòtre/Portrait','Evènman','Pwodwi/Komèsyal',
+      'Foto Pwofesyonèl','Natiralèz/Nature','Aerial/Drone','Fashion/Mòd',
+      'Ekòl/Gradiyasyon','Press/Nouvèl',
+    ],
+    mechanic: [
+      'Reparasyon Motè','Fren (Freins)','Sistèm Elektrik','Transmisyon',
+      'Klimatizasyon (AC)','Moto/Scooter','Pneu/Kawotchou','Karoserik',
+      'Dyagnostik Elektwonik','Entretyen Jeneral',
+    ],
+    musician: [
+      'Konpa','Rara','Rasin','Gospel/Legliz','Hip-Hop/Rap','R&B',
+      'Zouk','Salsa/Merengue','Pop','Reggae','Klasik/Orchès','DJ',
+      'Animasyon Fèt','Sèvis Mariaj','Studio/Anrejistreman',
+    ],
+  },
+  business_directory: [
+    'Jere Anplwaye','Rekritman','Kontabilite','Vant & Maketing','IT/Enfòmatik',
+    'Lojistik','Sèvis Kliyan','Finans','Dwa (Legal)','Operasyon','Estrateji',
+  ],
+  tourism: [
+    'Tou Kiltirèl','Tou Plaj','Eko-Touris','Tou Gastronomik','Tou Biznis',
+    'Tou Relijye','Planifikasyon Vwayaj','Rezèvasyon Otèl','Transpò Touristik',
+    'Gid Entèpretasyon','Fotografi Touristik','Espò Dlo',
+  ],
+  creator_economy: [
+    'Penti/Painting','Eskiltè','Atizana Ayisyen','Tapè/Weaving','Bwati/Pottery',
+    'Jwèlri/Bijou','Brodri','Papye Mache','Desen Nimerik','Gravir',
+  ],
+};
+
+function getSpecialtiesForProfession(profession) {
+  const meta = PROFESSION_METADATA[profession];
+  const cat = meta?.category;
+  if (!cat) return [];
+  if (cat === 'services_on_demand') {
+    return SPECIALTIES_BY_CATEGORY.services_on_demand[profession] ||
+           SPECIALTIES_BY_CATEGORY.services_on_demand.construction;
+  }
+  return SPECIALTIES_BY_CATEGORY[cat] || [];
+}
+
 const inputCls  = 'w-full p-3 rounded bg-[#0d1b35] border border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 outline-none transition';
 const selectCls = 'w-full p-3 rounded bg-[#0d1b35] border border-gray-600 text-white focus:border-yellow-400 outline-none transition';
 
@@ -64,6 +157,21 @@ function Step4_ProfessionalDetails({
 
   const filteredRequired = requiredFields.filter(f => !SKIP_FIELDS.has(f));
   const filteredOptional = optionalFields.filter(f => !SKIP_FIELDS.has(f));
+
+  const specialtyOptions = useMemo(() => getSpecialtiesForProfession(profession), [profession]);
+  const selectedSpecialties = useMemo(() => {
+    const s = metadata.specialties;
+    if (Array.isArray(s)) return s;
+    if (typeof s === 'string' && s) return s.split(',').map(x => x.trim());
+    return [];
+  }, [metadata.specialties]);
+
+  const toggleSpecialty = useCallback((opt) => {
+    const next = selectedSpecialties.includes(opt)
+      ? selectedSpecialties.filter(s => s !== opt)
+      : [...selectedSpecialties, opt];
+    onMetadataChange('specialties', next);
+  }, [selectedSpecialties, onMetadataChange]);
 
   const handlePhotoChange = useCallback((file, preview) => {
     onMetadataChange('profilePhoto', preview);
@@ -210,6 +318,43 @@ function Step4_ProfessionalDetails({
           <div className="space-y-4">
             {filteredOptional.map(f => renderField(f, false))}
           </div>
+        </div>
+      )}
+
+      {/* Specialties — multi-select checkboxes */}
+      {specialtyOptions.length > 0 && (
+        <div className="bg-gray-800/20 p-4 rounded-lg">
+          <h3 className="text-sm font-bold text-yellow-400 mb-1">Espesyalite / Konpetans</h3>
+          <p className="text-xs text-gray-400 mb-3">
+            Chwazi tout sa ou konn fè — sa ap pèmèt kliyan jwenn ou nan rechèch
+          </p>
+          <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+            {specialtyOptions.map(opt => {
+              const checked = selectedSpecialties.includes(opt);
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => toggleSpecialty(opt)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all border ${
+                    checked
+                      ? 'bg-yellow-400/15 border-yellow-400 text-yellow-300'
+                      : 'bg-gray-700/30 border-gray-600 text-gray-300 hover:border-yellow-400/50'
+                  }`}
+                >
+                  <span className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border text-[10px] ${
+                    checked ? 'bg-yellow-400 border-yellow-400 text-black' : 'border-gray-500'
+                  }`}>
+                    {checked ? '✓' : ''}
+                  </span>
+                  <span className="leading-tight">{opt}</span>
+                </button>
+              );
+            })}
+          </div>
+          {selectedSpecialties.length > 0 && (
+            <p className="text-xs text-yellow-400 mt-2">{selectedSpecialties.length} opsyon chwazi</p>
+          )}
         </div>
       )}
 

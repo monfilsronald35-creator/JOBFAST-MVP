@@ -8,7 +8,7 @@ const COUNTRY_DATA = [
     zones: { ht: ['Ouest','Nord','Nord-Est','Nord-Ouest','Artibonit','Sant','Sid-Es','Nip','Sid','Grandans'], en: ['West','North','Northeast','Northwest','Artibonite','Central','Southeast','Nippes','South','Grand\'Anse'], fr: ['Ouest','Nord','Nord-Est','Nord-Ouest','Artibonite','Centre','Sud-Est','Nippes','Sud','Grand\'Anse'], es: ['Oeste','Norte','Noreste','Noroeste','Artibonite','Central','Sureste','Nippes','Sur','Grand\'Anse'] },
   },
   {
-    code: 'do', flag: '🇩🇴', phone: '+1-809',
+    code: 'do', flag: '🇩🇴', phone: '+1',
     ht: 'Repiblik Dominikèn', en: 'Dominican Republic', fr: 'Rép. Dominicaine', es: 'Rep. Dominicana',
     zones: { ht: ['Santo Domingo','Santiago','La Altagracia','La Romana','San Pedro de Macorís','Puerto Plata','San Cristóbal','Duarte'], en: ['Santo Domingo','Santiago','La Altagracia','La Romana','San Pedro de Macorís','Puerto Plata','San Cristóbal','Duarte'], fr: ['Santo Domingo','Santiago','La Altagracia','La Romana','San Pedro de Macorís','Puerto Plata','San Cristóbal','Duarte'], es: ['Santo Domingo','Santiago','La Altagracia','La Romana','San Pedro de Macorís','Puerto Plata','San Cristóbal','Duarte'] },
   },
