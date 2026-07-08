@@ -54,6 +54,8 @@ app.use((req, res, next) => {
 
 app.use(morgan(env.APP_STAGE === 'development' ? 'dev' : 'combined'));
 
+const API_PREFIX = env.API_PREFIX || '/api/v1';
+
 const healthHandler = (req, res) => {
   res.json({
     success: true,
@@ -65,10 +67,7 @@ const healthHandler = (req, res) => {
 };
 
 app.get('/health', healthHandler);
-// Also expose under API prefix so Vercel proxy can reach it
 app.get(`${API_PREFIX}/health`, healthHandler);
-
-const API_PREFIX = env.API_PREFIX || '/api/v1';
 
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
