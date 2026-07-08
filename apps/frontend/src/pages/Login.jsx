@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import Button from "../components/Button.jsx";
 import { login } from "../services/auth";
 import { useAuth } from "../context/AuthContext";
+import { getRoleDefaultPath } from "../config/roleConfig";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -124,7 +125,7 @@ export default function Login() {
       // Update AuthContext so AuthGate recognises the session immediately
       authLogin({ ...user, token });
 
-      if (mounted.current) navigate("/dashboard");
+      if (mounted.current) navigate(getRoleDefaultPath(user?.role));
 
     } catch (err) {
       if (mounted.current) {

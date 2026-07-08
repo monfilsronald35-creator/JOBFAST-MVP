@@ -124,7 +124,11 @@ function Step3_BasicInfo({ data, onNext, loading }) {
     passwordMatch;
 
   const handleSubmit = () => {
-    if (isValid) onNext(localData);
+    if (!isValid) return;
+    const raw = localData.phone.trim();
+    const prefix = selectedCountry.phone;
+    const fullPhone = raw.startsWith('+') ? raw : `${prefix}${raw}`;
+    onNext({ ...localData, phone: fullPhone });
   };
 
   return (

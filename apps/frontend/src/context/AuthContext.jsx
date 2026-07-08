@@ -170,8 +170,8 @@ export function AuthProvider({ children }) {
     if (!current?._id) return;
 
     try {
-      // 👑 KOREKSYON 3: API_URL ranplase localhost pou Stripe ka mache an liy
-      const res = await fetch(`${API_URL}/api/stripe/bind`, {
+      const base = import.meta.env.VITE_API_URL || "/api/v1";
+      const res = await fetch(`${base}/stripe/bind`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
