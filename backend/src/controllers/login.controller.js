@@ -96,7 +96,7 @@ export const loginController = async (req, res, next) => {
     const accessToken = jwt.sign(
       { id: userId, email: cleanEmail, role },
       env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: env.JWT_EXPIRES_IN }
     );
 
     const { password: _pw, ...safeDbUser } = dbUser || {};

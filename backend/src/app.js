@@ -1,5 +1,6 @@
 ﻿import express from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
@@ -25,6 +26,8 @@ import payoutRoutes      from './routes/payout.routes.js';
 
 // ✅ CHEMEN KORÈK LA: Nou retire "/middlewares" paske fichye a nan menm nivo ak app.js
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
+import User from './models/user.model.js';
+import { usersDatabase } from './controllers/register.controller.js';
 
 const app = express();
 
@@ -98,6 +101,66 @@ app.use(`${API_PREFIX}/wallet`,     walletRoutes);
 app.use(`${API_PREFIX}/payments`,   paymentRoutes);
 app.use(`${API_PREFIX}/escrow`,     escrowRoutes);
 app.use(`${API_PREFIX}/payouts`,    payoutRoutes);
+
+// Public community feed — returns latest registered members (no auth required)
+app.get(`${API_PREFIX}/community/members`, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 30, 100);
+
+    // Prefer MongoDB (persistent); fall back to in-memory for MVP
+    let members = [];
+    if (mongoose.connection.readyState === 1) {
+      const docs = await User.find({})
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .select('name role profession category location profileMetadata profileCompleteness stats availability createdAt')
+        .lean();
+      members = docs.map(u => ({
+        id: u._id,
+        name: u.name,
+        role: u.role,
+        profession: u.profession,
+        category: u.category,
+        city: u.location?.city || '',
+        country: u.location?.country || 'Haiti',
+        photo: u.profileMetadata?.profilePhoto || null,
+        yearsExperience: u.profileMetadata?.yearsExperience || null,
+        specialties: u.profileMetadata?.specialties || [],
+        rating: u.stats?.rating || 5.0,
+        profileCompleteness: u.profileCompleteness || 0,
+        availability: u.availability || 'available',
+        memberSince: u.stats?.memberSince || '',
+        joinedAt: u.createdAt,
+      }));
+    } else {
+      // In-memory fallback
+      members = Array.from(usersDatabase.values())
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, limit)
+        .map(u => ({
+          id: u.id,
+          name: u.name,
+          role: u.role,
+          profession: u.profession,
+          category: u.category,
+          city: u.location?.city || '',
+          country: u.location?.country || 'Haiti',
+          photo: u.profileMetadata?.profilePhoto || null,
+          yearsExperience: u.profileMetadata?.yearsExperience || null,
+          specialties: u.profileMetadata?.specialties || [],
+          rating: u.stats?.rating || 5.0,
+          profileCompleteness: u.profileCompleteness || 0,
+          availability: u.availability || 'available',
+          memberSince: u.stats?.memberSince || '',
+          joinedAt: u.createdAt,
+        }));
+    }
+
+    return res.json({ success: true, data: members, total: members.length });
+  } catch (err) {
+    return res.json({ success: true, data: [], total: 0 });
+  }
+});
 
 app.use(notFoundHandler);
 app.use(errorHandler);

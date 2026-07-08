@@ -52,6 +52,7 @@ export const env = Object.freeze({
   API_PREFIX: required('API_PREFIX', '/api/v1'),
 
   JWT_SECRET: required('JWT_SECRET', 'jobfast-secret-key-development-only'),
+  JWT_EXPIRES_IN: required('JWT_EXPIRES_IN', '7d'),
   ENCRYPTION_KEY: required('ENCRYPTION_KEY', ''),
   BCRYPT_SALT_ROUNDS: number('BCRYPT_SALT_ROUNDS', 12),
 

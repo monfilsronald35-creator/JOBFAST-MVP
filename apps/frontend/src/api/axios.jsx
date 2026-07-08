@@ -54,10 +54,15 @@ API.interceptors.response.use(
       return API(error.config);
     }
 
-    // 401 — token expired or invalid → force logout
+    // 401 — only auto-logout on auth-specific routes (token expired/invalid).
+    // Non-auth 401s (e.g. jobs, search) should not clear the session.
     if (status === 401) {
-      localStorage.removeItem("jobfast_user");
-      window.dispatchEvent(new CustomEvent("auth:expired"));
+      const url = error.config?.url || "";
+      const isAuthRoute = url.includes("/auth/");
+      if (isAuthRoute) {
+        localStorage.removeItem("jobfast_user");
+        window.dispatchEvent(new CustomEvent("auth:expired"));
+      }
     }
 
     if (status >= 500) {

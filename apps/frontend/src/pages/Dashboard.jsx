@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { MapPin, Clock, RefreshCcw } from "lucide-react";
+import React, { useEffect, useState, useCallback, useRef, memo } from "react";
+import { MapPin, Clock, RefreshCcw, Navigation, Star, Briefcase, DollarSign } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
 import WorkerContent, {
   WORKER_TABS,
   OverviewSupplement,
+  computeTrustScore,
 } from "./worker/WorkerDashboard";
 import CompanyContent, {
   COMPANY_TABS,
@@ -15,6 +16,138 @@ import EnterpriseContent, {
   ENTERPRISE_TABS,
   EnterpriseOverviewSupplement,
 } from "./enterprise/EnterpriseDashboard";
+
+// ── GPS Map section ──────────────────────────────────────────────
+const MapSection = memo(function MapSection({ user, onAvailToggle }) {
+  const lat = user?.location?.coordinates?.latitude  || 18.5432;
+  const lng = user?.location?.coordinates?.longitude || -72.3395;
+  const city = user?.location?.city || "Lokasyon ou";
+  const avail = user?.availability || "available";
+  const isAvailable = avail === "available";
+
+  const bbox = `${lng - 0.06}%2C${lat - 0.04}%2C${lng + 0.06}%2C${lat + 0.04}`;
+  const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900" style={{ height: 180 }}>
+      <iframe
+        title="Lokasyon GPS"
+        src={osmSrc}
+        className="w-full h-full border-0 opacity-90"
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+      {/* Location badge bottom-left */}
+      <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-[#0f172a]/90 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-slate-700/60">
+        <Navigation className="w-3 h-3 text-amber-400" />
+        <span className="text-[11px] font-semibold text-white">{city}</span>
+      </div>
+      {/* Disponib toggle top-right */}
+      <button
+        type="button"
+        onClick={onAvailToggle}
+        className={`absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold backdrop-blur-sm transition active:scale-95 ${
+          isAvailable
+            ? "bg-green-500/90 border-green-400 text-white"
+            : "bg-slate-800/90 border-slate-600 text-slate-300"
+        }`}
+      >
+        <span className={`w-2 h-2 rounded-full ${isAvailable ? "bg-white" : "bg-slate-500"}`} />
+        {isAvailable ? "Disponib" : "Okipe"}
+      </button>
+    </div>
+  );
+});
+
+// ── Community member card ────────────────────────────────────────
+const MemberCard = memo(function MemberCard({ member }) {
+  const photo = member.photo
+    || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(member.name || "user")}`;
+  const expLabel = member.yearsExperience
+    ? (member.yearsExperience === "less_1" ? "< 1 an"
+      : member.yearsExperience === "10_plus" ? "10+ an"
+      : `${member.yearsExperience.replace("_", "–")} an`)
+    : null;
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2 min-w-[130px]">
+      <div className="relative">
+        <img
+          src={photo}
+          alt={member.name}
+          className="w-12 h-12 rounded-xl object-cover border-2 border-amber-500/20 mx-auto block"
+          onError={e => { e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}`; }}
+        />
+        <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 ${
+          member.availability === "available" ? "bg-green-500" : "bg-slate-500"
+        }`} />
+      </div>
+      <div className="text-center">
+        <p className="text-[12px] font-bold text-white leading-tight truncate">{member.name}</p>
+        <p className="text-[10px] text-amber-400 font-semibold truncate">
+          {member.profession || member.role}
+        </p>
+        {member.city && (
+          <p className="text-[10px] text-slate-500 truncate">{member.city}</p>
+        )}
+        {expLabel && (
+          <p className="text-[10px] text-slate-400 mt-0.5">{expLabel} exp.</p>
+        )}
+        <div className="flex items-center justify-center gap-0.5 mt-1">
+          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+          <span className="text-[10px] font-bold text-amber-400">{(member.rating || 5).toFixed(1)}</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ── Community feed ───────────────────────────────────────────────
+const CommunityFeed = memo(function CommunityFeed() {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    API.get("/community/members?limit=30", { timeout: 15000 })
+      .then(res => {
+        if (!alive) return;
+        const list = Array.isArray(res?.data?.data) ? res.data.data : [];
+        setMembers(list);
+      })
+      .catch(() => {})
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="min-w-[130px] h-[140px] bg-slate-800/40 rounded-2xl animate-pulse shrink-0" />
+        ))}
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <p className="text-xs text-slate-500 text-center py-4">
+        Pa gen manm anrejistre pou kounye a
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      {members.map((m, i) => (
+        <div key={m.id || i} className="shrink-0">
+          <MemberCard member={m} />
+        </div>
+      ))}
+    </div>
+  );
+});
 
 // ================= GLOBAL CACHE (worker path only) =================
 let jobsCache = null;
@@ -337,45 +470,59 @@ export default function Dashboard() {
   }
 
   // ── Worker path — extended with role-aware tabs ──────────────
-  // Tab 'overview' preserves the original job list JSX exactly.
-  // Other tabs delegate to WorkerContent (worker/WorkerDashboard.jsx).
-  // service_provider and user roles (also isWorker) skip the tab bar
-  // and always see the plain job list — same behavior as before.
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 pt-4">
 
-      {/* HEADER — preserved for all worker-type roles */}
-      <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-white">
-            Byenveni{user?.name ? `, ${user.name.split(" ")[0]}` : ""} 👋
-          </h2>
-          <p className="text-slate-400 text-sm">
+      {/* ── BYENVENI HERO ──────────────────────────────────────── */}
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-slate-800/60 p-5">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.12),transparent_60%)] pointer-events-none" />
+        <div className="relative text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/70 mb-1">
+            JobFast Platform
+          </p>
+          <h1 className="text-2xl font-black text-white tracking-tight">
+            BYENVENI{user?.name ? `, ${user.name.split(" ")[0].toUpperCase()}` : ""}
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
             {isWorkerRole && workerTab !== "overview"
               ? dashConfig.subtitle
-              : "Men travay ki disponib bò kote w."}
+              : "Platfòm travay la pi rapid nan Ayiti"}
           </p>
-
           {retrying && (
-            <p className="text-xs text-amber-400 mt-1">Rekoneksyon...</p>
-          )}
-
-          {lastUpdated && workerTab === "overview" && (
-            <p className="text-[10px] text-slate-500 mt-1">
-              Dènye mizajou: {new Date(lastUpdated).toLocaleTimeString()}
-            </p>
+            <p className="text-xs text-amber-400 mt-1.5">Rekoneksyon...</p>
           )}
         </div>
 
-        {/* Refresh only on overview tab */}
-        {workerTab === "overview" && (
-          <button
-            onClick={handleRefresh}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
-          >
-            <RefreshCcw className="w-5 h-5 text-amber-400" />
-          </button>
-        )}
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          <div className="bg-slate-900/70 rounded-xl p-2.5 text-center border border-slate-700/40">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <span className="text-base font-black text-amber-400">
+                {(user?.stats?.rating ?? 5).toFixed(1)}
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-semibold">Rating</span>
+          </div>
+          <div className="bg-slate-900/70 rounded-xl p-2.5 text-center border border-slate-700/40">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-base font-black text-emerald-400">
+                {user?.stats?.totalJobs ?? 0}
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-semibold">Travay Fini</span>
+          </div>
+          <div className="bg-slate-900/70 rounded-xl p-2.5 text-center border border-slate-700/40">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <DollarSign className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-base font-black text-blue-400">
+                ${(user?.stats?.totalJobs ?? 0) * 50}
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-semibold">Revni Est.</span>
+          </div>
+        </div>
       </div>
 
       {/* WORKER TAB BAR — only for the 'worker' role specifically */}
@@ -401,13 +548,45 @@ export default function Dashboard() {
       )}
 
       {/* ── OVERVIEW TAB ─────────────────────────────────────────── */}
-      {/* Visible when: non-worker roles (service_provider/user) OR  */}
-      {/* worker role with overview tab active.                       */}
       {(!isWorkerRole || workerTab === "overview") && (
-        <div className="space-y-6">
+        <div className="space-y-4">
 
-          {/* Quick stats + trust bar — worker role only */}
-          {isWorkerRole && <OverviewSupplement user={user} />}
+          {/* GPS Map with Disponib toggle */}
+          <MapSection user={user} onAvailToggle={() => {
+            const current = user?.availability || "available";
+            const next = current === "available" ? "busy" : "available";
+            API.patch("/workers/availability", {
+              userId: user?._id || user?.id,
+              availability: next,
+            }).catch(() => {});
+          }} />
+
+          {/* Trust bar — worker only */}
+          {isWorkerRole && (
+            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold text-slate-400">🛡️ Konfyans</span>
+                <span className="text-[11px] font-bold text-amber-500">
+                  {computeTrustScore(user)}/100
+                </span>
+              </div>
+              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all"
+                  style={{ width: `${computeTrustScore(user)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Community feed */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-white">👥 Kominote JobFast</h3>
+              <span className="text-[10px] text-slate-500">Manm yo</span>
+            </div>
+            <CommunityFeed />
+          </div>
 
           {/* ERROR */}
           {error && (
@@ -416,9 +595,21 @@ export default function Dashboard() {
             </div>
           )}
 
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-            Travay ki pre w
-          </h3>
+          {/* Refresh + section header */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+              Travay ki pre w
+            </h3>
+            {workerTab === "overview" && (
+              <button
+                onClick={handleRefresh}
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
+                aria-label="Rafraichi"
+              >
+                <RefreshCcw className="w-4 h-4 text-amber-400" />
+              </button>
+            )}
+          </div>
 
           {/* LOADING / JOB LIST — preserved exactly from original */}
           {loading ? (

@@ -170,7 +170,7 @@ export const registerController = async (req, res, next) => {
     const accessToken = jwt.sign(
       { id: userId, email: cleanEmail, role: newUser.role },
       env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: env.JWT_EXPIRES_IN }
     );
 
     // 💾 PERSIST TO MONGODB — fire-and-forget via setImmediate so the HTTP
