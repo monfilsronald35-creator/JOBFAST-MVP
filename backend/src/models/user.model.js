@@ -58,14 +58,12 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       default: 'user',
-      index: true,
     },
 
     // ================= CATEGORY SYSTEM =================
     category: {
       type: String,
       default: null,
-      index: true,
     },
 
     profession: {
