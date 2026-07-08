@@ -95,7 +95,20 @@ export default function Login() {
         lang: t("common.lang") || "ht"
       });
 
-      // services/auth.js wraps axios response in success(data), so token is at res.data.data.token
+      // services/auth.js returns { success, data, message, status } — never throws
+      if (!res?.success) {
+        const status = res?.status;
+        if (status === 503 || status === 0 || !status) {
+          setError("Sèvè a ap reveye. Tanpri eseye ankò nan 15 segond.");
+        } else if (status === 401) {
+          setError(t("auth.invalidCredentials"));
+        } else {
+          setError(res?.message || t("auth.invalidCredentials"));
+        }
+        return;
+      }
+
+      // Token is at res.data.data.token (backend wraps in data twice)
       const token = res?.data?.data?.token || res?.data?.token || res?.token;
       const user  = res?.data?.data?.user  || res?.data?.user  || res?.user;
 
@@ -104,12 +117,8 @@ export default function Login() {
         return;
       }
 
-      // Map user.id to _id pou AuthContext ka itilize
-      if (user?.id && !user?._id) {
-        user._id = user.id;
-      }
+      if (user?.id && !user?._id) user._id = user.id;
 
-      // Sove token ak user nan localStorage pou AuthContext ka itilize
       localStorage.setItem("jobfast_user", JSON.stringify({ token, user }));
 
       if (mounted.current) navigate("/dashboard");
@@ -118,6 +127,7 @@ export default function Login() {
       if (mounted.current) {
         setError(
           err?.response?.data?.message ||
+          err?.message ||
           t("auth.invalidCredentials")
         );
       }

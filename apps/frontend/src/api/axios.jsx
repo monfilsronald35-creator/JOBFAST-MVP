@@ -34,12 +34,19 @@ API.interceptors.request.use(
 
 API.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (!error.response) {
       return Promise.reject({
         message: "Pa gen rezo. Sèvè JobFast la pa ka jwenn nan moman sa a.",
         code: "NETWORK_ERROR",
       });
+    }
+
+    // Auto-retry once when Render free tier is waking up (503)
+    if (error.response.status === 503 && !error.config._retried) {
+      error.config._retried = true;
+      await new Promise((r) => setTimeout(r, 12000)); // wait 12s for Render to wake
+      return API(error.config);
     }
 
     if (error.response.status === 401) {

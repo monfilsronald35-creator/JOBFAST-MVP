@@ -3,6 +3,8 @@
 // =========================================================================
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
+import User from '../models/user.model.js';
 import { CATEGORIES, PROFESSION_METADATA, getRequiredFields } from '../config/categories.js';
 import { notifyNewCategoryMember } from '../services/matchingService.js';
 
@@ -71,17 +73,22 @@ export const registerController = async (req, res, next) => {
       });
     }
 
-    // 3. 🚫 ANTI-DUPLICATION CHECK (Tcheke si itilizatè a enskri deja)
-    const userExists = Array.from(usersDatabase.values()).some(u => u.email === cleanEmail);
-    if (userExists) {
+    // 3. 🚫 ANTI-DUPLICATION CHECK (in-memory + MongoDB)
+    const userExistsInMemory = Array.from(usersDatabase.values()).some(u => u.email === cleanEmail);
+    if (userExistsInMemory) {
       return res.status(409).json({
         success: false,
-        error: {
-          code: "EMAIL_ALREADY_EXISTS",
-          message: "Yon kont egziste deja ak adrès imèl sa a nan JOBFAST.",
-          requestId
-        }
+        error: { code: "EMAIL_ALREADY_EXISTS", message: "Yon kont egziste deja ak adrès imèl sa a nan JOBFAST.", requestId }
       });
+    }
+    if (mongoose.connection.readyState === 1) {
+      const mongoExists = await User.findOne({ email: cleanEmail }).lean();
+      if (mongoExists) {
+        return res.status(409).json({
+          success: false,
+          error: { code: "EMAIL_ALREADY_EXISTS", message: "Yon kont egziste deja ak adrès imèl sa a nan JOBFAST.", requestId }
+        });
+      }
     }
 
     // 4. 🏷️ CATEGORY & PROFESSION — accept any value for MVP flexibility
@@ -156,6 +163,33 @@ export const registerController = async (req, res, next) => {
 
     // Sove nouvo kont lan nan memwa a
     usersDatabase.set(userId, newUser);
+
+    // 💾 PERSIST TO MONGODB (survives Render restarts)
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await User.create({
+          name: newUser.name,
+          email: newUser.email,
+          password,                   // plain — User model pre-save will hash it
+          phone: req.body.phone || null,
+          role: role?.toLowerCase().trim() || 'user',
+          category: userCategory || null,
+          profession: userProfession || null,
+          profileMetadata: categoryMetadata,
+          profileCompleteness: newUser.profileCompleteness,
+          location: {
+            type: 'Point',
+            coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
+            city: city.trim(),
+            country: 'Haiti',
+          },
+        });
+        console.log(`💾 User persisted to MongoDB: ${cleanEmail}`);
+      } catch (mongoErr) {
+        // Non-blocking — in-memory registration already succeeded
+        console.warn(`⚠️ MongoDB persist failed (in-memory only): ${mongoErr.message}`);
+      }
+    }
 
     // 📢 7. TRIGGER MATCHING SERVICE
     try {

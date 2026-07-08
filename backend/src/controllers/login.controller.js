@@ -4,6 +4,8 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import User from '../models/user.model.js';
 import { env } from '../config/env.js';
 import { usersDatabase } from './register.controller.js';
 
@@ -43,33 +45,49 @@ export const loginController = async (req, res, next) => {
       });
     }
 
-    // Look up user in in-memory store (populated by Register flow)
-    const dbUser = Array.from(usersDatabase.values()).find(
-      (u) => u.email === cleanEmail || u.emailOrPhone === cleanEmail
-    );
-
-    // Admin email check — read from env (never raw process.env)
     const adminEmails = env.ADMIN_EMAILS || [];
     const isAdminEmail = adminEmails.includes(cleanEmail);
 
-    if (dbUser) {
-      // Verify password with bcrypt (passwords stored as bcrypt hash since registration fix)
-      const passwordValid = await bcrypt.compare(password, dbUser.password);
-      if (!passwordValid) {
-        return res.status(401).json({
-          success: false,
-          error: { code: 'INVALID_CREDENTIALS', message: 'Idantifyan yo pa kòrèk.', requestId },
-        });
+    // Search order: MongoDB first (persists across restarts) → in-memory fallback
+    let dbUser = null;
+    let passwordValid = false;
+
+    if (mongoose.connection.readyState === 1) {
+      const mongoUser = await User.findOne({ email: cleanEmail }).select('+password').lean();
+      if (mongoUser) {
+        passwordValid = await bcrypt.compare(password, mongoUser.password);
+        if (passwordValid) {
+          dbUser = { ...mongoUser, id: mongoUser._id.toString(), _id: mongoUser._id.toString() };
+        }
       }
-    } else if (!isAdminEmail) {
-      // No user found and not an admin email — reject
+    }
+
+    // Fallback to in-memory (same Render instance, or no MongoDB)
+    if (!dbUser) {
+      const memUser = Array.from(usersDatabase.values()).find(
+        (u) => u.email === cleanEmail || u.emailOrPhone === cleanEmail
+      );
+      if (memUser) {
+        passwordValid = await bcrypt.compare(password, memUser.password);
+        if (passwordValid) dbUser = memUser;
+      }
+    }
+
+    if (!dbUser && !isAdminEmail) {
       return res.status(401).json({
         success: false,
         error: { code: 'INVALID_CREDENTIALS', message: 'Idantifyan yo pa kòrèk.', requestId },
       });
     }
 
-    const userId   = dbUser?.userId || dbUser?.id || `uid_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    if (dbUser && !passwordValid) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: 'Idantifyan yo pa kòrèk.', requestId },
+      });
+    }
+
+    const userId   = dbUser?.userId || dbUser?.id || dbUser?._id?.toString() || `uid_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     const role     = dbUser?.role   || (isAdminEmail ? 'admin' : 'worker');
     const userName = dbUser?.name   || dbUser?.fullName || (isAdminEmail ? 'Admin JOBFAST' : 'Itilizatè JOBFAST');
 

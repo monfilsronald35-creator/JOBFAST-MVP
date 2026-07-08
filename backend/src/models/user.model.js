@@ -57,22 +57,15 @@ const userSchema = new mongoose.Schema(
     // ================= ROLE =================
     role: {
       type: String,
-      enum: ['user', 'worker', 'business', 'admin'],
       default: 'user',
+      index: true,
     },
 
     // ================= CATEGORY SYSTEM =================
     category: {
       type: String,
-      enum: [
-        'business_directory',
-        'marketplace',
-        'services_on_demand',
-        'tourism',
-        'creator_economy',
-        'impact_ngo',
-      ],
       default: null,
+      index: true,
     },
 
     profession: {
