@@ -1,7 +1,6 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "framework": "vite",
+  "buildCommand": "cd apps/frontend && npm install && npm run build",
+  "outputDirectory": "apps/frontend/dist",
   "rewrites": [
     {
       "source": "/api/v1/:path*",

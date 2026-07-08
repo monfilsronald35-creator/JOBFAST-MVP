@@ -1,7 +1,4 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "framework": "vite",
   "rewrites": [
     {
       "source": "/api/v1/:path*",
