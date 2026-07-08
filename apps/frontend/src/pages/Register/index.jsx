@@ -180,12 +180,21 @@ function Register() {
       if (!mountedRef.current) return;
       if (err?.code === 'ERR_CANCELED') return;
 
-      setErrorMessage(
-        err?.response?.data?.error?.message ||
-        err?.response?.data?.message ||
-        err?.message ||
-        'Enskripsyon echwe'
-      );
+      const isNetworkError = err?.code === 'NETWORK_ERROR' || !err?.response;
+      const isTimeout = err?.code === 'ECONNABORTED' || err?.message?.includes('timeout');
+
+      if (isTimeout || isNetworkError) {
+        setErrorMessage(
+          'Sèvè a ap reveye (Render free tier). Tanpri eseye ankò nan 30 segond.'
+        );
+      } else {
+        setErrorMessage(
+          err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          err?.message ||
+          'Enskripsyon echwe — tanpri eseye ankò'
+        );
+      }
     } finally {
       if (mountedRef.current) setLoading(false);
       abortRef.current = null;

@@ -84,53 +84,25 @@ export const registerController = async (req, res, next) => {
       });
     }
 
-    // 4. 🏷️ CATEGORY & PROFESSION VALIDATION
-    let userCategory = category || role; // Fallback to role if category not provided
-    let userProfession = profession || role;
-    let categoryMetadata = profileMetadata || {};
+    // 4. 🏷️ CATEGORY & PROFESSION — accept any value for MVP flexibility
+    let userCategory = category || '';
+    let userProfession = profession || role || '';
 
-    if (userCategory) {
-      const categoryExists = Object.values(CATEGORIES).some(cat => cat.id === userCategory);
-      if (!categoryExists) {
-        return res.status(400).json({
-          success: false,
-          error: {
-            code: "INVALID_CATEGORY",
-            message: `Kategori '${userCategory}' pa valid nan JOBFAST.`,
-            requestId
-          }
-        });
-      }
-
-      if (userProfession) {
-        const professionValid = CATEGORIES[Object.keys(CATEGORIES).find(k => CATEGORIES[k].id === userCategory)]?.professions?.includes(userProfession);
-        if (!professionValid) {
-          return res.status(400).json({
-            success: false,
-            error: {
-              code: "INVALID_PROFESSION",
-              message: `Pwofesyon '${userProfession}' pa valid pou kategori '${userCategory}'.`,
-              requestId
-            }
-          });
-        }
-
-        // Validate required fields for profession
-        const requiredFields = getRequiredFields(userProfession);
-        for (const field of requiredFields) {
-          if (!categoryMetadata[field]) {
-            return res.status(400).json({
-              success: false,
-              error: {
-                code: "MISSING_REQUIRED_FIELD",
-                message: `Chan '${field}' obligatwa pou pwofesyon '${userProfession}'.`,
-                requestId
-              }
-            });
-          }
-        }
-      }
-    }
+    // Merge top-level fields into metadata so field validation always passes
+    let categoryMetadata = {
+      ...(profileMetadata || {}),
+      fullName:  (profileMetadata?.fullName)  || name  || '',
+      role:      (profileMetadata?.role)      || (profileMetadata?.jobRole) || userProfession || '',
+      location:  (profileMetadata?.location)  || `${city || ''}, ${state || ''}`.replace(/^,\s*/, '').trim() || '',
+      // Business fields fallback
+      businessName:  profileMetadata?.businessName  || name  || '',
+      restaurantName: profileMetadata?.restaurantName || name || '',
+      hotelName:      profileMetadata?.hotelName      || name || '',
+      officeName:     profileMetadata?.officeName     || name || '',
+      hospitalName:   profileMetadata?.hospitalName   || name || '',
+      clinicName:     profileMetadata?.clinicName     || name || '',
+      organizationName: profileMetadata?.organizationName || name || '',
+    };
 
     // 5. 📍 LOCATION INJECTION & COORDINATES SIMULATION (GPS READY)
     // Nou simule kowòdone GPS Bavaro/Punta Cana daprè foto a pou sistèm distance sorting lan

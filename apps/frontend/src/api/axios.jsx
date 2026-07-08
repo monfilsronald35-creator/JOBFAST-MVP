@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 
 const API = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: 60000, // 60s — Render free tier needs up to 30-60s to wake from sleep
   headers: {
     "Content-Type": "application/json",
   },
