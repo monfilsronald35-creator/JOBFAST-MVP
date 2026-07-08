@@ -3,8 +3,10 @@
 // =========================================================================
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import User from '../models/user.model.js';
+import { env } from '../config/env.js';
 import { CATEGORIES, PROFESSION_METADATA, getRequiredFields } from '../config/categories.js';
 import { notifyNewCategoryMember } from '../services/matchingService.js';
 
@@ -164,6 +166,13 @@ export const registerController = async (req, res, next) => {
     // Sove nouvo kont lan nan memwa a
     usersDatabase.set(userId, newUser);
 
+    // Generate JWT token so the user is immediately logged in after registration
+    const accessToken = jwt.sign(
+      { id: userId, email: cleanEmail, role: newUser.role },
+      env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
     // 💾 PERSIST TO MONGODB (survives Render restarts)
     if (mongoose.connection.readyState === 1) {
       try {
@@ -222,6 +231,7 @@ export const registerController = async (req, res, next) => {
       data: {
         message: "Pwofil ou kreye ak siksè nan rezo entènasyonal JOBFAST la!",
         userId: newUser.id,
+        token: accessToken,
         user: {
           id: newUser.id,
           _id: newUser._id,

@@ -19,22 +19,13 @@ export const loginController = async (req, res, next) => {
   const requestId = req.id || crypto.randomUUID();
 
   try {
-    const { email, password } = req.body;
+    const { email, phone, password } = req.body;
+    const identifier = (email || phone || '').trim().toLowerCase();
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
         success: false,
-        error: { code: 'MISSING_CREDENTIALS', message: 'Imèl ak modpas obligatwa.', requestId },
-      });
-    }
-
-    const cleanEmail = email.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(cleanEmail)) {
-      return res.status(400).json({
-        success: false,
-        error: { code: 'INVALID_EMAIL_FORMAT', message: 'Fòma imèl sa a pa valab.', requestId },
+        error: { code: 'MISSING_CREDENTIALS', message: 'Imèl (oswa telefon) ak modpas obligatwa.', requestId },
       });
     }
 
@@ -45,6 +36,16 @@ export const loginController = async (req, res, next) => {
       });
     }
 
+    // Validate email format only when the identifier looks like an email
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+    if (!isEmail && email) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_EMAIL_FORMAT', message: 'Fòma imèl sa a pa valab.', requestId },
+      });
+    }
+
+    const cleanEmail = identifier;
     const adminEmails = env.ADMIN_EMAILS || [];
     const isAdminEmail = adminEmails.includes(cleanEmail);
 
@@ -53,7 +54,8 @@ export const loginController = async (req, res, next) => {
     let passwordValid = false;
 
     if (mongoose.connection.readyState === 1) {
-      const mongoUser = await User.findOne({ email: cleanEmail }).select('+password').lean();
+      const query = isEmail ? { email: cleanEmail } : { $or: [{ email: cleanEmail }, { phone: cleanEmail }] };
+      const mongoUser = await User.findOne(query).select('+password').lean();
       if (mongoUser) {
         passwordValid = await bcrypt.compare(password, mongoUser.password);
         if (passwordValid) {

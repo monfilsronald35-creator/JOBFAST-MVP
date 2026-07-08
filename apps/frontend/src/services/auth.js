@@ -3,7 +3,8 @@ import API from "../api/axios";
 /* ================= UTIL ================= */
 const getErrorMessage = (error, fallback) =>
   error?.response?.data?.message ||
-  error?.response?.data?.error ||
+  error?.response?.data?.error?.message ||   // nested error object
+  (typeof error?.response?.data?.error === 'string' ? error.response.data.error : null) ||
   error?.message ||
   fallback;
 
