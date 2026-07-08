@@ -173,52 +173,44 @@ export const registerController = async (req, res, next) => {
       { expiresIn: '24h' }
     );
 
-    // 💾 PERSIST TO MONGODB (survives Render restarts)
-    if (mongoose.connection.readyState === 1) {
-      try {
-        await User.create({
-          name: newUser.name,
-          email: newUser.email,
-          password,                   // plain — User model pre-save will hash it
-          phone: req.body.phone || null,
-          role: role?.toLowerCase().trim() || 'user',
-          category: userCategory || null,
-          profession: userProfession || null,
-          profileMetadata: categoryMetadata,
-          profileCompleteness: newUser.profileCompleteness,
-          location: {
-            type: 'Point',
-            coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
-            city: city.trim(),
-            country: 'Haiti',
-          },
-        });
-        console.log(`💾 User persisted to MongoDB: ${cleanEmail}`);
-      } catch (mongoErr) {
-        // Non-blocking — in-memory registration already succeeded
-        console.warn(`⚠️ MongoDB persist failed (in-memory only): ${mongoErr.message}`);
+    // 💾 PERSIST TO MONGODB — fire-and-forget via setImmediate so the HTTP
+    // response is sent to the client immediately, without waiting for the DB write.
+    setImmediate(async () => {
+      if (mongoose.connection.readyState === 1) {
+        try {
+          await User.create({
+            name: newUser.name,
+            email: newUser.email,
+            password,                   // plain — User model pre-save will hash it
+            phone: req.body.phone || null,
+            role: role?.toLowerCase().trim() || 'user',
+            category: userCategory || null,
+            profession: userProfession || null,
+            profileMetadata: categoryMetadata,
+            profileCompleteness: newUser.profileCompleteness,
+            location: {
+              type: 'Point',
+              coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
+              city: city.trim(),
+              country: 'Haiti',
+            },
+          });
+          console.log(`💾 User persisted to MongoDB: ${cleanEmail}`);
+        } catch (mongoErr) {
+          console.warn(`⚠️ MongoDB persist failed (in-memory only): ${mongoErr.message}`);
+        }
       }
-    }
 
-    // 📢 7. TRIGGER MATCHING SERVICE
-    try {
-      // Notify users in the same category about this new registration
-      setImmediate(() => {
+      // 📢 TRIGGER MATCHING SERVICE (always after DB write attempt)
+      try {
         notifyNewCategoryMember(newUser).catch(err =>
           console.error('Error notifying about new member:', err.message)
         );
-      });
-    } catch (err) {
-      console.error('Matching service error (non-blocking):', err.message);
-    }
-    console.log(`\n📢 [MATCH NOTIFICATION ALERT]`);
-    console.log(`👤 New Registration: ${newUser.name}`);
-    console.log(`💼 Role: ${newUser.role}`);
-    console.log(`🏷️ Category: ${newUser.category}`);
-    console.log(`📋 Profession: ${newUser.profession}`);
-    console.log(`📍 Location: ${newUser.location.city}, ${newUser.location.state}`);
-    console.log(`📊 Profile Completeness: ${newUser.profileCompleteness}%`);
-    console.log(`🟢 Status: ${newUser.availability}\n`);
+      } catch (err) {
+        console.error('Matching service error (non-blocking):', err.message);
+      }
+    });
+    console.log(`✅ Register: ${cleanEmail} (${newUser.role})`);
 
     // 8. 📦 RESPONSE MATRIX
     return res.status(201).json({

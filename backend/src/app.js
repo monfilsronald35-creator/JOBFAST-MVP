@@ -34,11 +34,24 @@ app.use(
   })
 );
 
+// CORS: when origin list contains '*' we allow any origin explicitly (not the
+// wildcard string) so it stays compatible with credentials mode in browsers.
+const allowedOrigins = env.CORS_ORIGIN; // string[]
 app.use(
   cors({
-    origin: env.CORS_ORIGIN.includes('*') ? '*' : env.CORS_ORIGIN,
+    origin: (origin, cb) => {
+      // Non-browser requests (curl, Render health check, server-to-server) have
+      // no Origin header — always allow them.
+      if (!origin) return cb(null, true);
+      // Wildcard configured → allow every browser origin, echo it back.
+      if (allowedOrigins.includes('*')) return cb(null, origin);
+      // Specific list → check membership.
+      if (allowedOrigins.includes(origin)) return cb(null, origin);
+      cb(null, false); // blocked — no CORS headers sent
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
   })
 );
 

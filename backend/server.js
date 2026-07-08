@@ -16,6 +16,24 @@ async function start() {
       console.log('=================================');
     });
 
+    // ── Keep-alive: prevent Render free-tier cold starts ──────────────────
+    // Render sets RENDER_EXTERNAL_URL automatically. On every other platform
+    // (local, Railway, Fly) this block is simply skipped.
+    const SELF_URL = process.env.RENDER_EXTERNAL_URL
+      || (process.env.RENDER_EXTERNAL_HOSTNAME
+          ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`
+          : null);
+
+    if (SELF_URL) {
+      const PING_MS = 9 * 60 * 1000; // every 9 min (Render sleeps after 15 min)
+      setInterval(() => {
+        fetch(`${SELF_URL}/health`, { signal: AbortSignal.timeout(8000) })
+          .then(() => console.log('♻️  Keep-alive ping OK'))
+          .catch(() => {}); // silent — never crash the server
+      }, PING_MS);
+      console.log(`♻️  Keep-alive aktif → ${SELF_URL}/health (chak 9 min)`);
+    }
+
     // MongoDB is optional for MVP — in-memory storage works without it
     const dbUrl = env.DB_URL;
     const isLocalMongo = !dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
