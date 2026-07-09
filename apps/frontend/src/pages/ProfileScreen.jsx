@@ -92,7 +92,7 @@ function ProfileScreen() {
   }
 
   const locationLabel = user.location?.city
-    ? `${user.location.city}, ${user.location?.country || "Haiti"}`
+    ? [user.location.city, user.location?.country].filter(Boolean).join(", ")
     : user.location?.country || "";
 
   const rating       = user.stats?.rating ?? 5.0;

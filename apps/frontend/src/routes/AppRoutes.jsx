@@ -25,6 +25,7 @@ import HomeMarketplace from "@/pages/HomeMarketplace.jsx";
 import CategoryMarketplace from "@/pages/CategoryMarketplace.jsx";
 import UserProfileDisplay from "@/pages/UserProfileDisplay.jsx";
 import ChatScreen from "@/pages/ChatScreen.jsx";
+import MapNavigationScreen from "@/pages/MapNavigationScreen.jsx";
 
 // Admin Pages (Lazy Loaded for better performance)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
@@ -100,7 +101,7 @@ function AppRoutes() {
           <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
           <Route path="/rating/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/booking/:id" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/map" element={<AuthGate><SearchScreen /></AuthGate>} />
+          <Route path="/map" element={<AuthGate><MapNavigationScreen /></AuthGate>} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />

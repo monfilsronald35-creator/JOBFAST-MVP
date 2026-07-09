@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, memo } from "react";
-import { RefreshCcw, Navigation, Star, Briefcase, DollarSign, Search, X } from "lucide-react";
+import { RefreshCcw, Navigation, Star, Briefcase, DollarSign, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
@@ -17,42 +18,6 @@ import EnterpriseContent, {
   EnterpriseOverviewSupplement,
 } from "./enterprise/EnterpriseDashboard";
 
-// ── GPS Map Modal ────────────────────────────────────────────────
-const MapModal = memo(function MapModal({ open, onClose, lat, lng, city }) {
-  const bbox = `${lng - 0.06}%2C${lat - 0.04}%2C${lng + 0.06}%2C${lat + 0.04}`;
-  const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
-
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[200] flex flex-col" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative m-auto w-full max-w-sm rounded-2xl overflow-hidden border border-slate-700 shadow-2xl"
-        style={{ height: 320 }}
-        onClick={e => e.stopPropagation()}
-      >
-        <iframe
-          title="Lokasyon GPS"
-          src={osmSrc}
-          className="w-full h-full border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-        />
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-2 right-2 w-8 h-8 bg-[#0f172a]/90 rounded-full flex items-center justify-center border border-slate-700"
-        >
-          <X className="w-4 h-4 text-white" />
-        </button>
-        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-[#0f172a]/90 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-slate-700/60">
-          <Navigation className="w-3 h-3 text-amber-400" />
-          <span className="text-[11px] font-semibold text-white">{city}</span>
-        </div>
-      </div>
-    </div>
-  );
-});
 
 // ── Community member card ────────────────────────────────────────
 const MemberCard = memo(function MemberCard({ member }) {
@@ -355,7 +320,7 @@ export default function Dashboard() {
   }, [fetchJobs]);
 
   // ── GPS / search / availability state ────────────────────────
-  const [mapOpen, setMapOpen] = useState(false);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [availability, setAvailability] = useState(user?.availability || "available");
   const [geo, setGeo] = useState({
@@ -513,25 +478,16 @@ export default function Dashboard() {
   return (
     <div className="space-y-3 px-4 pt-4">
 
-      {/* ── GPS MAP MODAL ─────────────────────────────────────────── */}
-      <MapModal
-        open={mapOpen}
-        onClose={() => setMapOpen(false)}
-        lat={geo.lat}
-        lng={geo.lng}
-        city={geo.city}
-      />
-
       {/* ── BYENVENI HERO (compact, search inside) ───────────────── */}
       <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1a2640] to-[#0f172a] border border-slate-800/70 p-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.09),transparent_55%)] pointer-events-none" />
 
-        {/* GPS pill — top-left */}
+        {/* GPS pill — top-left → opens full navigation */}
         <button
           type="button"
-          onClick={() => setMapOpen(true)}
+          onClick={() => navigate("/map")}
           className="absolute top-3 left-3 flex items-center gap-1 bg-slate-800/90 border border-slate-700/70 px-2 py-1 rounded-lg text-[10px] font-semibold text-amber-400 hover:border-amber-500/50 active:scale-95 transition"
-          aria-label="Wè kat GPS"
+          aria-label="Ouvri navigasyon GPS"
         >
           <Navigation className="w-3 h-3" />
           {geo.city}
