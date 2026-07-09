@@ -353,7 +353,22 @@
     "roleEnterprise": "Grande Entreprise",
     "roleEmployer": "Employeur",
     "jobs": "Emplois",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "welcomeBack": "Bon retour",
+    "findWorkSub": "Trouvez votre opportunité",
+    "offerServicesSub": "Publiez vos services",
+    "perDay": "par jour",
+    "negotiable": "Négociable",
+    "emptyJobsTitle": "Aucun emploi pour l'instant",
+    "emptyJobsSubtitle": "De nouvelles opportunités apparaîtront bientôt.",
+    "emptyWorkersTitle": "Aucun travailleur",
+    "emptyWorkersSubtitle": "Aucun travailleur enregistré dans cette zone.",
+    "searchNow": "Rechercher Maintenant",
+    "catHealthcare": "Santé",
+    "catOffice": "Bureau",
+    "catEducation": "Éducation",
+    "catRetail": "Commerce",
+    "catHomeServices": "Services à Domicile"
   },
 
   "profile": {

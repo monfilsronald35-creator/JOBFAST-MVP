@@ -538,7 +538,22 @@
     "roleEnterprise": "Antrepriz",
     "roleEmployer": "Anplwayè",
     "jobs": "Travay",
-    "loading": "Ap chaje..."
+    "loading": "Ap chaje...",
+    "welcomeBack": "Byenveni tounen",
+    "findWorkSub": "Jwenn meye opòtinite",
+    "offerServicesSub": "Pibliye sèvis ou",
+    "perDay": "pa jou",
+    "negotiable": "Nègosyab",
+    "emptyJobsTitle": "Pa gen travay pou kounye a",
+    "emptyJobsSubtitle": "Nouvo opòtinite ap parèt byento. Tcheke ankò.",
+    "emptyWorkersTitle": "Pa gen travayè ankò",
+    "emptyWorkersSubtitle": "Travayè yo poko anrejistre nan zòn sa a.",
+    "searchNow": "Rechèche Kounye a",
+    "catHealthcare": "Sante",
+    "catOffice": "Biwo",
+    "catEducation": "Edikasyon",
+    "catRetail": "Komès",
+    "catHomeServices": "Sèvis Kay"
   },
 
   "profile": {

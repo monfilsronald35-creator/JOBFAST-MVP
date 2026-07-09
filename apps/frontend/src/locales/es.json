@@ -347,7 +347,22 @@
     "roleEnterprise": "Empresa Grande",
     "roleEmployer": "Empleador",
     "jobs": "Empleos",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "welcomeBack": "Bienvenido de nuevo",
+    "findWorkSub": "Encuentra tu próxima oportunidad",
+    "offerServicesSub": "Publica tus servicios",
+    "perDay": "por día",
+    "negotiable": "Negociable",
+    "emptyJobsTitle": "Sin empleos por ahora",
+    "emptyJobsSubtitle": "Nuevas oportunidades aparecerán pronto.",
+    "emptyWorkersTitle": "Sin trabajadores aún",
+    "emptyWorkersSubtitle": "No hay trabajadores registrados en esta zona.",
+    "searchNow": "Buscar Ahora",
+    "catHealthcare": "Salud",
+    "catOffice": "Oficina",
+    "catEducation": "Educación",
+    "catRetail": "Comercio",
+    "catHomeServices": "Servicios del Hogar"
   },
 
   "profile": {

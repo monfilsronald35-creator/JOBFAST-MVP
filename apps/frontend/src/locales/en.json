@@ -347,7 +347,22 @@
     "roleEnterprise": "Enterprise",
     "roleEmployer": "Employer",
     "jobs": "Jobs",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "welcomeBack": "Welcome back",
+    "findWorkSub": "Find your next opportunity",
+    "offerServicesSub": "Post your skills",
+    "perDay": "per day",
+    "negotiable": "Negotiable",
+    "emptyJobsTitle": "No jobs right now",
+    "emptyJobsSubtitle": "New opportunities will appear soon. Check back later.",
+    "emptyWorkersTitle": "No workers yet",
+    "emptyWorkersSubtitle": "Workers haven't registered in this area yet.",
+    "searchNow": "Search Now",
+    "catHealthcare": "Healthcare",
+    "catOffice": "Office",
+    "catEducation": "Education",
+    "catRetail": "Retail",
+    "catHomeServices": "Home Services"
   },
 
   "profile": {
