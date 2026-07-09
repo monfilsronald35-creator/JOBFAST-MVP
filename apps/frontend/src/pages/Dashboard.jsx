@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, memo } from "react";
-import { MapPin, Clock, RefreshCcw, Navigation, Star, Briefcase, DollarSign, Search, X } from "lucide-react";
+import { RefreshCcw, Navigation, Star, Briefcase, DollarSign, Search, X } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
@@ -18,9 +18,7 @@ import EnterpriseContent, {
 } from "./enterprise/EnterpriseDashboard";
 
 // ── GPS Map Modal ────────────────────────────────────────────────
-const MapModal = memo(function MapModal({ user, open, onClose }) {
-  const lat = user?.location?.coordinates?.latitude  || 18.5432;
-  const lng = user?.location?.coordinates?.longitude || -72.3395;
+const MapModal = memo(function MapModal({ open, onClose, lat, lng, city }) {
   const bbox = `${lng - 0.06}%2C${lat - 0.04}%2C${lng + 0.06}%2C${lat + 0.04}`;
   const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
 
@@ -49,9 +47,7 @@ const MapModal = memo(function MapModal({ user, open, onClose }) {
         </button>
         <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-[#0f172a]/90 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-slate-700/60">
           <Navigation className="w-3 h-3 text-amber-400" />
-          <span className="text-[11px] font-semibold text-white">
-            {user?.location?.city || "Lokasyon ou"}
-          </span>
+          <span className="text-[11px] font-semibold text-white">{city}</span>
         </div>
       </div>
     </div>
@@ -358,10 +354,41 @@ export default function Dashboard() {
     fetchJobs(true);
   }, [fetchJobs]);
 
-  // ── GPS modal / search / availability state ───────────────────
+  // ── GPS / search / availability state ────────────────────────
   const [mapOpen, setMapOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [availability, setAvailability] = useState(user?.availability || "available");
+  const [geo, setGeo] = useState({
+    lat: user?.location?.coordinates?.latitude  || 18.5432,
+    lng: user?.location?.coordinates?.longitude || -72.3395,
+    city: user?.location?.city || "GPS",
+  });
+
+  // Request real GPS on mount (worker path only)
+  useEffect(() => {
+    if (!isWorker || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        let city = geo.city;
+        try {
+          const r = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+            { headers: { "Accept-Language": "fr,ht,es" } }
+          );
+          const d = await r.json();
+          city =
+            d.address?.city ||
+            d.address?.town ||
+            d.address?.village ||
+            d.address?.municipality ||
+            city;
+        } catch {}
+        setGeo({ lat, lng, city });
+      },
+      () => {} // permission denied — keep stored location
+    );
+  }, [isWorker]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleAvailability = useCallback(() => {
     const next = availability === "available" ? "busy" : "available";
@@ -487,9 +514,15 @@ export default function Dashboard() {
     <div className="space-y-3 px-4 pt-4">
 
       {/* ── GPS MAP MODAL ─────────────────────────────────────────── */}
-      <MapModal user={user} open={mapOpen} onClose={() => setMapOpen(false)} />
+      <MapModal
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        lat={geo.lat}
+        lng={geo.lng}
+        city={geo.city}
+      />
 
-      {/* ── BYENVENI HERO (compact) ──────────────────────────────── */}
+      {/* ── BYENVENI HERO (compact, search inside) ───────────────── */}
       <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1a2640] to-[#0f172a] border border-slate-800/70 p-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.09),transparent_55%)] pointer-events-none" />
 
@@ -501,7 +534,7 @@ export default function Dashboard() {
           aria-label="Wè kat GPS"
         >
           <Navigation className="w-3 h-3" />
-          {user?.location?.city || "GPS"}
+          {geo.city}
         </button>
 
         {/* Availability toggle — top-right */}
@@ -524,64 +557,55 @@ export default function Dashboard() {
             BYENVENI{user?.name ? `, ${user.name.split(" ")[0].toUpperCase()}` : ""}
           </h1>
           <p className="text-[10px] text-slate-500 mt-0.5">
-            Platfòm travay la pi rapid nan Ayiti
+            Platfòm pou w jwenn travay pi rapid
           </p>
           {retrying && (
             <p className="text-[10px] text-amber-400 mt-1">Rekoneksyon...</p>
           )}
         </div>
 
-        {/* Stats row — slim */}
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
-            <div className="flex items-center justify-center gap-0.5">
-              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-              <span className="text-sm font-black text-amber-400">
-                {(user?.stats?.rating ?? 5).toFixed(1)}
-              </span>
-            </div>
-            <span className="text-[9px] text-slate-500">Rating</span>
+        {/* Search bar — inside the card */}
+        <div className="flex items-center gap-2 mt-3">
+          <div className="flex-1 flex items-center gap-2 bg-slate-900/80 border border-slate-700/60 rounded-lg px-3 py-2">
+            <Search className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Rechèche travay, sèvis..."
+              className="flex-1 bg-transparent text-xs text-white placeholder-slate-500 outline-none"
+            />
           </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="w-8 h-8 flex items-center justify-center bg-slate-900/80 border border-slate-700/60 rounded-lg text-slate-400 hover:text-amber-400 active:scale-95 transition"
+            aria-label="Rafraichi"
+          >
+            <RefreshCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Stats row — 2 stats only (Revni + Travay Fini) */}
+        <div className="grid grid-cols-2 gap-2 mt-3">
           <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
             <div className="flex items-center justify-center gap-0.5">
-              <Briefcase className="w-3 h-3 text-emerald-400" />
+              <DollarSign className="w-3 h-3 text-emerald-400" />
               <span className="text-sm font-black text-emerald-400">
-                {user?.stats?.totalJobs ?? 0}
-              </span>
-            </div>
-            <span className="text-[9px] text-slate-500">Travay Fini</span>
-          </div>
-          <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
-            <div className="flex items-center justify-center gap-0.5">
-              <DollarSign className="w-3 h-3 text-blue-400" />
-              <span className="text-sm font-black text-blue-400">
                 ${(user?.stats?.totalJobs ?? 0) * 50}
               </span>
             </div>
             <span className="text-[9px] text-slate-500">Revni Est.</span>
           </div>
+          <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
+            <div className="flex items-center justify-center gap-0.5">
+              <Briefcase className="w-3 h-3 text-amber-400" />
+              <span className="text-sm font-black text-amber-400">
+                {user?.stats?.totalJobs ?? 0}
+              </span>
+            </div>
+            <span className="text-[9px] text-slate-500">Travay Fini</span>
+          </div>
         </div>
-      </div>
-
-      {/* ── SEARCH BAR ───────────────────────────────────────────── */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2.5">
-          <Search className="w-4 h-4 text-slate-500 shrink-0" />
-          <input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Rechèche travay, sèvis..."
-            className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={handleRefresh}
-          className="w-10 h-10 flex items-center justify-center bg-slate-900/70 border border-slate-800 rounded-xl text-slate-400 hover:text-amber-400 active:scale-95 transition"
-          aria-label="Rafraichi"
-        >
-          <RefreshCcw className="w-4 h-4" />
-        </button>
       </div>
 
       {/* WORKER TAB BAR — only for the 'worker' role specifically */}
@@ -617,64 +641,11 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Section header */}
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Travay ki pre w
-          </h3>
-
-          {/* LOADING / JOB LIST */}
-          {loading ? (
-            <div className="space-y-2.5">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-20 bg-slate-800/50 rounded-xl animate-pulse" />
-              ))}
-            </div>
-          ) : jobs.length === 0 ? (
-            <div className="text-slate-400 text-sm text-center py-8">
-              Pa gen travay disponib kounye a
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {jobs.map((job, idx) => (
-                <div
-                  key={job.id || job._id || idx}
-                  className="bg-[#0f172a] p-3.5 rounded-xl border border-slate-800 hover:border-amber-500/30 transition"
-                >
-                  <div className="flex justify-between items-center gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-lg shrink-0">
-                        👷‍♂️
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-100 leading-tight">
-                          {job?.title || "Untitled job"}
-                        </h4>
-                        <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-                          <MapPin className="w-2.5 h-2.5" />
-                          {job?.company || "Unknown"}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="block text-sm font-bold text-amber-500">
-                        {job?.price || "N/A"}
-                      </span>
-                      <span className="text-[10px] text-slate-500 flex items-center gap-0.5 justify-end">
-                        <Clock className="w-2.5 h-2.5" />
-                        {job?.time || "Just now"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Community feed — below jobs */}
-          <div className="pt-1">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">👥 Kominote JobFast</h3>
-            </div>
+          {/* Community feed */}
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              👥 Kominote JobFast
+            </p>
             <CommunityFeed />
           </div>
 

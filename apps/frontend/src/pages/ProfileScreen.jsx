@@ -1,6 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import {
+  Camera, Edit3, Save, X, Star, Shield, Briefcase,
+  Bell, History, LogOut, ChevronRight, User, MapPin,
+} from "lucide-react";
 
 export const ROUTES = {
   DASHBOARD: "/dashboard",
@@ -9,21 +13,75 @@ export const ROUTES = {
   SETTINGS: "/settings",
   JOB_HISTORY: "/job-history",
   NOTIFICATIONS: "/notifications",
-  SEARCH: "/search",
-  POST_JOB: "/post-job",
   LOGIN: "/login",
 };
 
+function trustScore(user) {
+  let score = 40;
+  if (user?.profileMetadata?.profilePhoto) score += 20;
+  if (user?.profileMetadata?.bio)           score += 15;
+  if (user?.phone)                           score += 15;
+  if (user?.verified)                        score += 10;
+  return Math.min(score, 100);
+}
+
 function ProfileScreen() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const navigate   = useNavigate();
+  const { user, login: updateSession, logout } = useAuth();
+  const fileRef    = useRef(null);
 
-  const skills = useMemo(() => user?.stats?.skills || [], [user]);
+  // ── Edit state ───────────────────────────────────────────────
+  const [editing,  setEditing]  = useState(false);
+  const [editName, setEditName] = useState(user?.name || "");
+  const [editBio,  setEditBio]  = useState(user?.profileMetadata?.bio || user?.bio || "");
+  const [editPhoto, setEditPhoto] = useState(user?.profileMetadata?.profilePhoto || "");
+  const [saving,   setSaving]   = useState(false);
 
-  const handleLogout = () => {
+  const avatarSrc = useMemo(
+    () => editPhoto
+      || user?.profileMetadata?.profilePhoto
+      || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.name || "user")}`,
+    [editPhoto, user]
+  );
+
+  // ── Photo picker ─────────────────────────────────────────────
+  const handlePhotoSelect = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setEditPhoto(ev.target.result);
+    reader.readAsDataURL(file);
+  }, []);
+
+  // ── Save ─────────────────────────────────────────────────────
+  const handleSave = useCallback(() => {
+    if (!editName.trim()) return;
+    setSaving(true);
+    const updated = {
+      ...user,
+      name: editName.trim(),
+      profileMetadata: {
+        ...(user?.profileMetadata || {}),
+        bio: editBio.trim(),
+        profilePhoto: editPhoto || user?.profileMetadata?.profilePhoto || "",
+      },
+    };
+    updateSession(updated);
+    setSaving(false);
+    setEditing(false);
+  }, [editName, editBio, editPhoto, user, updateSession]);
+
+  const handleCancel = useCallback(() => {
+    setEditName(user?.name || "");
+    setEditBio(user?.profileMetadata?.bio || "");
+    setEditPhoto(user?.profileMetadata?.profilePhoto || "");
+    setEditing(false);
+  }, [user]);
+
+  const handleLogout = useCallback(() => {
     logout();
     navigate(ROUTES.LOGIN, { replace: true });
-  };
+  }, [logout, navigate]);
 
   if (!user) {
     return (
@@ -33,162 +91,255 @@ function ProfileScreen() {
     );
   }
 
-  const avatarSrc =
-    user.profileMetadata?.profilePhoto ||
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name || "user")}`;
+  const locationLabel = user.location?.city
+    ? `${user.location.city}, ${user.location?.country || "Haiti"}`
+    : user.location?.country || "";
 
-  const locationLabel =
-    user.location?.city
-      ? `${user.location.city}, ${user.location?.country || "Haiti"}`
-      : user.location?.country || "Haiti";
-
-  const rating = user.stats?.rating ?? 0;
-  const jobsCompleted = user.stats?.totalJobs ?? 0;
-  const memberSince = user.stats?.memberSince || "";
-  const walletBalance = user.walletBalance ?? 0;
-  const bio = user.profileMetadata?.bio || user.bio || "";
+  const rating       = user.stats?.rating ?? 5.0;
+  const jobsDone     = user.stats?.totalJobs ?? 0;
+  const walletBal    = user.walletBalance ?? 0;
+  const trust        = trustScore(user);
+  const bio          = editing ? editBio : (user?.profileMetadata?.bio || user?.bio || "");
+  const skills       = user?.stats?.skills || [];
 
   return (
-    <div className="w-full flex flex-col text-slate-100">
-      <header className="rounded-b-2xl border-b border-slate-800/60 bg-slate-900/60 px-6 pb-6 pt-6 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-sm font-extrabold uppercase tracking-widest text-slate-400">
-            Profil
-          </h1>
+    <div className="w-full flex flex-col text-slate-100 pb-4">
 
-          <button
-            type="button"
-            onClick={() => navigate(ROUTES.SETTINGS)}
-            aria-label="Anviwònman"
-            className="rounded-xl bg-slate-800 p-2.5 text-slate-300 transition-all hover:text-amber-400 active:scale-95 focus:outline-none"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
+      {/* ── HEADER ─────────────────────────────────────────────── */}
+      <div className="bg-gradient-to-b from-[#0f172a] to-[#1e293b] px-4 pb-5 pt-4 border-b border-slate-800/60">
+
+        {/* Top row */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-sm font-extrabold uppercase tracking-widest text-slate-400">
+            Paramèt / Pwofil
+          </h1>
+          {!editing ? (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold active:scale-95 transition"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              Modifye
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="p-2 rounded-xl bg-slate-800 text-slate-400 active:scale-95 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !editName.trim()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black active:scale-95 disabled:opacity-50 transition"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {saving ? "Ap sove..." : "Sove"}
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Avatar + basic info */}
         <div className="flex flex-col items-center">
-          <div className="relative mb-4">
+          <div className="relative mb-3">
             <img
-              src={avatarSrc}
-              alt={`Foto pwofil ${user.name}`}
-              className="h-24 w-24 rounded-full border-4 border-slate-800 shadow-lg object-cover"
+              src={editing ? (editPhoto || avatarSrc) : avatarSrc}
+              alt={user.name}
+              className="h-20 w-20 rounded-full border-4 border-slate-700 shadow-lg object-cover"
             />
-            <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-slate-900 bg-green-500" />
+            {editing && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center"
+                >
+                  <Camera className="w-6 h-6 text-white" />
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoSelect}
+                />
+              </>
+            )}
+            <span className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900" />
           </div>
 
-          <h2 className="text-xl font-bold text-white">{user.name}</h2>
-          <p className="mt-0.5 text-xs font-black uppercase tracking-widest text-amber-400">
+          {editing ? (
+            <input
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              maxLength={50}
+              placeholder="Non ou..."
+              className="text-center text-lg font-bold text-white bg-slate-800/80 border border-slate-600 rounded-xl px-3 py-1.5 outline-none focus:border-amber-500/50 w-full max-w-xs mb-1"
+            />
+          ) : (
+            <h2 className="text-xl font-bold text-white">{user.name}</h2>
+          )}
+
+          <p className="text-[11px] font-black uppercase tracking-widest text-amber-400 mt-0.5">
             {user.profession || user.role}
           </p>
 
-          {user.verified && (
-            <div className="mt-2 flex items-center gap-1 text-emerald-400 text-xs">
-              ✓ Kont Verifye
+          {locationLabel && (
+            <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+              <MapPin className="w-3 h-3" />
+              {locationLabel}
             </div>
           )}
 
-          <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <circle cx="12" cy="10" r="2" />
-            </svg>
-            <span>{locationLabel}</span>
-          </div>
+          {user.verified && (
+            <span className="mt-1.5 text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">
+              ✓ Kont Verifye
+            </span>
+          )}
         </div>
 
-        <div className="mt-6 grid grid-cols-3 gap-4 rounded-2xl border border-slate-700 bg-slate-900/60 p-4">
+        {/* Stats: Rating + Jobs */}
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-slate-700/50 bg-slate-900/50 p-3">
           <div className="text-center">
-            <p className="text-lg font-black text-white">{jobsCompleted}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Travay</p>
-          </div>
-          <div className="border-x border-slate-800 text-center">
             <div className="flex items-center justify-center gap-1">
-              <p className="text-lg font-black text-white">{rating}</p>
-              <svg className="h-3.5 w-3.5 fill-amber-400 text-amber-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="text-lg font-black text-amber-400">{Number(rating).toFixed(1)}</span>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Evalyasyon</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">Evalyasyon</p>
           </div>
-          <div className="text-center">
-            <p className="pt-0.5 text-xs font-black text-white">{memberSince}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Depi</p>
+          <div className="text-center border-l border-slate-800">
+            <div className="flex items-center justify-center gap-1">
+              <Briefcase className="w-4 h-4 text-emerald-400" />
+              <span className="text-lg font-black text-emerald-400">{jobsDone}</span>
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">Travay Fini</p>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="space-y-6 px-5 py-6">
+      {/* ── MAIN CONTENT ───────────────────────────────────────── */}
+      <div className="px-4 pt-5 space-y-5">
+
+        {/* Bio */}
         <section>
-          <h2 className="mb-3 text-xs font-extrabold uppercase tracking-widest text-slate-400">Wallet</h2>
-          <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-5">
-            <p className="text-xs text-slate-400">Balans Disponib</p>
-            <p className="mt-1 text-2xl font-black text-green-400">
-              ${Number(walletBalance).toLocaleString()}
+          <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">
+            Bio / A Pwopo
+          </h3>
+          {editing ? (
+            <textarea
+              value={editBio}
+              onChange={e => setEditBio(e.target.value)}
+              maxLength={300}
+              rows={3}
+              placeholder="Ekri yon ti mo sou tèt ou (travay ou fè, ekspèryans, etc.)..."
+              className="w-full bg-slate-800/70 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-amber-500/40 resize-none leading-relaxed"
+            />
+          ) : bio ? (
+            <p className="text-sm leading-relaxed text-slate-300">{bio}</p>
+          ) : (
+            <p className="text-sm text-slate-600 italic">
+              Klike "Modifye" pou ajoute yon bio...
             </p>
+          )}
+        </section>
+
+        {/* Trust score */}
+        <section>
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-amber-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Nivo Konfyans</span>
+            </div>
+            <span className="text-xs font-black text-amber-500">{trust}/100</span>
+          </div>
+          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-700"
+              style={{ width: `${trust}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-slate-600 mt-1">
+            {trust < 60
+              ? "Ajoute foto ak bio pou ogmante nivo konfyans ou."
+              : trust < 80
+              ? "Bon! Verifye kont ou pou rache nivo ou."
+              : "Ekselan! Pwofil ou solid."}
+          </p>
+        </section>
+
+        {/* Wallet */}
+        <section>
+          <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">Wallet</h3>
+          <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-slate-500">Balans Disponib</p>
+              <p className="text-2xl font-black text-green-400 mt-0.5">
+                ${Number(walletBal).toLocaleString()}
+              </p>
+            </div>
+            <span className="text-3xl">💵</span>
           </div>
         </section>
 
-        {bio ? (
-          <section>
-            <h2 className="mb-2 text-xs font-extrabold uppercase tracking-widest text-slate-400">A Pwopo</h2>
-            <p className="text-sm font-medium leading-relaxed text-slate-300">{bio}</p>
-          </section>
-        ) : null}
-
+        {/* Skills */}
         {skills.length > 0 && (
           <section>
-            <h2 className="mb-3 text-xs font-extrabold uppercase tracking-widest text-slate-400">Konpetans</h2>
+            <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">Konpetans</h3>
             <div className="flex flex-wrap gap-2">
-              {skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-bold text-slate-200"
-                >
-                  {skill}
+              {skills.map(s => (
+                <span key={s} className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-bold text-slate-200">
+                  {s}
                 </span>
               ))}
             </div>
           </section>
         )}
 
-        <section className="space-y-3">
+        {/* Action links */}
+        <section className="space-y-2.5">
           <button
             type="button"
-            onClick={() => navigate(ROUTES.JOB_HISTORY)}
-            className="flex w-full items-center justify-between rounded-xl border border-slate-800/80 bg-slate-800/40 p-4 transition-all hover:border-slate-700 active:scale-[0.99]"
+            onClick={() => navigate(ROUTES.NOTIFICATIONS)}
+            className="flex w-full items-center justify-between rounded-xl border border-slate-800/80 bg-slate-800/30 p-4 transition hover:border-slate-700 active:scale-[0.99]"
           >
-            <span className="text-sm font-bold text-slate-100">Istwa Travay</span>
-            <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <div className="flex items-center gap-3">
+              <Bell className="w-4 h-4 text-slate-400" />
+              <span className="text-sm font-bold text-slate-100">Notifikasyon</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600" />
           </button>
 
           <button
             type="button"
-            onClick={() => navigate(ROUTES.NOTIFICATIONS)}
-            className="flex w-full items-center justify-between rounded-xl border border-slate-800/80 bg-slate-800/40 p-4 transition-all hover:border-slate-700 active:scale-[0.99]"
+            onClick={() => navigate(ROUTES.JOB_HISTORY)}
+            className="flex w-full items-center justify-between rounded-xl border border-slate-800/80 bg-slate-800/30 p-4 transition hover:border-slate-700 active:scale-[0.99]"
           >
-            <span className="text-sm font-bold text-slate-100">Notifikasyon</span>
-            <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <div className="flex items-center gap-3">
+              <History className="w-4 h-4 text-slate-400" />
+              <span className="text-sm font-bold text-slate-100">Istwa Travay</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600" />
           </button>
 
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-between rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-red-400 transition-all hover:border-red-500/40 active:scale-[0.99]"
+            className="flex w-full items-center justify-between rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-red-400 transition hover:border-red-500/40 active:scale-[0.99]"
           >
-            <span className="text-sm font-bold">Dekonekte</span>
-            <svg className="h-4 w-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <div className="flex items-center gap-3">
+              <LogOut className="w-4 h-4" />
+              <span className="text-sm font-bold">Dekonekte</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-red-500/50" />
           </button>
         </section>
-      </main>
+
+      </div>
     </div>
   );
 }
