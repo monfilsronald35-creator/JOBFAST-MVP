@@ -24,6 +24,7 @@ import NotificationsCenter from "@/pages/NotificationsCenter.jsx";
 import HomeMarketplace from "@/pages/HomeMarketplace.jsx";
 import CategoryMarketplace from "@/pages/CategoryMarketplace.jsx";
 import UserProfileDisplay from "@/pages/UserProfileDisplay.jsx";
+import ChatScreen from "@/pages/ChatScreen.jsx";
 
 // Admin Pages (Lazy Loaded for better performance)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
@@ -95,7 +96,8 @@ function AppRoutes() {
           <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
-          <Route path="/chat/:id" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/chat" element={<AuthGate><ChatScreen /></AuthGate>} />
+          <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
           <Route path="/rating/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/booking/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/map" element={<AuthGate><SearchScreen /></AuthGate>} />

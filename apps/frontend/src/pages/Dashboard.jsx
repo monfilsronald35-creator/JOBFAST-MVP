@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, memo } from "react";
-import { MapPin, Clock, RefreshCcw, Navigation, Star, Briefcase, DollarSign } from "lucide-react";
+import { MapPin, Clock, RefreshCcw, Navigation, Star, Briefcase, DollarSign, Search, X } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
@@ -17,44 +17,43 @@ import EnterpriseContent, {
   EnterpriseOverviewSupplement,
 } from "./enterprise/EnterpriseDashboard";
 
-// ── GPS Map section ──────────────────────────────────────────────
-const MapSection = memo(function MapSection({ user, onAvailToggle }) {
+// ── GPS Map Modal ────────────────────────────────────────────────
+const MapModal = memo(function MapModal({ user, open, onClose }) {
   const lat = user?.location?.coordinates?.latitude  || 18.5432;
   const lng = user?.location?.coordinates?.longitude || -72.3395;
-  const city = user?.location?.city || "Lokasyon ou";
-  const avail = user?.availability || "available";
-  const isAvailable = avail === "available";
-
   const bbox = `${lng - 0.06}%2C${lat - 0.04}%2C${lng + 0.06}%2C${lat + 0.04}`;
   const osmSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
 
+  if (!open) return null;
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-900" style={{ height: 180 }}>
-      <iframe
-        title="Lokasyon GPS"
-        src={osmSrc}
-        className="w-full h-full border-0 opacity-90"
-        loading="lazy"
-        referrerPolicy="no-referrer"
-      />
-      {/* Location badge bottom-left */}
-      <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-[#0f172a]/90 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-slate-700/60">
-        <Navigation className="w-3 h-3 text-amber-400" />
-        <span className="text-[11px] font-semibold text-white">{city}</span>
-      </div>
-      {/* Disponib toggle top-right */}
-      <button
-        type="button"
-        onClick={onAvailToggle}
-        className={`absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold backdrop-blur-sm transition active:scale-95 ${
-          isAvailable
-            ? "bg-green-500/90 border-green-400 text-white"
-            : "bg-slate-800/90 border-slate-600 text-slate-300"
-        }`}
+    <div className="fixed inset-0 z-[200] flex flex-col" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div
+        className="relative m-auto w-full max-w-sm rounded-2xl overflow-hidden border border-slate-700 shadow-2xl"
+        style={{ height: 320 }}
+        onClick={e => e.stopPropagation()}
       >
-        <span className={`w-2 h-2 rounded-full ${isAvailable ? "bg-white" : "bg-slate-500"}`} />
-        {isAvailable ? "Disponib" : "Okipe"}
-      </button>
+        <iframe
+          title="Lokasyon GPS"
+          src={osmSrc}
+          className="w-full h-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-2 right-2 w-8 h-8 bg-[#0f172a]/90 rounded-full flex items-center justify-center border border-slate-700"
+        >
+          <X className="w-4 h-4 text-white" />
+        </button>
+        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-[#0f172a]/90 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-slate-700/60">
+          <Navigation className="w-3 h-3 text-amber-400" />
+          <span className="text-[11px] font-semibold text-white">
+            {user?.location?.city || "Lokasyon ou"}
+          </span>
+        </div>
+      </div>
     </div>
   );
 });
@@ -359,6 +358,20 @@ export default function Dashboard() {
     fetchJobs(true);
   }, [fetchJobs]);
 
+  // ── GPS modal / search / availability state ───────────────────
+  const [mapOpen, setMapOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [availability, setAvailability] = useState(user?.availability || "available");
+
+  const toggleAvailability = useCallback(() => {
+    const next = availability === "available" ? "busy" : "available";
+    setAvailability(next);
+    API.patch("/workers/availability", {
+      userId: user?._id || user?.id,
+      availability: next,
+    }).catch(() => {});
+  }, [availability, user]);
+
   // ── Company role → extended company dashboard ────────────────
   // Intercepted before the generic employer short-circuit so company
   // gets the full tab experience; all other employer roles still get
@@ -471,58 +484,104 @@ export default function Dashboard() {
 
   // ── Worker path — extended with role-aware tabs ──────────────
   return (
-    <div className="space-y-4 px-4 pt-4">
+    <div className="space-y-3 px-4 pt-4">
 
-      {/* ── BYENVENI HERO ──────────────────────────────────────── */}
-      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-slate-800/60 p-5">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.12),transparent_60%)] pointer-events-none" />
-        <div className="relative text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400/70 mb-1">
-            JobFast Platform
-          </p>
-          <h1 className="text-2xl font-black text-white tracking-tight">
+      {/* ── GPS MAP MODAL ─────────────────────────────────────────── */}
+      <MapModal user={user} open={mapOpen} onClose={() => setMapOpen(false)} />
+
+      {/* ── BYENVENI HERO (compact) ──────────────────────────────── */}
+      <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1a2640] to-[#0f172a] border border-slate-800/70 p-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.09),transparent_55%)] pointer-events-none" />
+
+        {/* GPS pill — top-left */}
+        <button
+          type="button"
+          onClick={() => setMapOpen(true)}
+          className="absolute top-3 left-3 flex items-center gap-1 bg-slate-800/90 border border-slate-700/70 px-2 py-1 rounded-lg text-[10px] font-semibold text-amber-400 hover:border-amber-500/50 active:scale-95 transition"
+          aria-label="Wè kat GPS"
+        >
+          <Navigation className="w-3 h-3" />
+          {user?.location?.city || "GPS"}
+        </button>
+
+        {/* Availability toggle — top-right */}
+        <button
+          type="button"
+          onClick={toggleAvailability}
+          className={`absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-bold transition active:scale-95 ${
+            availability === "available"
+              ? "bg-green-500/20 border-green-500/50 text-green-400"
+              : "bg-slate-800/80 border-slate-600 text-slate-400"
+          }`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${availability === "available" ? "bg-green-400" : "bg-slate-500"}`} />
+          {availability === "available" ? "Disponib" : "Okipe"}
+        </button>
+
+        {/* Title */}
+        <div className="relative text-center pt-5 pb-1">
+          <h1 className="text-xl font-black text-white tracking-tight leading-tight">
             BYENVENI{user?.name ? `, ${user.name.split(" ")[0].toUpperCase()}` : ""}
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            {isWorkerRole && workerTab !== "overview"
-              ? dashConfig.subtitle
-              : "Platfòm travay la pi rapid nan Ayiti"}
+          <p className="text-[10px] text-slate-500 mt-0.5">
+            Platfòm travay la pi rapid nan Ayiti
           </p>
           {retrying && (
-            <p className="text-xs text-amber-400 mt-1.5">Rekoneksyon...</p>
+            <p className="text-[10px] text-amber-400 mt-1">Rekoneksyon...</p>
           )}
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
-          <div className="bg-slate-900/70 rounded-xl p-2.5 text-center border border-slate-700/40">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              <span className="text-base font-black text-amber-400">
+        {/* Stats row — slim */}
+        <div className="grid grid-cols-3 gap-2 mt-3">
+          <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
+            <div className="flex items-center justify-center gap-0.5">
+              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <span className="text-sm font-black text-amber-400">
                 {(user?.stats?.rating ?? 5).toFixed(1)}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-semibold">Rating</span>
+            <span className="text-[9px] text-slate-500">Rating</span>
           </div>
-          <div className="bg-slate-900/70 rounded-xl p-2.5 text-center border border-slate-700/40">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-base font-black text-emerald-400">
+          <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
+            <div className="flex items-center justify-center gap-0.5">
+              <Briefcase className="w-3 h-3 text-emerald-400" />
+              <span className="text-sm font-black text-emerald-400">
                 {user?.stats?.totalJobs ?? 0}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-semibold">Travay Fini</span>
+            <span className="text-[9px] text-slate-500">Travay Fini</span>
           </div>
-          <div className="bg-slate-900/70 rounded-xl p-2.5 text-center border border-slate-700/40">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <DollarSign className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-base font-black text-blue-400">
+          <div className="bg-slate-900/60 rounded-lg p-2 text-center border border-slate-700/30">
+            <div className="flex items-center justify-center gap-0.5">
+              <DollarSign className="w-3 h-3 text-blue-400" />
+              <span className="text-sm font-black text-blue-400">
                 ${(user?.stats?.totalJobs ?? 0) * 50}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-semibold">Revni Est.</span>
+            <span className="text-[9px] text-slate-500">Revni Est.</span>
           </div>
         </div>
+      </div>
+
+      {/* ── SEARCH BAR ───────────────────────────────────────────── */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 flex items-center gap-2 bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2.5">
+          <Search className="w-4 h-4 text-slate-500 shrink-0" />
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Rechèche travay, sèvis..."
+            className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleRefresh}
+          className="w-10 h-10 flex items-center justify-center bg-slate-900/70 border border-slate-800 rounded-xl text-slate-400 hover:text-amber-400 active:scale-95 transition"
+          aria-label="Rafraichi"
+        >
+          <RefreshCcw className="w-4 h-4" />
+        </button>
       </div>
 
       {/* WORKER TAB BAR — only for the 'worker' role specifically */}
@@ -549,44 +608,7 @@ export default function Dashboard() {
 
       {/* ── OVERVIEW TAB ─────────────────────────────────────────── */}
       {(!isWorkerRole || workerTab === "overview") && (
-        <div className="space-y-4">
-
-          {/* GPS Map with Disponib toggle */}
-          <MapSection user={user} onAvailToggle={() => {
-            const current = user?.availability || "available";
-            const next = current === "available" ? "busy" : "available";
-            API.patch("/workers/availability", {
-              userId: user?._id || user?.id,
-              availability: next,
-            }).catch(() => {});
-          }} />
-
-          {/* Trust bar — worker only */}
-          {isWorkerRole && (
-            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-3">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-bold text-slate-400">🛡️ Konfyans</span>
-                <span className="text-[11px] font-bold text-amber-500">
-                  {computeTrustScore(user)}/100
-                </span>
-              </div>
-              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all"
-                  style={{ width: `${computeTrustScore(user)}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Community feed */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-white">👥 Kominote JobFast</h3>
-              <span className="text-[10px] text-slate-500">Manm yo</span>
-            </div>
-            <CommunityFeed />
-          </div>
+        <div className="space-y-3">
 
           {/* ERROR */}
           {error && (
@@ -595,78 +617,67 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Refresh + section header */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-              Travay ki pre w
-            </h3>
-            {workerTab === "overview" && (
-              <button
-                onClick={handleRefresh}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
-                aria-label="Rafraichi"
-              >
-                <RefreshCcw className="w-4 h-4 text-amber-400" />
-              </button>
-            )}
-          </div>
+          {/* Section header */}
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Travay ki pre w
+          </h3>
 
-          {/* LOADING / JOB LIST — preserved exactly from original */}
+          {/* LOADING / JOB LIST */}
           {loading ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-24 bg-slate-800/50 rounded-2xl animate-pulse"
-                />
+                <div key={i} className="h-20 bg-slate-800/50 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : jobs.length === 0 ? (
-            <div className="text-slate-400 text-sm text-center py-10">
+            <div className="text-slate-400 text-sm text-center py-8">
               Pa gen travay disponib kounye a
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {jobs.map((job, idx) => (
                 <div
                   key={job.id || job._id || idx}
-                  className="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 hover:border-amber-500/30 transition"
+                  className="bg-[#0f172a] p-3.5 rounded-xl border border-slate-800 hover:border-amber-500/30 transition"
                 >
-                  <div className="flex justify-between items-start">
-
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-xl">
+                  <div className="flex justify-between items-center gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-lg shrink-0">
                         👷‍♂️
                       </div>
-
                       <div>
-                        <h4 className="font-bold text-slate-100">
+                        <h4 className="text-sm font-bold text-slate-100 leading-tight">
                           {job?.title || "Untitled job"}
                         </h4>
-
-                        <div className="flex items-center gap-1 text-xs text-slate-400">
-                          <MapPin className="w-3 h-3" />
+                        <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
+                          <MapPin className="w-2.5 h-2.5" />
                           {job?.company || "Unknown"}
                         </div>
                       </div>
                     </div>
-
-                    <div className="text-right">
-                      <span className="block font-bold text-amber-500">
+                    <div className="text-right shrink-0">
+                      <span className="block text-sm font-bold text-amber-500">
                         {job?.price || "N/A"}
                       </span>
-
-                      <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
+                      <span className="text-[10px] text-slate-500 flex items-center gap-0.5 justify-end">
+                        <Clock className="w-2.5 h-2.5" />
                         {job?.time || "Just now"}
                       </span>
                     </div>
-
                   </div>
                 </div>
               ))}
             </div>
           )}
+
+          {/* Community feed — below jobs */}
+          <div className="pt-1">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">👥 Kominote JobFast</h3>
+            </div>
+            <CommunityFeed />
+          </div>
+
         </div>
       )}
 
