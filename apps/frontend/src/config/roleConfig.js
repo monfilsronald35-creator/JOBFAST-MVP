@@ -1021,4 +1021,29 @@ export const ROLE_PROFESSIONS = Object.freeze({
   ],
 });
 
+/**
+ * Returns the professions available for registration under a given role.
+ * Delegates to ROLE_PROFESSIONS; falls back to empty array.
+ */
+export const getProfessionsByRole = (role) =>
+  ROLE_PROFESSIONS[role] ?? [];
+
+/**
+ * Returns the ordered list of role keys available during registration.
+ * Admin roles are excluded — they are assigned manually.
+ */
+export const getRegistrationRoles = () => [
+  ROLES.WORKER,
+  ROLES.COMPANY,
+  ROLES.ENTERPRISE,
+  ROLES.RESTAURANT,
+  ROLES.HOTEL,
+  ROLES.OFFICE,
+  ROLES.HOSPITAL,
+  ROLES.CLINIC,
+  ROLES.TOURISM,
+  ROLES.SERVICE_PROVIDER,
+  ROLES.RENTAL,
+];
+
 export default ROLE_CONFIGS;
