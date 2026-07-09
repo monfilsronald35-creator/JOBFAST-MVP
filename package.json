@@ -7,5 +7,8 @@
     "frontend": "cd apps/frontend && npm run dev",
     "backend": "cd backend && npm run dev",
     "build:frontend": "cd apps/frontend && npm run build"
+  },
+  "dependencies": {
+    "prop-types": "^15.8.1"
   }
 }
