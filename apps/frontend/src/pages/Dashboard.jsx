@@ -4,11 +4,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
-import WorkerContent, {
-  WORKER_TABS,
-  OverviewSupplement,
-  computeTrustScore,
-} from "./worker/WorkerDashboard";
+import { computeTrustScore } from "./worker/WorkerDashboard";
 import CompanyContent, {
   COMPANY_TABS,
   CompanyOverviewSupplement,
@@ -190,9 +186,6 @@ export default function Dashboard() {
   const [error, setError]             = useState("");
   const [retrying, setRetrying]       = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
-  // workerTab: active tab in the worker dashboard tab bar.
-  // Declared unconditionally; only rendered when isWorkerRole is true.
-  const [workerTab, setWorkerTab]     = useState("overview");
   // isCompanyRole: gates the company-specific tab bar.
   // 'business' is the legacy alias that maps to company behavior.
   const isCompanyRole = roleKey === "company" || roleKey === "business";
@@ -564,55 +557,20 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* WORKER TAB BAR — only for the 'worker' role specifically */}
-      {isWorkerRole && (
-        <div
-          className="flex gap-1.5 overflow-x-auto pb-1"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {WORKER_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setWorkerTab(tab.id)}
-              className={`shrink-0 px-3 py-2 rounded-xl text-xs font-semibold transition ${
-                workerTab === tab.id
-                  ? "bg-amber-500 text-slate-950"
-                  : "bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700"
-              }`}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* ── OVERVIEW TAB ─────────────────────────────────────────── */}
-      {(!isWorkerRole || workerTab === "overview") && (
-        <div className="space-y-3">
-
-          {/* ERROR */}
-          {error && (
-            <div className="text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20">
-              {error}
-            </div>
-          )}
-
-          {/* Community feed */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              👥 Kominote JobFast
-            </p>
-            <CommunityFeed />
+      {/* ── OVERVIEW CONTENT ─────────────────────────────────────── */}
+      <div className="space-y-3">
+        {error && (
+          <div className="text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+            {error}
           </div>
-
+        )}
+        <div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            👥 Kominote JobFast
+          </p>
+          <CommunityFeed />
         </div>
-      )}
-
-      {/* ── OTHER WORKER TABS ────────────────────────────────────── */}
-      {/* Only for the 'worker' role; non-overview tabs rendered here */}
-      {isWorkerRole && workerTab !== "overview" && (
-        <WorkerContent tab={workerTab} user={user} jobs={jobs} />
-      )}
+      </div>
 
     </div>
   );
