@@ -127,50 +127,68 @@ const FIELD_RENDERERS = {
 };
 
 // ── Result card ───────────────────────────────────────────────
-const ResultCard = memo(function ResultCard({ item, cardFields, onCall, onChat, onRate, onBook, onMap }) {
+const ResultCard = memo(function ResultCard({ item, cardFields, onCall, onChat, onRate, onBook, onMap, onProfile }) {
   const city = item.location?.city || item.location?.state || '';
 
   return (
-    <div className="p-4 bg-[#162238] rounded-xl flex justify-between gap-3 border border-[#1e2d45]">
-      <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-sm text-white truncate">{item.name}</h3>
-        {city && <p className="text-[10px] text-slate-400 mt-0.5">{city}</p>}
-
-        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-          {cardFields.map((field) => {
-            const text = FIELD_RENDERERS[field]?.(item);
-            if (!text) return null;
-            return (
-              <span key={field} className="text-[10px] text-slate-300">{text}</span>
-            );
-          })}
+    <div className="bg-[#162238] rounded-xl border border-[#1e2d45] overflow-hidden">
+      {/* Clickable profile area */}
+      <button
+        type="button"
+        onClick={() => onProfile(item)}
+        className="w-full p-4 text-left flex items-start gap-3 hover:bg-white/5 active:bg-white/10 transition"
+      >
+        <img
+          src={item.photo || item.profileMetadata?.profilePhoto
+            || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name || "u")}`}
+          alt={item.name}
+          className="w-12 h-12 rounded-xl object-cover border border-slate-700 shrink-0"
+          onError={e => { e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name)}`; }}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-bold text-sm text-white truncate">{item.name}</h3>
+            {item.verified && <span className="text-emerald-400 text-[10px]">✓</span>}
+          </div>
+          {city && <p className="text-[10px] text-slate-400 mt-0.5">{city}</p>}
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
+            {cardFields.map((field) => {
+              const text = FIELD_RENDERERS[field]?.(item);
+              if (!text) return null;
+              return (
+                <span key={field} className="text-[10px] text-slate-300">{text}</span>
+              );
+            })}
+          </div>
         </div>
+        <span className="text-slate-600 text-xs">›</span>
+      </button>
 
-        {item.location?.coordinates && (
-          <button
-            onClick={() => onMap(item)}
-            className="text-blue-400 text-[10px] mt-2"
-          >
-            🗺 Map
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
+      {/* Action row */}
+      <div className="flex border-t border-[#1e2d45]">
         <button
           onClick={() => onCall(item)}
-          className="px-2.5 py-1 text-[10px] rounded-lg bg-green-500 text-black font-bold"
+          className="flex-1 py-2.5 text-[11px] font-bold text-green-400 flex items-center justify-center gap-1 hover:bg-green-500/10 transition"
         >
           📞 Rele
         </button>
-        <button onClick={() => onChat(item)} className="text-blue-400 text-[10px]">
+        <button
+          onClick={() => onChat(item)}
+          className="flex-1 py-2.5 text-[11px] font-bold text-blue-400 flex items-center justify-center gap-1 hover:bg-blue-500/10 transition border-l border-[#1e2d45]"
+        >
           💬 Chat
         </button>
-        <button onClick={() => onRate(item)} className="text-yellow-400 text-[10px]">
+        <button
+          onClick={() => onRate(item)}
+          className="flex-1 py-2.5 text-[11px] font-bold text-amber-400 flex items-center justify-center gap-1 hover:bg-amber-500/10 transition border-l border-[#1e2d45]"
+        >
           ⭐ Note
         </button>
-        <button onClick={() => onBook(item)} className="text-purple-400 text-[10px]">
-          💳 Rezève
+        <button
+          onClick={() => onProfile(item)}
+          className="flex-1 py-2.5 text-[11px] font-bold text-violet-400 flex items-center justify-center gap-1 hover:bg-violet-500/10 transition border-l border-[#1e2d45]"
+        >
+          📋 Demand
         </button>
       </div>
     </div>
@@ -364,10 +382,11 @@ export default function SearchScreen() {
     if (phone) window.location.href = `tel:${phone}`;
   }, []);
 
-  const handleChat  = useCallback((item) => navigate(`/chat/${item.id || item._id}`),    [navigate]);
-  const handleRate  = useCallback((item) => navigate(`/rating/${item.id || item._id}`),  [navigate]);
-  const handleBook  = useCallback((item) => navigate(`/booking/${item.id || item._id}`), [navigate]);
-  const handleMap   = useCallback((item) => {
+  const handleChat    = useCallback((item) => navigate(`/chat/${item.id || item._id}`),    [navigate]);
+  const handleRate    = useCallback((item) => navigate(`/u/${item.id || item._id}`, { state: { profile: item } }), [navigate]);
+  const handleBook    = useCallback((item) => navigate(`/u/${item.id || item._id}`, { state: { profile: item } }), [navigate]);
+  const handleProfile = useCallback((item) => navigate(`/u/${item.id || item._id}`, { state: { profile: item } }), [navigate]);
+  const handleMap     = useCallback((item) => {
     const lat = item.location?.coordinates?.latitude  ?? item.lat;
     const lng = item.location?.coordinates?.longitude ?? item.lng;
     if (lat != null && lng != null) navigate(`/map?lat=${lat}&lng=${lng}`);
@@ -437,6 +456,7 @@ export default function SearchScreen() {
             onRate={handleRate}
             onBook={handleBook}
             onMap={handleMap}
+            onProfile={handleProfile}
           />
         ))}
 
