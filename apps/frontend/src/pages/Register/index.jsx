@@ -141,8 +141,8 @@ function Register() {
         profession:      formData.profession,
         profileMetadata: formData.profileMetadata,
         accountType:     'individual',
-        city:            formData.city || formData.location || 'Port-au-Prince',
-        state:           formData.zone || 'Ouest',
+        city:            formData.city || formData.location || '',
+        state:           formData.zone || '',
         country:         formData.country || 'ht',
       };
 

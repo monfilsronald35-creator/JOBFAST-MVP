@@ -277,6 +277,85 @@
     "hoursAgo": "Hace {{count}} horas"
   },
 
+  "splash": {
+    "slogan": "Trabajo. Servicios. Negocios.\nDonde estás — todo en una app.",
+    "start": "COMENZAR",
+    "login": "Iniciar Sesión",
+    "register": "Crear Cuenta",
+    "chooseLanguage": "Elegir idioma",
+    "langPickerTitle": "Elige tu idioma",
+    "langPickerSubtitle": "Selecciona el idioma que deseas usar en la app",
+    "langPickerBtn": "Continuar"
+  },
+
+  "dashboard": {
+    "welcome": "BIENVENIDO",
+    "slogan": "La plataforma para encontrar trabajo más rápido",
+    "searchPlaceholder": "Buscar empresas, ciudad, oficio...",
+    "available": "Disponible",
+    "busy": "Ocupado",
+    "reconnecting": "Reconectando...",
+    "findWork": "Encontrar Trabajo",
+    "employersTitle": "Empresas & Empleadores Disponibles",
+    "noEmployers": "No hay empresas disponibles",
+    "noEmployersSearch": "Intenta otra búsqueda",
+    "noEmployersYet": "Empresas aún no registradas",
+    "contactWork": "Contactar para Trabajo",
+    "contactMsg": "Enviar un mensaje a",
+    "contactFor": "para discutir oportunidades de trabajo.",
+    "sendMessage": "Enviar Mensaje",
+    "filterAll": "Todos",
+    "filterCompany": "Empresa",
+    "filterEnterprise": "Empresa Grande",
+    "filterEmployer": "Empleador",
+    "roleCompany": "Empresa",
+    "roleBusiness": "Negocio",
+    "roleEnterprise": "Empresa Grande",
+    "roleEmployer": "Empleador",
+    "jobs": "Empleos",
+    "loading": "Cargando..."
+  },
+
+  "profile": {
+    "settingsTitle": "Ajustes / Perfil",
+    "editBtn": "Editar",
+    "saveBtn": "Guardar",
+    "savingBtn": "Guardando...",
+    "bioSection": "Bio / Acerca de",
+    "bioPlaceholder": "Escribe un breve texto sobre ti (trabajo, experiencia, etc.)...",
+    "bioEmpty": "Haz clic en \"Editar\" para agregar una bio...",
+    "trustLevel": "Nivel de Confianza",
+    "trustLow": "Agrega una foto y bio para aumentar tu nivel de confianza.",
+    "trustMid": "¡Bien! Verifica tu cuenta para subir de nivel.",
+    "trustHigh": "¡Excelente! Tu perfil es sólido.",
+    "walletTitle": "Billetera",
+    "walletBalance": "Saldo Disponible",
+    "skillsSection": "Habilidades",
+    "notifications": "Notificaciones",
+    "jobHistory": "Historial de Empleos",
+    "logout": "Cerrar Sesión",
+    "verified": "Cuenta Verificada",
+    "rating": "Calificación",
+    "jobsDone": "Empleos Completados",
+    "settingsTab": "Ajustes",
+    "nameInput": "Tu nombre...",
+    "loading": "Cargando...",
+    "nameRequired": "Nombre obligatorio"
+  },
+
+  "country": {
+    "ht": "Haití",
+    "do": "Rep. Dominicana",
+    "us": "Estados Unidos",
+    "ca": "Canadá",
+    "fr": "Francia",
+    "mx": "México",
+    "br": "Brasil",
+    "es": "España",
+    "gb": "Reino Unido",
+    "pt": "Portugal"
+  },
+
   "monitoring": {
     "cacheSize": "Caché: {{size}}",
     "cacheUsage": "Uso: {{usage}}%"

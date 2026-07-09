@@ -1,11 +1,32 @@
 import React, { useState, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import WorkerContent, { WORKER_TABS } from "./worker/WorkerDashboard";
 import {
   Camera, Edit3, Save, X, Star, Shield, Briefcase,
   Bell, History, LogOut, ChevronRight, MapPin,
 } from "lucide-react";
+
+// Maps country codes (and legacy stored names) to i18n key for display
+const COUNTRY_CODE_MAP = {
+  ht: "ht", ayiti: "ht", haiti: "ht", "haïti": "ht", "haití": "ht",
+  do: "do", "repiblik dominikèn": "do", "dominican republic": "do",
+  "rep. dominicana": "do", "rép. dominicaine": "do", "republica dominicana": "do",
+  us: "us", "etazini": "us", "united states": "us", "estados unidos": "us",
+  ca: "ca", "kanada": "ca", canada: "ca",
+  fr: "fr", "frans": "fr", france: "fr", "francia": "fr",
+  mx: "mx", "meksik": "mx", mexico: "mx", "méxico": "mx",
+  br: "br", "brezil": "br", brazil: "br", "brasil": "br",
+  es: "es", "espay": "es", spain: "es", "españa": "es",
+  gb: "gb", "wayòm ini": "gb", "united kingdom": "gb", "reino unido": "gb",
+  pt: "pt", "pòtigal": "pt", portugal: "pt",
+};
+
+function resolveCountryCode(raw) {
+  if (!raw) return null;
+  return COUNTRY_CODE_MAP[raw.toLowerCase().trim()] || null;
+}
 
 export const ROUTES = {
   DASHBOARD: "/dashboard",
@@ -28,6 +49,7 @@ function trustScore(user) {
 
 function ProfileScreen() {
   const navigate   = useNavigate();
+  const { t }      = useTranslation();
   const { user, login: updateSession, logout } = useAuth();
   const fileRef    = useRef(null);
 
@@ -88,14 +110,18 @@ function ProfileScreen() {
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center text-slate-400">
-        Chajman...
+        {t("profile.loading")}
       </div>
     );
   }
 
+  // Resolve country: stored as code ('do','ht') or legacy name → translate via i18n
+  const countryRaw  = user.location?.country || "";
+  const countryCode = resolveCountryCode(countryRaw);
+  const countryDisplay = countryCode ? t(`country.${countryCode}`, "") : "";
   const locationLabel = user.location?.city
-    ? [user.location.city, user.location?.country].filter(Boolean).join(", ")
-    : user.location?.country || "";
+    ? [user.location.city, countryDisplay].filter(Boolean).join(", ")
+    : countryDisplay;
 
   const rating       = user.stats?.rating ?? 5.0;
   const jobsDone     = user.stats?.totalJobs ?? 0;
@@ -113,7 +139,7 @@ function ProfileScreen() {
         {/* Top row */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-sm font-extrabold uppercase tracking-widest text-slate-400">
-            Paramèt / Pwofil
+            {t("profile.settingsTitle")}
           </h1>
           {!editing ? (
             <button
@@ -122,7 +148,7 @@ function ProfileScreen() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold active:scale-95 transition"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              Modifye
+              {t("profile.editBtn")}
             </button>
           ) : (
             <div className="flex gap-2">
@@ -140,7 +166,7 @@ function ProfileScreen() {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black active:scale-95 disabled:opacity-50 transition"
               >
                 <Save className="w-3.5 h-3.5" />
-                {saving ? "Ap sove..." : "Sove"}
+                {saving ? t("profile.savingBtn") : t("profile.saveBtn")}
               </button>
             </div>
           )}
@@ -180,7 +206,7 @@ function ProfileScreen() {
               value={editName}
               onChange={e => setEditName(e.target.value)}
               maxLength={50}
-              placeholder="Non ou..."
+              placeholder={t("profile.nameInput")}
               className="text-center text-lg font-bold text-white bg-slate-800/80 border border-slate-600 rounded-xl px-3 py-1.5 outline-none focus:border-amber-500/50 w-full max-w-xs mb-1"
             />
           ) : (
@@ -200,7 +226,7 @@ function ProfileScreen() {
 
           {user.verified && (
             <span className="mt-1.5 text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">
-              ✓ Kont Verifye
+              ✓ {t("profile.verified")}
             </span>
           )}
         </div>
@@ -212,14 +238,14 @@ function ProfileScreen() {
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span className="text-lg font-black text-amber-400">{Number(rating).toFixed(1)}</span>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">Evalyasyon</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">{t("profile.rating")}</p>
           </div>
           <div className="text-center border-l border-slate-800">
             <div className="flex items-center justify-center gap-1">
               <Briefcase className="w-4 h-4 text-emerald-400" />
               <span className="text-lg font-black text-emerald-400">{jobsDone}</span>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">Travay Fini</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">{t("profile.jobsDone")}</p>
           </div>
         </div>
       </div>
@@ -240,7 +266,7 @@ function ProfileScreen() {
                 : "bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700"
             }`}
           >
-            ⚙️ Paramèt
+            ⚙️ {t("profile.settingsTab")}
           </button>
           {/* Worker section tabs */}
           {WORKER_TABS.filter(t => t.id !== "overview").map(tab => (
@@ -271,7 +297,7 @@ function ProfileScreen() {
           {/* Bio */}
           <section>
             <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">
-              Bio / A Pwopo
+              {t("profile.bioSection")}
             </h3>
             {editing ? (
               <textarea
@@ -279,14 +305,14 @@ function ProfileScreen() {
                 onChange={e => setEditBio(e.target.value)}
                 maxLength={300}
                 rows={3}
-                placeholder="Ekri yon ti mo sou tèt ou (travay ou fè, ekspèryans, etc.)..."
+                placeholder={t("profile.bioPlaceholder")}
                 className="w-full bg-slate-800/70 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-amber-500/40 resize-none leading-relaxed"
               />
             ) : bio ? (
               <p className="text-sm leading-relaxed text-slate-300">{bio}</p>
             ) : (
               <p className="text-sm text-slate-600 italic">
-                Klike "Modifye" pou ajoute yon bio...
+                {t("profile.bioEmpty")}
               </p>
             )}
           </section>
@@ -296,7 +322,7 @@ function ProfileScreen() {
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-1.5">
                 <Shield className="w-4 h-4 text-amber-400" />
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">Nivo Konfyans</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">{t("profile.trustLevel")}</span>
               </div>
               <span className="text-xs font-black text-amber-500">{trust}/100</span>
             </div>
@@ -308,19 +334,19 @@ function ProfileScreen() {
             </div>
             <p className="text-[10px] text-slate-600 mt-1">
               {trust < 60
-                ? "Ajoute foto ak bio pou ogmante nivo konfyans ou."
+                ? t("profile.trustLow")
                 : trust < 80
-                ? "Bon! Verifye kont ou pou rache nivo ou."
-                : "Ekselan! Pwofil ou solid."}
+                ? t("profile.trustMid")
+                : t("profile.trustHigh")}
             </p>
           </section>
 
           {/* Wallet */}
           <section>
-            <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">Wallet</h3>
+            <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">{t("profile.walletTitle")}</h3>
             <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-slate-500">Balans Disponib</p>
+                <p className="text-[10px] text-slate-500">{t("profile.walletBalance")}</p>
                 <p className="text-2xl font-black text-green-400 mt-0.5">
                   ${Number(walletBal).toLocaleString()}
                 </p>
@@ -332,7 +358,7 @@ function ProfileScreen() {
           {/* Skills */}
           {skills.length > 0 && (
             <section>
-              <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">Konpetans</h3>
+              <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">{t("profile.skillsSection")}</h3>
               <div className="flex flex-wrap gap-2">
                 {skills.map(s => (
                   <span key={s} className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-bold text-slate-200">
@@ -352,7 +378,7 @@ function ProfileScreen() {
             >
               <div className="flex items-center gap-3">
                 <Bell className="w-4 h-4 text-slate-400" />
-                <span className="text-sm font-bold text-slate-100">Notifikasyon</span>
+                <span className="text-sm font-bold text-slate-100">{t("profile.notifications")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-600" />
             </button>
@@ -364,7 +390,7 @@ function ProfileScreen() {
             >
               <div className="flex items-center gap-3">
                 <History className="w-4 h-4 text-slate-400" />
-                <span className="text-sm font-bold text-slate-100">Istwa Travay</span>
+                <span className="text-sm font-bold text-slate-100">{t("profile.jobHistory")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-600" />
             </button>
@@ -376,7 +402,7 @@ function ProfileScreen() {
             >
               <div className="flex items-center gap-3">
                 <LogOut className="w-4 h-4" />
-                <span className="text-sm font-bold">Dekonekte</span>
+                <span className="text-sm font-bold">{t("profile.logout")}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-red-500/50" />
             </button>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef, memo } from "react";
 import {
   RefreshCcw, Navigation, Search, Building2, MapPin,
-  ChevronRight, Briefcase, Star, Users,
+  ChevronRight, Briefcase, Star,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
@@ -17,15 +18,18 @@ import EnterpriseContent, {
 } from "./enterprise/EnterpriseDashboard";
 
 // ── Employer / company card ──────────────────────────────────────
-const ROLE_LABEL = {
-  company:    { label: "Konpayi",    color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/30" },
-  business:   { label: "Biznis",     color: "text-sky-400",    bg: "bg-sky-500/10 border-sky-500/30"  },
-  enterprise: { label: "Antrepriz",  color: "text-indigo-400", bg: "bg-indigo-500/10 border-indigo-500/30" },
-  employer:   { label: "Anplwayè",   color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/30" },
+const ROLE_COLORS = {
+  company:    { color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/30" },
+  business:   { color: "text-sky-400",    bg: "bg-sky-500/10 border-sky-500/30"  },
+  enterprise: { color: "text-indigo-400", bg: "bg-indigo-500/10 border-indigo-500/30" },
+  employer:   { color: "text-violet-400", bg: "bg-violet-500/10 border-violet-500/30" },
 };
 
 const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
-  const meta = ROLE_LABEL[emp.role] || { label: emp.role, color: "text-slate-400", bg: "bg-slate-800/50 border-slate-700" };
+  const { t } = useTranslation();
+  const colors = ROLE_COLORS[emp.role] || { color: "text-slate-400", bg: "bg-slate-800/50 border-slate-700" };
+  const roleKey = `dashboard.role${emp.role.charAt(0).toUpperCase()}${emp.role.slice(1)}`;
+  const roleLabel = t(roleKey, emp.role);
   const photo = emp.photo || emp.profileMetadata?.profilePhoto
     || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(emp.name || "co")}`;
   const city = emp.location?.city || emp.city || "";
@@ -33,7 +37,6 @@ const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
 
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
-      {/* Top: avatar + info */}
       <div className="flex items-center gap-3">
         <div className="relative shrink-0">
           <img
@@ -48,19 +51,18 @@ const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white leading-tight truncate">{emp.name}</p>
-          <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border mt-0.5 ${meta.bg} ${meta.color}`}>
-            {meta.label}
+          <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border mt-0.5 ${colors.bg} ${colors.color}`}>
+            {roleLabel}
           </span>
         </div>
         {jobsCount !== null && (
           <div className="text-right shrink-0">
             <p className="text-lg font-black text-amber-400">{jobsCount}</p>
-            <p className="text-[9px] text-slate-500">Travay</p>
+            <p className="text-[9px] text-slate-500">{t("dashboard.jobs")}</p>
           </div>
         )}
       </div>
 
-      {/* Location */}
       {city && (
         <div className="flex items-center gap-1 text-[11px] text-slate-500">
           <MapPin className="w-3 h-3 shrink-0" />
@@ -68,14 +70,13 @@ const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
         </div>
       )}
 
-      {/* CTA */}
       <button
         type="button"
         onClick={() => onContact(emp)}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black active:scale-95 transition"
       >
         <Briefcase className="w-3.5 h-3.5" />
-        Kontakte pou Travay
+        {t("dashboard.contactWork")}
       </button>
     </div>
   );
@@ -83,17 +84,20 @@ const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
 
 // ── Employer directory (live from API) ───────────────────────────
 const EMPLOYER_ROLES = new Set(["company", "business", "enterprise", "employer"]);
-const FILTERS = [
-  { id: "all",        label: "Tout" },
-  { id: "company",    label: "Konpayi" },
-  { id: "enterprise", label: "Antrepriz" },
-  { id: "employer",   label: "Anplwayè" },
-];
+const FILTER_IDS = ["all", "company", "enterprise", "employer"];
 
 function EmployerDirectory({ searchQuery, onContact }) {
+  const { t } = useTranslation();
   const [employers, setEmployers] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [filter, setFilter]       = useState("all");
+
+  const FILTERS = [
+    { id: "all",        label: t("dashboard.filterAll") },
+    { id: "company",    label: t("dashboard.filterCompany") },
+    { id: "enterprise", label: t("dashboard.filterEnterprise") },
+    { id: "employer",   label: t("dashboard.filterEmployer") },
+  ];
 
   useEffect(() => {
     let alive = true;
@@ -131,7 +135,6 @@ function EmployerDirectory({ searchQuery, onContact }) {
 
   return (
     <div className="space-y-3">
-      {/* Filter chips */}
       <div
         className="flex gap-2 overflow-x-auto pb-0.5"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -155,9 +158,9 @@ function EmployerDirectory({ searchQuery, onContact }) {
       {visible.length === 0 ? (
         <div className="text-center py-10 space-y-2">
           <p className="text-4xl">🏢</p>
-          <p className="text-sm text-slate-400 font-semibold">Pa gen konpayi disponib</p>
+          <p className="text-sm text-slate-400 font-semibold">{t("dashboard.noEmployers")}</p>
           <p className="text-xs text-slate-600">
-            {searchQuery ? "Eseye yon rechèch diferan" : "Konpayi yo poko anrejistre"}
+            {searchQuery ? t("dashboard.noEmployersSearch") : t("dashboard.noEmployersYet")}
           </p>
         </div>
       ) : (
@@ -173,6 +176,7 @@ function EmployerDirectory({ searchQuery, onContact }) {
 
 // ── Contact modal (lightweight) ──────────────────────────────────
 function ContactModal({ employer, onClose, navigate }) {
+  const { t } = useTranslation();
   if (!employer) return null;
   return (
     <div
@@ -197,18 +201,15 @@ function ContactModal({ employer, onClose, navigate }) {
         </div>
 
         <p className="text-sm text-slate-400">
-          Voye yon mesaj bay <span className="text-white font-semibold">{employer.name}</span> pou diskite sou opòtinite travay.
+          {t("dashboard.contactMsg")} <span className="text-white font-semibold">{employer.name}</span> {t("dashboard.contactFor")}
         </p>
 
         <button
           type="button"
-          onClick={() => {
-            onClose();
-            navigate("/chat");
-          }}
+          onClick={() => { onClose(); navigate("/chat"); }}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-500 text-slate-950 font-black text-sm active:scale-95 transition"
         >
-          💬 Voye Mesaj
+          💬 {t("dashboard.sendMessage")}
         </button>
 
         <button
@@ -216,7 +217,7 @@ function ContactModal({ employer, onClose, navigate }) {
           onClick={onClose}
           className="w-full py-2.5 text-sm text-slate-500 font-semibold"
         >
-          Anile
+          {t("common.cancel")}
         </button>
       </div>
     </div>
@@ -270,6 +271,7 @@ function RoleDashboard({ dashConfig }) {
 // ================================================================
 export default function Dashboard() {
   const { user }    = useAuth();
+  const { t }       = useTranslation();
   const roleKey     = user?.role ?? "worker";
   const isWorker    = !isEmployerRole(roleKey);
   const dashConfig  = getRoleDashboard(roleKey);
@@ -478,7 +480,6 @@ export default function Dashboard() {
             type="button"
             onClick={() => navigate("/map")}
             className="absolute top-3 left-3 flex items-center gap-1 bg-slate-800/90 border border-slate-700/70 px-2 py-1 rounded-lg text-[10px] font-semibold text-amber-400 hover:border-amber-500/50 active:scale-95 transition"
-            aria-label="Ouvri navigasyon GPS"
           >
             <Navigation className="w-3 h-3" />
             {geo.city}
@@ -495,18 +496,18 @@ export default function Dashboard() {
             }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${availability === "available" ? "bg-green-400" : "bg-slate-500"}`} />
-            {availability === "available" ? "Disponib" : "Okipe"}
+            {availability === "available" ? t("dashboard.available") : t("dashboard.busy")}
           </button>
 
           {/* Title */}
           <div className="relative text-center pt-6 pb-2">
             <h1 className="text-xl font-black text-white tracking-tight leading-tight">
-              BYENVENI{user?.name ? `, ${user.name.split(" ")[0].toUpperCase()}` : ""}
+              {t("dashboard.welcome")}{user?.name ? `, ${user.name.split(" ")[0].toUpperCase()}` : ""}
             </h1>
             <p className="text-[10px] text-slate-500 mt-0.5">
-              Platfòm pou w jwenn travay pi rapid
+              {t("dashboard.slogan")}
             </p>
-            {retrying && <p className="text-[10px] text-amber-400 mt-1">Rekoneksyon...</p>}
+            {retrying && <p className="text-[10px] text-amber-400 mt-1">{t("dashboard.reconnecting")}</p>}
           </div>
 
           {/* Search bar */}
@@ -516,7 +517,7 @@ export default function Dashboard() {
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Rechèche konpayi, vil, metye..."
+                placeholder={t("dashboard.searchPlaceholder")}
                 className="flex-1 bg-transparent text-xs text-white placeholder-slate-500 outline-none"
               />
               {searchQuery && (
@@ -538,14 +539,14 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* JWENN TRAVAY CTA */}
+          {/* FIND WORK CTA */}
           <button
             type="button"
             onClick={() => directoryRef.current?.scrollIntoView({ behavior: "smooth" })}
             className="w-full mt-3 py-3 rounded-xl bg-amber-500 text-slate-950 font-black text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition shadow-lg shadow-amber-500/20"
           >
             <Briefcase className="w-4 h-4" />
-            Jwenn Travay
+            {t("dashboard.findWork")}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -561,7 +562,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-amber-400" />
             <p className="text-xs font-black uppercase tracking-widest text-slate-400">
-              Konpayi &amp; Antrepriz Disponib
+              {t("dashboard.employersTitle")}
             </p>
           </div>
           <EmployerDirectory

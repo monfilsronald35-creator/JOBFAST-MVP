@@ -283,6 +283,85 @@
     "photoHint": "Votre photo apparaîtra sur votre profil"
   },
 
+  "splash": {
+    "slogan": "Travail. Services. Business.\nLà où vous êtes — tout en une app.",
+    "start": "COMMENCER",
+    "login": "Connexion",
+    "register": "Créer un Compte",
+    "chooseLanguage": "Choisir la langue",
+    "langPickerTitle": "Choisissez votre langue",
+    "langPickerSubtitle": "Sélectionnez la langue que vous souhaitez utiliser",
+    "langPickerBtn": "Continuer"
+  },
+
+  "dashboard": {
+    "welcome": "BIENVENUE",
+    "slogan": "La plateforme pour trouver du travail plus vite",
+    "searchPlaceholder": "Rechercher entreprises, ville, métier...",
+    "available": "Disponible",
+    "busy": "Occupé",
+    "reconnecting": "Reconnexion...",
+    "findWork": "Trouver du Travail",
+    "employersTitle": "Entreprises & Employeurs Disponibles",
+    "noEmployers": "Aucune entreprise disponible",
+    "noEmployersSearch": "Essayez une autre recherche",
+    "noEmployersYet": "Aucune entreprise enregistrée",
+    "contactWork": "Contacter pour Travail",
+    "contactMsg": "Envoyer un message à",
+    "contactFor": "pour discuter d'opportunités de travail.",
+    "sendMessage": "Envoyer un Message",
+    "filterAll": "Tous",
+    "filterCompany": "Entreprise",
+    "filterEnterprise": "Grande Entreprise",
+    "filterEmployer": "Employeur",
+    "roleCompany": "Entreprise",
+    "roleBusiness": "Commerce",
+    "roleEnterprise": "Grande Entreprise",
+    "roleEmployer": "Employeur",
+    "jobs": "Emplois",
+    "loading": "Chargement..."
+  },
+
+  "profile": {
+    "settingsTitle": "Paramètres / Profil",
+    "editBtn": "Modifier",
+    "saveBtn": "Enregistrer",
+    "savingBtn": "Enregistrement...",
+    "bioSection": "Bio / À Propos",
+    "bioPlaceholder": "Écrivez un court texte sur vous (travail, expérience, etc.)...",
+    "bioEmpty": "Cliquez sur \"Modifier\" pour ajouter une bio...",
+    "trustLevel": "Niveau de Confiance",
+    "trustLow": "Ajoutez une photo et une bio pour augmenter votre niveau de confiance.",
+    "trustMid": "Bien ! Vérifiez votre compte pour monter en niveau.",
+    "trustHigh": "Excellent ! Votre profil est solide.",
+    "walletTitle": "Portefeuille",
+    "walletBalance": "Solde Disponible",
+    "skillsSection": "Compétences",
+    "notifications": "Notifications",
+    "jobHistory": "Historique des Emplois",
+    "logout": "Déconnexion",
+    "verified": "Compte Vérifié",
+    "rating": "Évaluation",
+    "jobsDone": "Emplois Terminés",
+    "settingsTab": "Paramètres",
+    "nameInput": "Votre nom...",
+    "loading": "Chargement...",
+    "nameRequired": "Nom obligatoire"
+  },
+
+  "country": {
+    "ht": "Haïti",
+    "do": "Rép. Dominicaine",
+    "us": "États-Unis",
+    "ca": "Canada",
+    "fr": "France",
+    "mx": "Mexique",
+    "br": "Brésil",
+    "es": "Espagne",
+    "gb": "Royaume-Uni",
+    "pt": "Portugal"
+  },
+
   "monitoring": {
     "cacheSize": "Cache : {{size}}",
     "cacheUsage": "Utilisation : {{usage}}%"

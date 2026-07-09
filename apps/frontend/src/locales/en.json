@@ -277,6 +277,85 @@
     "hoursAgo": "{{count}} hours ago"
   },
 
+  "splash": {
+    "slogan": "Work. Services. Business.\nWhere you are — all in one app.",
+    "start": "GET STARTED",
+    "login": "Sign In",
+    "register": "Create Account",
+    "chooseLanguage": "Choose your language",
+    "langPickerTitle": "Choose Your Language",
+    "langPickerSubtitle": "Select the language you want to use in the app",
+    "langPickerBtn": "Continue"
+  },
+
+  "dashboard": {
+    "welcome": "WELCOME",
+    "slogan": "The fastest platform to find work",
+    "searchPlaceholder": "Search companies, city, trade...",
+    "available": "Available",
+    "busy": "Busy",
+    "reconnecting": "Reconnecting...",
+    "findWork": "Find Work",
+    "employersTitle": "Companies & Employers Available",
+    "noEmployers": "No companies available",
+    "noEmployersSearch": "Try a different search",
+    "noEmployersYet": "Companies not yet registered",
+    "contactWork": "Contact for Work",
+    "contactMsg": "Send a message to",
+    "contactFor": "to discuss work opportunities.",
+    "sendMessage": "Send Message",
+    "filterAll": "All",
+    "filterCompany": "Company",
+    "filterEnterprise": "Enterprise",
+    "filterEmployer": "Employer",
+    "roleCompany": "Company",
+    "roleBusiness": "Business",
+    "roleEnterprise": "Enterprise",
+    "roleEmployer": "Employer",
+    "jobs": "Jobs",
+    "loading": "Loading..."
+  },
+
+  "profile": {
+    "settingsTitle": "Settings / Profile",
+    "editBtn": "Edit",
+    "saveBtn": "Save",
+    "savingBtn": "Saving...",
+    "bioSection": "Bio / About",
+    "bioPlaceholder": "Write a short description about yourself (work, experience, etc.)...",
+    "bioEmpty": "Click \"Edit\" to add a bio...",
+    "trustLevel": "Trust Level",
+    "trustLow": "Add a photo and bio to increase your trust level.",
+    "trustMid": "Good! Verify your account to boost your level.",
+    "trustHigh": "Excellent! Your profile is solid.",
+    "walletTitle": "Wallet",
+    "walletBalance": "Available Balance",
+    "skillsSection": "Skills",
+    "notifications": "Notifications",
+    "jobHistory": "Job History",
+    "logout": "Sign Out",
+    "verified": "Verified Account",
+    "rating": "Rating",
+    "jobsDone": "Jobs Done",
+    "settingsTab": "Settings",
+    "nameInput": "Your name...",
+    "loading": "Loading...",
+    "nameRequired": "Name required"
+  },
+
+  "country": {
+    "ht": "Haiti",
+    "do": "Dominican Republic",
+    "us": "United States",
+    "ca": "Canada",
+    "fr": "France",
+    "mx": "Mexico",
+    "br": "Brazil",
+    "es": "Spain",
+    "gb": "United Kingdom",
+    "pt": "Portugal"
+  },
+
   "monitoring": {
     "cacheSize": "Cache: {{size}}",
     "cacheUsage": "Usage: {{usage}}%"
