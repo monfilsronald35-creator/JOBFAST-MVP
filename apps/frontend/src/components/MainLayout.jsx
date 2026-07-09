@@ -4,11 +4,12 @@ import { Home, Search, Plus, Bell, User, Menu, X, Settings, LogOut, ChevronLeft,
 import { useAuth } from "@/context/AuthContext.jsx";
 
 const BOTTOM_NAV = [
-  { path: "/dashboard",     label: "Akeyi",    icon: Home  },
-  { path: "/search",        label: "Rechèche", icon: Search },
+  { path: "/dashboard",     label: "Akeyi",    icon: Home           },
+  { path: "/search",        label: "Rechèche", icon: Search         },
   { path: "/post-job",      label: "Post",     icon: Plus, center: true },
-  { path: "/notifications", label: "Notif",    icon: Bell },
-  { path: "/settings",      label: "Profil",   icon: User  },
+  { path: "/chat",          label: "Mesaj",    icon: MessageSquare  },
+  { path: "/notifications", label: "Notif",    icon: Bell           },
+  { path: "/settings",      label: "Profil",   icon: User           },
 ];
 
 const MENU_NAV = [
