@@ -573,6 +573,80 @@
     "voiceMessage": "Mensaje de voz",
     "messageList": "Mensajes"
   },
+  "nav": {
+    "home": "Inicio",
+    "search": "Buscar",
+    "post": "Publicar",
+    "messages": "Mensajes",
+    "notif": "Notif",
+    "profile": "Perfil",
+    "notifications": "Notificaciones",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión",
+    "available": "Disponible",
+    "online": "Online",
+    "back": "Volver",
+    "openMenu": "Abrir menú"
+  },
+  "postJob": {
+    "title": "Publicar un Proyecto",
+    "subtitle": "Complete la información para encontrar a alguien o una empresa que pueda ayudarle.",
+    "companyName": "Nombre de la empresa",
+    "jobTitle": "Título del trabajo",
+    "description": "Descripción...",
+    "phone": "Teléfono",
+    "budget": "Presupuesto",
+    "location": "Lugar de trabajo",
+    "locationLoading": "Buscando GPS...",
+    "isUrgent": "Trabajo urgente",
+    "salaryVisible": "Mostrar salario",
+    "photos": "Fotos",
+    "photosCount": "{{count}}/{{max}} fotos añadidas",
+    "submit": "Publicar Proyecto",
+    "submitting": "Enviando...",
+    "photoAlt": "Foto {{n}}",
+    "removePhoto": "Eliminar foto {{n}}",
+    "cat": {
+      "construction": "Construcción",
+      "services": "Servicios a demanda",
+      "business": "Directorio de negocios",
+      "jobs": "Trabajo General"
+    },
+    "pay": {
+      "fixed": "Precio fijo",
+      "hourly": "Por hora",
+      "negotiable": "Negociable"
+    },
+    "exp": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "expert": "Experto"
+    },
+    "contact": {
+      "phone": "Teléfono",
+      "whatsapp": "WhatsApp",
+      "both": "Ambos"
+    },
+    "err": {
+      "gpsWaiting": "Por favor espere a que el GPS termine de localizarle.",
+      "locationRequired": "La ubicación es obligatoria.",
+      "fillRequired": "Por favor complete todos los campos obligatorios.",
+      "titleTooLong": "El título del trabajo es demasiado largo.",
+      "descTooLong": "La descripción es demasiado larga.",
+      "invalidPhone": "El número de teléfono no es válido.",
+      "deadlinePast": "La fecha límite no puede ser en el pasado.",
+      "deadlineTooFar": "La fecha límite no puede superar 1 año en el futuro.",
+      "budgetMin": "El presupuesto debe ser mayor que 0.",
+      "budgetMax": "El presupuesto es demasiado grande.",
+      "workerMin": "Se requiere al menos 1 trabajador.",
+      "workerMax": "El número de trabajadores es demasiado grande.",
+      "maxPhotos": "Máximo {{max}} fotos.",
+      "invalidPhotoType": "Solo se aceptan JPG, PNG y WEBP.",
+      "photoTooBig": "{{name}} supera los 5 MB.",
+      "gpsError": "No se puede encontrar la posición GPS.",
+      "submitError": "Ocurrió un error, por favor inténtelo de nuevo."
+    }
+  },
   "marketplace": {
     "breadcrumbLabel": "Marketplace",
     "back": "Regresar",

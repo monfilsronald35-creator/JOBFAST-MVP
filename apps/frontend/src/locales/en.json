@@ -573,6 +573,80 @@
     "voiceMessage": "Voice message",
     "messageList": "Messages"
   },
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "post": "Post",
+    "messages": "Messages",
+    "notif": "Notif",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "logout": "Log out",
+    "available": "Available",
+    "online": "Online",
+    "back": "Back",
+    "openMenu": "Open menu"
+  },
+  "postJob": {
+    "title": "Post a Project",
+    "subtitle": "Fill in the details to find someone or a company that can help you.",
+    "companyName": "Company Name",
+    "jobTitle": "Job Title",
+    "description": "Description...",
+    "phone": "Phone",
+    "budget": "Budget",
+    "location": "Work location",
+    "locationLoading": "Searching GPS...",
+    "isUrgent": "Urgent job",
+    "salaryVisible": "Show salary",
+    "photos": "Photos",
+    "photosCount": "{{count}}/{{max}} photos added",
+    "submit": "Post Project",
+    "submitting": "Submitting...",
+    "photoAlt": "Photo {{n}}",
+    "removePhoto": "Remove photo {{n}}",
+    "cat": {
+      "construction": "Construction",
+      "services": "On-Demand Services",
+      "business": "Business Directory",
+      "jobs": "General Work"
+    },
+    "pay": {
+      "fixed": "Fixed price",
+      "hourly": "Per hour",
+      "negotiable": "Negotiable"
+    },
+    "exp": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "expert": "Expert"
+    },
+    "contact": {
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "both": "Both"
+    },
+    "err": {
+      "gpsWaiting": "Please wait for GPS to finish locating you.",
+      "locationRequired": "Location is required.",
+      "fillRequired": "Please fill in all required fields.",
+      "titleTooLong": "Job title is too long.",
+      "descTooLong": "Description is too long.",
+      "invalidPhone": "Phone number is not valid.",
+      "deadlinePast": "Deadline cannot be in the past.",
+      "deadlineTooFar": "Deadline cannot exceed 1 year in the future.",
+      "budgetMin": "Budget must be greater than 0.",
+      "budgetMax": "Budget is too large.",
+      "workerMin": "At least 1 worker is required.",
+      "workerMax": "Number of workers is too large.",
+      "maxPhotos": "Maximum {{max}} photos.",
+      "invalidPhotoType": "Only JPG, PNG and WEBP are accepted.",
+      "photoTooBig": "{{name}} exceeds 5MB.",
+      "gpsError": "Cannot find GPS position.",
+      "submitError": "An error occurred, please try again."
+    }
+  },
   "marketplace": {
     "breadcrumbLabel": "Marketplace",
     "back": "Go back",

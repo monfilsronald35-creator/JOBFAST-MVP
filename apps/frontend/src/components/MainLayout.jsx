@@ -6,22 +6,23 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext.jsx";
 import { useTranslation } from "react-i18next";
+import { changeLanguage } from "../i18n";
 
 const BOTTOM_NAV = [
-  { path: "/dashboard",     label: "Akeyi",    icon: Home          },
-  { path: "/search",        label: "Rechèche", icon: Search        },
-  { path: "/post-job",      label: "Post",     icon: Plus, center: true },
-  { path: "/chat",          label: "Mesaj",    icon: MessageSquare },
-  { path: "/notifications", label: "Notif",    icon: Bell          },
-  { path: "/settings",      label: "Profil",   icon: User          },
+  { path: "/dashboard",     labelKey: "nav.home",     icon: Home          },
+  { path: "/search",        labelKey: "nav.search",   icon: Search        },
+  { path: "/post-job",      labelKey: "nav.post",     icon: Plus, center: true },
+  { path: "/chat",          labelKey: "nav.messages", icon: MessageSquare },
+  { path: "/notifications", labelKey: "nav.notif",    icon: Bell          },
+  { path: "/settings",      labelKey: "nav.profile",  icon: User          },
 ];
 
 const MENU_NAV = [
-  { path: "/dashboard",     label: "Akeyi",        icon: Home          },
-  { path: "/search",        label: "Rechèche",      icon: Search        },
-  { path: "/chat",          label: "Mesaj",         icon: MessageSquare },
-  { path: "/notifications", label: "Notifikasyon", icon: Bell          },
-  { path: "/settings",      label: "Pwofil",        icon: User          },
+  { path: "/dashboard",     labelKey: "nav.home",          icon: Home          },
+  { path: "/search",        labelKey: "nav.search",        icon: Search        },
+  { path: "/chat",          labelKey: "nav.messages",      icon: MessageSquare },
+  { path: "/notifications", labelKey: "nav.notifications", icon: Bell          },
+  { path: "/settings",      labelKey: "nav.profile",       icon: User          },
 ];
 
 const LANG_FLAGS  = { ht: "🇭🇹", fr: "🇫🇷", en: "🇺🇸", es: "🇩🇴" };
@@ -38,15 +39,14 @@ export default function MainLayout({ children }) {
   const navigate           = useNavigate();
   const location           = useLocation();
   const { user, logout }   = useAuth();
-  const { i18n }           = useTranslation();
+  const { t, i18n }        = useTranslation();
   const [menuOpen, setMenuOpen]   = useState(false);
   const [langOpen, setLangOpen]   = useState(false);
 
   const handleLangChange = useCallback((lang) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem("jobfast_language", lang);
+    changeLanguage(lang);
     setLangOpen(false);
-  }, [i18n]);
+  }, []);
 
   const handleLogout = useCallback(() => {
     setMenuOpen(false);
@@ -74,12 +74,12 @@ export default function MainLayout({ children }) {
 
           {/* Left: back / hamburger */}
           {!isHome ? (
-            <button type="button" onClick={() => navigate(-1)} aria-label="Tounen"
+            <button type="button" onClick={() => navigate(-1)} aria-label={t("nav.back")}
               className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800/70 transition-all">
               <ChevronLeft className="w-5 h-5" />
             </button>
           ) : (
-            <button type="button" onClick={() => setMenuOpen(true)} aria-label="Ouvri menu"
+            <button type="button" onClick={() => setMenuOpen(true)} aria-label={t("nav.openMenu")}
               className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800/70 transition-all">
               <Menu className="w-5 h-5" />
             </button>
@@ -176,7 +176,7 @@ export default function MainLayout({ children }) {
             <div className="flex-1" />
             <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
-              Online
+              {t("nav.online")}
             </div>
           </div>
         )}
@@ -214,7 +214,7 @@ export default function MainLayout({ children }) {
                   </p>
                   <div className="flex items-center gap-1 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[9px] text-slate-400">Disponib</span>
+                    <span className="text-[9px] text-slate-400">{t("nav.available")}</span>
                   </div>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function MainLayout({ children }) {
                       }`
                     }>
                     <Icon className="w-4 h-4 shrink-0" />
-                    {item.label}
+                    {t(item.labelKey)}
                   </NavLink>
                 );
               })}
@@ -245,12 +245,12 @@ export default function MainLayout({ children }) {
               <NavLink to="/settings" onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 transition font-medium">
                 <Settings className="w-4 h-4 shrink-0" />
-                Paramèt
+                {t("nav.settings")}
               </NavLink>
               <button type="button" onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition font-medium">
                 <LogOut className="w-4 h-4 shrink-0" />
-                Dekonekte
+                {t("nav.logout")}
               </button>
             </div>
           </aside>
@@ -274,7 +274,7 @@ export default function MainLayout({ children }) {
 
             if (item.center) {
               return (
-                <NavLink key={item.path} to={item.path} aria-label={item.label}
+                <NavLink key={item.path} to={item.path} aria-label={t(item.labelKey)}
                   className="flex flex-col items-center justify-center flex-1">
                   <div className="relative w-12 h-12 -mt-5">
                     {/* Glow ring */}
@@ -294,7 +294,7 @@ export default function MainLayout({ children }) {
                 key={item.path}
                 to={item.path}
                 end={item.path === "/dashboard"}
-                aria-label={item.label}
+                aria-label={t(item.labelKey)}
                 className={({ isActive }) =>
                   `relative flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all ${
                     isActive ? "text-amber-400" : "text-slate-600 hover:text-slate-400"
@@ -313,7 +313,7 @@ export default function MainLayout({ children }) {
                       )}
                     </div>
                     <span className={`text-[9px] font-bold leading-none transition-all ${isActive ? "text-amber-400" : "text-slate-600"}`}>
-                      {item.label}
+                      {t(item.labelKey)}
                     </span>
                     {isActive && (
                       <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-amber-400/60" />

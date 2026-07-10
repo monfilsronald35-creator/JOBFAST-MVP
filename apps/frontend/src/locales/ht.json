@@ -753,6 +753,80 @@
     "voiceMessage": "Mesaj vwa",
     "messageList": "Mesaj yo"
   },
+  "nav": {
+    "home": "Akeyi",
+    "search": "Rechèche",
+    "post": "Post",
+    "messages": "Mesaj",
+    "notif": "Notif",
+    "profile": "Profil",
+    "notifications": "Notifikasyon",
+    "settings": "Paramèt",
+    "logout": "Dekonekte",
+    "available": "Disponib",
+    "online": "Online",
+    "back": "Tounen",
+    "openMenu": "Ouvri menu"
+  },
+  "postJob": {
+    "title": "Pibliye Pwojè a",
+    "subtitle": "Ranpli enfòmasyon yo pou jwenn moun oswa konpayi ki ka ede w.",
+    "companyName": "Non Konpayi",
+    "jobTitle": "Tit Travay",
+    "description": "Deskripsyon...",
+    "phone": "Telefòn",
+    "budget": "Bidjè",
+    "location": "Kote travay la",
+    "locationLoading": "Ap chèche GPS...",
+    "isUrgent": "Travay ijan",
+    "salaryVisible": "Montre salè a",
+    "photos": "Foto yo",
+    "photosCount": "{{count}}/{{max}} foto ajoute",
+    "submit": "Pibliye Pwojè a",
+    "submitting": "Ap voye...",
+    "photoAlt": "Foto {{n}}",
+    "removePhoto": "Retire foto {{n}}",
+    "cat": {
+      "construction": "Konstriksyon",
+      "services": "Sèvis sou Demand",
+      "business": "Anyè Biznis",
+      "jobs": "Travay Jeneral"
+    },
+    "pay": {
+      "fixed": "Pri fikse",
+      "hourly": "Pa èdtan",
+      "negotiable": "Negosyab"
+    },
+    "exp": {
+      "beginner": "Débutan",
+      "intermediate": "Mwayen",
+      "expert": "Ekspè"
+    },
+    "contact": {
+      "phone": "Telefòn",
+      "whatsapp": "WhatsApp",
+      "both": "Tou de"
+    },
+    "err": {
+      "gpsWaiting": "Tanpri tann GPS la fini lokalize w.",
+      "locationRequired": "Lokalizasyon obligatwa.",
+      "fillRequired": "Tanpri ranpli tout chan obligatwa yo.",
+      "titleTooLong": "Tit travay la twò long.",
+      "descTooLong": "Deskripsyon an twò long.",
+      "invalidPhone": "Nimewo telefòn lan pa valab.",
+      "deadlinePast": "Dat limit la pa ka nan tan pase.",
+      "deadlineTooFar": "Dat limit la pa ka depase 1 an nan lavni.",
+      "budgetMin": "Bidjè a dwe pi gran pase 0.",
+      "budgetMax": "Bidjè a twò gwo.",
+      "workerMin": "Fòk gen omwen 1 travayè.",
+      "workerMax": "Kantite travayè a twò gwo.",
+      "maxPhotos": "Maksimòm {{max}} foto.",
+      "invalidPhotoType": "Sèlman JPG, PNG ak WEBP ki aksepte.",
+      "photoTooBig": "{{name}} depase 5MB.",
+      "gpsError": "Pa ka jwenn pozisyon GPS.",
+      "submitError": "Yon erè rive, tanpri reyezi."
+    }
+  },
   "marketplace": {
     "breadcrumbLabel": "Marketplace",
     "back": "Tounen",

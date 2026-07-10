@@ -568,6 +568,80 @@
     "voiceMessage": "Message vocal",
     "messageList": "Messages"
   },
+  "nav": {
+    "home": "Accueil",
+    "search": "Rechercher",
+    "post": "Poster",
+    "messages": "Messages",
+    "notif": "Notif",
+    "profile": "Profil",
+    "notifications": "Notifications",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter",
+    "available": "Disponible",
+    "online": "Online",
+    "back": "Retour",
+    "openMenu": "Ouvrir le menu"
+  },
+  "postJob": {
+    "title": "Publier un Projet",
+    "subtitle": "Remplissez les informations pour trouver quelqu'un ou une entreprise qui peut vous aider.",
+    "companyName": "Nom de la société",
+    "jobTitle": "Titre du poste",
+    "description": "Description...",
+    "phone": "Téléphone",
+    "budget": "Budget",
+    "location": "Lieu de travail",
+    "locationLoading": "Recherche GPS...",
+    "isUrgent": "Travail urgent",
+    "salaryVisible": "Afficher le salaire",
+    "photos": "Photos",
+    "photosCount": "{{count}}/{{max}} photos ajoutées",
+    "submit": "Publier le Projet",
+    "submitting": "Envoi en cours...",
+    "photoAlt": "Photo {{n}}",
+    "removePhoto": "Supprimer la photo {{n}}",
+    "cat": {
+      "construction": "Construction",
+      "services": "Services à la demande",
+      "business": "Annuaire des entreprises",
+      "jobs": "Travail général"
+    },
+    "pay": {
+      "fixed": "Prix fixe",
+      "hourly": "Par heure",
+      "negotiable": "Négociable"
+    },
+    "exp": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "expert": "Expert"
+    },
+    "contact": {
+      "phone": "Téléphone",
+      "whatsapp": "WhatsApp",
+      "both": "Les deux"
+    },
+    "err": {
+      "gpsWaiting": "Veuillez attendre que le GPS finisse de vous localiser.",
+      "locationRequired": "La localisation est obligatoire.",
+      "fillRequired": "Veuillez remplir tous les champs obligatoires.",
+      "titleTooLong": "Le titre du poste est trop long.",
+      "descTooLong": "La description est trop longue.",
+      "invalidPhone": "Le numéro de téléphone n'est pas valide.",
+      "deadlinePast": "La date limite ne peut pas être dans le passé.",
+      "deadlineTooFar": "La date limite ne peut pas dépasser 1 an dans le futur.",
+      "budgetMin": "Le budget doit être supérieur à 0.",
+      "budgetMax": "Le budget est trop élevé.",
+      "workerMin": "Au moins 1 travailleur est requis.",
+      "workerMax": "Le nombre de travailleurs est trop élevé.",
+      "maxPhotos": "Maximum {{max}} photos.",
+      "invalidPhotoType": "Seuls JPG, PNG et WEBP sont acceptés.",
+      "photoTooBig": "{{name}} dépasse 5 Mo.",
+      "gpsError": "Impossible de trouver la position GPS.",
+      "submitError": "Une erreur est survenue, veuillez réessayer."
+    }
+  },
   "marketplace": {
     "breadcrumbLabel": "Marketplace",
     "back": "Retour",
