@@ -1,45 +1,104 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import API from '../../api/axios';
-import {
-  PROFESSION_METADATA,
-  getRequiredFields,
-  getOptionalFields,
-} from '../../constants/categories';
 import { useAuth } from '../../context/AuthContext';
-import ROLE_CONFIGS, {
-  ROLE_PROFESSIONS,
-  ROLE_PROFESSION_PRESETS,
-  getRoleDefaultPath,
-} from '../../config/roleConfig';
-import Step1_CategorySelect from './Step1_CategorySelect';
-import Step2_ProfessionSelect from './Step2_ProfessionSelect';
-import Step3_BasicInfo from './Step3_BasicInfo';
-import Step4_ProfessionalDetails from './Step4_ProfessionalDetails';
-import RegistrationProgress from './RegistrationProgress';
+import { getRoleDefaultPath } from '../../config/roleConfig';
 
-const STEPS = {
-  CATEGORY:     1,
-  PROFESSION:   2,
-  BASIC_INFO:   3,
-  PROFESSIONAL: 4,
+// ── New 3-step category/profession selection ──────────────────
+import Step1_CategorySelect from '../../components/registration/Step1_CategorySelect';
+import Step2_SubCategory    from '../../components/registration/Step2_SubCategory';
+import Step3_Profession     from '../../components/registration/Step3_Profession';
+
+// ── Existing form steps ───────────────────────────────────────
+import Step3_BasicInfo            from './Step3_BasicInfo';
+import Step4_ProfessionalDetails  from './Step4_ProfessionalDetails';
+import RegistrationProgress       from './RegistrationProgress';
+
+// ── Category → backend role mapping ──────────────────────────
+// Maps new registrationCategories IDs to backend USER_ROLES values
+const CATEGORY_TO_ROLE = {
+  construction:        'worker',
+  services:            'service_provider',
+  healthcare:          'worker',
+  company:             'company',
+  hotel:               'hotel',
+  restaurant:          'restaurant',
+  hospital:            'hospital',
+  clinic:              'clinic',
+  tourism:             'tourism',
+  supplier:            'service_provider',
+  enterprise:          'enterprise',
+  it_software:         'worker',
+  design_creative:     'worker',
+  marketing_sales:     'worker',
+  education:           'worker',
+  legal:               'worker',
+  finance_banking:     'worker',
+  agriculture:         'worker',
+  manufacturing:       'worker',
+  logistics:           'service_provider',
+  real_estate:         'worker',
+  automotive:          'service_provider',
+  pet_services:        'service_provider',
+  beauty_spa:          'service_provider',
+  entertainment:       'service_provider',
+  music:               'worker',
+  photography:         'service_provider',
+  video_production:    'service_provider',
+  marketplace_sellers: 'company',
+  government:          'worker',
+  ngo:                 'company',
 };
 
+// ── Internal step IDs ─────────────────────────────────────────
+const STEPS = {
+  CATEGORY:     1,
+  SUBCATEGORY:  2,
+  PROFESSION:   3,
+  BASIC_INFO:   4,
+  PROFESSIONAL: 5,
+};
+
+// Maps internal steps to visual progress position (1–4)
+const toVisualStep = (step) => {
+  if (step <= STEPS.SUBCATEGORY) return 1;
+  if (step === STEPS.PROFESSION) return 2;
+  if (step === STEPS.BASIC_INFO) return 3;
+  return 4;
+};
+
+// ── Step titles ───────────────────────────────────────────────
+const STEP_TITLES = {
+  [STEPS.CATEGORY]:     'Chwazi Kategori',
+  [STEPS.SUBCATEGORY]:  'Chwazi Domèn',
+  [STEPS.PROFESSION]:   'Chwazi Pwofesyon',
+  [STEPS.BASIC_INFO]:   'Enfòmasyon Debaz',
+  [STEPS.PROFESSIONAL]: 'Pwofil Pwofesyonèl',
+};
+
+// ─────────────────────────────────────────────────────────────
 function Register() {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
+  const navigate    = useNavigate();
+  const { t }       = useTranslation();
   const { login: authLogin } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(STEPS.CATEGORY);
-  const [loading, setLoading] = useState(false);
+  const [loading,      setLoading]      = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Selection state — objects from registrationCategories / professionData
+  const [selectedCategory,   setSelectedCategory]   = useState(null);
+  const [selectedSubcategory,setSelectedSubcategory] = useState(null);
+  const [selectedProfession, setSelectedProfession]  = useState(null);
 
   const [formData, setFormData] = useState({
     role:            '',
     category:        '',
+    subcategory:     '',
     profession:      '',
+    professionLabel: '',
     fullName:        '',
     email:           '',
     phone:           '',
@@ -87,57 +146,62 @@ function Register() {
     }));
   }, []);
 
-  // ── Step 1: Role selected ───────────────────────────────────
-  const handleRoleSelect = useCallback((selectedRole) => {
-    updateFormData('role', selectedRole);
+  // ── Step 1: Category selected ───────────────────────────────
+  const handleCategorySelect = useCallback((cat) => {
+    setSelectedCategory(cat);
+    setSelectedSubcategory(null);
+    setSelectedProfession(null);
+    setFormData(prev => ({
+      ...prev,
+      category:        cat.id,
+      subcategory:     '',
+      profession:      '',
+      professionLabel: '',
+      role:            CATEGORY_TO_ROLE[cat.id] || 'worker',
+    }));
+    setCurrentStep(cat.hasSubcategories ? STEPS.SUBCATEGORY : STEPS.PROFESSION);
+  }, []);
 
-    const preset = ROLE_PROFESSION_PRESETS[selectedRole];
-
-    if (preset) {
-      // Single-profession role: auto-set profession and skip Step 2
-      const meta = PROFESSION_METADATA[preset];
-      updateFormData('profession', preset);
-      updateFormData('category', meta?.category ?? '');
-      setCurrentStep(STEPS.BASIC_INFO);
-    } else {
-      // Multi-profession role (worker, tourism, service_provider): show Step 2
-      updateFormData('profession', '');
-      updateFormData('category', '');
-      setCurrentStep(STEPS.PROFESSION);
-    }
+  // ── Step 2: Subcategory selected ────────────────────────────
+  const handleSubcategorySelect = useCallback((sub) => {
+    setSelectedSubcategory(sub);
+    setSelectedProfession(null);
+    updateFormData('subcategory', sub.id);
+    setCurrentStep(STEPS.PROFESSION);
   }, [updateFormData]);
 
-  // ── Step 2: Sub-role selected ────────────────────────────────
-  // Step2 sends: { role, professionId, category } — extract fields from the object
-  const handleProfessionSelect = useCallback((selection) => {
-    const professionId = selection?.professionId ?? String(selection ?? '');
-    const category     = selection?.category ?? '';
-    const profMeta     = PROFESSION_METADATA[professionId];
-    updateFormData('profession', professionId);
-    updateFormData('category', profMeta?.category || category || '');
+  // ── Step 3: Profession selected ─────────────────────────────
+  const handleProfessionSelect = useCallback((profession) => {
+    setSelectedProfession(profession);
+    setFormData(prev => ({
+      ...prev,
+      profession:      profession.id,
+      professionLabel: profession.label,
+    }));
     setCurrentStep(STEPS.BASIC_INFO);
-  }, [updateFormData]);
+  }, []);
 
-  // ── Step 3: Basic info confirmed ────────────────────────────
-  // Supports Step3's structured payload: { profile, location, preferences, security, metadata }
+  // ── Step 4: Basic info confirmed ────────────────────────────
   const handleBasicInfoNext = useCallback((basicData) => {
     const profile  = basicData.profile  ?? {};
     const location = basicData.location ?? {};
     const security = basicData.security ?? {};
 
-    updateFormData('fullName', profile.fullName  ?? basicData.fullName  ?? '');
-    updateFormData('email',    profile.email     ?? basicData.email     ?? '');
-    updateFormData('phone',    profile.phone     ?? basicData.phone     ?? '');
-    updateFormData('password', security.password ?? basicData.password  ?? '');
-    updateFormData('country',  location.countryCode ?? basicData.country ?? 'ht');
-    updateFormData('zone',     location.region      ?? basicData.zone    ?? '');
-    updateFormData('city',     location.city        ?? basicData.city    ?? '');
-    updateFormData('location', location.city        ?? basicData.city    ?? basicData.location ?? '');
+    setFormData(prev => ({
+      ...prev,
+      fullName: profile.fullName  ?? basicData.fullName  ?? '',
+      email:    profile.email     ?? basicData.email     ?? '',
+      phone:    profile.phone     ?? basicData.phone     ?? '',
+      password: security.password ?? basicData.password  ?? '',
+      country:  location.countryCode ?? basicData.country ?? 'ht',
+      zone:     location.region      ?? basicData.zone    ?? '',
+      city:     location.city        ?? basicData.city    ?? '',
+      location: location.city        ?? basicData.city    ?? basicData.location ?? '',
+    }));
     setCurrentStep(STEPS.PROFESSIONAL);
-  }, [updateFormData]);
+  }, []);
 
-  // ── Step 4: Submit registration ─────────────────────────────
-  // professionalProfile — full schema v2.2 object passed directly from Step4
+  // ── Step 5: Submit registration ─────────────────────────────
   const handleRegister = useCallback(async (professionalProfile = null) => {
     if (!formData.role || !formData.profession || !formData.fullName || !formData.email || !formData.password) {
       setErrorMessage('Tanpri ranpli tout jaden obligatwa yo');
@@ -152,7 +216,6 @@ function Register() {
     abortRef.current = new AbortController();
 
     try {
-      // Merge schema v2.2 profile if provided by Step4
       const finalMetadata = professionalProfile
         ? { ...formData.profileMetadata, professionalProfile }
         : formData.profileMetadata;
@@ -164,11 +227,13 @@ function Register() {
         password:        formData.password,
         role:            formData.role,
         category:        formData.category,
+        subcategory:     formData.subcategory || '',
         profession:      formData.profession,
+        professionLabel: formData.professionLabel || formData.profession,
         profileMetadata: finalMetadata,
         accountType:     'individual',
-        city:            formData.city || formData.location || '',
-        state:           formData.zone || '',
+        city:            formData.city    || formData.location || '',
+        state:           formData.zone    || '',
         country:         formData.country || 'ht',
       };
 
@@ -178,7 +243,6 @@ function Register() {
 
       if (!mountedRef.current) return;
 
-      // Response shape: { success, meta, data: { message, token, user: {...} } }
       const responseBody = res?.data;
       const userObj      = responseBody?.data?.user;
       const regToken     = responseBody?.data?.token;
@@ -187,17 +251,12 @@ function Register() {
       setSuccessMessage(successMsg);
 
       if (userObj) {
-        // Ensure _id is present for AuthContext.login() compatibility
         if (userObj.id && !userObj._id) userObj._id = userObj.id;
-
-        // Include token so API interceptor can attach Authorization header
         authLogin(regToken ? { ...userObj, token: regToken } : userObj);
-
         setTimeout(() => {
           if (mountedRef.current) navigate(getRoleDefaultPath(userObj.role));
         }, 1500);
       } else {
-        // Server responded without user data — fall back to login
         setTimeout(() => {
           if (mountedRef.current) navigate('/login');
         }, 1500);
@@ -206,60 +265,51 @@ function Register() {
       if (!mountedRef.current) return;
       if (err?.code === 'ERR_CANCELED') return;
 
+      const isTimeout      = err?.code === 'ECONNABORTED' || err?.message?.includes('timeout');
       const isNetworkError = err?.code === 'NETWORK_ERROR' || !err?.response;
-      const isTimeout = err?.code === 'ECONNABORTED' || err?.message?.includes('timeout');
 
-      if (isTimeout || isNetworkError) {
-        setErrorMessage(
-          'Sèvè a ap reveye (Render free tier). Tanpri eseye ankò nan 30 segond.'
-        );
-      } else {
-        setErrorMessage(
-          err?.response?.data?.error?.message ||
-          err?.response?.data?.message ||
-          err?.message ||
-          'Enskripsyon echwe — tanpri eseye ankò'
-        );
-      }
+      setErrorMessage(
+        isTimeout || isNetworkError
+          ? 'Sèvè a ap reveye (Render free tier). Tanpri eseye ankò nan 30 segond.'
+          : err?.response?.data?.error?.message ||
+            err?.response?.data?.message       ||
+            err?.message                        ||
+            'Enskripsyon echwe — tanpri eseye ankò'
+      );
     } finally {
       if (mountedRef.current) setLoading(false);
       abortRef.current = null;
     }
   }, [formData, navigate, authLogin]);
 
-  // ── Professions for Step 2 (multi-profession roles only) ───
-  const professions = useMemo(() => {
-    const roleProfs = ROLE_PROFESSIONS[formData.role];
-    return roleProfs ?? [];
-  }, [formData.role]);
-
-  const requiredFields = useMemo(() => getRequiredFields(formData.profession), [formData.profession]);
-  const optionalFields = useMemo(() => getOptionalFields(formData.profession), [formData.profession]);
-
   // ── Back navigation ─────────────────────────────────────────
   const handleBack = useCallback(() => {
-    if (currentStep === STEPS.PROFESSION) {
-      // From profession → role selection
-      updateFormData('role', '');
-      updateFormData('profession', '');
-      updateFormData('category', '');
+    if (currentStep === STEPS.SUBCATEGORY) {
+      setSelectedCategory(null);
       setCurrentStep(STEPS.CATEGORY);
+    } else if (currentStep === STEPS.PROFESSION) {
+      if (selectedCategory?.hasSubcategories) {
+        setSelectedSubcategory(null);
+        setCurrentStep(STEPS.SUBCATEGORY);
+      } else {
+        setSelectedCategory(null);
+        setCurrentStep(STEPS.CATEGORY);
+      }
     } else if (currentStep === STEPS.BASIC_INFO) {
       setCurrentStep(STEPS.PROFESSION);
     } else if (currentStep === STEPS.PROFESSIONAL) {
       setCurrentStep(STEPS.BASIC_INFO);
     }
-  }, [currentStep, formData.role, updateFormData]);
+  }, [currentStep, selectedCategory]);
 
-  const roleLabel = ROLE_CONFIGS[formData.role]?.label || '';
-
+  // ─────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-navy-900 text-white flex flex-col justify-between p-6 relative overflow-hidden">
+    <main className="min-h-screen bg-navy-900 text-white flex flex-col p-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,136,229,0.15),transparent_60%)] pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-center justify-between max-w-2xl mx-auto w-full z-10">
-        {currentStep > STEPS.CATEGORY && (
+      <div className="flex items-center justify-between max-w-2xl mx-auto w-full z-10 mb-2">
+        {currentStep > STEPS.CATEGORY ? (
           <button
             onClick={handleBack}
             className="text-xl hover:opacity-70 transition"
@@ -267,53 +317,59 @@ function Register() {
           >
             ⬅️
           </button>
+        ) : (
+          <div className="w-8" />
         )}
         <h1 className="font-bold text-lg flex-1 text-center">
-          {currentStep === STEPS.CATEGORY    && t('registration.selectRole')}
-          {currentStep === STEPS.PROFESSION  && t('registration.selectProfession')}
-          {currentStep === STEPS.BASIC_INFO  && t('registration.basicInfo')}
-          {currentStep === STEPS.PROFESSIONAL && t('registration.professionalDetails')}
+          {STEP_TITLES[currentStep]}
         </h1>
         <div className="w-8" />
       </div>
 
-      {/* Progress bar */}
+      {/* Progress indicator */}
       <RegistrationProgress
-        current={currentStep}
-        total={STEPS.PROFESSIONAL}
+        current={toVisualStep(currentStep)}
+        total={4}
         title="Pwogrè Enskripsyon"
-        stepLabels={["Wòl", "Pwofesyon", "Enfòmasyon", "Konplè"]}
+        stepLabels={['Kategori', 'Pwofesyon', 'Enfòmasyon', 'Konplè']}
         stepTextFormatter={(c, tot) => `Etap ${c} sou ${tot}`}
       />
 
-      {/* Step content */}
-      <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center z-10">
+      {/* Alerts */}
+      <div className="w-full max-w-2xl mx-auto z-10">
         {errorMessage && (
-          <div className="mb-4 p-3 rounded bg-red-500/20 border border-red-500 text-red-300 text-center text-sm">
+          <div className="mb-3 p-3 rounded-xl bg-red-500/20 border border-red-500 text-red-300 text-center text-sm">
             {errorMessage}
           </div>
         )}
         {successMessage && (
-          <div className="mb-4 p-3 rounded bg-green-500/20 border border-green-500 text-green-300 text-center text-sm">
+          <div className="mb-3 p-3 rounded-xl bg-green-500/20 border border-green-500 text-green-300 text-center text-sm">
             {successMessage}
           </div>
         )}
+      </div>
+
+      {/* Step content */}
+      <div className="w-full max-w-2xl mx-auto flex-1 z-10 pb-4 overflow-y-auto">
 
         {currentStep === STEPS.CATEGORY && (
-          <Step1_CategorySelect
-            selected={formData.role}
-            onSelect={handleRoleSelect}
-            t={t}
+          <Step1_CategorySelect onSelect={handleCategorySelect} />
+        )}
+
+        {currentStep === STEPS.SUBCATEGORY && selectedCategory && (
+          <Step2_SubCategory
+            category={selectedCategory}
+            onSelect={handleSubcategorySelect}
+            onBack={handleBack}
           />
         )}
 
-        {currentStep === STEPS.PROFESSION && (
-          <Step2_ProfessionSelect
-            role={formData.role}
-            category={formData.category}
-            professions={professions}
-            selected={formData.profession}
+        {currentStep === STEPS.PROFESSION && selectedCategory && (
+          <Step3_Profession
+            category={selectedCategory}
+            subcategory={selectedSubcategory}
             onSelect={handleProfessionSelect}
+            onBack={handleBack}
           />
         )}
 
@@ -330,15 +386,16 @@ function Register() {
             profession={formData.profession}
             metadata={formData.profileMetadata}
             onMetadataChange={updateMetadata}
-            requiredFields={requiredFields}
-            optionalFields={optionalFields}
+            requiredFields={[]}
+            optionalFields={[]}
             onSubmit={handleRegister}
             loading={loading}
           />
         )}
       </div>
 
-      <p className="text-center text-xs text-gray-400 mb-2">
+      {/* Footer */}
+      <p className="text-center text-xs text-gray-400 mt-2 z-10">
         {t('registration.alreadyHaveAccount')}{' '}
         <button
           onClick={() => navigate('/login')}
