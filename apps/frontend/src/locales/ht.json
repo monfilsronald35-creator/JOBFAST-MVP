@@ -750,5 +750,14 @@
     "noConvYetSub": "Kòmanse yon konvèsasyon ak yon travayè",
     "voiceMessage": "Mesaj vwa",
     "messageList": "Mesaj yo"
+  },
+  "marketplace": {
+    "breadcrumbLabel": "Marketplace",
+    "back": "Tounen",
+    "share": "Pataje",
+    "shareSuccess": "Lyen kopye!",
+    "unknownCategory": "Kategori pa ka jwenn",
+    "unknownCategorySub": "Kategori sa a pa disponib. Tounen nan paj prensipal la.",
+    "unknownCategoryBack": "Retounen nan Marketplace"
   }
 }

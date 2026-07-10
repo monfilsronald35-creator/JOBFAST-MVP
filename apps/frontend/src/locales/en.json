@@ -570,5 +570,14 @@
     "noConvYetSub": "Start a conversation with a worker",
     "voiceMessage": "Voice message",
     "messageList": "Messages"
+  },
+  "marketplace": {
+    "breadcrumbLabel": "Marketplace",
+    "back": "Go back",
+    "share": "Share",
+    "shareSuccess": "Link copied!",
+    "unknownCategory": "Category not found",
+    "unknownCategorySub": "This category is not available. Return to the main page.",
+    "unknownCategoryBack": "Back to Marketplace"
   }
 }

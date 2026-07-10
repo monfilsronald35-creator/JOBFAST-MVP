@@ -565,5 +565,14 @@
     "noConvYetSub": "Commencer une conversation avec un travailleur",
     "voiceMessage": "Message vocal",
     "messageList": "Messages"
+  },
+  "marketplace": {
+    "breadcrumbLabel": "Marketplace",
+    "back": "Retour",
+    "share": "Partager",
+    "shareSuccess": "Lien copié !",
+    "unknownCategory": "Catégorie introuvable",
+    "unknownCategorySub": "Cette catégorie n'est pas disponible. Retournez à la page principale.",
+    "unknownCategoryBack": "Retour au Marketplace"
   }
 }
