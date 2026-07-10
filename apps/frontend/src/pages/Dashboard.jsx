@@ -63,6 +63,15 @@ let jobsCache = null;
 let cacheTime  = 0;
 const CACHE_TTL = 15000;
 
+// ── Category job counts (illustrative — replaced by live data when available) ──
+const CATEGORY_JOB_COUNTS = {
+  construction: "142+", restaurant: "89+", hotels:       "34+",
+  delivery:     "210+", cleaning:   "67+", transport:    "95+",
+  it:           "58+",  electrician:"43+", plumbing:     "31+",
+  design:       "76+",  healthcare: "52+", office:       "28+",
+  education:    "19+",  retail:     "113+",homeservices: "88+",
+};
+
 // ════════════════════════════════════════════════════════════════
 // SHARED UI PRIMITIVES
 // ════════════════════════════════════════════════════════════════
@@ -572,9 +581,10 @@ function WorkerHome({
           <div className="absolute inset-0 bg-gradient-to-br from-[#111827] via-[#1a1240] to-[#0a1628]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.12),transparent_60%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.08),transparent_55%)]" />
-          {/* Decorative blurs */}
-          <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-600/6 rounded-full blur-2xl pointer-events-none" />
+          {/* Decorative blurs — animated for a "living" gradient feel */}
+          <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "3s" }} />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-600/6 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "4s", animationDelay: "1.2s" }} />
+          <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-violet-500/4 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "5s", animationDelay: "0.6s" }} />
 
           <div className="relative">
             {/* Avatar + greeting row */}
@@ -711,18 +721,28 @@ function WorkerHome({
             </button>
           </div>
           <div className="flex gap-2.5 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {SERVICE_CATEGORIES.map(cat => (
-              <button key={cat.id} type="button" onClick={() => navigate("/search")}
-                className={`shrink-0 w-[72px] flex flex-col items-center justify-center gap-2 py-3.5 rounded-2xl border
-                  bg-gradient-to-b ${cat.gradient} bg-slate-900/80 border-slate-800/60 text-slate-300
-                  hover:border-amber-500/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/30
-                  active:scale-95 transition-all duration-200`}>
-                <span className="text-[22px] leading-none">{cat.emoji}</span>
-                <span className="text-[9px] font-bold leading-tight text-center px-1 w-full truncate text-slate-400">
-                  {t(`dashboard.${cat.key}`)}
-                </span>
-              </button>
-            ))}
+            {SERVICE_CATEGORIES.map(cat => {
+              const count = CATEGORY_JOB_COUNTS[cat.id];
+              return (
+                <button key={cat.id} type="button" onClick={() => navigate("/search")}
+                  className={`shrink-0 w-[78px] flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border
+                    bg-gradient-to-b ${cat.gradient} bg-slate-900/80 border-slate-800/60 text-slate-300
+                    hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40
+                    active:scale-95 transition-all duration-200 relative overflow-hidden group`}>
+                  {/* Hover glow overlay */}
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/3 rounded-2xl transition-all duration-300" />
+                  <span className="text-[24px] leading-none relative">{cat.emoji}</span>
+                  <span className="text-[9px] font-bold leading-tight text-center px-1 w-full truncate text-slate-400 relative">
+                    {t(`dashboard.${cat.key}`)}
+                  </span>
+                  {count && (
+                    <span className="text-[8px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full leading-none relative">
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -806,6 +826,17 @@ function WorkerHome({
             : companyMembers.length > 0
               ? companyMembers.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={emp => setContactTarget(emp)} />)
               : <PremiumEmpty emoji="🏆" title={t("dashboard.noEmployers")} subtitle={t("dashboard.noEmployersYet")} />
+          }
+        </HSection>
+
+        {/* ── TRENDING SERVICES ────────────────────────────────────── */}
+        <HSection icon="🎯" titleKey="trending" accentColor="text-violet-400" t={t}
+          onViewAll={() => navigate("/search")}>
+          {employersLoading
+            ? [1, 2, 3, 4].map(i => <PremiumSkeleton key={i} />)
+            : workerMembers.slice(0, 8).length > 0
+              ? workerMembers.slice(0, 8).map((w, i) => <PremiumWorkerCard key={w._id || w.id || i} worker={w} navigate={navigate} t={t} />)
+              : <PremiumEmpty emoji="🎯" title={t("dashboard.emptyWorkersTitle")} subtitle={t("dashboard.emptyWorkersSubtitle")} actionLabel={t("dashboard.searchNow")} onAction={() => navigate("/search")} />
           }
         </HSection>
 

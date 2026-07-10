@@ -95,29 +95,37 @@ function Register() {
   }, [updateFormData]);
 
   // ── Step 2: Sub-role selected ────────────────────────────────
-  const handleProfessionSelect = useCallback((professionId, jobRoleId) => {
-    const profMeta = PROFESSION_METADATA[professionId];
+  // Step2 sends: { role, professionId, category } — extract fields from the object
+  const handleProfessionSelect = useCallback((selection) => {
+    const professionId = selection?.professionId ?? String(selection ?? '');
+    const category     = selection?.category ?? '';
+    const profMeta     = PROFESSION_METADATA[professionId];
     updateFormData('profession', professionId);
-    updateFormData('category', profMeta?.category || '');
-    if (jobRoleId) updateMetadata('jobRole', jobRoleId);
+    updateFormData('category', profMeta?.category || category || '');
     setCurrentStep(STEPS.BASIC_INFO);
-  }, [updateFormData, updateMetadata]);
+  }, [updateFormData]);
 
   // ── Step 3: Basic info confirmed ────────────────────────────
+  // Supports Step3's structured payload: { profile, location, preferences, security, metadata }
   const handleBasicInfoNext = useCallback((basicData) => {
-    updateFormData('fullName', basicData.fullName);
-    updateFormData('email', basicData.email);
-    updateFormData('phone', basicData.phone);
-    updateFormData('password', basicData.password);
-    updateFormData('country', basicData.country || 'ht');
-    updateFormData('zone', basicData.zone || '');
-    updateFormData('city', basicData.city || '');
-    updateFormData('location', basicData.city || basicData.location || '');
+    const profile  = basicData.profile  ?? {};
+    const location = basicData.location ?? {};
+    const security = basicData.security ?? {};
+
+    updateFormData('fullName', profile.fullName  ?? basicData.fullName  ?? '');
+    updateFormData('email',    profile.email     ?? basicData.email     ?? '');
+    updateFormData('phone',    profile.phone     ?? basicData.phone     ?? '');
+    updateFormData('password', security.password ?? basicData.password  ?? '');
+    updateFormData('country',  location.countryCode ?? basicData.country ?? 'ht');
+    updateFormData('zone',     location.region      ?? basicData.zone    ?? '');
+    updateFormData('city',     location.city        ?? basicData.city    ?? '');
+    updateFormData('location', location.city        ?? basicData.city    ?? basicData.location ?? '');
     setCurrentStep(STEPS.PROFESSIONAL);
   }, [updateFormData]);
 
   // ── Step 4: Submit registration ─────────────────────────────
-  const handleRegister = useCallback(async () => {
+  // professionalProfile — full schema v2.2 object passed directly from Step4
+  const handleRegister = useCallback(async (professionalProfile = null) => {
     if (!formData.role || !formData.profession || !formData.fullName || !formData.email || !formData.password) {
       setErrorMessage('Tanpri ranpli tout jaden obligatwa yo');
       return;
@@ -131,6 +139,11 @@ function Register() {
     abortRef.current = new AbortController();
 
     try {
+      // Merge schema v2.2 profile if provided by Step4
+      const finalMetadata = professionalProfile
+        ? { ...formData.profileMetadata, professionalProfile }
+        : formData.profileMetadata;
+
       const registrationData = {
         name:            formData.fullName,
         email:           formData.email,
@@ -139,7 +152,7 @@ function Register() {
         role:            formData.role,
         category:        formData.category,
         profession:      formData.profession,
-        profileMetadata: formData.profileMetadata,
+        profileMetadata: finalMetadata,
         accountType:     'individual',
         city:            formData.city || formData.location || '',
         state:           formData.zone || '',
@@ -252,7 +265,13 @@ function Register() {
       </div>
 
       {/* Progress bar */}
-      <RegistrationProgress current={currentStep} total={STEPS.PROFESSIONAL} />
+      <RegistrationProgress
+        current={currentStep}
+        total={STEPS.PROFESSIONAL}
+        title="Pwogrè Enskripsyon"
+        stepLabels={["Wòl", "Pwofesyon", "Enfòmasyon", "Konplè"]}
+        stepTextFormatter={(c, tot) => `Etap ${c} sou ${tot}`}
+      />
 
       {/* Step content */}
       <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center z-10">
@@ -271,6 +290,7 @@ function Register() {
           <Step1_CategorySelect
             selected={formData.role}
             onSelect={handleRoleSelect}
+            t={t}
           />
         )}
 

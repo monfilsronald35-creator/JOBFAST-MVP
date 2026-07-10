@@ -80,7 +80,6 @@ function getLocalizedLabel(
 
 
 
-
 // ============================================================
 // SELECT NORMALIZER
 // Supports:
@@ -122,7 +121,6 @@ function isProfessionSelected(
 
 
 
-
 // ============================================================
 // COMPONENT
 // ============================================================
@@ -144,7 +142,6 @@ function Step2_ProfessionSelect({
     i18n,
     t
   } = useTranslation();
-
 
 
 
@@ -176,8 +173,6 @@ function Step2_ProfessionSelect({
 
 
   },[role]);
-
-
 
 
 
@@ -233,8 +228,6 @@ function Step2_ProfessionSelect({
 
 
   },[role]);
-
-
 
 
 
@@ -305,10 +298,6 @@ function Step2_ProfessionSelect({
 
 
 
-
-
-
-
   // ==========================================================
   // LOADING
   // ==========================================================
@@ -346,10 +335,6 @@ function Step2_ProfessionSelect({
 
 
 
-
-
-
-
   return (
 
     <div
@@ -359,8 +344,6 @@ function Step2_ProfessionSelect({
       data-testid="profession-selector"
 
     >
-
-
 
 
 
@@ -402,10 +385,6 @@ function Step2_ProfessionSelect({
 
 
 
-
-
-
-
       <div
 
         role="listbox"
@@ -425,8 +404,6 @@ function Step2_ProfessionSelect({
         "
 
       >
-
-
 
 
 
@@ -455,7 +432,6 @@ function Step2_ProfessionSelect({
 
           const key =
           `${role}:${profession.id}`;
-
 
 
 
@@ -540,7 +516,6 @@ function Step2_ProfessionSelect({
 
 
 
-
             {
               profession.icon && (
 
@@ -564,8 +539,6 @@ function Step2_ProfessionSelect({
 
 
 
-
-
             <h3
 
               className="
@@ -580,9 +553,6 @@ function Step2_ProfessionSelect({
 
 
             </h3>
-
-
-
 
 
 
@@ -617,7 +587,6 @@ function Step2_ProfessionSelect({
 
 
 
-
             </button>
 
 
@@ -631,9 +600,6 @@ function Step2_ProfessionSelect({
 
 
       </div>
-
-
-
 
 
 
@@ -663,8 +629,6 @@ function Step2_ProfessionSelect({
 
         )
       }
-
-
 
 
 

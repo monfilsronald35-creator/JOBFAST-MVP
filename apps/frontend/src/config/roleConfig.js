@@ -77,7 +77,8 @@ const ROLE_CONFIGS = {
   // ─── WORKER ────────────────────────────────────────────────
   worker: {
     label:       "Travayè",
-    icon:        "👷",
+    description: "Chèche travay ak opòtinite",
+    icon:        Briefcase,
     color:       "amber",
     defaultPath: "/dashboard",
 
@@ -135,7 +136,8 @@ const ROLE_CONFIGS = {
   // ─── COMPANY ───────────────────────────────────────────────
   company: {
     label:       "Konpayi",
-    icon:        "🏢",
+    description: "Jere anplwaye ak rekritman",
+    icon:        Building2,
     color:       "blue",
     defaultPath: "/dashboard",
 
@@ -194,7 +196,8 @@ const ROLE_CONFIGS = {
   // ─── ENTERPRISE ────────────────────────────────────────────
   enterprise: {
     label:       "Antrepriz",
-    icon:        "🏛️",
+    description: "Kontwòl konplè pou gwo antrepriz",
+    icon:        Globe,
     color:       "indigo",
     defaultPath: "/dashboard",
 
@@ -253,7 +256,8 @@ const ROLE_CONFIGS = {
   // ─── RESTAURANT ────────────────────────────────────────────
   restaurant: {
     label:       "Restoran",
-    icon:        "🍽️",
+    description: "Meni, kòmand ak rezèvasyon",
+    icon:        UtensilsCrossed,
     color:       "orange",
     defaultPath: "/dashboard",
 
@@ -312,7 +316,8 @@ const ROLE_CONFIGS = {
   // ─── HOTEL ─────────────────────────────────────────────────
   hotel: {
     label:       "Hotel",
-    icon:        "🏨",
+    description: "Chanm, rezèvasyon ak kliyan",
+    icon:        Bed,
     color:       "cyan",
     defaultPath: "/dashboard",
 
@@ -371,7 +376,8 @@ const ROLE_CONFIGS = {
   // ─── RENTAL ────────────────────────────────────────────────
   rental: {
     label:       "Lwaye",
-    icon:        "🏠",
+    description: "Pwopiete ak lokasyon",
+    icon:        Home,
     color:       "emerald",
     defaultPath: "/dashboard",
 
@@ -430,7 +436,8 @@ const ROLE_CONFIGS = {
   // ─── OFFICE ────────────────────────────────────────────────
   office: {
     label:       "Biwo",
-    icon:        "🏛️",
+    description: "Jere pèsonèl ak sèvis biwo",
+    icon:        ClipboardList,
     color:       "slate",
     defaultPath: "/dashboard",
 
@@ -489,7 +496,8 @@ const ROLE_CONFIGS = {
   // ─── HOSPITAL ──────────────────────────────────────────────
   hospital: {
     label:       "Lopital",
-    icon:        "🏥",
+    description: "Swen medikal ak dijans",
+    icon:        Activity,
     color:       "red",
     defaultPath: "/dashboard",
 
@@ -548,7 +556,8 @@ const ROLE_CONFIGS = {
   // ─── CLINIC ────────────────────────────────────────────────
   clinic: {
     label:       "Klinik",
-    icon:        "⚕️",
+    description: "Doktè, randevou ak pasyan",
+    icon:        Stethoscope,
     color:       "teal",
     defaultPath: "/dashboard",
 
@@ -607,7 +616,8 @@ const ROLE_CONFIGS = {
   // ─── TOURISM ───────────────────────────────────────────────
   tourism: {
     label:       "Turizm",
-    icon:        "✈️",
+    description: "Tou, gid ak rezèvasyon touris",
+    icon:        Map,
     color:       "purple",
     defaultPath: "/dashboard",
 
@@ -666,7 +676,8 @@ const ROLE_CONFIGS = {
   // ─── SERVICE PROVIDER ──────────────────────────────────────
   service_provider: {
     label:       "Founisè Sèvis",
-    icon:        "🔧",
+    description: "Ofri sèvis pwofesyonèl",
+    icon:        Wrench,
     color:       "yellow",
     defaultPath: "/dashboard",
 
@@ -725,7 +736,8 @@ const ROLE_CONFIGS = {
   // ─── ADMIN ─────────────────────────────────────────────────
   admin: {
     label:       "Admin",
-    icon:        "🛡️",
+    description: "Administrasyon platfòm",
+    icon:        Settings,
     color:       "rose",
     defaultPath: "/admin",
 
@@ -784,7 +796,8 @@ const ROLE_CONFIGS = {
   // ─── SUPER ADMIN ───────────────────────────────────────────
   super_admin: {
     label:       "Super Admin",
-    icon:        "👑",
+    description: "Kontwòl total sistèm nan",
+    icon:        Star,
     color:       "rose",
     defaultPath: "/admin",
 

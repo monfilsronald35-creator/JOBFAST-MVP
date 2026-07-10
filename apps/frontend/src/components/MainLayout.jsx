@@ -27,12 +27,26 @@ const MENU_NAV = [
 const LANG_FLAGS  = { ht: "🇭🇹", fr: "🇫🇷", en: "🇺🇸", es: "🇩🇴" };
 const LANG_CODES  = { ht: "HT",   fr: "FR",  en: "EN",  es: "ES"  };
 
+const LANGS = [
+  { code: "ht", flag: "🇭🇹", label: "Kreyòl" },
+  { code: "fr", flag: "🇫🇷", label: "Français" },
+  { code: "en", flag: "🇺🇸", label: "English" },
+  { code: "es", flag: "🇩🇴", label: "Español" },
+];
+
 export default function MainLayout({ children }) {
   const navigate           = useNavigate();
   const location           = useLocation();
   const { user, logout }   = useAuth();
   const { i18n }           = useTranslation();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [langOpen, setLangOpen]   = useState(false);
+
+  const handleLangChange = useCallback((lang) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem("jobfast_language", lang);
+    setLangOpen(false);
+  }, [i18n]);
 
   const handleLogout = useCallback(() => {
     setMenuOpen(false);
@@ -86,12 +100,33 @@ export default function MainLayout({ children }) {
           {/* Right: home cluster / other-page bell */}
           {isHome ? (
             <div className="flex items-center gap-1">
-              {/* Language */}
-              <button type="button" onClick={() => navigate("/settings")}
-                className="flex items-center gap-1 h-8 px-2 rounded-xl bg-slate-800/70 border border-slate-700/50 hover:border-amber-500/40 transition-all">
-                <span className="text-sm">{currentFlag}</span>
-                <span className="text-[9px] font-bold text-slate-400">{currentCode}</span>
-              </button>
+              {/* Language dropdown */}
+              <div className="relative">
+                <button type="button" onClick={() => setLangOpen(v => !v)}
+                  className="flex items-center gap-1 h-8 px-2 rounded-xl bg-slate-800/70 border border-slate-700/50 hover:border-amber-500/40 transition-all">
+                  <span className="text-sm leading-none">{currentFlag}</span>
+                  <span className="text-[9px] font-bold text-slate-400">{currentCode}</span>
+                </button>
+                {langOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[150]" onClick={() => setLangOpen(false)} />
+                    <div className="absolute right-0 top-10 z-[200] w-38 min-w-[148px] bg-[#0d1526] border border-slate-700/60 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
+                      {LANGS.map(l => (
+                        <button key={l.code} type="button" onClick={() => handleLangChange(l.code)}
+                          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[12px] font-bold transition-all hover:bg-slate-800/80 ${
+                            currentLang === l.code ? "text-amber-400 bg-amber-500/10" : "text-slate-300"
+                          }`}>
+                          <span className="text-base leading-none">{l.flag}</span>
+                          <span className="flex-1 text-left">{l.label}</span>
+                          {currentLang === l.code && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               {/* Messages */}
               <NavLink to="/chat" aria-label="Mesaj"
                 className={({ isActive }) => `w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
@@ -99,25 +134,28 @@ export default function MainLayout({ children }) {
                 }`}>
                 <MessageSquare className="w-[18px] h-[18px]" />
               </NavLink>
-              {/* Bell */}
+              {/* Bell with notification indicator */}
               <NavLink to="/notifications" aria-label="Notifikasyon"
-                className={({ isActive }) => `w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+                className={({ isActive }) => `relative w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
                   isActive ? "text-amber-400 bg-amber-500/10" : "text-slate-400 hover:text-amber-400 hover:bg-slate-800/70"
                 }`}>
                 <Bell className="w-[18px] h-[18px]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-[#0b1120] shadow-sm" />
               </NavLink>
-              {/* Avatar */}
+              {/* Avatar with online ring */}
               <button type="button" onClick={() => navigate("/settings")}
-                className="w-8 h-8 rounded-xl overflow-hidden border-2 border-amber-500/40 hover:border-amber-400 transition-all shadow-lg shadow-amber-500/10 ml-0.5 shrink-0">
+                className="relative w-8 h-8 rounded-xl overflow-hidden border-2 border-amber-500/40 hover:border-amber-400 transition-all shadow-lg shadow-amber-500/10 ml-0.5 shrink-0">
                 <img src={avatarSrc} alt={user?.name || "user"} className="w-full h-full object-cover" />
+                <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-500 border border-[#0b1120]" />
               </button>
             </div>
           ) : (
             <NavLink to="/notifications" aria-label="Notifikasyon"
-              className={({ isActive }) => `w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+              className={({ isActive }) => `relative w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
                 isActive ? "text-amber-400 bg-amber-500/10" : "text-slate-400 hover:text-amber-400 hover:bg-slate-800/70"
               }`}>
               <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-[#0b1120] shadow-sm" />
             </NavLink>
           )}
         </div>
@@ -266,7 +304,10 @@ export default function MainLayout({ children }) {
                 {({ isActive }) => (
                   <>
                     <div className="relative">
-                      <Icon className={`w-5 h-5 transition-all duration-200 ${isActive ? "scale-110" : ""}`} />
+                      {isActive && (
+                        <span className="absolute inset-0 -m-1.5 rounded-xl bg-amber-500/8 shadow-lg shadow-amber-500/5" />
+                      )}
+                      <Icon className={`w-5 h-5 transition-all duration-200 relative ${isActive ? "scale-110 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" : ""}`} />
                       {isActive && (
                         <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-lg shadow-amber-400/60" />
                       )}
