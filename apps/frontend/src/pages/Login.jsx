@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Button from "../components/Button.jsx";
+import Input from "../components/Input.jsx";
 import { login } from "../services/auth";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDefaultPath } from "../config/roleConfig";
@@ -27,9 +28,7 @@ export default function Login() {
   /* INIT SAFE */
   useEffect(() => {
     mounted.current = true;
-    // Sistèm nan tou pare enstantane piske nou inyore modil i18n ki kase a
-    setLangReady(true); 
-
+    setLangReady(true);
     return () => {
       mounted.current = false;
     };
@@ -38,12 +37,10 @@ export default function Login() {
   /* INPUT */
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((p) => ({
       ...p,
       [name]: value ?? ""
     }));
-
     if (error) setError("");
   };
 
@@ -60,7 +57,6 @@ export default function Login() {
     if (!mounted.current) return;
 
     const now = Date.now();
-
     if (now - lastSubmit.current < 1500) return;
     lastSubmit.current = now;
 
@@ -102,7 +98,7 @@ export default function Login() {
       if (!res?.success) {
         const status = res?.status;
         if (status === 503 || status === 0 || !status) {
-          setError("Sèvè a ap reveye. Tanpri eseye ankò nan 15 segond.");
+          setError(t("errors.serverWaking"));
         } else if (status === 401) {
           setError(t("auth.invalidCredentials"));
         } else {
@@ -143,18 +139,18 @@ export default function Login() {
   /* LOADING */
   if (!langReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg text-text-muted">
+      <div className="min-h-screen flex items-center justify-center bg-navy-900 text-slate-400">
         {t("app.loading")}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center bg-bg px-6">
+    <div className="min-h-screen flex flex-col justify-center bg-navy-900 px-6">
 
       <div className="text-center mb-8">
-        <h2 className="text-xl font-black text-text">{t("auth.welcome")}</h2>
-        <p className="text-sm text-text-muted mt-2">
+        <h2 className="text-xl font-black text-white">{t("auth.welcome")}</h2>
+        <p className="text-sm text-slate-400 mt-2">
           {t("auth.loginToAccount")}
         </p>
       </div>
@@ -162,35 +158,40 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto flex flex-col gap-4">
 
         {error && (
-          <div className="jf-card border-red-500/30 text-red-400 text-xs text-center">
+          <div
+            role="alert"
+            aria-live="polite"
+            className="bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs text-center p-3"
+          >
             {error}
           </div>
         )}
 
-        <input
+        <Input
           name="identifier"
           value={formData.identifier}
           onChange={handleChange}
           placeholder={t("auth.emailOrPhone")}
           autoComplete="username"
-          className="jf-input"
+          aria-label={t("auth.emailOrPhone")}
         />
 
         <div className="relative">
-          <input
+          <Input
             name="password"
             type={showPassword ? "text" : "password"}
             value={formData.password}
             onChange={handleChange}
             placeholder={t("auth.password")}
             autoComplete="current-password"
-            className="jf-input pr-16"
+            aria-label={t("auth.password")}
+            className="pr-14"
           />
-
           <button
             type="button"
             onClick={() => setShowPassword((p) => !p)}
-            className="absolute right-3 top-3 text-xs text-text-muted"
+            aria-label={showPassword ? t("common.hide") : t("common.show")}
+            className="absolute right-3 top-3 text-xs text-slate-400 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-md px-1"
           >
             {showPassword ? t("common.hide") : t("common.show")}
           </button>
@@ -199,7 +200,7 @@ export default function Login() {
         <button
           type="button"
           onClick={() => navigate("/forgot-password")}
-          className="text-xs text-primary text-right"
+          className="text-xs text-amber-400 text-right hover:text-amber-300 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-md"
         >
           {t("auth.forgotPassword")}
         </button>
@@ -211,7 +212,7 @@ export default function Login() {
         <button
           type="button"
           onClick={() => navigate("/register")}
-          className="text-sm text-primary mt-2"
+          className="text-sm text-amber-400 mt-2 hover:text-amber-300 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-md"
         >
           {t("auth.createAccount")}
         </button>

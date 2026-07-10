@@ -248,7 +248,8 @@
     "email_invalid": "Adresse email invalide",
     "phone_invalid": "Numéro de téléphone invalide (7 chiffres minimum)",
     "password_weak": "Mot de passe trop faible — 8 caractères minimum",
-    "password_mismatch": "Les mots de passe ne correspondent pas"
+    "password_mismatch": "Les mots de passe ne correspondent pas",
+    "serverWaking": "Le serveur se réveille. Veuillez réessayer dans 15 secondes."
   },
   "splash": {
     "slogan": "Travail. Services. Business.\nLà où vous êtes — tout en une app.",

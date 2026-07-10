@@ -76,7 +76,8 @@
     "email_invalid": "Correo electrónico inválido",
     "phone_invalid": "Número de teléfono inválido (mínimo 7 dígitos)",
     "password_weak": "Contraseña muy débil — mínimo 8 caracteres",
-    "password_mismatch": "Las contraseñas no coinciden"
+    "password_mismatch": "Las contraseñas no coinciden",
+    "serverWaking": "El servidor se está iniciando. Por favor, inténtalo de nuevo en 15 segundos."
   },
   "splash": {
     "slogan": "Trabajo. Servicios. Negocios.\nDonde estás — todo en una app.",

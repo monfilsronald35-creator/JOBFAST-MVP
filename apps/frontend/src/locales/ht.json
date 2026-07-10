@@ -476,7 +476,8 @@
     "email_invalid": "Imèl la pa valid",
     "phone_invalid": "Nimewo telefòn pa valid (7 chif minimòm)",
     "password_weak": "Modpas twò fèb — 8 karaktè minimòm",
-    "password_mismatch": "Modpas yo pa menm"
+    "password_mismatch": "Modpas yo pa menm",
+    "serverWaking": "Sèvè a ap reveye. Tanpri eseye ankò nan 15 segond."
   },
   "splash": {
     "slogan": "Travay. Sèvis. Biznis.\nKote w ye — tout nan yon sèl app.",
