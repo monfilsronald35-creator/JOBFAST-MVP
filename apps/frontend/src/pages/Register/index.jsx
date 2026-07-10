@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import ROLE_CONFIGS, {
   ROLE_PROFESSIONS,
+  ROLE_PROFESSION_PRESETS,
   getRoleDefaultPath,
 } from '../../config/roleConfig';
 import Step1_CategorySelect from './Step1_CategorySelect';
@@ -89,9 +90,21 @@ function Register() {
   // ── Step 1: Role selected ───────────────────────────────────
   const handleRoleSelect = useCallback((selectedRole) => {
     updateFormData('role', selectedRole);
-    updateFormData('profession', '');
-    updateFormData('category', '');
-    setCurrentStep(STEPS.PROFESSION);
+
+    const preset = ROLE_PROFESSION_PRESETS[selectedRole];
+
+    if (preset) {
+      // Single-profession role: auto-set profession and skip Step 2
+      const meta = PROFESSION_METADATA[preset];
+      updateFormData('profession', preset);
+      updateFormData('category', meta?.category ?? '');
+      setCurrentStep(STEPS.BASIC_INFO);
+    } else {
+      // Multi-profession role (worker, tourism, service_provider): show Step 2
+      updateFormData('profession', '');
+      updateFormData('category', '');
+      setCurrentStep(STEPS.PROFESSION);
+    }
   }, [updateFormData]);
 
   // ── Step 2: Sub-role selected ────────────────────────────────

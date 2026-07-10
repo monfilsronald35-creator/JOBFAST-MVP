@@ -27,6 +27,7 @@ import {
   getRoleConfig,
   getProfessionsByRole,
 } from "../../config/roleConfig";
+import { PROFESSION_METADATA } from "../../constants/categories";
 
 
 
@@ -185,47 +186,40 @@ function Step2_ProfessionSelect({
 
     try{
 
-
       if(!role){
         return [];
       }
 
+      const data = getProfessionsByRole(role);
 
-      const data =
-      getProfessionsByRole(role);
+      if(!Array.isArray(data)){
+        return [];
+      }
 
-
-
-      return Array.isArray(data)
-
-      ?
-
-      data.filter(
-        item =>
-        item?.id
-      )
-
-      :
-
-      [];
-
+      return data
+        .map(item => {
+          // getProfessionsByRole returns string keys — map to metadata objects
+          if(typeof item === "string"){
+            const meta = PROFESSION_METADATA[item];
+            return meta ? { id: item, ...meta } : null;
+          }
+          // Already an object with id (future-proof)
+          return item?.id ? item : null;
+        })
+        .filter(Boolean);
 
     }
 
     catch(error){
-
 
       console.error(
         "JOBFAST profession loading error:",
         error
       );
 
-
       return [];
 
-
     }
-
 
   },[role]);
 

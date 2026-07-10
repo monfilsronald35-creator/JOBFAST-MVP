@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
+import { getAllCategoryConfigs } from "../config/marketplaceConfig";
 import CompanyContent, {
   COMPANY_TABS, CompanyOverviewSupplement,
 } from "./company/CompanyDashboard";
@@ -39,38 +40,24 @@ const ROLE_COLORS = {
 
 const EMPLOYER_ROLES = new Set(["company", "business", "enterprise", "employer"]);
 
-// ── 15 Service categories ────────────────────────────────────────
-const SERVICE_CATEGORIES = [
-  { id: "construction", emoji: "🏗", key: "catConstruction", gradient: "from-orange-600/20 to-transparent"  },
-  { id: "restaurant",   emoji: "🍽", key: "catRestaurant",   gradient: "from-yellow-500/20 to-transparent"  },
-  { id: "hotels",       emoji: "🏨", key: "catHotels",       gradient: "from-blue-600/20 to-transparent"    },
-  { id: "delivery",     emoji: "🚚", key: "catDelivery",     gradient: "from-cyan-600/20 to-transparent"    },
-  { id: "cleaning",     emoji: "🧹", key: "catCleaning",     gradient: "from-teal-600/20 to-transparent"    },
-  { id: "transport",    emoji: "🚖", key: "catTransport",    gradient: "from-violet-600/20 to-transparent"  },
-  { id: "it",           emoji: "💻", key: "catIT",           gradient: "from-indigo-600/20 to-transparent"  },
-  { id: "electrician",  emoji: "⚡", key: "catElectrician",  gradient: "from-amber-500/20 to-transparent"   },
-  { id: "plumbing",     emoji: "🚰", key: "catPlumbing",     gradient: "from-sky-600/20 to-transparent"     },
-  { id: "design",       emoji: "🎨", key: "catDesign",       gradient: "from-pink-600/20 to-transparent"    },
-  { id: "healthcare",   emoji: "🏥", key: "catHealthcare",   gradient: "from-red-600/20 to-transparent"     },
-  { id: "office",       emoji: "🏢", key: "catOffice",       gradient: "from-slate-600/20 to-transparent"   },
-  { id: "education",    emoji: "🎓", key: "catEducation",    gradient: "from-emerald-600/20 to-transparent" },
-  { id: "retail",       emoji: "🛍", key: "catRetail",       gradient: "from-purple-600/20 to-transparent"  },
-  { id: "homeservices", emoji: "🏠", key: "catHomeServices", gradient: "from-amber-600/20 to-transparent"   },
-];
+// ── Marketplace categories from authoritative config (8 real provider roles) ──
+const ACCENT_GRADIENT = {
+  amber:   "from-amber-600/20 to-transparent",
+  cyan:    "from-cyan-600/20 to-transparent",
+  emerald: "from-emerald-600/20 to-transparent",
+  slate:   "from-slate-600/20 to-transparent",
+  purple:  "from-violet-600/20 to-transparent",
+  red:     "from-red-600/20 to-transparent",
+  teal:    "from-teal-600/20 to-transparent",
+  yellow:  "from-yellow-500/20 to-transparent",
+};
+const MARKETPLACE_CATEGORIES = getAllCategoryConfigs();
 
 // ── Cache ─────────────────────────────────────────────────────────
 let jobsCache = null;
 let cacheTime  = 0;
 const CACHE_TTL = 15000;
 
-// ── Category job counts (illustrative — replaced by live data when available) ──
-const CATEGORY_JOB_COUNTS = {
-  construction: "142+", restaurant: "89+", hotels:       "34+",
-  delivery:     "210+", cleaning:   "67+", transport:    "95+",
-  it:           "58+",  electrician:"43+", plumbing:     "31+",
-  design:       "76+",  healthcare: "52+", office:       "28+",
-  education:    "19+",  retail:     "113+",homeservices: "88+",
-};
 
 // ── Search filter definitions — hoisted to module level (no runtime deps) ──
 const SEARCH_FILTERS = [
@@ -779,26 +766,20 @@ function WorkerHome({
             </button>
           </div>
           <div className="flex gap-2.5 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {SERVICE_CATEGORIES.map(cat => {
-              const count = CATEGORY_JOB_COUNTS[cat.id];
+            {MARKETPLACE_CATEGORIES.map(cat => {
+              const gradient = ACCENT_GRADIENT[cat.accentColor] || "from-slate-600/20 to-transparent";
               return (
-                <button key={cat.id} type="button" onClick={() => navigate("/search")}
+                <button key={cat.role} type="button" onClick={() => navigate(`/marketplace/${cat.role}`)}
                   className={`shrink-0 w-[78px] flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border
-                    bg-gradient-to-b ${cat.gradient} bg-slate-900/80 border-slate-800/60 text-slate-300
+                    bg-gradient-to-b ${gradient} bg-slate-900/80 border-slate-800/60 text-slate-300
                     hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40
                     active:scale-95 transition-all duration-200 relative overflow-hidden group
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60`}>
-                  {/* Hover glow overlay */}
                   <div className="absolute inset-0 bg-white/0 group-hover:bg-white/3 rounded-2xl transition-all duration-300" aria-hidden="true" />
-                  <span className="text-[24px] leading-none relative" aria-hidden="true">{cat.emoji}</span>
+                  <span className="text-[24px] leading-none relative" aria-hidden="true">{cat.icon}</span>
                   <span className="text-[9px] font-bold leading-tight text-center px-1 w-full truncate text-slate-400 relative">
-                    {t(`dashboard.${cat.key}`)}
+                    {cat.label}
                   </span>
-                  {count && (
-                    <span className="text-[8px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full leading-none relative">
-                      {count}
-                    </span>
-                  )}
                 </button>
               );
             })}
