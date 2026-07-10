@@ -269,10 +269,10 @@ function Register() {
           </button>
         )}
         <h1 className="font-bold text-lg flex-1 text-center">
-          {currentStep === STEPS.CATEGORY    && 'Chwazi Wòl'}
-          {currentStep === STEPS.PROFESSION  && 'Chwazi Pwofesyon'}
-          {currentStep === STEPS.BASIC_INFO  && 'Enfòmasyon de Baz'}
-          {currentStep === STEPS.PROFESSIONAL && `Detay ${roleLabel}`}
+          {currentStep === STEPS.CATEGORY    && t('registration.selectRole')}
+          {currentStep === STEPS.PROFESSION  && t('registration.selectProfession')}
+          {currentStep === STEPS.BASIC_INFO  && t('registration.basicInfo')}
+          {currentStep === STEPS.PROFESSIONAL && t('registration.professionalDetails')}
         </h1>
         <div className="w-8" />
       </div>
@@ -339,12 +339,12 @@ function Register() {
       </div>
 
       <p className="text-center text-xs text-gray-400 mb-2">
-        Gen kont deja?{' '}
+        {t('registration.alreadyHaveAccount')}{' '}
         <button
           onClick={() => navigate('/login')}
           className="text-blue-400 font-bold hover:underline"
         >
-          Login
+          {t('auth.login')}
         </button>
       </p>
     </main>
