@@ -72,11 +72,19 @@ const CATEGORY_JOB_COUNTS = {
   education:    "19+",  retail:     "113+",homeservices: "88+",
 };
 
+// ── Search filter definitions — hoisted to module level (no runtime deps) ──
+const SEARCH_FILTERS = [
+  { id: "location", icon: "📍", key: "filterLocation" },
+  { id: "distance", icon: "🎯", key: "filterDistance" },
+  { id: "category", icon: "🧰", key: "filterCategory" },
+  { id: "language", icon: "🗣",  key: "filterLanguage" },
+];
+
 // ════════════════════════════════════════════════════════════════
 // SHARED UI PRIMITIVES
 // ════════════════════════════════════════════════════════════════
 
-function PremiumSkeleton({ wide }) {
+const PremiumSkeleton = memo(function PremiumSkeleton({ wide }) {
   return (
     <div className={`shrink-0 ${wide ? "w-60" : "w-[130px]"} rounded-2xl bg-slate-900/60 border border-slate-800/40 overflow-hidden`}>
       <div className="animate-pulse p-4 space-y-3">
@@ -99,9 +107,9 @@ function PremiumSkeleton({ wide }) {
       </div>
     </div>
   );
-}
+});
 
-function PremiumEmpty({ emoji, title, subtitle, actionLabel, onAction }) {
+const PremiumEmpty = memo(function PremiumEmpty({ emoji, title, subtitle, actionLabel, onAction }) {
   return (
     <div className="shrink-0 w-72 flex flex-col items-center justify-center text-center px-6 py-8 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800/60">
       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800/80 to-slate-900/60 border border-slate-700/40 flex items-center justify-center mb-3 shadow-xl shadow-black/20">
@@ -110,22 +118,22 @@ function PremiumEmpty({ emoji, title, subtitle, actionLabel, onAction }) {
       <p className="text-[13px] font-bold text-slate-300 mb-1">{title}</p>
       <p className="text-[11px] text-slate-500 leading-relaxed mb-3">{subtitle}</p>
       {actionLabel && (
-        <button onClick={onAction}
+        <button type="button" onClick={onAction}
           className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 text-[11px] font-black active:scale-95 transition shadow-lg shadow-amber-500/20">
           {actionLabel}
         </button>
       )}
     </div>
   );
-}
+});
 
 // ── Section wrapper ───────────────────────────────────────────────
-function HSection({ icon, titleKey, accentColor, children, onViewAll, t }) {
+const HSection = memo(function HSection({ icon, titleKey, accentColor, children, onViewAll, t }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <span className="text-[18px] leading-none">{icon}</span>
+          <span className="text-[18px] leading-none" aria-hidden="true">{icon}</span>
           <p className={`text-[12px] font-black uppercase tracking-widest ${accentColor}`}>
             {t(`dashboard.${titleKey}`)}
           </p>
@@ -133,7 +141,7 @@ function HSection({ icon, titleKey, accentColor, children, onViewAll, t }) {
         {onViewAll && (
           <button type="button" onClick={onViewAll}
             className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-amber-400 transition font-bold">
-            {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3" />
+            {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -142,7 +150,7 @@ function HSection({ icon, titleKey, accentColor, children, onViewAll, t }) {
       </div>
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════
 // PREMIUM CARDS
@@ -178,7 +186,7 @@ const PremiumJobCard = memo(function PremiumJobCard({ job, navigate, t, userCity
               onError={e => { e.currentTarget.src = "https://api.dicebear.com/7.x/initials/svg?seed=J"; }} />
             {verified && (
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0b1120] shadow-md">
-                <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -188,19 +196,21 @@ const PremiumJobCard = memo(function PremiumJobCard({ job, navigate, t, userCity
             <p className="text-[12px] font-bold text-white leading-tight truncate max-w-[95px]">{company || "Company"}</p>
             {rating && (
               <div className="flex items-center gap-1 mt-0.5">
-                <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" aria-hidden="true" />
                 <span className="text-[10px] text-amber-400 font-bold">{Number(rating).toFixed(1)}</span>
               </div>
             )}
           </div>
         </div>
         <button type="button" onClick={e => { e.stopPropagation(); setBookmarked(b => !b); }}
+          aria-label={bookmarked ? "Retire sove" : "Sove travay"}
+          aria-pressed={bookmarked}
           className={`w-7 h-7 shrink-0 flex items-center justify-center rounded-lg border transition-all ${
             bookmarked
               ? "bg-amber-500 border-amber-500 text-slate-950"
               : "bg-slate-800/60 border-slate-700/40 text-slate-500 hover:border-amber-500/50 hover:text-amber-400"
           }`}>
-          <Bookmark className="w-3.5 h-3.5" fill={bookmarked ? "currentColor" : "none"} />
+          <Bookmark className="w-3.5 h-3.5" fill={bookmarked ? "currentColor" : "none"} aria-hidden="true" />
         </button>
       </div>
 
@@ -213,7 +223,7 @@ const PremiumJobCard = memo(function PremiumJobCard({ job, navigate, t, userCity
       <div className="flex flex-wrap gap-1.5 mb-3">
         {location && (
           <span className="flex items-center gap-1 text-[9px] text-slate-500 bg-slate-800/50 border border-slate-700/30 px-2 py-1 rounded-lg">
-            <MapPin className="w-2 h-2 text-amber-400/70 shrink-0" />{location}
+            <MapPin className="w-2 h-2 text-amber-400/70 shrink-0" aria-hidden="true" />{location}
           </span>
         )}
         {timeAgo && (
@@ -244,7 +254,7 @@ const PremiumJobCard = memo(function PremiumJobCard({ job, navigate, t, userCity
           onClick={e => { e.stopPropagation(); navigate(`/u/${userId}`, { state: { profile: job } }); }}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-slate-950 text-[11px] font-black
             group-hover:bg-amber-400 active:scale-95 transition-all shadow-lg shadow-amber-500/20">
-          {t("dashboard.applyNow")} <ArrowRight className="w-3 h-3" />
+          {t("dashboard.applyNow")} <ArrowRight className="w-3 h-3" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -269,7 +279,7 @@ const PremiumWorkerCard = memo(function PremiumWorkerCard({ worker, navigate }) 
         <img src={photo} alt={worker.name}
           className="w-14 h-14 rounded-xl object-cover border-2 border-slate-700/60"
           onError={e => { e.currentTarget.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=w"; }} />
-        <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#0b1120] bg-green-500 shadow-md" />
+        <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#0b1120] bg-green-500 shadow-md" aria-hidden="true" />
       </div>
       <div className="text-center w-full">
         <p className="text-[12px] font-bold text-white truncate leading-tight">{worker.name}</p>
@@ -277,18 +287,18 @@ const PremiumWorkerCard = memo(function PremiumWorkerCard({ worker, navigate }) 
       </div>
       {rating ? (
         <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-lg">
-          <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+          <Star className="w-3 h-3 text-amber-400 fill-amber-400" aria-hidden="true" />
           <span className="text-[11px] font-bold text-amber-300">{Number(rating).toFixed(1)}</span>
         </div>
       ) : (
         <div className="flex items-center gap-1 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-lg">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" aria-hidden="true" />
           <span className="text-[10px] font-semibold text-green-400">Online</span>
         </div>
       )}
       {city && (
         <p className="text-[9px] text-slate-600 truncate flex items-center gap-1 w-full justify-center">
-          <MapPin className="w-2.5 h-2.5 shrink-0" />{city}
+          <MapPin className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />{city}
         </p>
       )}
     </div>
@@ -315,7 +325,7 @@ const PremiumCompanyCard = memo(function PremiumCompanyCard({ company, navigate,
             className="w-12 h-12 rounded-xl object-cover border border-slate-700/60 bg-slate-800"
             onError={e => { e.currentTarget.src = "https://api.dicebear.com/7.x/initials/svg?seed=C"; }} />
           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#0b1120] shadow-md">
-            <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+            <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -331,7 +341,7 @@ const PremiumCompanyCard = memo(function PremiumCompanyCard({ company, navigate,
       <div className="flex items-center justify-between">
         {jobsCount !== null ? (
           <div className="flex items-center gap-1 text-[10px] text-slate-500">
-            <Briefcase className="w-3 h-3" />{jobsCount} jobs
+            <Briefcase className="w-3 h-3" aria-hidden="true" />{jobsCount} jobs
           </div>
         ) : <div />}
         <button type="button"
@@ -364,7 +374,7 @@ const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
         <div className="relative shrink-0">
           <img src={photo} alt={emp.name} className="w-12 h-12 rounded-xl object-cover border-2 border-slate-700"
             onError={e => { e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(emp.name)}`; }} />
-          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 bg-green-500" />
+          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 bg-green-500" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white leading-tight truncate">{emp.name}</p>
@@ -381,12 +391,12 @@ const EmployerCard = memo(function EmployerCard({ emp, onContact }) {
       </div>
       {city && (
         <div className="flex items-center gap-1 text-[11px] text-slate-500">
-          <MapPin className="w-3 h-3 shrink-0" />{city}
+          <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />{city}
         </div>
       )}
       <button type="button" onClick={() => onContact(emp)}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black active:scale-95 transition">
-        <Briefcase className="w-3.5 h-3.5" />
+        <Briefcase className="w-3.5 h-3.5" aria-hidden="true" />
         {t("dashboard.contactWork")}
       </button>
     </div>
@@ -439,6 +449,7 @@ function EmployerDirectory({ searchQuery, onContact }) {
       <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
         {FILTERS.map(f => (
           <button key={f.id} type="button" onClick={() => setFilter(f.id)}
+            aria-pressed={filter === f.id}
             className={`shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold transition ${
               filter === f.id
                 ? "bg-amber-500 text-slate-950"
@@ -450,7 +461,7 @@ function EmployerDirectory({ searchQuery, onContact }) {
       </div>
       {visible.length === 0 ? (
         <div className="text-center py-10 space-y-2">
-          <p className="text-4xl">🏢</p>
+          <p className="text-4xl" aria-hidden="true">🏢</p>
           <p className="text-sm text-slate-400 font-semibold">{t("dashboard.noEmployers")}</p>
           <p className="text-xs text-slate-600">
             {searchQuery ? t("dashboard.noEmployersSearch") : t("dashboard.noEmployersYet")}
@@ -467,16 +478,35 @@ function EmployerDirectory({ searchQuery, onContact }) {
 
 function ContactModal({ employer, onClose, navigate }) {
   const { t } = useTranslation();
+
+  // Close on Escape key — only active when modal is open
+  useEffect(() => {
+    if (!employer) return;
+    const handleKeyDown = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [employer, onClose]);
+
   if (!employer) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-t-3xl p-6 space-y-4" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-2" />
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-t-3xl p-6 space-y-4"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
+      >
+        <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-2" aria-hidden="true" />
         <div className="flex items-center gap-3">
           <img src={employer.photo || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(employer.name)}`}
             alt={employer.name} className="w-12 h-12 rounded-xl object-cover border border-slate-700" />
           <div>
-            <p className="font-bold text-white">{employer.name}</p>
+            <p id="contact-modal-title" className="font-bold text-white">{employer.name}</p>
             <p className="text-xs text-slate-500">{employer.location?.city || ""}</p>
           </div>
         </div>
@@ -543,6 +573,9 @@ function WorkerHome({
   const [contactTarget, setContactTarget] = useState(null);
   const directoryRef = useRef(null);
 
+  // Stable callback for ContactModal — prevents effect re-registration on every render
+  const handleCloseContact = useCallback(() => setContactTarget(null), []);
+
   const greeting = useMemo(() => {
     const h = new Date().getHours();
     if (h >= 5 && h < 12)  return t("dashboard.greetMorning");
@@ -556,35 +589,29 @@ function WorkerHome({
   const avatarSrc = user?.profileMetadata?.profilePhoto
     || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.name || "user")}`;
 
-  const SEARCH_FILTERS = [
-    { id: "location", icon: "📍", key: "filterLocation" },
-    { id: "distance", icon: "🎯", key: "filterDistance" },
-    { id: "category", icon: "🧰", key: "filterCategory" },
-    { id: "language", icon: "🗣",  key: "filterLanguage" },
-  ];
-
-  const workerMembers  = employers.filter(e => !EMPLOYER_ROLES.has(e.role));
-  const companyMembers = employers.filter(e => EMPLOYER_ROLES.has(e.role));
-  const topCompanies   = [...companyMembers].sort((a, b) => (b.stats?.jobsPosted || 0) - (a.stats?.jobsPosted || 0));
-  const featuredJobs   = jobs.slice(0, 10);
-  const recentJobs     = [...jobs].reverse().slice(0, 10);
+  // Derived lists — only recomputed when source data changes
+  const workerMembers  = useMemo(() => employers.filter(e => !EMPLOYER_ROLES.has(e.role)), [employers]);
+  const companyMembers = useMemo(() => employers.filter(e =>  EMPLOYER_ROLES.has(e.role)), [employers]);
+  const topCompanies   = useMemo(() => [...companyMembers].sort((a, b) => (b.stats?.jobsPosted || 0) - (a.stats?.jobsPosted || 0)), [companyMembers]);
+  const featuredJobs   = useMemo(() => jobs.slice(0, 10), [jobs]);
+  const recentJobs     = useMemo(() => [...jobs].reverse().slice(0, 10), [jobs]);
 
   return (
     <>
-      <ContactModal employer={contactTarget} onClose={() => setContactTarget(null)} navigate={navigate} />
+      <ContactModal employer={contactTarget} onClose={handleCloseContact} navigate={navigate} />
 
       <div className="pb-8 space-y-5">
 
         {/* ── PREMIUM HERO ────────────────────────────────────────── */}
         <div className="mx-4 relative rounded-3xl overflow-hidden p-5 border border-slate-800/50 shadow-2xl shadow-black/60">
           {/* Layered backgrounds */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#111827] via-[#1a1240] to-[#0a1628]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.12),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.08),transparent_55%)]" />
-          {/* Decorative blurs — animated for a "living" gradient feel */}
-          <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "3s" }} />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-600/6 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "4s", animationDelay: "1.2s" }} />
-          <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-violet-500/4 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "5s", animationDelay: "0.6s" }} />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#111827] via-[#1a1240] to-[#0a1628]" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.12),transparent_60%)]" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.08),transparent_55%)]" aria-hidden="true" />
+          {/* Decorative blurs */}
+          <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "3s" }} aria-hidden="true" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-600/6 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "4s", animationDelay: "1.2s" }} aria-hidden="true" />
+          <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-violet-500/4 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "5s", animationDelay: "0.6s" }} aria-hidden="true" />
 
           <div className="relative">
             {/* Avatar + greeting row */}
@@ -592,9 +619,12 @@ function WorkerHome({
               <div className="relative shrink-0">
                 <img src={avatarSrc} alt={user?.name}
                   className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500/40 shadow-xl shadow-black/40" />
-                <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#111827] shadow-md ${
-                  availability === "available" ? "bg-green-500" : "bg-slate-500"
-                }`} />
+                <span
+                  className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#111827] shadow-md ${
+                    availability === "available" ? "bg-green-500" : "bg-slate-500"
+                  }`}
+                  aria-hidden="true"
+                />
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70 leading-tight">{greeting}</p>
@@ -606,13 +636,17 @@ function WorkerHome({
                 </h2>
               </div>
               {/* Availability toggle */}
-              <button type="button" onClick={toggleAvailability}
+              <button
+                type="button"
+                onClick={toggleAvailability}
+                aria-label={availability === "available" ? t("dashboard.available") : t("dashboard.busy")}
+                aria-pressed={availability === "available"}
                 className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[10px] font-bold transition-all active:scale-95 mt-1 ${
                   availability === "available"
                     ? "bg-green-500/15 border-green-500/30 text-green-400 shadow-lg shadow-green-500/10"
                     : "bg-slate-800/60 border-slate-700/50 text-slate-400"
                 }`}>
-                <span className={`w-2 h-2 rounded-full shrink-0 ${availability === "available" ? "bg-green-400 animate-pulse" : "bg-slate-500"}`} />
+                <span className={`w-2 h-2 rounded-full shrink-0 ${availability === "available" ? "bg-green-400 animate-pulse" : "bg-slate-500"}`} aria-hidden="true" />
                 {availability === "available" ? t("dashboard.available") : t("dashboard.busy")}
               </button>
             </div>
@@ -623,25 +657,27 @@ function WorkerHome({
             {/* Profile chips */}
             <div className="flex flex-wrap gap-2 mt-3">
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/50 border border-slate-700/40 backdrop-blur-sm">
-                <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+                <MapPin className="w-3 h-3 text-amber-400 shrink-0" aria-hidden="true" />
                 <span className="text-[10px] font-semibold text-slate-300">{geo.city}</span>
               </div>
               {rating && (
                 <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 backdrop-blur-sm">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
+                  <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" aria-hidden="true" />
                   <span className="text-[10px] font-bold text-amber-300">{Number(rating).toFixed(1)}</span>
                 </div>
               )}
               {verified && (
                 <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm">
-                  <CheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <CheckCircle className="w-3 h-3 text-emerald-400 shrink-0" aria-hidden="true" />
                   <span className="text-[10px] font-semibold text-emerald-300">{t("dashboard.verified")}</span>
                 </div>
               )}
             </div>
 
             {retrying && (
-              <p className="text-[10px] text-amber-400 mt-2 animate-pulse">{t("dashboard.reconnecting")}</p>
+              <p className="text-[10px] text-amber-400 mt-2 animate-pulse" aria-live="polite">
+                {t("dashboard.reconnecting")}
+              </p>
             )}
           </div>
         </div>
@@ -651,21 +687,24 @@ function WorkerHome({
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center gap-2.5 bg-slate-900/80 border border-slate-700/50 rounded-2xl px-4 py-3 shadow-inner
               focus-within:border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/10 transition-all">
-              <Search className="w-4 h-4 text-slate-500 shrink-0" />
+              <Search className="w-4 h-4 text-slate-500 shrink-0" aria-hidden="true" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={t("dashboard.searchPlaceholder")}
+                aria-label={t("dashboard.searchPlaceholder")}
                 className="flex-1 bg-transparent text-[13px] text-white placeholder-slate-500 outline-none"
               />
               {searchQuery && (
                 <button type="button" onClick={() => setSearchQuery("")}
+                  aria-label="Efase rechèch"
                   className="text-slate-500 hover:text-white text-xs w-4 h-4 flex items-center justify-center shrink-0">✕</button>
               )}
             </div>
             <button type="button" onClick={handleRefresh}
+              aria-label="Rafraîchi done yo"
               className="w-11 h-11 flex items-center justify-center bg-slate-900/80 border border-slate-700/50 rounded-2xl text-slate-400 hover:text-amber-400 hover:border-amber-500/40 active:scale-95 transition-all shrink-0">
-              <RefreshCcw className="w-4 h-4" />
+              <RefreshCcw className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
@@ -674,12 +713,13 @@ function WorkerHome({
             {SEARCH_FILTERS.map(f => (
               <button key={f.id} type="button"
                 onClick={() => setActiveFilter(prev => prev === f.id ? null : f.id)}
+                aria-pressed={activeFilter === f.id}
                 className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold border transition-all active:scale-95 ${
                   activeFilter === f.id
                     ? "bg-amber-500 text-slate-950 border-amber-500 shadow-lg shadow-amber-500/20"
                     : "bg-slate-900/70 text-slate-400 border-slate-700/50 hover:border-amber-500/30 hover:text-slate-300"
                 }`}>
-                <span>{f.icon}</span>
+                <span aria-hidden="true">{f.icon}</span>
                 <span>{t(`dashboard.${f.key}`)}</span>
               </button>
             ))}
@@ -693,8 +733,8 @@ function WorkerHome({
             className="relative overflow-hidden flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
               bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black
               active:scale-[0.97] transition-all duration-200 shadow-xl shadow-amber-500/30 group">
-            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 rounded-2xl" />
-            <span className="text-[26px] leading-none relative">🔍</span>
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 rounded-2xl" aria-hidden="true" />
+            <span className="text-[26px] leading-none relative" aria-hidden="true">🔍</span>
             <span className="text-[13px] font-black relative">{t("dashboard.findWork")}</span>
             <span className="text-[9px] font-semibold opacity-60 relative">{t("dashboard.findWorkSub")}</span>
           </button>
@@ -704,8 +744,8 @@ function WorkerHome({
             className="relative overflow-hidden flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
               bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 text-white font-black
               active:scale-[0.97] transition-all duration-200 shadow-xl shadow-black/30 group hover:border-amber-500/30">
-            <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-all duration-300 rounded-2xl" />
-            <span className="text-[26px] leading-none relative">⚡</span>
+            <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-all duration-300 rounded-2xl" aria-hidden="true" />
+            <span className="text-[26px] leading-none relative" aria-hidden="true">⚡</span>
             <span className="text-[13px] font-black relative">{t("dashboard.offerServices")}</span>
             <span className="text-[9px] font-semibold opacity-40 relative">{t("dashboard.offerServicesSub")}</span>
           </button>
@@ -717,7 +757,7 @@ function WorkerHome({
             <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">{t("dashboard.categories")}</p>
             <button type="button" onClick={() => navigate("/search")}
               className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition font-bold">
-              {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3" />
+              {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3" aria-hidden="true" />
             </button>
           </div>
           <div className="flex gap-2.5 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
@@ -730,8 +770,8 @@ function WorkerHome({
                     hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40
                     active:scale-95 transition-all duration-200 relative overflow-hidden group`}>
                   {/* Hover glow overlay */}
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/3 rounded-2xl transition-all duration-300" />
-                  <span className="text-[24px] leading-none relative">{cat.emoji}</span>
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/3 rounded-2xl transition-all duration-300" aria-hidden="true" />
+                  <span className="text-[24px] leading-none relative" aria-hidden="true">{cat.emoji}</span>
                   <span className="text-[9px] font-bold leading-tight text-center px-1 w-full truncate text-slate-400 relative">
                     {t(`dashboard.${cat.key}`)}
                   </span>
@@ -747,7 +787,13 @@ function WorkerHome({
         </div>
 
         {error && (
-          <div className="mx-4 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20">{error}</div>
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mx-4 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20"
+          >
+            {error}
+          </div>
         )}
 
         {/* ── FEATURED JOBS ───────────────────────────────────────── */}
@@ -791,7 +837,7 @@ function WorkerHome({
           {employersLoading
             ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
             : topCompanies.length > 0
-              ? topCompanies.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={emp => setContactTarget(emp)} />)
+              ? topCompanies.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={setContactTarget} />)
               : <PremiumEmpty emoji="🏢" title={t("dashboard.noEmployers")} subtitle={t("dashboard.noEmployersYet")} />
           }
         </HSection>
@@ -824,7 +870,7 @@ function WorkerHome({
           {employersLoading
             ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
             : companyMembers.length > 0
-              ? companyMembers.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={emp => setContactTarget(emp)} />)
+              ? companyMembers.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={setContactTarget} />)
               : <PremiumEmpty emoji="🏆" title={t("dashboard.noEmployers")} subtitle={t("dashboard.noEmployersYet")} />
           }
         </HSection>
@@ -843,12 +889,12 @@ function WorkerHome({
         {/* ── FULL EMPLOYER DIRECTORY ──────────────────────────────── */}
         <div ref={directoryRef} className="px-4 space-y-3 pt-2">
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-amber-400 shrink-0" />
+            <Building2 className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true" />
             <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">
               {t("dashboard.employersTitle")}
             </p>
           </div>
-          <EmployerDirectory searchQuery={searchQuery} onContact={emp => setContactTarget(emp)} />
+          <EmployerDirectory searchQuery={searchQuery} onContact={setContactTarget} />
         </div>
 
       </div>
@@ -999,7 +1045,8 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {COMPANY_TABS.map(tab => (
-            <button key={tab.id} onClick={() => setCompanyTab(tab.id)}
+            <button key={tab.id} type="button" onClick={() => setCompanyTab(tab.id)}
+              aria-pressed={companyTab === tab.id}
               className={`shrink-0 px-3 py-2 rounded-xl text-xs font-semibold transition ${
                 companyTab === tab.id ? "bg-blue-500 text-white" : "bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700"
               }`}>
@@ -1028,7 +1075,8 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {ENTERPRISE_TABS.map(tab => (
-            <button key={tab.id} onClick={() => setEnterpriseTab(tab.id)}
+            <button key={tab.id} type="button" onClick={() => setEnterpriseTab(tab.id)}
+              aria-pressed={enterpriseTab === tab.id}
               className={`shrink-0 px-3 py-2 rounded-xl text-xs font-semibold transition ${
                 enterpriseTab === tab.id ? "bg-indigo-500 text-white" : "bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700"
               }`}>
