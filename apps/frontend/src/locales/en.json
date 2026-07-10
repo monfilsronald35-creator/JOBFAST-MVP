@@ -253,7 +253,11 @@
     "placeholder": "Search workers, businesses or services...",
     "results": "{{count}} results",
     "noResults": "No results found",
-    "searching": "Searching..."
+    "searching": "Searching...",
+    "call": "Call",
+    "chat": "Chat",
+    "rate": "Rate",
+    "book": "Book"
   },
   "business": {
     "title": "Business Directory",
@@ -654,6 +658,13 @@
     "shareSuccess": "Link copied!",
     "unknownCategory": "Category not found",
     "unknownCategorySub": "This category is not available. Return to the main page.",
-    "unknownCategoryBack": "Back to Marketplace"
+    "unknownCategoryBack": "Back to Marketplace",
+    "provider": {
+      "pendingRequests": "Pending Requests",
+      "reviews": "Reviews",
+      "status": "Status",
+      "manageListing": "Manage Listing",
+      "findServices": "Find Services"
+    }
   }
 }

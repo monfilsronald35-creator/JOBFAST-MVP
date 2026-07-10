@@ -12,6 +12,7 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -54,10 +55,17 @@ function CategoryCard({ config, onClick }) {
 // ── Provider quick-stats strip ────────────────────────────────
 function ProviderHomeStrip({ config, user, onManage }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const md = user?.marketplaceData || {};
   const bookings     = (md.bookings || []).filter(b => b.status === 'pending').length;
   const reviews      = (md.reviews  || []).length;
   const availability = md.availability || 'available';
+
+  const stats = [
+    { val: bookings,                                    label: t('marketplace.provider.pendingRequests'), color: 'text-yellow-400' },
+    { val: reviews,                                     label: t('marketplace.provider.reviews'),         color: 'text-amber-500'  },
+    { val: availability === 'available' ? '🟢' : '🔴', label: t('marketplace.provider.status'),          color: 'text-white'      },
+  ];
 
   return (
     <div className="space-y-4">
@@ -77,11 +85,7 @@ function ProviderHomeStrip({ config, user, onManage }) {
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2">
-        {[
-          { val: bookings,                                              label: 'Demann Annatant', color: 'text-yellow-400' },
-          { val: reviews,                                               label: 'Evalyasyon',       color: 'text-amber-500'  },
-          { val: availability === 'available' ? '🟢' : '🔴',           label: 'Eta',              color: 'text-white'      },
-        ].map(({ val, label, color }) => (
+        {stats.map(({ val, label, color }) => (
           <div key={label} className="bg-[#0f172a] rounded-xl border border-slate-800 p-3 text-center">
             <div className={`text-xl font-bold ${color}`}>{val}</div>
             <div className="text-[10px] text-slate-400 mt-0.5">{label}</div>
@@ -96,14 +100,14 @@ function ProviderHomeStrip({ config, user, onManage }) {
           onClick={onManage}
           className="py-3 rounded-xl bg-indigo-500 text-white font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
         >
-          ⚙️ Jere Lis Ou
+          ⚙️ {t('marketplace.provider.manageListing')}
         </button>
         <button
           type="button"
           onClick={() => navigate('/marketplace?browse=1')}
           className="py-3 rounded-xl bg-slate-800 text-slate-200 font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
         >
-          🔍 Jwenn Sèvis
+          🔍 {t('marketplace.provider.findServices')}
         </button>
       </div>
 

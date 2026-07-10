@@ -464,7 +464,11 @@
     "placeholder": "Chèche travayè, biznis oswa sèvis...",
     "results": "{{count}} rezilta",
     "noResults": "Pa gen rezilta",
-    "searching": "Ap chèche..."
+    "searching": "Ap chèche...",
+    "call": "Rele",
+    "chat": "Chat",
+    "rate": "Note",
+    "book": "Demand"
   },
   "errors": {
     "general": "Gen yon erè ki rive. Eseye ankò.",
@@ -834,6 +838,13 @@
     "shareSuccess": "Lyen kopye!",
     "unknownCategory": "Kategori pa ka jwenn",
     "unknownCategorySub": "Kategori sa a pa disponib. Tounen nan paj prensipal la.",
-    "unknownCategoryBack": "Retounen nan Marketplace"
+    "unknownCategoryBack": "Retounen nan Marketplace",
+    "provider": {
+      "pendingRequests": "Demann Annatant",
+      "reviews": "Evalyasyon",
+      "status": "Eta",
+      "manageListing": "Jere Lis Ou",
+      "findServices": "Jwenn Sèvis"
+    }
   }
 }

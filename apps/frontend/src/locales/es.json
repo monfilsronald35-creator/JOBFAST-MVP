@@ -253,7 +253,11 @@
     "placeholder": "Buscar trabajadores, negocios o servicios...",
     "results": "{{count}} resultados",
     "noResults": "No se encontraron resultados",
-    "searching": "Buscando..."
+    "searching": "Buscando...",
+    "call": "Llamar",
+    "chat": "Chat",
+    "rate": "Calificar",
+    "book": "Reservar"
   },
   "business": {
     "title": "Directorio de negocios",
@@ -654,6 +658,13 @@
     "shareSuccess": "¡Enlace copiado!",
     "unknownCategory": "Categoría no encontrada",
     "unknownCategorySub": "Esta categoría no está disponible. Vuelve a la página principal.",
-    "unknownCategoryBack": "Volver al Marketplace"
+    "unknownCategoryBack": "Volver al Marketplace",
+    "provider": {
+      "pendingRequests": "Solicitudes pendientes",
+      "reviews": "Reseñas",
+      "status": "Estado",
+      "manageListing": "Gestionar ficha",
+      "findServices": "Buscar servicios"
+    }
   }
 }

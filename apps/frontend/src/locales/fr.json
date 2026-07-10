@@ -236,7 +236,11 @@
     "placeholder": "Rechercher travailleurs, entreprises ou services...",
     "results": "{{count}} résultats",
     "noResults": "Aucun résultat",
-    "searching": "Recherche en cours..."
+    "searching": "Recherche en cours...",
+    "call": "Appeler",
+    "chat": "Chat",
+    "rate": "Évaluer",
+    "book": "Réserver"
   },
   "errors": {
     "general": "Une erreur est survenue. Veuillez réessayer.",
@@ -649,6 +653,13 @@
     "shareSuccess": "Lien copié !",
     "unknownCategory": "Catégorie introuvable",
     "unknownCategorySub": "Cette catégorie n'est pas disponible. Retournez à la page principale.",
-    "unknownCategoryBack": "Retour au Marketplace"
+    "unknownCategoryBack": "Retour au Marketplace",
+    "provider": {
+      "pendingRequests": "Demandes en attente",
+      "reviews": "Évaluations",
+      "status": "Statut",
+      "manageListing": "Gérer ma fiche",
+      "findServices": "Trouver des services"
+    }
   }
 }

@@ -1,6 +1,7 @@
 import React, {
   useState, useEffect, useRef, useCallback, useMemo, memo,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
@@ -77,6 +78,7 @@ const FIELD_RENDERERS = {
 
 // ── Result card ───────────────────────────────────────────────
 const ResultCard = memo(function ResultCard({ item, cardFields, onCall, onChat, onRate, onBook, onMap, onProfile }) {
+  const { t } = useTranslation();
   const city = item.location?.city || item.location?.state || '';
 
   return (
@@ -119,25 +121,25 @@ const ResultCard = memo(function ResultCard({ item, cardFields, onCall, onChat, 
           onClick={() => onCall(item)}
           className="flex-1 py-2.5 text-[11px] font-bold text-green-400 flex items-center justify-center gap-1 hover:bg-green-500/10 transition"
         >
-          📞 Rele
+          📞 {t('search.call')}
         </button>
         <button
           onClick={() => onChat(item)}
           className="flex-1 py-2.5 text-[11px] font-bold text-blue-400 flex items-center justify-center gap-1 hover:bg-blue-500/10 transition border-l border-[#1e2d45]"
         >
-          💬 Chat
+          💬 {t('search.chat')}
         </button>
         <button
           onClick={() => onRate(item)}
           className="flex-1 py-2.5 text-[11px] font-bold text-amber-400 flex items-center justify-center gap-1 hover:bg-amber-500/10 transition border-l border-[#1e2d45]"
         >
-          ⭐ Note
+          ⭐ {t('search.rate')}
         </button>
         <button
           onClick={() => onProfile(item)}
           className="flex-1 py-2.5 text-[11px] font-bold text-violet-400 flex items-center justify-center gap-1 hover:bg-violet-500/10 transition border-l border-[#1e2d45]"
         >
-          📋 Demand
+          📋 {t('search.book')}
         </button>
       </div>
     </div>
