@@ -5,7 +5,6 @@
     "loading": "Ap chaje...",
     "version": "Vèsyon {{version}}"
   },
-
   "common": {
     "search": "Chèche",
     "save": "Sove",
@@ -36,7 +35,6 @@
     "finish": "Fini",
     "confirm": "Konfime"
   },
-
   "onboarding": {
     "slide1": {
       "title": "Byenveni nan JOBFAST",
@@ -51,7 +49,6 @@
       "description": "Jere pwofil ou, resevwa notifikasyon enpòtan, jwenn nouvo opòtinite epi fè biznis ou grandi avèk JOBFAST."
     }
   },
-
   "auth": {
     "login": "Konekte",
     "register": "Enskri",
@@ -69,7 +66,6 @@
     "invalidEmailOrPhone": "Imèl oswa nimewo an pa valid",
     "invalidCredentials": "Imèl oswa modpas mal"
   },
-
   "user": {
     "profile": {
       "title": "Pwofil",
@@ -82,7 +78,6 @@
       "services": "Sèvis",
       "business": "Biznis"
     },
-
     "status": {
       "available": "Disponib",
       "busy": "Okipe",
@@ -90,14 +85,12 @@
       "offline": "Dekonekte"
     }
   },
-
   "categories": {
     "title": "Kategori",
     "select": "Chwazi kategori w",
     "selectProfession": "Chwazi pwofesyon ou",
     "fillDetails": "Ranpli detay pwofesyonèl yo",
     "description": "{{description}}",
-
     "business_directory": {
       "label": "Sipèvizè Biznis",
       "description": "Konpayi, Estabilisyon ak Entèpriz",
@@ -114,7 +107,6 @@
         "organization": "Òganizasyon"
       }
     },
-
     "marketplace": {
       "label": "Mache Yelektwòn",
       "description": "Vann ak Achte Pwodwi",
@@ -126,7 +118,6 @@
         "services": "Sèvis"
       }
     },
-
     "services_on_demand": {
       "label": "Sèvis sou Demann",
       "description": "Mande Pwofesyonèl pou Sèvis",
@@ -143,7 +134,6 @@
         "construction": "Konstriksyon"
       }
     },
-
     "tourism": {
       "label": "Turizm",
       "description": "Vwayaj ak Lodman",
@@ -156,7 +146,6 @@
         "activity": "Aktivite"
       }
     },
-
     "creator_economy": {
       "label": "Atís ak Kreyatè",
       "description": "Mizik, Atizana ak Desen",
@@ -169,7 +158,6 @@
         "writer": "Ekriven"
       }
     },
-
     "impact_ngo": {
       "label": "Òganizasyon Sosyal",
       "description": "Sante, Edikasyon ak Sipò",
@@ -181,7 +169,6 @@
         "social_support": "Sipò Sosyal"
       }
     },
-
     "construction": {
       "title": "Konstriksyon",
       "roles": {
@@ -202,7 +189,6 @@
         "findJobs": "Chèche travay konstriksyon"
       }
     },
-
     "services": {
       "title": "Sèvis Sou Demann",
       "list": {
@@ -222,7 +208,6 @@
       }
     }
   },
-
   "registration": {
     "title": "Kreye Kont",
     "step": "Etap {{current}} / {{total}}",
@@ -266,7 +251,6 @@
     "no_professions": "Pa gen pwofesyon disponib pou kategori sa",
     "complete": "Kreye Kont Mwen"
   },
-
   "professionFields": {
     "businessName": "Non biznis",
     "industry": "Endistri",
@@ -369,7 +353,6 @@
     "pricePerWord": "Pri pa mo",
     "role": "Wòl"
   },
-
   "business": {
     "title": "Lis Biznis",
     "categories": {
@@ -385,16 +368,13 @@
       "organizations": "Òganizasyon"
     }
   },
-
   "location": {
     "title": "Lokalizasyon",
     "current": "Kote aktyèl",
-
     "gps": {
       "enable": "Aktive GPS",
       "accuracy": "Presizyon: {{accuracy}}m"
     },
-
     "distance": {
       "sorting": "Triye pa distans",
       "nearby": "Rezilta ki pre",
@@ -403,27 +383,22 @@
       "m": "{{distance}} m",
       "mi": "{{distance}} mi"
     },
-
     "map": {
       "clusters": "Gwoup sou kat",
       "view": "Wè sou kat"
     },
-
     "fields": {
       "city": "Vil",
       "state": "Depatman",
       "country": "Peyi",
       "coordinates": "Kowòdone"
     },
-
     "actions": {
       "searchNearby": "Chèche toupre"
     }
   },
-
   "notifications": {
     "title": "Notifikasyon",
-
     "types": {
       "job": "Alèt travay",
       "service": "Alèt sèvis",
@@ -431,41 +406,34 @@
       "match": "Nouvo rezilta",
       "nearby": "Travayè ki pre"
     },
-
     "actions": {
       "markAll": "Make tout kòm li",
       "clearAll": "Efase tout"
     }
   },
-
   "jobs": {
     "title": "Travay",
-
     "actions": {
       "find": "Chèche travay",
       "post": "Pibliye travay",
       "apply": "Aplike",
       "details": "Wè detay"
     },
-
     "status": {
       "available": "Travay disponib",
       "completed": "Travay fini",
       "active": "K ap kouri"
     },
-
     "nearby": {
       "workers": "Travayè ki pre"
     }
   },
-
   "search": {
     "placeholder": "Chèche travayè, biznis oswa sèvis...",
     "results": "{{count}} rezilta",
     "noResults": "Pa gen rezilta",
     "searching": "Ap chèche..."
   },
-
   "errors": {
     "general": "Gen yon erè ki rive. Eseye ankò.",
     "network": "Pa gen rezo. Koneksyon an echwe.",
@@ -478,7 +446,6 @@
     "password_weak": "Modpas twò fèb — 8 karaktè minimòm",
     "password_mismatch": "Modpas yo pa menm"
   },
-
   "splash": {
     "slogan": "Travay. Sèvis. Biznis.\nKote w ye — tout nan yon sèl app.",
     "start": "KÒMANSE",
@@ -489,7 +456,6 @@
     "langPickerSubtitle": "Chwazi lang ou vle itilize nan app la",
     "langPickerBtn": "Kontinye"
   },
-
   "dashboard": {
     "welcome": "BYENVENI",
     "slogan": "Platfòm pou w jwenn travay pi rapid",
@@ -566,7 +532,6 @@
     "catRetail": "Komès",
     "catHomeServices": "Sèvis Kay"
   },
-
   "profile": {
     "settingsTitle": "Paramèt / Pwofil",
     "editBtn": "Modifye",
@@ -593,7 +558,6 @@
     "loading": "Chajman...",
     "nameRequired": "Non obligatwa"
   },
-
   "country": {
     "ht": "Ayiti",
     "do": "Repiblik Dominikèn",
@@ -606,101 +570,115 @@
     "gb": "Wayòm Ini",
     "pt": "Pòtigal"
   },
-
   "monitoring": {
     "cacheSize": "Kachèt: {{size}}",
     "cacheUsage": "Itilizasyon: {{usage}}%"
   },
-
   "step3": {
-    "section_personal":   "Enfòmasyon Pèsonèl",
-    "section_location":   "Lokal",
-    "section_security":   "Sekirite Kont",
-    "full_name":          "Non Konplè",
-    "full_name_ph":       "Jean Pierre...",
-    "email":              "Imèl",
-    "phone":              "Nimewo Telefòn",
-    "phone_ph":           "3760-0000",
-    "dial_code":          "Kòd Peyi",
-    "country":            "Peyi",
-    "region":             "Rejyon / Depatman",
-    "region_select":      "Chwazi rejyon ou",
-    "city":               "Vil",
-    "city_ph":            "Port-au-Prince...",
-    "password":           "Modpas",
-    "password_ph":        "Minimòm 8 karaktè",
-    "confirm_password":   "Konfime Modpas",
-    "confirm_password_ph":"Retape modpas ou",
-    "show_password":      "Montre modpas",
-    "hide_password":      "Kache modpas",
-    "strength_weak":      "Fèb",
-    "strength_medium":    "Mwayen",
-    "strength_strong":    "Solid"
+    "section_personal": "Enfòmasyon Pèsonèl",
+    "section_location": "Lokal",
+    "section_security": "Sekirite Kont",
+    "full_name": "Non Konplè",
+    "full_name_ph": "Jean Pierre...",
+    "email": "Imèl",
+    "phone": "Nimewo Telefòn",
+    "phone_ph": "3760-0000",
+    "dial_code": "Kòd Peyi",
+    "country": "Peyi",
+    "region": "Rejyon / Depatman",
+    "region_select": "Chwazi rejyon ou",
+    "city": "Vil",
+    "city_ph": "Port-au-Prince...",
+    "password": "Modpas",
+    "password_ph": "Minimòm 8 karaktè",
+    "confirm_password": "Konfime Modpas",
+    "confirm_password_ph": "Retape modpas ou",
+    "show_password": "Montre modpas",
+    "hide_password": "Kache modpas",
+    "strength_weak": "Fèb",
+    "strength_medium": "Mwayen",
+    "strength_strong": "Solid"
   },
-
   "step4": {
-    "section_identity":     "Idantite Pwofesyonèl",
-    "section_experience":   "Eksperyans & Konpetans",
-    "section_services":     "Sèvis & Pri",
+    "section_identity": "Idantite Pwofesyonèl",
+    "section_experience": "Eksperyans & Konpetans",
+    "section_services": "Sèvis & Pri",
     "section_availability": "Disponiblite",
-    "section_settings":     "Preferans & Paramèt",
-    "photo":                "Foto Pwofil",
-    "headline":             "Tit Pwofesyonèl",
-    "headline_ph":          "Ex: Elektrisite Sètifye | 8 an eksperyans",
-    "bio_short":            "Deskripsyon Kout",
-    "bio_ph":               "Pale de eksperyans ou, sèvis ou ofri, ak valè ou pote pou kliyan...",
-    "languages_spoken":     "Lang ou pale",
-    "years_exp":            "Ane Eksperyans",
-    "exp_level":            "Nivo",
-    "level_junior":         "Junior (0-2 an)",
-    "level_mid":            "Mwayen (3-5 an)",
-    "level_senior":         "Ekspèmye (6-9 an)",
-    "level_expert":         "Ekspè (10+ an)",
-    "projects_completed":   "Pwojè Fini",
-    "skills":               "Konpetans / Espesyalite",
-    "skill_ph":             "Ekri yon konpetans epi appiye Enter",
-    "skill_beginner":       "Debitant",
-    "skill_intermediate":   "Entèmedyè",
-    "skill_advanced":       "Avanse",
-    "skill_expert":         "Ekspè",
-    "service_radius":       "Reyon Sèvis",
-    "no_services":          "Ou poko ajoute okenn sèvis.",
-    "service_n":            "Sèvis",
-    "service_name_ph":      "Non sèvis (ex: Instalasyon Elektrik)",
-    "pricing_type":         "Tip Pri",
-    "pricing_hourly":       "Pa Lè",
-    "pricing_fixed":        "Pri Fiks",
-    "pricing_negotiable":   "Negosiab",
-    "amount":               "Montan",
-    "currency":             "Monè",
-    "remote":               "Remote / À Distans",
-    "on_site":              "Sou Plas",
-    "add_service":          "Ajoute Sèvis",
-    "status":               "Estati Disponiblite",
-    "status_available":     "Disponib",
-    "status_busy":          "Okipe",
-    "status_unavailable":   "Pa Disponib",
-    "available_now":        "Disponib Kounye a",
-    "schedule":             "Orè Semèn",
-    "day_monday":           "Lendi",
-    "day_tuesday":          "Madi",
-    "day_wednesday":        "Mèkredi",
-    "day_thursday":         "Jedi",
-    "day_friday":           "Vandredi",
-    "day_saturday":         "Samdi",
-    "day_sunday":           "Dimanch",
-    "primary_currency":     "Monè Prensipal",
-    "accepted_currencies":  "Monè Aksepte",
-    "contact_prefs":        "Preferans Kominikasyon",
-    "allow_chat":           "Pèmèt Chat",
-    "allow_phone":          "Pèmèt Rele",
-    "allow_email":          "Pèmèt Email",
-    "emergency_avail":      "Sèvis Ijans",
-    "emergency_desc":       "Disponib pou travay ijans ak pri siplemantè",
-    "extra_fee_pct":        "Pousan Siplemantè (%)",
-    "ai_matching":          "Aktivite IA Matching",
-    "keywords":             "Mo-Kle Rechèch",
-    "keyword_ph":           "Ajoute yon mo-kle epi appiye Enter",
-    "schema_version":       "Schema v2.2 · JOBFAST Professional"
+    "section_settings": "Preferans & Paramèt",
+    "photo": "Foto Pwofil",
+    "headline": "Tit Pwofesyonèl",
+    "headline_ph": "Ex: Elektrisite Sètifye | 8 an eksperyans",
+    "bio_short": "Deskripsyon Kout",
+    "bio_ph": "Pale de eksperyans ou, sèvis ou ofri, ak valè ou pote pou kliyan...",
+    "languages_spoken": "Lang ou pale",
+    "years_exp": "Ane Eksperyans",
+    "exp_level": "Nivo",
+    "level_junior": "Junior (0-2 an)",
+    "level_mid": "Mwayen (3-5 an)",
+    "level_senior": "Ekspèmye (6-9 an)",
+    "level_expert": "Ekspè (10+ an)",
+    "projects_completed": "Pwojè Fini",
+    "skills": "Konpetans / Espesyalite",
+    "skill_ph": "Ekri yon konpetans epi appiye Enter",
+    "skill_beginner": "Debitant",
+    "skill_intermediate": "Entèmedyè",
+    "skill_advanced": "Avanse",
+    "skill_expert": "Ekspè",
+    "service_radius": "Reyon Sèvis",
+    "no_services": "Ou poko ajoute okenn sèvis.",
+    "service_n": "Sèvis",
+    "service_name_ph": "Non sèvis (ex: Instalasyon Elektrik)",
+    "pricing_type": "Tip Pri",
+    "pricing_hourly": "Pa Lè",
+    "pricing_fixed": "Pri Fiks",
+    "pricing_negotiable": "Negosiab",
+    "amount": "Montan",
+    "currency": "Monè",
+    "remote": "Remote / À Distans",
+    "on_site": "Sou Plas",
+    "add_service": "Ajoute Sèvis",
+    "status": "Estati Disponiblite",
+    "status_available": "Disponib",
+    "status_busy": "Okipe",
+    "status_unavailable": "Pa Disponib",
+    "available_now": "Disponib Kounye a",
+    "schedule": "Orè Semèn",
+    "day_monday": "Lendi",
+    "day_tuesday": "Madi",
+    "day_wednesday": "Mèkredi",
+    "day_thursday": "Jedi",
+    "day_friday": "Vandredi",
+    "day_saturday": "Samdi",
+    "day_sunday": "Dimanch",
+    "primary_currency": "Monè Prensipal",
+    "accepted_currencies": "Monè Aksepte",
+    "contact_prefs": "Preferans Kominikasyon",
+    "allow_chat": "Pèmèt Chat",
+    "allow_phone": "Pèmèt Rele",
+    "allow_email": "Pèmèt Email",
+    "emergency_avail": "Sèvis Ijans",
+    "emergency_desc": "Disponib pou travay ijans ak pri siplemantè",
+    "extra_fee_pct": "Pousan Siplemantè (%)",
+    "ai_matching": "Aktivite IA Matching",
+    "keywords": "Mo-Kle Rechèch",
+    "keyword_ph": "Ajoute yon mo-kle epi appiye Enter",
+    "schema_version": "Schema v2.2 · JOBFAST Professional"
+  },
+  "availability": {
+    "pageTitle": "Chanje Estati",
+    "roleContext": "Wòl aktyèl",
+    "subtitle": "Chwazi estati ou a pou lòt itilizatè yo ka wè disponibilite ou.",
+    "currentSelection": "Seleksyon aktyèl",
+    "save": "Mete ajou Estati",
+    "saving": "Ap sove...",
+    "successMsg": "Estati mete ajou avèk siksè ✓",
+    "errorNetwork": "Erè rezo. Eseye ankò.",
+    "errorServer": "Sèvè a pa reponn. Eseye ankò.",
+    "errorRollback": "Chanjman anile akòz yon erè.",
+    "errorOffline": "Ou pa konekte. Chanjman sove lokalmman.",
+    "errorUnauthorized": "Sesyon ou ekspire. Konekte ankò.",
+    "errorValidation": "Estati sa pa valid pou wòl sa a.",
+    "retry": "Eseye Ankò",
+    "backLabel": "Tounen"
   }
 }

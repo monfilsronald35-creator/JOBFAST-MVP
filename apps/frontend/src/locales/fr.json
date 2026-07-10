@@ -5,7 +5,6 @@
     "loading": "Chargement...",
     "version": "Version {{version}}"
   },
-
   "common": {
     "search": "Rechercher",
     "save": "Enregistrer",
@@ -36,7 +35,6 @@
     "finish": "Terminer",
     "confirm": "Confirmer"
   },
-
   "onboarding": {
     "slide1": {
       "title": "Bienvenue sur JOBFAST",
@@ -51,7 +49,6 @@
       "description": "Gérez votre profil, recevez des notifications importantes, trouvez de nouvelles opportunités et faites grandir votre entreprise avec JOBFAST."
     }
   },
-
   "auth": {
     "login": "Connexion",
     "register": "Inscription",
@@ -69,7 +66,6 @@
     "invalidEmailOrPhone": "Email ou téléphone invalide",
     "invalidCredentials": "Email ou mot de passe incorrect"
   },
-
   "user": {
     "profile": {
       "title": "Profil",
@@ -82,7 +78,6 @@
       "services": "Services",
       "business": "Entreprise"
     },
-
     "status": {
       "available": "Disponible",
       "busy": "Occupé",
@@ -90,7 +85,6 @@
       "offline": "Hors ligne"
     }
   },
-
   "categories": {
     "construction": {
       "title": "Construction",
@@ -112,7 +106,6 @@
         "findJobs": "Trouver des emplois en construction"
       }
     },
-
     "services": {
       "title": "Services à la demande",
       "list": {
@@ -132,7 +125,6 @@
       }
     }
   },
-
   "business": {
     "title": "Annuaire des entreprises",
     "categories": {
@@ -148,16 +140,13 @@
       "organizations": "Organisations"
     }
   },
-
   "location": {
     "title": "Localisation",
     "current": "Position actuelle",
-
     "gps": {
       "enable": "Activer le GPS",
       "accuracy": "Précision : {{accuracy}}m"
     },
-
     "distance": {
       "sorting": "Tri par distance",
       "nearby": "Résultats à proximité",
@@ -166,27 +155,22 @@
       "m": "{{distance}} m",
       "mi": "{{distance}} mi"
     },
-
     "map": {
       "clusters": "Groupes sur la carte",
       "view": "Voir sur la carte"
     },
-
     "fields": {
       "city": "Ville",
       "state": "Département",
       "country": "Pays",
       "coordinates": "Coordonnées"
     },
-
     "actions": {
       "searchNearby": "Rechercher à proximité"
     }
   },
-
   "notifications": {
     "title": "Notifications",
-
     "types": {
       "job": "Alerte emploi",
       "service": "Alerte service",
@@ -194,41 +178,34 @@
       "match": "Nouveau match",
       "nearby": "Travailleur à proximité"
     },
-
     "actions": {
       "markAll": "Tout marquer comme lu",
       "clearAll": "Tout effacer"
     }
   },
-
   "jobs": {
     "title": "Emplois",
-
     "actions": {
       "find": "Trouver des emplois",
       "post": "Publier un emploi",
       "apply": "Postuler",
       "details": "Voir les détails"
     },
-
     "status": {
       "available": "Emploi disponible",
       "completed": "Terminé",
       "active": "Actif"
     },
-
     "nearby": {
       "workers": "Travailleurs à proximité"
     }
   },
-
   "search": {
     "placeholder": "Rechercher travailleurs, entreprises ou services...",
     "results": "{{count}} résultats",
     "noResults": "Aucun résultat",
     "searching": "Recherche en cours..."
   },
-
   "errors": {
     "general": "Une erreur est survenue. Veuillez réessayer.",
     "network": "Pas de réseau. Connexion échouée.",
@@ -241,15 +218,16 @@
     "password_weak": "Mot de passe trop faible — 8 caractères minimum",
     "password_mismatch": "Les mots de passe ne correspondent pas"
   },
-
   "splash": {
-    "slogan": "Travail. Services. Business.\nOù que vous soyez — tout dans une seule app.",
+    "slogan": "Travail. Services. Business.\nLà où vous êtes — tout en une app.",
     "start": "COMMENCER",
-    "login": "Se Connecter",
+    "login": "Connexion",
     "register": "Créer un Compte",
-    "chooseLanguage": "Choisir votre langue"
+    "chooseLanguage": "Choisir la langue",
+    "langPickerTitle": "Choisissez votre langue",
+    "langPickerSubtitle": "Sélectionnez la langue que vous souhaitez utiliser",
+    "langPickerBtn": "Continuer"
   },
-
   "registration": {
     "title": "Créer un Compte",
     "step": "Étape {{current}} / {{total}}",
@@ -293,18 +271,6 @@
     "no_professions": "Aucune profession disponible pour cette catégorie",
     "complete": "Créer Mon Compte"
   },
-
-  "splash": {
-    "slogan": "Travail. Services. Business.\nLà où vous êtes — tout en une app.",
-    "start": "COMMENCER",
-    "login": "Connexion",
-    "register": "Créer un Compte",
-    "chooseLanguage": "Choisir la langue",
-    "langPickerTitle": "Choisissez votre langue",
-    "langPickerSubtitle": "Sélectionnez la langue que vous souhaitez utiliser",
-    "langPickerBtn": "Continuer"
-  },
-
   "dashboard": {
     "welcome": "BIENVENUE",
     "slogan": "La plateforme pour trouver du travail plus vite",
@@ -381,7 +347,6 @@
     "catRetail": "Commerce",
     "catHomeServices": "Services à Domicile"
   },
-
   "profile": {
     "settingsTitle": "Paramètres / Profil",
     "editBtn": "Modifier",
@@ -408,7 +373,6 @@
     "loading": "Chargement...",
     "nameRequired": "Nom obligatoire"
   },
-
   "country": {
     "ht": "Haïti",
     "do": "Rép. Dominicaine",
@@ -421,101 +385,115 @@
     "gb": "Royaume-Uni",
     "pt": "Portugal"
   },
-
   "monitoring": {
     "cacheSize": "Cache : {{size}}",
     "cacheUsage": "Utilisation : {{usage}}%"
   },
-
   "step3": {
-    "section_personal":    "Informations Personnelles",
-    "section_location":    "Localisation",
-    "section_security":    "Sécurité du Compte",
-    "full_name":           "Nom Complet",
-    "full_name_ph":        "Jean Dupont...",
-    "email":               "Adresse Email",
-    "phone":               "Numéro de Téléphone",
-    "phone_ph":            "000-0000",
-    "dial_code":           "Indicatif Pays",
-    "country":             "Pays",
-    "region":              "Région / Département",
-    "region_select":       "Choisissez votre région",
-    "city":                "Ville",
-    "city_ph":             "Paris...",
-    "password":            "Mot de Passe",
-    "password_ph":         "Minimum 8 caractères",
-    "confirm_password":    "Confirmer le Mot de Passe",
+    "section_personal": "Informations Personnelles",
+    "section_location": "Localisation",
+    "section_security": "Sécurité du Compte",
+    "full_name": "Nom Complet",
+    "full_name_ph": "Jean Dupont...",
+    "email": "Adresse Email",
+    "phone": "Numéro de Téléphone",
+    "phone_ph": "000-0000",
+    "dial_code": "Indicatif Pays",
+    "country": "Pays",
+    "region": "Région / Département",
+    "region_select": "Choisissez votre région",
+    "city": "Ville",
+    "city_ph": "Paris...",
+    "password": "Mot de Passe",
+    "password_ph": "Minimum 8 caractères",
+    "confirm_password": "Confirmer le Mot de Passe",
     "confirm_password_ph": "Ressaisissez votre mot de passe",
-    "show_password":       "Afficher le mot de passe",
-    "hide_password":       "Masquer le mot de passe",
-    "strength_weak":       "Faible",
-    "strength_medium":     "Moyen",
-    "strength_strong":     "Fort"
+    "show_password": "Afficher le mot de passe",
+    "hide_password": "Masquer le mot de passe",
+    "strength_weak": "Faible",
+    "strength_medium": "Moyen",
+    "strength_strong": "Fort"
   },
-
   "step4": {
-    "section_identity":     "Identité Professionnelle",
-    "section_experience":   "Expérience & Compétences",
-    "section_services":     "Services & Tarifs",
+    "section_identity": "Identité Professionnelle",
+    "section_experience": "Expérience & Compétences",
+    "section_services": "Services & Tarifs",
     "section_availability": "Disponibilité",
-    "section_settings":     "Préférences & Paramètres",
-    "photo":                "Photo de Profil",
-    "headline":             "Titre Professionnel",
-    "headline_ph":          "Ex: Électricien Certifié | 8 ans d'expérience",
-    "bio_short":            "Description Courte",
-    "bio_ph":               "Parlez de votre expérience, vos services et la valeur que vous apportez...",
-    "languages_spoken":     "Langues parlées",
-    "years_exp":            "Années d'Expérience",
-    "exp_level":            "Niveau",
-    "level_junior":         "Junior (0-2 ans)",
-    "level_mid":            "Intermédiaire (3-5 ans)",
-    "level_senior":         "Senior (6-9 ans)",
-    "level_expert":         "Expert (10+ ans)",
-    "projects_completed":   "Projets Réalisés",
-    "skills":               "Compétences / Spécialités",
-    "skill_ph":             "Saisir une compétence et appuyer Entrée",
-    "skill_beginner":       "Débutant",
-    "skill_intermediate":   "Intermédiaire",
-    "skill_advanced":       "Avancé",
-    "skill_expert":         "Expert",
-    "service_radius":       "Rayon de Service",
-    "no_services":          "Aucun service ajouté pour l'instant.",
-    "service_n":            "Service",
-    "service_name_ph":      "Nom du service (ex: Installation Électrique)",
-    "pricing_type":         "Type de Tarif",
-    "pricing_hourly":       "Par Heure",
-    "pricing_fixed":        "Prix Fixe",
-    "pricing_negotiable":   "Négociable",
-    "amount":               "Montant",
-    "currency":             "Devise",
-    "remote":               "À Distance",
-    "on_site":              "Sur Place",
-    "add_service":          "Ajouter un Service",
-    "status":               "Statut de Disponibilité",
-    "status_available":     "Disponible",
-    "status_busy":          "Occupé",
-    "status_unavailable":   "Indisponible",
-    "available_now":        "Disponible Maintenant",
-    "schedule":             "Horaires Hebdomadaires",
-    "day_monday":           "Lundi",
-    "day_tuesday":          "Mardi",
-    "day_wednesday":        "Mercredi",
-    "day_thursday":         "Jeudi",
-    "day_friday":           "Vendredi",
-    "day_saturday":         "Samedi",
-    "day_sunday":           "Dimanche",
-    "primary_currency":     "Devise Principale",
-    "accepted_currencies":  "Devises Acceptées",
-    "contact_prefs":        "Préférences de Communication",
-    "allow_chat":           "Autoriser le Chat",
-    "allow_phone":          "Autoriser les Appels",
-    "allow_email":          "Autoriser l'Email",
-    "emergency_avail":      "Services d'Urgence",
-    "emergency_desc":       "Disponible pour les urgences avec majoration",
-    "extra_fee_pct":        "Majoration (%)",
-    "ai_matching":          "Activer le Matching IA",
-    "keywords":             "Mots-Clés de Recherche",
-    "keyword_ph":           "Ajouter un mot-clé et appuyer Entrée",
-    "schema_version":       "Schema v2.2 · JOBFAST Professionnel"
+    "section_settings": "Préférences & Paramètres",
+    "photo": "Photo de Profil",
+    "headline": "Titre Professionnel",
+    "headline_ph": "Ex: Électricien Certifié | 8 ans d'expérience",
+    "bio_short": "Description Courte",
+    "bio_ph": "Parlez de votre expérience, vos services et la valeur que vous apportez...",
+    "languages_spoken": "Langues parlées",
+    "years_exp": "Années d'Expérience",
+    "exp_level": "Niveau",
+    "level_junior": "Junior (0-2 ans)",
+    "level_mid": "Intermédiaire (3-5 ans)",
+    "level_senior": "Senior (6-9 ans)",
+    "level_expert": "Expert (10+ ans)",
+    "projects_completed": "Projets Réalisés",
+    "skills": "Compétences / Spécialités",
+    "skill_ph": "Saisir une compétence et appuyer Entrée",
+    "skill_beginner": "Débutant",
+    "skill_intermediate": "Intermédiaire",
+    "skill_advanced": "Avancé",
+    "skill_expert": "Expert",
+    "service_radius": "Rayon de Service",
+    "no_services": "Aucun service ajouté pour l'instant.",
+    "service_n": "Service",
+    "service_name_ph": "Nom du service (ex: Installation Électrique)",
+    "pricing_type": "Type de Tarif",
+    "pricing_hourly": "Par Heure",
+    "pricing_fixed": "Prix Fixe",
+    "pricing_negotiable": "Négociable",
+    "amount": "Montant",
+    "currency": "Devise",
+    "remote": "À Distance",
+    "on_site": "Sur Place",
+    "add_service": "Ajouter un Service",
+    "status": "Statut de Disponibilité",
+    "status_available": "Disponible",
+    "status_busy": "Occupé",
+    "status_unavailable": "Indisponible",
+    "available_now": "Disponible Maintenant",
+    "schedule": "Horaires Hebdomadaires",
+    "day_monday": "Lundi",
+    "day_tuesday": "Mardi",
+    "day_wednesday": "Mercredi",
+    "day_thursday": "Jeudi",
+    "day_friday": "Vendredi",
+    "day_saturday": "Samedi",
+    "day_sunday": "Dimanche",
+    "primary_currency": "Devise Principale",
+    "accepted_currencies": "Devises Acceptées",
+    "contact_prefs": "Préférences de Communication",
+    "allow_chat": "Autoriser le Chat",
+    "allow_phone": "Autoriser les Appels",
+    "allow_email": "Autoriser l'Email",
+    "emergency_avail": "Services d'Urgence",
+    "emergency_desc": "Disponible pour les urgences avec majoration",
+    "extra_fee_pct": "Majoration (%)",
+    "ai_matching": "Activer le Matching IA",
+    "keywords": "Mots-Clés de Recherche",
+    "keyword_ph": "Ajouter un mot-clé et appuyer Entrée",
+    "schema_version": "Schema v2.2 · JOBFAST Professionnel"
+  },
+  "availability": {
+    "pageTitle": "Statut de Disponibilité",
+    "roleContext": "Rôle actuel",
+    "subtitle": "Sélectionnez votre statut pour que les autres utilisateurs voient votre disponibilité.",
+    "currentSelection": "Sélection actuelle",
+    "save": "Mettre à jour le statut",
+    "saving": "Enregistrement...",
+    "successMsg": "Statut mis à jour avec succès ✓",
+    "errorNetwork": "Erreur réseau. Veuillez réessayer.",
+    "errorServer": "Serveur ne répond pas. Veuillez réessayer.",
+    "errorRollback": "Modifications annulées suite à une erreur.",
+    "errorOffline": "Vous êtes hors ligne. Modifications enregistrées localement.",
+    "errorUnauthorized": "Session expirée. Veuillez vous reconnecter.",
+    "errorValidation": "Ce statut n'est pas valide pour votre rôle.",
+    "retry": "Réessayer",
+    "backLabel": "Retour"
   }
 }

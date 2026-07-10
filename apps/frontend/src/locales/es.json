@@ -5,7 +5,6 @@
     "loading": "Cargando...",
     "version": "Versión {{version}}"
   },
-
   "common": {
     "search": "Buscar",
     "save": "Guardar",
@@ -36,7 +35,6 @@
     "finish": "Finalizar",
     "confirm": "Confirmar"
   },
-
   "onboarding": {
     "slide1": {
       "title": "Bienvenido a JOBFAST",
@@ -51,7 +49,6 @@
       "description": "Gestiona tu perfil, recibe notificaciones importantes, encuentra nuevas oportunidades y haz crecer tu negocio con JOBFAST."
     }
   },
-
   "auth": {
     "login": "Iniciar Sesión",
     "register": "Registrarse",
@@ -69,7 +66,6 @@
     "invalidEmailOrPhone": "Correo o teléfono inválido",
     "invalidCredentials": "Correo o contraseña incorrectos"
   },
-
   "errors": {
     "general": "Algo salió mal. Inténtalo de nuevo.",
     "network": "Sin red. La conexión falló.",
@@ -82,15 +78,16 @@
     "password_weak": "Contraseña muy débil — mínimo 8 caracteres",
     "password_mismatch": "Las contraseñas no coinciden"
   },
-
   "splash": {
-    "slogan": "Trabajo. Servicios. Negocios.\nDonde estés — todo en una app.",
+    "slogan": "Trabajo. Servicios. Negocios.\nDonde estás — todo en una app.",
     "start": "COMENZAR",
     "login": "Iniciar Sesión",
     "register": "Crear Cuenta",
-    "chooseLanguage": "Elige tu idioma"
+    "chooseLanguage": "Elegir idioma",
+    "langPickerTitle": "Elige tu idioma",
+    "langPickerSubtitle": "Selecciona el idioma que deseas usar en la app",
+    "langPickerBtn": "Continuar"
   },
-
   "registration": {
     "title": "Crear Cuenta",
     "step": "Paso {{current}} / {{total}}",
@@ -134,7 +131,6 @@
     "no_professions": "No hay profesiones disponibles para esta categoría",
     "complete": "Crear Mi Cuenta"
   },
-
   "user": {
     "profile": {
       "title": "Perfil",
@@ -154,7 +150,6 @@
       "offline": "Desconectado"
     }
   },
-
   "categories": {
     "title": "Categorías",
     "select": "Elige tu categoría",
@@ -193,7 +188,6 @@
       }
     }
   },
-
   "location": {
     "title": "Ubicación",
     "current": "Ubicación actual",
@@ -223,7 +217,6 @@
       "searchNearby": "Buscar cerca"
     }
   },
-
   "notifications": {
     "title": "Notificaciones",
     "types": {
@@ -238,7 +231,6 @@
       "clearAll": "Eliminar todo"
     }
   },
-
   "jobs": {
     "title": "Empleos",
     "actions": {
@@ -256,14 +248,12 @@
       "workers": "Trabajadores cercanos"
     }
   },
-
   "search": {
     "placeholder": "Buscar trabajadores, negocios o servicios...",
     "results": "{{count}} resultados",
     "noResults": "No se encontraron resultados",
     "searching": "Buscando..."
   },
-
   "business": {
     "title": "Directorio de negocios",
     "categories": {
@@ -279,7 +269,6 @@
       "organizations": "Organizaciones"
     }
   },
-
   "time": {
     "now": "Ahora",
     "today": "Hoy",
@@ -287,18 +276,6 @@
     "minutesAgo": "Hace {{count}} min",
     "hoursAgo": "Hace {{count}} horas"
   },
-
-  "splash": {
-    "slogan": "Trabajo. Servicios. Negocios.\nDonde estás — todo en una app.",
-    "start": "COMENZAR",
-    "login": "Iniciar Sesión",
-    "register": "Crear Cuenta",
-    "chooseLanguage": "Elegir idioma",
-    "langPickerTitle": "Elige tu idioma",
-    "langPickerSubtitle": "Selecciona el idioma que deseas usar en la app",
-    "langPickerBtn": "Continuar"
-  },
-
   "dashboard": {
     "welcome": "BIENVENIDO",
     "slogan": "La plataforma para encontrar trabajo más rápido",
@@ -375,7 +352,6 @@
     "catRetail": "Comercio",
     "catHomeServices": "Servicios del Hogar"
   },
-
   "profile": {
     "settingsTitle": "Ajustes / Perfil",
     "editBtn": "Editar",
@@ -402,7 +378,6 @@
     "loading": "Cargando...",
     "nameRequired": "Nombre obligatorio"
   },
-
   "country": {
     "ht": "Haití",
     "do": "Rep. Dominicana",
@@ -415,101 +390,115 @@
     "gb": "Reino Unido",
     "pt": "Portugal"
   },
-
   "monitoring": {
     "cacheSize": "Caché: {{size}}",
     "cacheUsage": "Uso: {{usage}}%"
   },
-
   "step3": {
-    "section_personal":    "Información Personal",
-    "section_location":    "Ubicación",
-    "section_security":    "Seguridad de la Cuenta",
-    "full_name":           "Nombre Completo",
-    "full_name_ph":        "Juan García...",
-    "email":               "Correo Electrónico",
-    "phone":               "Número de Teléfono",
-    "phone_ph":            "000-0000",
-    "dial_code":           "Código de País",
-    "country":             "País",
-    "region":              "Región / Estado",
-    "region_select":       "Selecciona tu región",
-    "city":                "Ciudad",
-    "city_ph":             "Santo Domingo...",
-    "password":            "Contraseña",
-    "password_ph":         "Mínimo 8 caracteres",
-    "confirm_password":    "Confirmar Contraseña",
+    "section_personal": "Información Personal",
+    "section_location": "Ubicación",
+    "section_security": "Seguridad de la Cuenta",
+    "full_name": "Nombre Completo",
+    "full_name_ph": "Juan García...",
+    "email": "Correo Electrónico",
+    "phone": "Número de Teléfono",
+    "phone_ph": "000-0000",
+    "dial_code": "Código de País",
+    "country": "País",
+    "region": "Región / Estado",
+    "region_select": "Selecciona tu región",
+    "city": "Ciudad",
+    "city_ph": "Santo Domingo...",
+    "password": "Contraseña",
+    "password_ph": "Mínimo 8 caracteres",
+    "confirm_password": "Confirmar Contraseña",
     "confirm_password_ph": "Vuelve a escribir tu contraseña",
-    "show_password":       "Mostrar contraseña",
-    "hide_password":       "Ocultar contraseña",
-    "strength_weak":       "Débil",
-    "strength_medium":     "Media",
-    "strength_strong":     "Fuerte"
+    "show_password": "Mostrar contraseña",
+    "hide_password": "Ocultar contraseña",
+    "strength_weak": "Débil",
+    "strength_medium": "Media",
+    "strength_strong": "Fuerte"
   },
-
   "step4": {
-    "section_identity":     "Identidad Profesional",
-    "section_experience":   "Experiencia & Habilidades",
-    "section_services":     "Servicios & Precios",
+    "section_identity": "Identidad Profesional",
+    "section_experience": "Experiencia & Habilidades",
+    "section_services": "Servicios & Precios",
     "section_availability": "Disponibilidad",
-    "section_settings":     "Preferencias & Configuración",
-    "photo":                "Foto de Perfil",
-    "headline":             "Título Profesional",
-    "headline_ph":          "Ej: Electricista Certificado | 8 años de experiencia",
-    "bio_short":            "Descripción Corta",
-    "bio_ph":               "Cuéntale a los clientes sobre tu experiencia, servicios y valor...",
-    "languages_spoken":     "Idiomas que hablas",
-    "years_exp":            "Años de Experiencia",
-    "exp_level":            "Nivel",
-    "level_junior":         "Junior (0-2 años)",
-    "level_mid":            "Intermedio (3-5 años)",
-    "level_senior":         "Senior (6-9 años)",
-    "level_expert":         "Experto (10+ años)",
-    "projects_completed":   "Proyectos Completados",
-    "skills":               "Habilidades / Especialidades",
-    "skill_ph":             "Escribe una habilidad y presiona Enter",
-    "skill_beginner":       "Principiante",
-    "skill_intermediate":   "Intermedio",
-    "skill_advanced":       "Avanzado",
-    "skill_expert":         "Experto",
-    "service_radius":       "Radio de Servicio",
-    "no_services":          "Aún no has añadido ningún servicio.",
-    "service_n":            "Servicio",
-    "service_name_ph":      "Nombre del servicio (ej: Instalación Eléctrica)",
-    "pricing_type":         "Tipo de Precio",
-    "pricing_hourly":       "Por Hora",
-    "pricing_fixed":        "Precio Fijo",
-    "pricing_negotiable":   "Negociable",
-    "amount":               "Monto",
-    "currency":             "Moneda",
-    "remote":               "Remoto / En Línea",
-    "on_site":              "En Sitio",
-    "add_service":          "Añadir Servicio",
-    "status":               "Estado de Disponibilidad",
-    "status_available":     "Disponible",
-    "status_busy":          "Ocupado",
-    "status_unavailable":   "No Disponible",
-    "available_now":        "Disponible Ahora",
-    "schedule":             "Horario Semanal",
-    "day_monday":           "Lunes",
-    "day_tuesday":          "Martes",
-    "day_wednesday":        "Miércoles",
-    "day_thursday":         "Jueves",
-    "day_friday":           "Viernes",
-    "day_saturday":         "Sábado",
-    "day_sunday":           "Domingo",
-    "primary_currency":     "Moneda Principal",
-    "accepted_currencies":  "Monedas Aceptadas",
-    "contact_prefs":        "Preferencias de Comunicación",
-    "allow_chat":           "Permitir Chat",
-    "allow_phone":          "Permitir Llamadas",
-    "allow_email":          "Permitir Email",
-    "emergency_avail":      "Servicios de Emergencia",
-    "emergency_desc":       "Disponible para trabajos urgentes con recargo",
-    "extra_fee_pct":        "Recargo (%)",
-    "ai_matching":          "Activar Matching de IA",
-    "keywords":             "Palabras Clave de Búsqueda",
-    "keyword_ph":           "Añade una palabra clave y presiona Enter",
-    "schema_version":       "Schema v2.2 · JOBFAST Profesional"
+    "section_settings": "Preferencias & Configuración",
+    "photo": "Foto de Perfil",
+    "headline": "Título Profesional",
+    "headline_ph": "Ej: Electricista Certificado | 8 años de experiencia",
+    "bio_short": "Descripción Corta",
+    "bio_ph": "Cuéntale a los clientes sobre tu experiencia, servicios y valor...",
+    "languages_spoken": "Idiomas que hablas",
+    "years_exp": "Años de Experiencia",
+    "exp_level": "Nivel",
+    "level_junior": "Junior (0-2 años)",
+    "level_mid": "Intermedio (3-5 años)",
+    "level_senior": "Senior (6-9 años)",
+    "level_expert": "Experto (10+ años)",
+    "projects_completed": "Proyectos Completados",
+    "skills": "Habilidades / Especialidades",
+    "skill_ph": "Escribe una habilidad y presiona Enter",
+    "skill_beginner": "Principiante",
+    "skill_intermediate": "Intermedio",
+    "skill_advanced": "Avanzado",
+    "skill_expert": "Experto",
+    "service_radius": "Radio de Servicio",
+    "no_services": "Aún no has añadido ningún servicio.",
+    "service_n": "Servicio",
+    "service_name_ph": "Nombre del servicio (ej: Instalación Eléctrica)",
+    "pricing_type": "Tipo de Precio",
+    "pricing_hourly": "Por Hora",
+    "pricing_fixed": "Precio Fijo",
+    "pricing_negotiable": "Negociable",
+    "amount": "Monto",
+    "currency": "Moneda",
+    "remote": "Remoto / En Línea",
+    "on_site": "En Sitio",
+    "add_service": "Añadir Servicio",
+    "status": "Estado de Disponibilidad",
+    "status_available": "Disponible",
+    "status_busy": "Ocupado",
+    "status_unavailable": "No Disponible",
+    "available_now": "Disponible Ahora",
+    "schedule": "Horario Semanal",
+    "day_monday": "Lunes",
+    "day_tuesday": "Martes",
+    "day_wednesday": "Miércoles",
+    "day_thursday": "Jueves",
+    "day_friday": "Viernes",
+    "day_saturday": "Sábado",
+    "day_sunday": "Domingo",
+    "primary_currency": "Moneda Principal",
+    "accepted_currencies": "Monedas Aceptadas",
+    "contact_prefs": "Preferencias de Comunicación",
+    "allow_chat": "Permitir Chat",
+    "allow_phone": "Permitir Llamadas",
+    "allow_email": "Permitir Email",
+    "emergency_avail": "Servicios de Emergencia",
+    "emergency_desc": "Disponible para trabajos urgentes con recargo",
+    "extra_fee_pct": "Recargo (%)",
+    "ai_matching": "Activar Matching de IA",
+    "keywords": "Palabras Clave de Búsqueda",
+    "keyword_ph": "Añade una palabra clave y presiona Enter",
+    "schema_version": "Schema v2.2 · JOBFAST Profesional"
+  },
+  "availability": {
+    "pageTitle": "Estado de Disponibilidad",
+    "roleContext": "Rol actual",
+    "subtitle": "Selecciona tu estado para que otros usuarios vean tu disponibilidad.",
+    "currentSelection": "Selección actual",
+    "save": "Actualizar Estado",
+    "saving": "Guardando...",
+    "successMsg": "Estado actualizado correctamente ✓",
+    "errorNetwork": "Error de red. Inténtalo de nuevo.",
+    "errorServer": "El servidor no responde. Inténtalo de nuevo.",
+    "errorRollback": "Cambios revertidos debido a un error.",
+    "errorOffline": "Estás desconectado. Cambios guardados localmente.",
+    "errorUnauthorized": "Sesión expirada. Inicia sesión de nuevo.",
+    "errorValidation": "Este estado no es válido para tu rol.",
+    "retry": "Reintentar",
+    "backLabel": "Volver"
   }
 }

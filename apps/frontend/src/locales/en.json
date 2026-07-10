@@ -5,7 +5,6 @@
     "loading": "Loading...",
     "version": "Version {{version}}"
   },
-
   "common": {
     "search": "Search",
     "save": "Save",
@@ -36,7 +35,6 @@
     "finish": "Finish",
     "confirm": "Confirm"
   },
-
   "onboarding": {
     "slide1": {
       "title": "Welcome to JOBFAST",
@@ -51,7 +49,6 @@
       "description": "Manage your profile, receive important notifications, find new opportunities and grow your business with JOBFAST."
     }
   },
-
   "auth": {
     "login": "Sign In",
     "register": "Sign Up",
@@ -69,7 +66,6 @@
     "invalidEmailOrPhone": "Invalid email or phone number",
     "invalidCredentials": "Invalid email or password"
   },
-
   "errors": {
     "general": "Something went wrong. Please try again.",
     "network": "No network. Connection failed.",
@@ -82,15 +78,16 @@
     "password_weak": "Password too weak — minimum 8 characters",
     "password_mismatch": "Passwords do not match"
   },
-
   "splash": {
-    "slogan": "Work. Services. Business.\nWherever you are — all in one app.",
+    "slogan": "Work. Services. Business.\nWhere you are — all in one app.",
     "start": "GET STARTED",
     "login": "Sign In",
     "register": "Create Account",
-    "chooseLanguage": "Choose your language"
+    "chooseLanguage": "Choose your language",
+    "langPickerTitle": "Choose Your Language",
+    "langPickerSubtitle": "Select the language you want to use in the app",
+    "langPickerBtn": "Continue"
   },
-
   "registration": {
     "title": "Create Account",
     "step": "Step {{current}} / {{total}}",
@@ -134,7 +131,6 @@
     "no_professions": "No professions available for this category",
     "complete": "Create My Account"
   },
-
   "user": {
     "profile": {
       "title": "Profile",
@@ -154,7 +150,6 @@
       "offline": "Offline"
     }
   },
-
   "categories": {
     "title": "Categories",
     "select": "Choose your category",
@@ -193,7 +188,6 @@
       }
     }
   },
-
   "location": {
     "title": "Location",
     "current": "Current Location",
@@ -223,7 +217,6 @@
       "searchNearby": "Search nearby"
     }
   },
-
   "notifications": {
     "title": "Notifications",
     "types": {
@@ -238,7 +231,6 @@
       "clearAll": "Clear all"
     }
   },
-
   "jobs": {
     "title": "Jobs",
     "actions": {
@@ -256,14 +248,12 @@
       "workers": "Workers Nearby"
     }
   },
-
   "search": {
     "placeholder": "Search workers, businesses or services...",
     "results": "{{count}} results",
     "noResults": "No results found",
     "searching": "Searching..."
   },
-
   "business": {
     "title": "Business Directory",
     "categories": {
@@ -279,7 +269,6 @@
       "organizations": "Organizations"
     }
   },
-
   "time": {
     "now": "Now",
     "today": "Today",
@@ -287,18 +276,6 @@
     "minutesAgo": "{{count}} min ago",
     "hoursAgo": "{{count}} hours ago"
   },
-
-  "splash": {
-    "slogan": "Work. Services. Business.\nWhere you are — all in one app.",
-    "start": "GET STARTED",
-    "login": "Sign In",
-    "register": "Create Account",
-    "chooseLanguage": "Choose your language",
-    "langPickerTitle": "Choose Your Language",
-    "langPickerSubtitle": "Select the language you want to use in the app",
-    "langPickerBtn": "Continue"
-  },
-
   "dashboard": {
     "welcome": "WELCOME",
     "slogan": "The fastest platform to find work",
@@ -375,7 +352,6 @@
     "catRetail": "Retail",
     "catHomeServices": "Home Services"
   },
-
   "profile": {
     "settingsTitle": "Settings / Profile",
     "editBtn": "Edit",
@@ -402,7 +378,6 @@
     "loading": "Loading...",
     "nameRequired": "Name required"
   },
-
   "country": {
     "ht": "Haiti",
     "do": "Dominican Republic",
@@ -415,101 +390,115 @@
     "gb": "United Kingdom",
     "pt": "Portugal"
   },
-
   "monitoring": {
     "cacheSize": "Cache: {{size}}",
     "cacheUsage": "Usage: {{usage}}%"
   },
-
   "step3": {
-    "section_personal":    "Personal Information",
-    "section_location":    "Location",
-    "section_security":    "Account Security",
-    "full_name":           "Full Name",
-    "full_name_ph":        "Jane Doe...",
-    "email":               "Email Address",
-    "phone":               "Phone Number",
-    "phone_ph":            "000-0000",
-    "dial_code":           "Country Code",
-    "country":             "Country",
-    "region":              "Region / State",
-    "region_select":       "Select your region",
-    "city":                "City",
-    "city_ph":             "New York...",
-    "password":            "Password",
-    "password_ph":         "Minimum 8 characters",
-    "confirm_password":    "Confirm Password",
+    "section_personal": "Personal Information",
+    "section_location": "Location",
+    "section_security": "Account Security",
+    "full_name": "Full Name",
+    "full_name_ph": "Jane Doe...",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "phone_ph": "000-0000",
+    "dial_code": "Country Code",
+    "country": "Country",
+    "region": "Region / State",
+    "region_select": "Select your region",
+    "city": "City",
+    "city_ph": "New York...",
+    "password": "Password",
+    "password_ph": "Minimum 8 characters",
+    "confirm_password": "Confirm Password",
     "confirm_password_ph": "Re-enter your password",
-    "show_password":       "Show password",
-    "hide_password":       "Hide password",
-    "strength_weak":       "Weak",
-    "strength_medium":     "Medium",
-    "strength_strong":     "Strong"
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "strength_weak": "Weak",
+    "strength_medium": "Medium",
+    "strength_strong": "Strong"
   },
-
   "step4": {
-    "section_identity":     "Professional Identity",
-    "section_experience":   "Experience & Skills",
-    "section_services":     "Services & Pricing",
+    "section_identity": "Professional Identity",
+    "section_experience": "Experience & Skills",
+    "section_services": "Services & Pricing",
     "section_availability": "Availability",
-    "section_settings":     "Preferences & Settings",
-    "photo":                "Profile Photo",
-    "headline":             "Professional Headline",
-    "headline_ph":          "Ex: Certified Electrician | 8 years experience",
-    "bio_short":            "Short Description",
-    "bio_ph":               "Tell clients about your experience, services you offer, and value you bring...",
-    "languages_spoken":     "Languages you speak",
-    "years_exp":            "Years of Experience",
-    "exp_level":            "Level",
-    "level_junior":         "Junior (0-2 years)",
-    "level_mid":            "Mid-level (3-5 years)",
-    "level_senior":         "Senior (6-9 years)",
-    "level_expert":         "Expert (10+ years)",
-    "projects_completed":   "Projects Completed",
-    "skills":               "Skills / Specialties",
-    "skill_ph":             "Type a skill and press Enter",
-    "skill_beginner":       "Beginner",
-    "skill_intermediate":   "Intermediate",
-    "skill_advanced":       "Advanced",
-    "skill_expert":         "Expert",
-    "service_radius":       "Service Radius",
-    "no_services":          "No services added yet.",
-    "service_n":            "Service",
-    "service_name_ph":      "Service name (ex: Electrical Installation)",
-    "pricing_type":         "Price Type",
-    "pricing_hourly":       "Per Hour",
-    "pricing_fixed":        "Fixed Price",
-    "pricing_negotiable":   "Negotiable",
-    "amount":               "Amount",
-    "currency":             "Currency",
-    "remote":               "Remote / Online",
-    "on_site":              "On-Site",
-    "add_service":          "Add Service",
-    "status":               "Availability Status",
-    "status_available":     "Available",
-    "status_busy":          "Busy",
-    "status_unavailable":   "Unavailable",
-    "available_now":        "Available Now",
-    "schedule":             "Weekly Schedule",
-    "day_monday":           "Monday",
-    "day_tuesday":          "Tuesday",
-    "day_wednesday":        "Wednesday",
-    "day_thursday":         "Thursday",
-    "day_friday":           "Friday",
-    "day_saturday":         "Saturday",
-    "day_sunday":           "Sunday",
-    "primary_currency":     "Primary Currency",
-    "accepted_currencies":  "Accepted Currencies",
-    "contact_prefs":        "Communication Preferences",
-    "allow_chat":           "Allow Chat",
-    "allow_phone":          "Allow Phone",
-    "allow_email":          "Allow Email",
-    "emergency_avail":      "Emergency Services",
-    "emergency_desc":       "Available for urgent jobs with a surcharge",
-    "extra_fee_pct":        "Surcharge (%)",
-    "ai_matching":          "Enable AI Matching",
-    "keywords":             "Search Keywords",
-    "keyword_ph":           "Add a keyword and press Enter",
-    "schema_version":       "Schema v2.2 · JOBFAST Professional"
+    "section_settings": "Preferences & Settings",
+    "photo": "Profile Photo",
+    "headline": "Professional Headline",
+    "headline_ph": "Ex: Certified Electrician | 8 years experience",
+    "bio_short": "Short Description",
+    "bio_ph": "Tell clients about your experience, services you offer, and value you bring...",
+    "languages_spoken": "Languages you speak",
+    "years_exp": "Years of Experience",
+    "exp_level": "Level",
+    "level_junior": "Junior (0-2 years)",
+    "level_mid": "Mid-level (3-5 years)",
+    "level_senior": "Senior (6-9 years)",
+    "level_expert": "Expert (10+ years)",
+    "projects_completed": "Projects Completed",
+    "skills": "Skills / Specialties",
+    "skill_ph": "Type a skill and press Enter",
+    "skill_beginner": "Beginner",
+    "skill_intermediate": "Intermediate",
+    "skill_advanced": "Advanced",
+    "skill_expert": "Expert",
+    "service_radius": "Service Radius",
+    "no_services": "No services added yet.",
+    "service_n": "Service",
+    "service_name_ph": "Service name (ex: Electrical Installation)",
+    "pricing_type": "Price Type",
+    "pricing_hourly": "Per Hour",
+    "pricing_fixed": "Fixed Price",
+    "pricing_negotiable": "Negotiable",
+    "amount": "Amount",
+    "currency": "Currency",
+    "remote": "Remote / Online",
+    "on_site": "On-Site",
+    "add_service": "Add Service",
+    "status": "Availability Status",
+    "status_available": "Available",
+    "status_busy": "Busy",
+    "status_unavailable": "Unavailable",
+    "available_now": "Available Now",
+    "schedule": "Weekly Schedule",
+    "day_monday": "Monday",
+    "day_tuesday": "Tuesday",
+    "day_wednesday": "Wednesday",
+    "day_thursday": "Thursday",
+    "day_friday": "Friday",
+    "day_saturday": "Saturday",
+    "day_sunday": "Sunday",
+    "primary_currency": "Primary Currency",
+    "accepted_currencies": "Accepted Currencies",
+    "contact_prefs": "Communication Preferences",
+    "allow_chat": "Allow Chat",
+    "allow_phone": "Allow Phone",
+    "allow_email": "Allow Email",
+    "emergency_avail": "Emergency Services",
+    "emergency_desc": "Available for urgent jobs with a surcharge",
+    "extra_fee_pct": "Surcharge (%)",
+    "ai_matching": "Enable AI Matching",
+    "keywords": "Search Keywords",
+    "keyword_ph": "Add a keyword and press Enter",
+    "schema_version": "Schema v2.2 · JOBFAST Professional"
+  },
+  "availability": {
+    "pageTitle": "Availability Status",
+    "roleContext": "Current role",
+    "subtitle": "Select your status so other users can see your availability.",
+    "currentSelection": "Current selection",
+    "save": "Update Status",
+    "saving": "Saving...",
+    "successMsg": "Status updated successfully ✓",
+    "errorNetwork": "Network error. Please try again.",
+    "errorServer": "Server not responding. Please try again.",
+    "errorRollback": "Changes reverted due to an error.",
+    "errorOffline": "You are offline. Changes saved locally.",
+    "errorUnauthorized": "Session expired. Please log in again.",
+    "errorValidation": "This status is not valid for your role.",
+    "retry": "Try Again",
+    "backLabel": "Go back"
   }
 }
