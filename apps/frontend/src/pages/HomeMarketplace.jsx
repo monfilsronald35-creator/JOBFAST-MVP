@@ -17,9 +17,10 @@ import { useAuth } from '../context/AuthContext';
 import {
   getAllCategoryConfigs,
   isMarketplaceProvider,
-  isMarketplaceBrowser,
   getMarketplaceConfig,
 } from '../config/marketplaceConfig';
+import Input from '../components/Input';
+import EmptyState from '../components/EmptyState';
 
 // ── Category card used in the browser home grid ───────────────
 function CategoryCard({ config, onClick }) {
@@ -37,10 +38,11 @@ function CategoryCard({ config, onClick }) {
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`flex items-center gap-3 p-4 bg-[#0f172a] rounded-2xl border border-slate-800 ${accent} transition text-left w-full`}
+      className={`flex items-center gap-3 p-4 bg-[#0f172a] rounded-2xl border border-slate-800 ${accent} transition text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60`}
     >
-      <span className="text-3xl shrink-0">{config.icon}</span>
+      <span className="text-3xl shrink-0" aria-hidden="true">{config.icon}</span>
       <div className="min-w-0">
         <h3 className="font-bold text-sm text-white">{config.label}</h3>
         <p className="text-[10px] text-slate-400 truncate">{config.browsePlaceholder}</p>
@@ -51,9 +53,10 @@ function CategoryCard({ config, onClick }) {
 
 // ── Provider quick-stats strip ────────────────────────────────
 function ProviderHomeStrip({ config, user, onManage }) {
+  const navigate = useNavigate();
   const md = user?.marketplaceData || {};
-  const bookings   = (md.bookings  || []).filter(b => b.status === 'pending').length;
-  const reviews    = (md.reviews   || []).length;
+  const bookings     = (md.bookings || []).filter(b => b.status === 'pending').length;
+  const reviews      = (md.reviews  || []).length;
   const availability = md.availability || 'available';
 
   return (
@@ -62,7 +65,7 @@ function ProviderHomeStrip({ config, user, onManage }) {
       {/* Welcome */}
       <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{config.icon}</span>
+          <span className="text-3xl" aria-hidden="true">{config.icon}</span>
           <div>
             <h2 className="text-base font-bold text-white">
               {config.manageLabel}
@@ -75,9 +78,9 @@ function ProviderHomeStrip({ config, user, onManage }) {
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { val: bookings,                label: 'Demann Annatant', color: 'text-yellow-400' },
-          { val: reviews,                 label: 'Evalyasyon',       color: 'text-amber-500'  },
-          { val: availability === 'available' ? '🟢' : '🔴', label: 'Eta', color: 'text-white' },
+          { val: bookings,                                              label: 'Demann Annatant', color: 'text-yellow-400' },
+          { val: reviews,                                               label: 'Evalyasyon',       color: 'text-amber-500'  },
+          { val: availability === 'available' ? '🟢' : '🔴',           label: 'Eta',              color: 'text-white'      },
         ].map(({ val, label, color }) => (
           <div key={label} className="bg-[#0f172a] rounded-xl border border-slate-800 p-3 text-center">
             <div className={`text-xl font-bold ${color}`}>{val}</div>
@@ -88,12 +91,18 @@ function ProviderHomeStrip({ config, user, onManage }) {
 
       {/* Actions */}
       <div className="grid grid-cols-2 gap-2">
-        <button onClick={onManage}
-          className="py-3 rounded-xl bg-indigo-500 text-white font-bold text-sm">
+        <button
+          type="button"
+          onClick={onManage}
+          className="py-3 rounded-xl bg-indigo-500 text-white font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        >
           ⚙️ Jere Lis Ou
         </button>
-        <button onClick={() => window.location.href = '/marketplace?browse=1'}
-          className="py-3 rounded-xl bg-slate-800 text-slate-200 font-bold text-sm">
+        <button
+          type="button"
+          onClick={() => navigate('/marketplace?browse=1')}
+          className="py-3 rounded-xl bg-slate-800 text-slate-200 font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+        >
           🔍 Jwenn Sèvis
         </button>
       </div>
@@ -127,12 +136,18 @@ function GuestMarketplaceHome({ navigate }) {
         <p className="text-slate-400 text-sm">Platfòm entènasyonal pou biznis, sèvis, ak opòtinite</p>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={() => navigate('/register')}
-            className="flex-1 py-3 bg-indigo-500 text-white font-bold rounded-xl text-sm">
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+            className="flex-1 py-3 bg-indigo-500 text-white font-bold rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          >
             Kreye Kont
           </button>
-          <button onClick={() => navigate('/login')}
-            className="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl text-sm">
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+          >
             Login
           </button>
         </div>
@@ -160,18 +175,18 @@ function GuestMarketplaceHome({ navigate }) {
           Kijan Li Travay
         </h2>
         {[
-          { icon: '👷', title: 'Pou Travayè',  steps: ['Kreye pwofil', 'Chèche sèvis', 'Fè rezèvasyon'] },
-          { icon: '🏢', title: 'Pou Biznis',   steps: ['Enrejistre', 'Kreye lis', 'Resevwa kliyan'] },
-          { icon: '✈️', title: 'Pou Touris',   steps: ['Chèche Hotel', 'Rezève Tou', 'Jwenn Gid'] },
+          { icon: '👷', title: 'Pou Travayè', steps: ['Kreye pwofil', 'Chèche sèvis', 'Fè rezèvasyon'] },
+          { icon: '🏢', title: 'Pou Biznis',  steps: ['Enrejistre', 'Kreye lis', 'Resevwa kliyan']     },
+          { icon: '✈️', title: 'Pou Touris',  steps: ['Chèche Hotel', 'Rezève Tou', 'Jwenn Gid']       },
         ].map(({ icon, title, steps }) => (
           <div key={title} className="bg-[#0f172a] rounded-2xl border border-slate-800 p-4 mb-3">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">{icon}</span>
+              <span className="text-xl" aria-hidden="true">{icon}</span>
               <h3 className="text-sm font-bold text-white">{title}</h3>
             </div>
             {steps.map(s => (
               <p key={s} className="text-xs text-slate-400 flex items-center gap-1">
-                <span className="text-indigo-400">✓</span> {s}
+                <span className="text-indigo-400" aria-hidden="true">✓</span> {s}
               </p>
             ))}
           </div>
@@ -201,11 +216,11 @@ function BrowserMarketplaceHome({ navigate }) {
         <h1 className="text-base font-bold text-white mb-1">Marketplace</h1>
         <p className="text-[10px] text-slate-400 mb-4">Chèche tout kategori sèvis ak biznis</p>
 
-        <input
+        <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Chèche kategori, sèvis..."
-          className="w-full px-4 py-3 bg-[#162238] rounded-xl text-sm text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-indigo-400/40"
+          aria-label="Chèche kategori oswa sèvis"
         />
       </div>
 
@@ -219,9 +234,10 @@ function BrowserMarketplaceHome({ navigate }) {
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center py-10 text-slate-500">
-            <p>Pa gen kategori ki matche</p>
-          </div>
+          <EmptyState
+            title="Pa gen kategori ki matche"
+            message="Eseye yon lòt mo rechèch"
+          />
         )}
       </div>
     </div>
@@ -265,8 +281,12 @@ export default function HomeMarketplace() {
                   />
                 ))}
             </div>
-            <button onClick={() => navigate('/marketplace?browse=1')}
-              className="w-full mt-3 py-2.5 rounded-xl bg-slate-800/50 text-slate-400 text-xs">
+            <button
+              type="button"
+              onClick={() => navigate('/marketplace?browse=1')}
+              aria-label="Wè tout kategori marketplace"
+              className="w-full mt-3 py-2.5 rounded-xl bg-slate-800/50 text-slate-400 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
+            >
               Wè tout kategori →
             </button>
           </div>
