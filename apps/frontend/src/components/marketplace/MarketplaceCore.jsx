@@ -32,6 +32,7 @@ import {
   BOOKING_STATUSES,
   computeMarketplaceReputation,
 } from '../../config/marketplaceConfig';
+import useGPS, { GPS_STATES } from '../../hooks/useGPS';
 
 // ─────────────────────────────────────────────────────────────
 // AVAILABILITY BADGE — shared, adapts from AVAILABILITY_STATES
@@ -568,37 +569,6 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
 }
 
 // ─────────────────────────────────────────────────────────────
-// GPS HOOK — same 3-level fallback used by SearchScreen
-// (duplicated here to avoid cross-import; stays in sync with SearchScreen)
-// ─────────────────────────────────────────────────────────────
-function useGPS() {
-  const [coords, setCoords]   = useState(null);
-  const [gpsState, setGPS]    = useState('acquiring');
-
-  useEffect(() => {
-    if (!navigator.geolocation) { setGPS('unavailable'); return; }
-    let settled = false;
-    const timer = setTimeout(() => { if (!settled) { settled = true; setGPS('unavailable'); } }, 15000);
-    const ok = (pos) => {
-      if (settled) return;
-      settled = true; clearTimeout(timer);
-      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-      setGPS('ready');
-    };
-    const tryLow = () => {
-      if (settled) return;
-      navigator.geolocation.getCurrentPosition(ok, () => {
-        if (!settled) { settled = true; clearTimeout(timer); setGPS('denied'); }
-      }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 });
-    };
-    navigator.geolocation.getCurrentPosition(ok, tryLow, { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 });
-    return () => clearTimeout(timer);
-  }, []);
-
-  return { coords, gpsState };
-}
-
-// ─────────────────────────────────────────────────────────────
 // DATA HOOK — fetches listings from backend marketplace endpoint
 // ─────────────────────────────────────────────────────────────
 export function useMarketplaceListings({ role, query = '', tab = 'all', coords, enabled = true }) {
@@ -681,7 +651,9 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
   const { user } = useAuth();
   const userId = user?._id || user?.id;
   const config = useMemo(() => getMarketplaceConfig(role), [role]);
-  const { coords, gpsState } = useGPS();
+  const { coords, gpsState, acquire } = useGPS();
+
+  useEffect(() => { acquire(); }, [acquire]);
 
   const [query, setQuery]               = useState(initialQuery);
   const [activeTab, setActiveTab]       = useState('all');
@@ -723,13 +695,13 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
           <span className="text-2xl">{config.icon}</span>
           <div>
             <h1 className="text-sm font-bold text-white">{config.browseTitle}</h1>
-            {gpsState === 'ready' && (
+            {coords !== null && (
               <p className="text-[10px] text-green-400">📡 {config.gpsLabel}</p>
             )}
-            {gpsState === 'acquiring' && (
+            {(gpsState === GPS_STATES.acquiring || gpsState === GPS_STATES.idle) && (
               <p className="text-[10px] text-slate-400">📡 Ap jwenn lokasyon...</p>
             )}
-            {(gpsState === 'denied' || gpsState === 'unavailable') && (
+            {(gpsState === GPS_STATES.denied || gpsState === GPS_STATES.unavailable || gpsState === GPS_STATES.disabled || gpsState === GPS_STATES.blocked) && (
               <p className="text-[10px] text-amber-400">📍 Chèche san distans</p>
             )}
           </div>

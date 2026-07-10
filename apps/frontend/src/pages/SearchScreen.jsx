@@ -10,58 +10,7 @@ import {
   FILTER_DEFS,
   RANKING_WEIGHTS,
 } from '../config/searchConfig';
-
-// ── GPS hook — 3-level graceful fallback ──────────────────────
-// Level 1: high accuracy (enableHighAccuracy: true, timeout 8s)
-// Level 2: low accuracy on level-1 error (timeout 5s)
-// Level 3: mark unavailable/denied — search continues without distance
-function useGPS() {
-  const [coords, setCoords] = useState(null);
-  // 'acquiring' | 'ready' | 'denied' | 'unavailable'
-  const [gpsState, setGpsState] = useState('acquiring');
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setGpsState('unavailable');
-      return;
-    }
-
-    let settled = false;
-
-    const safetyTimer = setTimeout(() => {
-      if (!settled) { settled = true; setGpsState('unavailable'); }
-    }, 15000);
-
-    const onSuccess = (pos) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(safetyTimer);
-      setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-      setGpsState('ready');
-    };
-
-    const tryLow = () => {
-      if (settled) return;
-      navigator.geolocation.getCurrentPosition(
-        onSuccess,
-        () => {
-          if (!settled) { settled = true; clearTimeout(safetyTimer); setGpsState('denied'); }
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
-      );
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      onSuccess,
-      tryLow,
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 },
-    );
-
-    return () => clearTimeout(safetyTimer);
-  }, []);
-
-  return { coords, gpsState };
-}
+import useGPS, { GPS_STATES } from '../hooks/useGPS';
 
 // ── Weighted ranking ──────────────────────────────────────────
 function computeScore(item, weights, coords) {
@@ -277,7 +226,9 @@ const FilterBar = memo(function FilterBar({ activeFilterKeys, filterState, onCha
 export default function SearchScreen() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { coords, gpsState } = useGPS();
+  const { coords, gpsState, acquire } = useGPS();
+
+  useEffect(() => { acquire(); }, [acquire]);
 
   const role = user?.role || 'worker';
   const searchConfig = useMemo(() => getSearchConfig(role), [role]);
@@ -392,7 +343,7 @@ export default function SearchScreen() {
     if (lat != null && lng != null) navigate(`/map?lat=${lat}&lng=${lng}`);
   }, [navigate]);
 
-  const hasGPS = gpsState === 'ready';
+  const hasGPS = coords !== null;
 
   return (
     <div className="min-h-screen w-full bg-[#0B1528] text-white flex flex-col pb-28">
@@ -408,10 +359,10 @@ export default function SearchScreen() {
           placeholder={searchConfig.placeholder}
         />
 
-        {gpsState === 'acquiring' && (
+        {(gpsState === GPS_STATES.acquiring || gpsState === GPS_STATES.idle) && (
           <p className="text-[10px] text-slate-400 mt-1.5">📡 Ap jwenn lokasyon ou...</p>
         )}
-        {(gpsState === 'denied' || gpsState === 'unavailable') && (
+        {(gpsState === GPS_STATES.denied || gpsState === GPS_STATES.unavailable || gpsState === GPS_STATES.disabled || gpsState === GPS_STATES.blocked) && (
           <p className="text-[10px] text-amber-400 mt-1.5">📍 GPS pa disponib — chèche san distans</p>
         )}
       </div>
