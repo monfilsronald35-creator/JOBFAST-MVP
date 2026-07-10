@@ -377,7 +377,8 @@
     "catOffice": "Bureau",
     "catEducation": "Éducation",
     "catRetail": "Commerce",
-    "catHomeServices": "Services à Domicile"
+    "catHomeServices": "Services à Domicile",
+    "marketplaceSub": "Entreprises, hôtels, restaurants, services et plus..."
   },
   "profile": {
     "settingsTitle": "Paramètres / Profil",

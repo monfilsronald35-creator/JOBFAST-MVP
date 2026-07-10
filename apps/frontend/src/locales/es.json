@@ -382,7 +382,8 @@
     "catOffice": "Oficina",
     "catEducation": "Educación",
     "catRetail": "Comercio",
-    "catHomeServices": "Servicios del Hogar"
+    "catHomeServices": "Servicios del Hogar",
+    "marketplaceSub": "Negocios, hoteles, restaurantes, servicios y más..."
   },
   "profile": {
     "settingsTitle": "Ajustes / Perfil",

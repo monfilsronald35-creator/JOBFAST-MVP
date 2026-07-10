@@ -590,11 +590,9 @@ function WorkerHome({
     || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.name || "user")}`;
 
   // Derived lists — only recomputed when source data changes
-  const workerMembers  = useMemo(() => employers.filter(e => !EMPLOYER_ROLES.has(e.role)), [employers]);
   const companyMembers = useMemo(() => employers.filter(e =>  EMPLOYER_ROLES.has(e.role)), [employers]);
   const topCompanies   = useMemo(() => [...companyMembers].sort((a, b) => (b.stats?.jobsPosted || 0) - (a.stats?.jobsPosted || 0)), [companyMembers]);
   const featuredJobs   = useMemo(() => jobs.slice(0, 10), [jobs]);
-  const recentJobs     = useMemo(() => [...jobs].reverse().slice(0, 10), [jobs]);
 
   return (
     <>
@@ -703,7 +701,7 @@ function WorkerHome({
             </div>
             <button type="button" onClick={handleRefresh}
               aria-label="Rafraîchi done yo"
-              className="w-11 h-11 flex items-center justify-center bg-slate-900/80 border border-slate-700/50 rounded-2xl text-slate-400 hover:text-amber-400 hover:border-amber-500/40 active:scale-95 transition-all shrink-0">
+              className="w-11 h-11 flex items-center justify-center bg-slate-900/80 border border-slate-700/50 rounded-2xl text-slate-400 hover:text-amber-400 hover:border-amber-500/40 active:scale-95 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
               <RefreshCcw className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
@@ -714,7 +712,7 @@ function WorkerHome({
               <button key={f.id} type="button"
                 onClick={() => setActiveFilter(prev => prev === f.id ? null : f.id)}
                 aria-pressed={activeFilter === f.id}
-                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold border transition-all active:scale-95 ${
+                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold border transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                   activeFilter === f.id
                     ? "bg-amber-500 text-slate-950 border-amber-500 shadow-lg shadow-amber-500/20"
                     : "bg-slate-900/70 text-slate-400 border-slate-700/50 hover:border-amber-500/30 hover:text-slate-300"
@@ -726,28 +724,48 @@ function WorkerHome({
           </div>
         </div>
 
-        {/* ── TWO PREMIUM ACTION BUTTONS ────────────────────────────── */}
+        {/* ── PRIMARY + SECONDARY CTA ───────────────────────────────── */}
         <div className="px-4 grid grid-cols-2 gap-3">
-          {/* Find Work — primary */}
+          {/* Find Work — primary (only amber CTA on screen) */}
           <button type="button" onClick={() => directoryRef.current?.scrollIntoView({ behavior: "smooth" })}
             className="relative overflow-hidden flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
               bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black
-              active:scale-[0.97] transition-all duration-200 shadow-xl shadow-amber-500/30 group">
+              active:scale-[0.97] transition-all duration-200 shadow-xl shadow-amber-500/30 group
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]">
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 rounded-2xl" aria-hidden="true" />
             <span className="text-[26px] leading-none relative" aria-hidden="true">🔍</span>
             <span className="text-[13px] font-black relative">{t("dashboard.findWork")}</span>
             <span className="text-[9px] font-semibold opacity-60 relative">{t("dashboard.findWorkSub")}</span>
           </button>
 
-          {/* Offer Services — secondary */}
+          {/* Offer Services — secondary (outline only, no gradient) */}
           <button type="button" onClick={() => navigate("/post-job")}
-            className="relative overflow-hidden flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
-              bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 text-white font-black
-              active:scale-[0.97] transition-all duration-200 shadow-xl shadow-black/30 group hover:border-amber-500/30">
-            <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-all duration-300 rounded-2xl" aria-hidden="true" />
-            <span className="text-[26px] leading-none relative" aria-hidden="true">⚡</span>
-            <span className="text-[13px] font-black relative">{t("dashboard.offerServices")}</span>
-            <span className="text-[9px] font-semibold opacity-40 relative">{t("dashboard.offerServicesSub")}</span>
+            className="flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
+              border border-slate-700/50 text-white font-black
+              active:scale-[0.97] transition-all duration-200 hover:border-amber-500/30 hover:bg-slate-800/40
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">
+            <span className="text-[26px] leading-none" aria-hidden="true">⚡</span>
+            <span className="text-[13px] font-black">{t("dashboard.offerServices")}</span>
+            <span className="text-[9px] font-semibold opacity-40">{t("dashboard.offerServicesSub")}</span>
+          </button>
+        </div>
+
+        {/* ── MARKETPLACE CTA ───────────────────────────────────────── */}
+        <div className="px-4">
+          <button type="button" onClick={() => navigate("/marketplace")}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl
+              bg-indigo-500/10 border border-indigo-500/20 text-left
+              hover:border-indigo-400/40 hover:bg-indigo-500/15
+              active:scale-[0.98] transition-all duration-200 group
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+            <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-indigo-500/15 border border-indigo-500/20 text-xl" aria-hidden="true">
+              🏪
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-black text-white leading-tight">Marketplace</p>
+              <p className="text-[11px] text-slate-400 leading-tight mt-0.5 truncate">{t("dashboard.marketplaceSub")}</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-indigo-400 shrink-0 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
           </button>
         </div>
 
@@ -756,7 +774,7 @@ function WorkerHome({
           <div className="flex items-center justify-between px-4">
             <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">{t("dashboard.categories")}</p>
             <button type="button" onClick={() => navigate("/search")}
-              className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition font-bold">
+              className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg px-1">
               {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3" aria-hidden="true" />
             </button>
           </div>
@@ -768,7 +786,8 @@ function WorkerHome({
                   className={`shrink-0 w-[78px] flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border
                     bg-gradient-to-b ${cat.gradient} bg-slate-900/80 border-slate-800/60 text-slate-300
                     hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40
-                    active:scale-95 transition-all duration-200 relative overflow-hidden group`}>
+                    active:scale-95 transition-all duration-200 relative overflow-hidden group
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60`}>
                   {/* Hover glow overlay */}
                   <div className="absolute inset-0 bg-white/0 group-hover:bg-white/3 rounded-2xl transition-all duration-300" aria-hidden="true" />
                   <span className="text-[24px] leading-none relative" aria-hidden="true">{cat.emoji}</span>
@@ -807,30 +826,6 @@ function WorkerHome({
           }
         </HSection>
 
-        {/* ── RECOMMENDED FOR YOU ─────────────────────────────────── */}
-        <HSection icon="⭐" titleKey="recommended" accentColor="text-amber-400" t={t}
-          onViewAll={() => navigate("/search")}>
-          {loading
-            ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
-            : workerMembers.length > 0
-              ? workerMembers.slice(0, 8).map((w, i) => <PremiumWorkerCard key={w._id || w.id || i} worker={w} navigate={navigate} t={t} />)
-              : featuredJobs.length > 0
-                ? featuredJobs.slice(0, 4).map((j, i) => <PremiumJobCard key={j._id || j.id || i} job={j} navigate={navigate} t={t} userCity={geo.city} />)
-                : <PremiumEmpty emoji="⭐" title={t("dashboard.emptyWorkersTitle")} subtitle={t("dashboard.emptyWorkersSubtitle")} actionLabel={t("dashboard.searchNow")} onAction={() => navigate("/search")} />
-          }
-        </HSection>
-
-        {/* ── NEARBY WORKERS ───────────────────────────────────────── */}
-        <HSection icon="📍" titleKey="nearbyWorkers" accentColor="text-emerald-400" t={t}
-          onViewAll={() => navigate("/search")}>
-          {employersLoading
-            ? [1, 2, 3, 4].map(i => <PremiumSkeleton key={i} />)
-            : workerMembers.length > 0
-              ? workerMembers.map((w, i) => <PremiumWorkerCard key={w._id || w.id || i} worker={w} navigate={navigate} t={t} />)
-              : <PremiumEmpty emoji="📍" title={t("dashboard.emptyWorkersTitle")} subtitle={t("dashboard.emptyWorkersSubtitle")} actionLabel={t("dashboard.searchNow")} onAction={() => navigate("/search")} />
-          }
-        </HSection>
-
         {/* ── TOP COMPANIES ────────────────────────────────────────── */}
         <HSection icon="🏢" titleKey="topCompanies" accentColor="text-blue-400" t={t}
           onViewAll={() => directoryRef.current?.scrollIntoView({ behavior: "smooth" })}>
@@ -839,50 +834,6 @@ function WorkerHome({
             : topCompanies.length > 0
               ? topCompanies.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={setContactTarget} />)
               : <PremiumEmpty emoji="🏢" title={t("dashboard.noEmployers")} subtitle={t("dashboard.noEmployersYet")} />
-          }
-        </HSection>
-
-        {/* ── HIGHEST PAYING ───────────────────────────────────────── */}
-        <HSection icon="💰" titleKey="highestPaying" accentColor="text-green-400" t={t}
-          onViewAll={() => navigate("/search")}>
-          {loading
-            ? [1, 2].map(i => <PremiumSkeleton key={i} wide />)
-            : featuredJobs.length > 0
-              ? featuredJobs.slice(0, 5).map((j, i) => <PremiumJobCard key={j._id || j.id || i} job={j} navigate={navigate} t={t} userCity={geo.city} />)
-              : <PremiumEmpty emoji="💰" title={t("dashboard.emptyJobsTitle")} subtitle={t("dashboard.emptyJobsSubtitle")} actionLabel={t("dashboard.viewAll")} onAction={() => navigate("/search")} />
-          }
-        </HSection>
-
-        {/* ── RECENTLY POSTED ──────────────────────────────────────── */}
-        <HSection icon="🆕" titleKey="recentlyPosted" accentColor="text-sky-400" t={t}
-          onViewAll={() => navigate("/search")}>
-          {loading
-            ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
-            : recentJobs.length > 0
-              ? recentJobs.map((j, i) => <PremiumJobCard key={j._id || j.id || i} job={j} navigate={navigate} t={t} userCity={geo.city} />)
-              : <PremiumEmpty emoji="🆕" title={t("dashboard.emptyJobsTitle")} subtitle={t("dashboard.emptyJobsSubtitle")} actionLabel={t("dashboard.searchNow")} onAction={() => navigate("/search")} />
-          }
-        </HSection>
-
-        {/* ── VERIFIED EMPLOYERS ───────────────────────────────────── */}
-        <HSection icon="🏆" titleKey="verifiedEmployers" accentColor="text-indigo-400" t={t}
-          onViewAll={() => directoryRef.current?.scrollIntoView({ behavior: "smooth" })}>
-          {employersLoading
-            ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
-            : companyMembers.length > 0
-              ? companyMembers.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={setContactTarget} />)
-              : <PremiumEmpty emoji="🏆" title={t("dashboard.noEmployers")} subtitle={t("dashboard.noEmployersYet")} />
-          }
-        </HSection>
-
-        {/* ── TRENDING SERVICES ────────────────────────────────────── */}
-        <HSection icon="🎯" titleKey="trending" accentColor="text-violet-400" t={t}
-          onViewAll={() => navigate("/search")}>
-          {employersLoading
-            ? [1, 2, 3, 4].map(i => <PremiumSkeleton key={i} />)
-            : workerMembers.slice(0, 8).length > 0
-              ? workerMembers.slice(0, 8).map((w, i) => <PremiumWorkerCard key={w._id || w.id || i} worker={w} navigate={navigate} t={t} />)
-              : <PremiumEmpty emoji="🎯" title={t("dashboard.emptyWorkersTitle")} subtitle={t("dashboard.emptyWorkersSubtitle")} actionLabel={t("dashboard.searchNow")} onAction={() => navigate("/search")} />
           }
         </HSection>
 

@@ -382,7 +382,8 @@
     "catOffice": "Office",
     "catEducation": "Education",
     "catRetail": "Retail",
-    "catHomeServices": "Home Services"
+    "catHomeServices": "Home Services",
+    "marketplaceSub": "Businesses, hotels, restaurants, services & more..."
   },
   "profile": {
     "settingsTitle": "Settings / Profile",
