@@ -14,12 +14,15 @@ import { changeLanguage } from "../i18n";
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────
 
+// type: 'sos' | 'link' | 'fab'
 const BOTTOM_NAV = [
-  { path: "/dashboard",  labelKey: "nav.home",     icon: Home          },
-  { path: "/market",     labelKey: "nav.market",   icon: Globe         },
-  { path: "/chat",       labelKey: "nav.messages", icon: MessageSquare },
-  { path: "/search",     labelKey: "nav.search",   icon: Search        },
-  { path: "/settings",   labelKey: "nav.profile",  icon: User          },
+  { type: 'sos',  labelKey: 'nav.sos'                                          },
+  { type: 'link', path: "/dashboard",  labelKey: "nav.home",     icon: Home          },
+  { type: 'link', path: "/market",     labelKey: "nav.market",   icon: Globe         },
+  { type: 'fab',  labelKey: 'nav.create'                                       },
+  { type: 'link', path: "/chat",       labelKey: "nav.messages", icon: MessageSquare },
+  { type: 'link', path: "/search",     labelKey: "nav.search",   icon: Search        },
+  { type: 'link', path: "/settings",   labelKey: "nav.profile",  icon: User          },
 ];
 
 const MENU_NAV = [
@@ -607,10 +610,43 @@ export default function MainLayout({ children }) {
         className="fixed bottom-0 left-0 right-0 z-50 bg-[#0b1120]/98 backdrop-blur-xl border-t border-slate-800/50 shadow-2xl shadow-black/50"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="flex items-end justify-around h-16 px-1 relative">
+        <div className="flex items-end justify-around h-16 px-0.5 relative">
+          {BOTTOM_NAV.map((item, idx) => {
 
-          {/* Regular nav items */}
-          {BOTTOM_NAV.map(item => {
+            /* ── SOS ─────────────────────────────────────── */
+            if (item.type === 'sos') return (
+              <button key="sos" type="button"
+                onClick={() => setEmergencyOpen(true)}
+                aria-label="SOS Ijans"
+                className="relative flex flex-col items-center justify-center flex-1 gap-0.5 py-2 text-red-500 hover:text-red-400 transition-all active:scale-90">
+                <div className="relative">
+                  <ShieldAlert className="w-[18px] h-[18px]" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 border border-[#0b1120] animate-pulse" />
+                </div>
+                <span className="text-[8px] font-black leading-none tracking-tight">SOS</span>
+              </button>
+            );
+
+            /* ── FAB ─────────────────────────────────────── */
+            if (item.type === 'fab') return (
+              <div key="fab" className="flex flex-col items-center justify-center flex-1">
+                <button
+                  type="button"
+                  onClick={() => setFabOpen(v => !v)}
+                  aria-label="Kreye"
+                  aria-expanded={fabOpen}
+                  className="relative w-11 h-11 -mt-5"
+                >
+                  <div className="absolute inset-[-3px] rounded-[16px] bg-amber-500/20 animate-ping" style={{ animationDuration:"2.5s" }} />
+                  <div className={`relative w-11 h-11 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl shadow-amber-500/40 transition-transform duration-200 ${fabOpen ? 'rotate-45 scale-110' : 'active:scale-95'}`}>
+                    <Plus className="w-5 h-5 text-slate-950" />
+                  </div>
+                </button>
+                <span className="text-[8px] font-bold text-slate-600 mt-1">Kreye</span>
+              </div>
+            );
+
+            /* ── NavLink ─────────────────────────────────── */
             const Icon = item.icon;
             return (
               <NavLink
@@ -626,57 +662,25 @@ export default function MainLayout({ children }) {
                 {({ isActive }) => (
                   <>
                     <div className="relative">
-                      {isActive && (
-                        <span className="absolute inset-0 -m-1.5 rounded-xl bg-amber-500/8" />
-                      )}
-                      <Icon className={`w-5 h-5 transition-all duration-200 relative ${isActive ? "scale-110 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" : ""}`} />
+                      {isActive && <span className="absolute inset-0 -m-1.5 rounded-xl bg-amber-500/8" />}
+                      <Icon className={`w-[18px] h-[18px] transition-all duration-200 relative ${isActive ? "scale-110 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" : ""}`} />
                     </div>
-                    <span className={`text-[9px] font-bold leading-none transition-all ${isActive ? "text-amber-400" : "text-slate-600"}`}>
+                    <span className={`text-[8px] font-bold leading-none transition-all ${isActive ? "text-amber-400" : "text-slate-600"}`}>
                       {t(item.labelKey, { defaultValue: item.labelKey })}
                     </span>
-                    {isActive && (
-                      <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-amber-400/60" />
-                    )}
+                    {isActive && <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-amber-400/60" />}
                   </>
                 )}
               </NavLink>
             );
           })}
-
-          {/* Center FAB — Create */}
-          <div className="flex flex-col items-center justify-center flex-1">
-            <button
-              type="button"
-              onClick={() => setFabOpen(v => !v)}
-              aria-label="Kreye"
-              aria-expanded={fabOpen}
-              className="relative w-12 h-12 -mt-5"
-            >
-              <div className="absolute inset-[-3px] rounded-[18px] bg-amber-500/20 animate-ping" style={{ animationDuration:"2.5s" }} />
-              <div className={`relative w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl shadow-amber-500/40 transition-transform duration-200 ${fabOpen ? 'rotate-45 scale-110' : 'active:scale-95'}`}>
-                <Plus className="w-6 h-6 text-slate-950" />
-              </div>
-            </button>
-            <span className="text-[9px] font-bold text-slate-600 mt-0.5">Kreye</span>
-          </div>
         </div>
       </nav>
 
       {/* ── Speed dial overlay ───────────────────────────────────── */}
       <SpeedDial open={fabOpen} onClose={() => setFabOpen(false)} actions={FAB_ACTIONS} t={t} />
 
-      {/* ── AI Assistant floating button (bottom-right) ──────────── */}
-      {!fabOpen && (
-        <button
-          type="button"
-          onClick={() => setAiOpen(v => !v)}
-          aria-label="AI Asistan"
-          className="fixed bottom-24 right-4 z-40 w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_8px_24px_rgba(99,102,241,0.45)] flex items-center justify-center hover:shadow-[0_12px_32px_rgba(99,102,241,0.55)] transition-all active:scale-95">
-          <Sparkles className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* AI Assistant stub modal */}
+      {/* AI Assistant modal — triggered from drawer Quick Actions */}
       {aiOpen && (
         <div className="fixed inset-0 z-[200] flex items-end">
           <div className="absolute inset-0 bg-black/75" onClick={() => setAiOpen(false)} />
@@ -707,17 +711,6 @@ export default function MainLayout({ children }) {
             </button>
           </div>
         </div>
-      )}
-
-      {/* Emergency button (red SOS — bottom-left) */}
-      {!fabOpen && !aiOpen && (
-        <button
-          type="button"
-          onClick={() => setEmergencyOpen(true)}
-          aria-label="Bouton Ijans SOS"
-          className="fixed bottom-24 left-4 z-40 w-10 h-10 rounded-xl bg-red-600 text-white text-[10px] font-black shadow-[0_8px_24px_rgba(239,68,68,0.45)] flex items-center justify-center hover:bg-red-500 transition-all active:scale-95">
-          SOS
-        </button>
       )}
 
       {/* ── Modals ──────────────────────────────────────────────── */}
