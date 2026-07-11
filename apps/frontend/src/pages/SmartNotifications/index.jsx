@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 
 // ── Design tokens ─────────────────────────────────────────────
 const BG     = '#050B18';
@@ -58,6 +59,73 @@ const MOCK_NOTIFS = [
   { id:'n18', cat:'ai',           icon:'✨', title:'Rapò Semèn AI',               body:'Semèn sa a: 47 pwofil wè ou · 12 kontakte · 3 ofè resevwa',             time:'4j',  read:true,  gold:false },
 ];
 
+// ── Destination page per category ─────────────────────────────
+const CAT_ROUTE = {
+  jobs:         '/search',
+  payments:     '/wallet',
+  reservations: '/booking',
+  messages:     '/chat',
+  stories:      '/market',
+  marketplace:  '/market',
+  companies:    '/search',
+  system:       '/settings',
+  security:     '/settings',
+  ai:           '/search',
+};
+
+// ── Quick action chips per category ───────────────────────────
+// route → navigate there; toggle → local optimistic toggle only
+const CAT_ACTIONS = {
+  jobs: [
+    { label: 'Apply',   icon: '✅', route: '/search'  },
+    { label: 'Save',    icon: '🔖', toggle: true       },
+    { label: 'Message', icon: '💬', route: '/chat'     },
+  ],
+  payments: [
+    { label: 'Details',  icon: '📄', route: '/wallet'  },
+    { label: 'Receipt',  icon: '🧾', route: '/wallet'  },
+    { label: 'Support',  icon: '🎧', route: '/chat'    },
+  ],
+  reservations: [
+    { label: 'Details',  icon: '📅', route: '/booking' },
+    { label: 'Pay',      icon: '💳', route: '/wallet'  },
+    { label: 'Cancel',   icon: '❌', route: '/booking' },
+  ],
+  messages: [
+    { label: 'Reply',    icon: '💬', route: '/chat'    },
+    { label: 'Call',     icon: '📞', route: '/chat'    },
+    { label: 'Video',    icon: '📹', route: '/chat'    },
+  ],
+  stories: [
+    { label: 'View',     icon: '👁',  route: '/market'  },
+    { label: 'Like',     icon: '❤️',  toggle: true       },
+    { label: 'Share',    icon: '↗',  toggle: true       },
+  ],
+  marketplace: [
+    { label: 'View',     icon: '🛒', route: '/market'  },
+    { label: 'Buy',      icon: '💳', route: '/market'  },
+    { label: 'Offer',    icon: '💰', route: '/market'  },
+  ],
+  companies: [
+    { label: 'Profile',  icon: '🏢', route: '/search'  },
+    { label: 'Jobs',     icon: '💼', route: '/search'  },
+    { label: 'Contact',  icon: '📩', route: '/chat'    },
+  ],
+  system: [
+    { label: 'Updates',  icon: '🔄', route: '/settings'},
+    { label: 'Privacy',  icon: '🔏', route: '/settings'},
+    { label: 'Help',     icon: '❓', route: '/settings'},
+  ],
+  security: [
+    { label: 'Review',   icon: '🔒', route: '/settings'},
+    { label: 'Block',    icon: '🚫', toggle: true       },
+  ],
+  ai: [
+    { label: 'View Jobs',icon: '✨', route: '/search'  },
+    { label: 'Apply',    icon: '✅', route: '/search'  },
+  ],
+};
+
 // ── Count per category ────────────────────────────────────────
 function getCounts(notifs) {
   const unread = notifs.filter(n => !n.read);
@@ -69,42 +137,86 @@ function getCounts(notifs) {
 }
 
 // ── Single notification row ───────────────────────────────────
-function NotifRow({ notif, onRead, onDelete }) {
-  const col  = CAT_COLOR[notif.cat] || { dot:'#64748b', bg:'rgba(100,116,139,0.1)' };
-  const catInfo = CATEGORIES.find(c => c.id === notif.cat);
+function NotifRow({ notif, onRead, navigate }) {
+  const [toggled, setToggled] = useState({});
+  const [pressing, setPressing] = useState(false);
+
+  const col     = CAT_COLOR[notif.cat] || { dot:'#64748b', bg:'rgba(100,116,139,0.1)' };
+  const actions = CAT_ACTIONS[notif.cat] || [];
+  const destRoute = CAT_ROUTE[notif.cat] || '/notifications';
+
+  function handleRowClick() {
+    onRead(notif.id);
+    setPressing(true);
+    setTimeout(() => { setPressing(false); navigate(destRoute); }, 120);
+  }
+
+  function handleAction(e, action) {
+    e.stopPropagation();
+    if (action.toggle) {
+      setToggled(prev => ({ ...prev, [action.label]: !prev[action.label] }));
+    } else {
+      onRead(notif.id);
+      navigate(action.route);
+    }
+  }
 
   return (
-    <div className={`flex gap-3 px-4 py-4 cursor-pointer transition-colors ${notif.read ? '' : ''}`}
-      style={!notif.read ? { background: col.bg } : {}}
-      onClick={() => onRead(notif.id)}>
+    <div
+      onClick={handleRowClick}
+      className="px-4 pt-4 pb-3 cursor-pointer transition-colors select-none"
+      style={{
+        background: !notif.read ? col.bg : 'transparent',
+        transform: pressing ? 'scale(0.985)' : 'scale(1)',
+        transition: 'transform 0.12s ease, background 0.15s ease',
+        WebkitTapHighlightColor: 'transparent',
+      }}>
 
-      {/* Icon bubble */}
-      <div className="relative shrink-0">
-        <div className="w-10 h-10 rounded-[14px] flex items-center justify-center text-xl"
-          style={{ background: col.bg, border:`1px solid ${col.dot}30` }}>
-          {notif.icon}
+      <div className="flex gap-3">
+        {/* Icon bubble */}
+        <div className="relative shrink-0">
+          <div className="w-10 h-10 rounded-[14px] flex items-center justify-center text-xl"
+            style={{ background: col.bg, border:`1px solid ${col.dot}30` }}>
+            {notif.icon}
+          </div>
+          {!notif.read && (
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
+              style={{ background: col.dot, borderColor: BG }} />
+          )}
         </div>
-        {!notif.read && (
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2"
-            style={{ background: col.dot, borderColor: BG }} />
-        )}
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p className={`text-[13px] leading-snug ${notif.read ? 'font-medium text-slate-300' : 'font-black text-white'}`}>
+              {notif.title}
+            </p>
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-[10px] text-slate-600">{notif.time}</span>
+              <ChevronRight className="w-3 h-3 text-slate-700" />
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">{notif.body}</p>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <p className={`text-[13px] leading-snug ${notif.read ? 'font-medium text-slate-300' : 'font-black text-white'}`}>
-            {notif.title}
-          </p>
-          <span className="text-[10px] text-slate-600 shrink-0 mt-0.5">{notif.time}</span>
+      {/* Action chips */}
+      {actions.length > 0 && (
+        <div className="flex gap-1.5 mt-2.5 ml-13 flex-wrap" onClick={e => e.stopPropagation()}
+          style={{ paddingLeft: '52px' }}>
+          {actions.map(action => (
+            <button key={action.label} type="button"
+              onClick={e => handleAction(e, action)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-black border transition-all duration-150 active:scale-95"
+              style={toggled[action.label]
+                ? { background:`${GOLD}20`, borderColor:`${GOLD}50`, color: GOLD }
+                : { background:'rgba(255,255,255,0.04)', borderColor:'#1F2937', color:'#94a3b8' }}>
+              <span className="text-[11px] leading-none">{action.icon}</span>
+              {action.label}
+            </button>
+          ))}
         </div>
-        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">{notif.body}</p>
-        {/* Category tag */}
-        <span className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-black px-1.5 py-0.5 rounded-full"
-          style={{ background: col.bg, color: col.dot }}>
-          {catInfo?.icon} {catInfo?.label}
-        </span>
-      </div>
+      )}
     </div>
   );
 }
@@ -183,10 +295,23 @@ export default function SmartNotifications() {
 
       {/* ── NOTIFICATION LIST ─────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center pt-24 gap-3">
-          <span className="text-5xl">🔔</span>
-          <p className="text-slate-400 text-sm font-bold">Pa gen notifikasyon</p>
-          <p className="text-slate-600 text-xs">Ou pral wè notifikasyon yo isit</p>
+        <div className="flex flex-col items-center justify-center pt-24 gap-3 px-6 text-center">
+          <div className="w-20 h-20 rounded-[24px] flex items-center justify-center text-4xl"
+            style={{ background:`${GOLD}10`, border:`1px solid ${GOLD}20` }}>
+            {CATEGORIES.find(c => c.id === activeTab)?.icon || '🔔'}
+          </div>
+          <p className="text-white font-black text-base">Pa gen notifikasyon</p>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            {activeTab === 'all'
+              ? 'Ou pral wè tout notifikasyon ou yo isit.'
+              : `Pa gen notifikasyon ${CATEGORIES.find(c=>c.id===activeTab)?.label || ''} pou kounye a.`}
+          </p>
+          <button type="button" onClick={() => navigate(CAT_ROUTE[activeTab] || '/dashboard')}
+            className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-black border transition-all active:scale-95"
+            style={{ background:`${GOLD}15`, borderColor:`${GOLD}30`, color: GOLD }}>
+            {CATEGORIES.find(c=>c.id===activeTab)?.icon} Ale nan{' '}
+            {CATEGORIES.find(c=>c.id===activeTab)?.label || 'Home'}
+          </button>
         </div>
       ) : (
         <div className="mt-2">
@@ -197,7 +322,7 @@ export default function SmartNotifications() {
               <div className="rounded-[0px] overflow-hidden">
                 {filtered.filter(n => !n.read).map((n, idx, arr) => (
                   <React.Fragment key={n.id}>
-                    <NotifRow notif={n} onRead={handleRead} onDelete={() => {}} />
+                    <NotifRow notif={n} onRead={handleRead} navigate={navigate} />
                     {idx < arr.length - 1 && <div className="h-px mx-4" style={{ background: BORDER }} />}
                   </React.Fragment>
                 ))}
@@ -223,7 +348,7 @@ export default function SmartNotifications() {
               <div>
                 {filtered.filter(n => n.read).map((n, idx, arr) => (
                   <React.Fragment key={n.id}>
-                    <NotifRow notif={n} onRead={handleRead} onDelete={() => {}} />
+                    <NotifRow notif={n} onRead={handleRead} navigate={navigate} />
                     {idx < arr.length - 1 && <div className="h-px mx-4" style={{ background: BORDER }} />}
                   </React.Fragment>
                 ))}
