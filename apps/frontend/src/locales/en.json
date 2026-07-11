@@ -972,7 +972,8 @@
     "booking": "Bookings",
     "escrow": "Escrow",
     "workerProfile": "Worker Profile",
-    "providerDash": "Provider Dashboard"
+    "providerDash": "Provider Dashboard",
+    "enterprise": "Enterprise"
   },
   "postJob": {
     "title": "Post a Project",
@@ -1323,6 +1324,59 @@
       "customers": "Customers",
       "ratings": "Ratings",
       "media": "Media"
+    }
+  },
+  "enterprise": {
+    "title": "Enterprise Dashboard",
+    "branches": "Branches",
+    "employees": {
+      "total": "Total Employees",
+      "online": "Online Now",
+      "working": "Working",
+      "vacation": "On Vacation",
+      "offline": "Offline"
+    },
+    "jobs": "Jobs",
+    "finance": "Finance",
+    "reservations": "Reservations",
+    "inventory": "Inventory",
+    "reports": "Reports",
+    "globalCC": "Global Control Center",
+    "createBranch": "Create Branch",
+    "hireWorkers": "Hire Workers",
+    "jobSlots": {
+      "filled": "Accepted",
+      "open": "Open Slots",
+      "closed": "Hiring Complete — Applications Closed",
+      "autoReject": "Hiring closed. We will contact you if a slot opens."
+    },
+    "permissions": {
+      "canHire": "Can recruit",
+      "canReceivePay": "Can receive payments",
+      "canViewFinance": "Can view finances",
+      "canManageInventory": "Can manage inventory",
+      "canCreateJob": "Can create jobs"
+    },
+    "businessType": {
+      "hotel": "Hotel",
+      "restaurant": "Restaurant",
+      "hospital": "Hospital",
+      "clinic": "Clinic",
+      "construction": "Construction",
+      "supermarket": "Supermarket",
+      "enterprise": "Enterprise",
+      "bank": "Bank",
+      "ngo": "NGO",
+      "government": "Government",
+      "factory": "Factory"
+    },
+    "wallet": {
+      "balance": "Current Balance",
+      "send": "Send",
+      "receive": "Receive",
+      "deposit": "Deposit",
+      "withdraw": "Withdraw",
+      "paySalaries": "Pay Employee Salaries"
     }
   }
 }

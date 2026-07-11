@@ -967,7 +967,8 @@
     "booking": "Réservations",
     "escrow": "Séquestre",
     "workerProfile": "Profil Travailleur",
-    "providerDash": "Tableau Prestataire"
+    "providerDash": "Tableau Prestataire",
+    "enterprise": "Entreprise"
   },
   "postJob": {
     "title": "Publier un Projet",
@@ -1318,6 +1319,59 @@
       "customers": "Clients",
       "ratings": "Avis",
       "media": "Médias"
+    }
+  },
+  "enterprise": {
+    "title": "Tableau Entreprise",
+    "branches": "Branches",
+    "employees": {
+      "total": "Total employés",
+      "online": "En ligne maintenant",
+      "working": "En activité",
+      "vacation": "En vacances",
+      "offline": "Hors ligne"
+    },
+    "jobs": "Emplois",
+    "finance": "Finance",
+    "reservations": "Réservations",
+    "inventory": "Inventaire",
+    "reports": "Rapports",
+    "globalCC": "Centre de Contrôle Global",
+    "createBranch": "Créer une branche",
+    "hireWorkers": "Recruter des travailleurs",
+    "jobSlots": {
+      "filled": "Acceptés",
+      "open": "Postes libres",
+      "closed": "Recrutement complet — Candidatures fermées",
+      "autoReject": "Recrutement fermé. Nous vous contacterons si un poste se libère."
+    },
+    "permissions": {
+      "canHire": "Peut recruter",
+      "canReceivePay": "Peut recevoir des paiements",
+      "canViewFinance": "Peut voir les finances",
+      "canManageInventory": "Peut gérer l'inventaire",
+      "canCreateJob": "Peut créer des offres"
+    },
+    "businessType": {
+      "hotel": "Hôtel",
+      "restaurant": "Restaurant",
+      "hospital": "Hôpital",
+      "clinic": "Clinique",
+      "construction": "Construction",
+      "supermarket": "Supermarché",
+      "enterprise": "Entreprise",
+      "bank": "Banque",
+      "ngo": "ONG",
+      "government": "Gouvernement",
+      "factory": "Usine / Fabrique"
+    },
+    "wallet": {
+      "balance": "Solde actuel",
+      "send": "Envoyer",
+      "receive": "Recevoir",
+      "deposit": "Dépôt",
+      "withdraw": "Retirer",
+      "paySalaries": "Payer les salaires"
     }
   }
 }

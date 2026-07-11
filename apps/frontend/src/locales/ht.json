@@ -1152,7 +1152,8 @@
     "booking": "Rezèvasyon",
     "escrow": "Escrow",
     "workerProfile": "Pwofil Travayè",
-    "providerDash": "Tableau Prestatè"
+    "providerDash": "Tableau Prestatè",
+    "enterprise": "Antrepriz"
   },
   "postJob": {
     "title": "Pibliye Pwojè a",
@@ -1503,6 +1504,59 @@
       "customers": "Kliyan",
       "ratings": "Nòt",
       "media": "Medya"
+    }
+  },
+  "enterprise": {
+    "title": "Tablo Antrepriz",
+    "branches": "Branch yo",
+    "employees": {
+      "total": "Total Anplwaye",
+      "online": "Anliy Kounye a",
+      "working": "Ap Travay",
+      "vacation": "Vakans",
+      "offline": "Offline"
+    },
+    "jobs": "Travay",
+    "finance": "Finans",
+    "reservations": "Rezèvas",
+    "inventory": "Envantè",
+    "reports": "Rapò",
+    "globalCC": "Sant Kontwòl Global",
+    "createBranch": "Kreye Branch",
+    "hireWorkers": "Rekrite Travayè",
+    "jobSlots": {
+      "filled": "Aksepte",
+      "open": "Pòs Lib",
+      "closed": "Rekritman Fini — Aplikasyon Fèmen",
+      "autoReject": "Rekritman fèmen. Nou pral kontakte ou si yon pòs lib."
+    },
+    "permissions": {
+      "canHire": "Kapab rekrite",
+      "canReceivePay": "Kapab resevwa peman",
+      "canViewFinance": "Kapab wè finans",
+      "canManageInventory": "Kapab jere envantè",
+      "canCreateJob": "Kapab kreye djòb"
+    },
+    "businessType": {
+      "hotel": "Otèl",
+      "restaurant": "Restoran",
+      "hospital": "Lopital",
+      "clinic": "Klinik",
+      "construction": "Konstriksyon",
+      "supermarket": "Sipèmache",
+      "enterprise": "Antrepriz",
+      "bank": "Bank",
+      "ngo": "ONG",
+      "government": "Gouvènman",
+      "factory": "Izin / Fabrik"
+    },
+    "wallet": {
+      "balance": "Balans Kounye a",
+      "send": "Voye",
+      "receive": "Resevwa",
+      "deposit": "Depo",
+      "withdraw": "Retir",
+      "paySalaries": "Peye Salè Anplwaye yo"
     }
   }
 }

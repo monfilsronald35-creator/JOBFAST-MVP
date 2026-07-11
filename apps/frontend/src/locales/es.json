@@ -972,7 +972,8 @@
     "booking": "Reservas",
     "escrow": "Depósito en garantía",
     "workerProfile": "Perfil Trabajador",
-    "providerDash": "Panel Proveedor"
+    "providerDash": "Panel Proveedor",
+    "enterprise": "Empresa"
   },
   "postJob": {
     "title": "Publicar un Proyecto",
@@ -1323,6 +1324,59 @@
       "customers": "Clientes",
       "ratings": "Calificaciones",
       "media": "Medios"
+    }
+  },
+  "enterprise": {
+    "title": "Panel Empresarial",
+    "branches": "Sucursales",
+    "employees": {
+      "total": "Total empleados",
+      "online": "En línea ahora",
+      "working": "Trabajando",
+      "vacation": "De vacaciones",
+      "offline": "Desconectado"
+    },
+    "jobs": "Empleos",
+    "finance": "Finanzas",
+    "reservations": "Reservaciones",
+    "inventory": "Inventario",
+    "reports": "Informes",
+    "globalCC": "Centro de Control Global",
+    "createBranch": "Crear sucursal",
+    "hireWorkers": "Contratar trabajadores",
+    "jobSlots": {
+      "filled": "Aceptados",
+      "open": "Puestos abiertos",
+      "closed": "Contratación completa — Solicitudes cerradas",
+      "autoReject": "Contratación cerrada. Te contactaremos si se abre un puesto."
+    },
+    "permissions": {
+      "canHire": "Puede reclutar",
+      "canReceivePay": "Puede recibir pagos",
+      "canViewFinance": "Puede ver finanzas",
+      "canManageInventory": "Puede gestionar inventario",
+      "canCreateJob": "Puede crear empleos"
+    },
+    "businessType": {
+      "hotel": "Hotel",
+      "restaurant": "Restaurante",
+      "hospital": "Hospital",
+      "clinic": "Clínica",
+      "construction": "Construcción",
+      "supermarket": "Supermercado",
+      "enterprise": "Empresa",
+      "bank": "Banco",
+      "ngo": "ONG",
+      "government": "Gobierno",
+      "factory": "Fábrica"
+    },
+    "wallet": {
+      "balance": "Saldo actual",
+      "send": "Enviar",
+      "receive": "Recibir",
+      "deposit": "Depósito",
+      "withdraw": "Retirar",
+      "paySalaries": "Pagar salarios de empleados"
     }
   }
 }
