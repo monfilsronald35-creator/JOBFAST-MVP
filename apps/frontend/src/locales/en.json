@@ -92,7 +92,7 @@
   "registration": {
     "title": "Create Account",
     "step": "Step {{current}} / {{total}}",
-    "progress": "{{percent}}% complete",
+    "progress": "Registration Progress",
     "chooseCategory": "Choose Your Category",
     "chooseAccountType": "Select the category that best describes you",
     "selectCategory": "Choose your category",
@@ -504,7 +504,9 @@
       "employer_desc": "I'm hiring",
       "service_provider": "Service Provider",
       "service_provider_desc": "I offer my services"
-    }
+    },
+    "stepOf": "Step {{cur}} of {{tot}}",
+    "stepN": "Step {{step}}"
   },
   "user": {
     "profile": {
@@ -968,7 +970,9 @@
     "market": "Market",
     "wallet": "Wallet",
     "booking": "Bookings",
-    "escrow": "Escrow"
+    "escrow": "Escrow",
+    "workerProfile": "Worker Profile",
+    "providerDash": "Provider Dashboard"
   },
   "postJob": {
     "title": "Post a Project",
@@ -1190,6 +1194,135 @@
       "completed": "Funds Released",
       "disputed": "Disputed",
       "cancelled": "Cancelled"
+    }
+  },
+  "filters": {
+    "title": "Advanced Filters",
+    "reset": "Reset",
+    "country": "Country",
+    "city": "City",
+    "cityPlaceholder": "Port-au-Prince, Cap-Haïtien…",
+    "distance": "Distance (km)",
+    "any": "Any",
+    "salary": "Salary (HTG)",
+    "language": "Language",
+    "experience": "Experience",
+    "jobType": "Job Type",
+    "options": "Options",
+    "availableOnly": "Available only",
+    "remote": "Remote work",
+    "urgentOnly": "🔥 Urgent only",
+    "apply": "Apply Filters",
+    "exp": {
+      "entry": "Entry level",
+      "junior": "Junior",
+      "mid": "Mid level",
+      "senior": "Senior",
+      "expert": "Expert"
+    },
+    "type": {
+      "full_time": "Full Time",
+      "part_time": "Part Time",
+      "contract": "Contract",
+      "internship": "Internship",
+      "temporary": "Temporary"
+    }
+  },
+  "profession": {
+    "overview": "Overview",
+    "jobs": "Jobs",
+    "services": "Services",
+    "training": "Training",
+    "workers": "Workers",
+    "openJobs": "Open Positions",
+    "satisfaction": "Satisfaction",
+    "avgSalary": "Average Salary",
+    "description": "Description",
+    "skills": "Skills",
+    "certificates": "Certificates",
+    "countriesHiring": "Countries Hiring",
+    "companiesHiring": "Companies Hiring",
+    "noJobs": "No jobs available right now",
+    "noServices": "No services available",
+    "noTraining": "No training available",
+    "apply": "Apply",
+    "book": "Book",
+    "createJob": "Create Job",
+    "createService": "Create Service",
+    "learnMore": "Learn More"
+  },
+  "reputation": {
+    "new_member": "New Member",
+    "verified_worker": "Verified Worker",
+    "trusted_professional": "Trusted Professional",
+    "jobsDone": "jobs done",
+    "satisfied": "satisfied",
+    "reviews": "reviews",
+    "newMemberNote": "Complete your first job to get Verified Worker badge",
+    "jobsToTrusted": "more jobs to Trusted Professional"
+  },
+  "worker": {
+    "editProfile": "Edit",
+    "jobsDone": "Jobs",
+    "rating": "Rating",
+    "views": "Views",
+    "availability": "Availability",
+    "bio": "Bio",
+    "noBio": "No bio. Tap ✏️ to add one.",
+    "skills": "Skills",
+    "noSkills": "No skills added",
+    "languages": "Languages",
+    "noLocation": "Location not available",
+    "reviews": "Reviews",
+    "portfolio": "Portfolio",
+    "addPhoto": "Add Photo",
+    "noPortfolio": "No photos. Add photos of your work.",
+    "experience": "Experience",
+    "add": "Add",
+    "noExperience": "No experience. Add your work history.",
+    "addExperience": "Add Experience",
+    "documents": "Documents",
+    "upload": "Upload",
+    "resume": "Resume / CV",
+    "certificate": "Certificate",
+    "id": "ID Document",
+    "uploaded": "Uploaded",
+    "savedJobs": "Saved Jobs",
+    "noSaved": "No saved jobs",
+    "tab": {
+      "profile": "Profile",
+      "portfolio": "Portfolio",
+      "experience": "Experience",
+      "documents": "Documents",
+      "saved": "Saved"
+    }
+  },
+  "provider": {
+    "activeServices": "Active Services",
+    "pendingBookings": "Bookings",
+    "earned": "Earned",
+    "totalBookings": "Total Bookings",
+    "avgRating": "Avg Rating",
+    "completed": "Completed",
+    "repeatClients": "Repeat Clients",
+    "recentBookings": "Recent Bookings",
+    "createService": "Create Service",
+    "serviceName": "Service name…",
+    "category": "Category…",
+    "description": "Service description…",
+    "publishService": "Publish Service",
+    "customers": "Customers",
+    "recentReviews": "Recent Reviews",
+    "photos": "Photos & Videos",
+    "addMedia": "Add",
+    "noMedia": "Add photos of your work",
+    "tab": {
+      "overview": "Overview",
+      "services": "Services",
+      "bookings": "Bookings",
+      "customers": "Customers",
+      "ratings": "Ratings",
+      "media": "Media"
     }
   }
 }

@@ -1,42 +1,31 @@
 import React, { memo, useMemo } from "react";
 import PropTypes from "prop-types";
-
-/**
- * Default labels used if no labels are provided.
- * If there are more steps than labels,
- * the remaining steps automatically become:
- * Step 5, Step 6, Step 7...
- */
-const DEFAULT_STEP_LABELS = [
-  "Account",
-  "Profession",
-  "Verification",
-  "Complete",
-];
+import { useTranslation } from "react-i18next";
 
 function RegistrationProgress({
   current = 1,
   total = 4,
   className = "",
-
-  /**
-   * Future i18n:
-   * title={t("registration.progress")}
-   */
-  title = "Registration Progress",
-
-  /**
-   * Custom labels
-   */
-  stepLabels = DEFAULT_STEP_LABELS,
-
-  /**
-   * Future i18n:
-   * (current,total)=>t("registration.step",{current,total})
-   */
-  stepTextFormatter = (current, total) =>
-    `Step ${current} of ${total}`,
+  title,
+  stepLabels,
+  stepTextFormatter,
 }) {
+  const { t } = useTranslation();
+
+  const resolvedTitle = title
+    ?? t("registration.progress", { defaultValue: "Pwogresyon Enskripsyon" });
+
+  const defaultLabels = [
+    t("registration.ui.stepCategory",    { defaultValue: "Kategori"  }),
+    t("registration.ui.stepSubcategory", { defaultValue: "Sou-kat."  }),
+    t("registration.ui.stepProfession",  { defaultValue: "Pwofesyon" }),
+    t("registration.ui.stepBasicInfo",   { defaultValue: "Enfòmasyon"}),
+    t("registration.ui.stepProfessional",{ defaultValue: "Detay"     }),
+  ];
+
+  const resolvedLabels     = stepLabels ?? defaultLabels;
+  const resolvedFormatter  = stepTextFormatter
+    ?? ((cur, tot) => t("registration.stepOf", { cur, tot, defaultValue: `Etap ${cur} sou ${tot}` }));
   // -----------------------------
   // Safe values
   // -----------------------------
@@ -76,11 +65,11 @@ function RegistrationProgress({
           id="registration-progress-title"
           className="text-sm font-semibold tracking-wide text-white"
         >
-          {title}
+          {resolvedTitle}
         </h2>
 
         <span className="inline-flex items-center rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-400">
-          {stepTextFormatter(safeCurrent, safeTotal)}
+          {resolvedFormatter(safeCurrent, safeTotal)}
         </span>
       </div>
 
@@ -88,17 +77,11 @@ function RegistrationProgress({
 
       <div
         role="progressbar"
-        aria-label={`Registration progress: ${stepTextFormatter(
-          safeCurrent,
-          safeTotal
-        )}`}
+        aria-label={`Registration progress: ${resolvedFormatter(safeCurrent, safeTotal)}`}
         aria-valuemin={1}
         aria-valuemax={safeTotal}
         aria-valuenow={safeCurrent}
-        aria-valuetext={stepTextFormatter(
-          safeCurrent,
-          safeTotal
-        )}
+        aria-valuetext={resolvedFormatter(safeCurrent, safeTotal)}
         className="relative h-3 w-full overflow-hidden rounded-full border border-slate-600 bg-slate-700/70"
       >
         <div
@@ -127,7 +110,7 @@ function RegistrationProgress({
           const active = step === safeCurrent;
 
           const label =
-            stepLabels[index] ?? `Step ${step}`;
+            resolvedLabels[index] ?? t("registration.stepN", { step, defaultValue: `Etap ${step}` });
 
           let circleClass =
             "w-7 h-7 rounded-full bg-slate-700 border border-slate-500 text-slate-400";

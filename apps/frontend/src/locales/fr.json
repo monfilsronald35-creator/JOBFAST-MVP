@@ -268,7 +268,7 @@
   "registration": {
     "title": "Créer un Compte",
     "step": "Étape {{current}} / {{total}}",
-    "progress": "{{percent}}% complété",
+    "progress": "Progression d'inscription",
     "chooseCategory": "Choisissez Votre Catégorie",
     "chooseAccountType": "Sélectionnez la catégorie qui vous correspond le mieux",
     "selectCategory": "Choisissez votre catégorie",
@@ -680,7 +680,9 @@
       "employer_desc": "Je recrute des employés",
       "service_provider": "Prestataire de Services",
       "service_provider_desc": "Je propose mes services"
-    }
+    },
+    "stepOf": "Étape {{cur}} sur {{tot}}",
+    "stepN": "Étape {{step}}"
   },
   "dashboard": {
     "welcome": "BIENVENUE",
@@ -963,7 +965,9 @@
     "market": "Marché",
     "wallet": "Portefeuille",
     "booking": "Réservations",
-    "escrow": "Séquestre"
+    "escrow": "Séquestre",
+    "workerProfile": "Profil Travailleur",
+    "providerDash": "Tableau Prestataire"
   },
   "postJob": {
     "title": "Publier un Projet",
@@ -1185,6 +1189,135 @@
       "completed": "Fonds libérés",
       "disputed": "Litigieux",
       "cancelled": "Annulé"
+    }
+  },
+  "filters": {
+    "title": "Filtres avancés",
+    "reset": "Réinitialiser",
+    "country": "Pays",
+    "city": "Ville",
+    "cityPlaceholder": "Port-au-Prince, Cap-Haïtien…",
+    "distance": "Distance (km)",
+    "any": "N'importe",
+    "salary": "Salaire (HTG)",
+    "language": "Langue",
+    "experience": "Expérience",
+    "jobType": "Type de poste",
+    "options": "Options",
+    "availableOnly": "Disponibles uniquement",
+    "remote": "Télétravail (Remote)",
+    "urgentOnly": "🔥 Urgent uniquement",
+    "apply": "Appliquer les filtres",
+    "exp": {
+      "entry": "Débutant",
+      "junior": "Junior",
+      "mid": "Intermédiaire",
+      "senior": "Senior",
+      "expert": "Expert"
+    },
+    "type": {
+      "full_time": "Temps plein",
+      "part_time": "Temps partiel",
+      "contract": "Contrat",
+      "internship": "Stage",
+      "temporary": "Temporaire"
+    }
+  },
+  "profession": {
+    "overview": "Aperçu",
+    "jobs": "Emplois",
+    "services": "Services",
+    "training": "Formation",
+    "workers": "Travailleurs",
+    "openJobs": "Postes disponibles",
+    "satisfaction": "Satisfaction",
+    "avgSalary": "Salaire moyen",
+    "description": "Description",
+    "skills": "Compétences",
+    "certificates": "Certificats",
+    "countriesHiring": "Pays qui recrutent",
+    "companiesHiring": "Entreprises qui recrutent",
+    "noJobs": "Aucun poste disponible actuellement",
+    "noServices": "Aucun service disponible",
+    "noTraining": "Aucune formation disponible",
+    "apply": "Postuler",
+    "book": "Réserver",
+    "createJob": "Créer un poste",
+    "createService": "Créer un service",
+    "learnMore": "En savoir plus"
+  },
+  "reputation": {
+    "new_member": "Nouveau membre",
+    "verified_worker": "Travailleur vérifié",
+    "trusted_professional": "Professionnel de confiance",
+    "jobsDone": "travaux effectués",
+    "satisfied": "satisfaits",
+    "reviews": "avis",
+    "newMemberNote": "Terminez votre premier travail pour obtenir le badge Travailleur vérifié",
+    "jobsToTrusted": "travaux de plus pour Professionnel de confiance"
+  },
+  "worker": {
+    "editProfile": "Modifier",
+    "jobsDone": "Travaux",
+    "rating": "Note",
+    "views": "Vues",
+    "availability": "Disponibilité",
+    "bio": "Bio",
+    "noBio": "Pas de bio. Cliquez ✏️ pour en ajouter une.",
+    "skills": "Compétences",
+    "noSkills": "Aucune compétence ajoutée",
+    "languages": "Langues",
+    "noLocation": "Emplacement non disponible",
+    "reviews": "Évaluations",
+    "portfolio": "Portfolio",
+    "addPhoto": "Ajouter photo",
+    "noPortfolio": "Pas de photos. Ajoutez vos réalisations.",
+    "experience": "Expérience",
+    "add": "Ajouter",
+    "noExperience": "Pas d'expérience. Ajoutez votre historique.",
+    "addExperience": "Ajouter expérience",
+    "documents": "Documents",
+    "upload": "Télécharger",
+    "resume": "CV",
+    "certificate": "Certificat",
+    "id": "Pièce d'identité",
+    "uploaded": "Téléchargé",
+    "savedJobs": "Emplois sauvegardés",
+    "noSaved": "Aucun emploi sauvegardé",
+    "tab": {
+      "profile": "Profil",
+      "portfolio": "Portfolio",
+      "experience": "Expérience",
+      "documents": "Documents",
+      "saved": "Sauvegardés"
+    }
+  },
+  "provider": {
+    "activeServices": "Services actifs",
+    "pendingBookings": "Réservations",
+    "earned": "Gagné",
+    "totalBookings": "Total réservations",
+    "avgRating": "Note moyenne",
+    "completed": "Terminé",
+    "repeatClients": "Clients fidèles",
+    "recentBookings": "Réservations récentes",
+    "createService": "Créer un service",
+    "serviceName": "Nom du service…",
+    "category": "Catégorie…",
+    "description": "Description du service…",
+    "publishService": "Publier le service",
+    "customers": "Clients",
+    "recentReviews": "Derniers avis",
+    "photos": "Photos & Vidéos",
+    "addMedia": "Ajouter",
+    "noMedia": "Ajoutez des photos de vos réalisations",
+    "tab": {
+      "overview": "Aperçu",
+      "services": "Services",
+      "bookings": "Réservations",
+      "customers": "Clients",
+      "ratings": "Avis",
+      "media": "Médias"
     }
   }
 }

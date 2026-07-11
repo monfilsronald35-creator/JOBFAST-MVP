@@ -211,7 +211,7 @@
   "registration": {
     "title": "Kreye Kont",
     "step": "Etap {{current}} / {{total}}",
-    "progress": "{{percent}}% fini",
+    "progress": "Pwogresyon Enskripsyon",
     "chooseCategory": "Chwazi Kategori Ou",
     "chooseAccountType": "Chwazi kategori ki pi dekri ou a",
     "selectCategory": "Chwazi kategori w",
@@ -623,7 +623,9 @@
       "employer_desc": "Mwen ap rekrute travayè",
       "service_provider": "Founisè Sèvis",
       "service_provider_desc": "Mwen ofri sèvis mwen"
-    }
+    },
+    "stepOf": "Etap {{cur}} sou {{tot}}",
+    "stepN": "Etap {{step}}"
   },
   "professionFields": {
     "businessName": "Non biznis",
@@ -1148,7 +1150,9 @@
     "market": "Mache",
     "wallet": "Pòtfèy",
     "booking": "Rezèvasyon",
-    "escrow": "Escrow"
+    "escrow": "Escrow",
+    "workerProfile": "Pwofil Travayè",
+    "providerDash": "Tableau Prestatè"
   },
   "postJob": {
     "title": "Pibliye Pwojè a",
@@ -1370,6 +1374,135 @@
       "completed": "Lajan lage",
       "disputed": "Dispute",
       "cancelled": "Anile"
+    }
+  },
+  "filters": {
+    "title": "Filtè Avanse",
+    "reset": "Efase",
+    "country": "Peyi",
+    "city": "Vil",
+    "cityPlaceholder": "Port-au-Prince, Cap-Haïtien…",
+    "distance": "Distans (km)",
+    "any": "Nenpòt",
+    "salary": "Salè (HTG)",
+    "language": "Lang",
+    "experience": "Eksperyans",
+    "jobType": "Tip Travay",
+    "options": "Opsyon",
+    "availableOnly": "Disponib sèlman",
+    "remote": "Travay a distans (Remote)",
+    "urgentOnly": "🔥 Ijan sèlman",
+    "apply": "Aplike Filtè",
+    "exp": {
+      "entry": "Débutant",
+      "junior": "Junior",
+      "mid": "Entèmedyè",
+      "senior": "Senior",
+      "expert": "Ekspè"
+    },
+    "type": {
+      "full_time": "Tan Konplè",
+      "part_time": "Tan Pasyèl",
+      "contract": "Kontra",
+      "internship": "Estaj",
+      "temporary": "Tanporè"
+    }
+  },
+  "profession": {
+    "overview": "Apèsi",
+    "jobs": "Travay",
+    "services": "Sèvis",
+    "training": "Fòmasyon",
+    "workers": "Travayè",
+    "openJobs": "Pòs Disponib",
+    "satisfaction": "Satisfaksyon",
+    "avgSalary": "Salè Mwayen",
+    "description": "Deskripsyon",
+    "skills": "Konpetans",
+    "certificates": "Sètifika",
+    "countriesHiring": "Peyi k ap Rekrite",
+    "companiesHiring": "Konpayi k ap Rekrite",
+    "noJobs": "Pa gen travay disponib kounye a",
+    "noServices": "Pa gen sèvis disponib",
+    "noTraining": "Pa gen fòmasyon disponib",
+    "apply": "Aplike",
+    "book": "Rezève",
+    "createJob": "Kreye Travay",
+    "createService": "Kreye Sèvis",
+    "learnMore": "Aprann Plis"
+  },
+  "reputation": {
+    "new_member": "Nouvo Manm",
+    "verified_worker": "Travayè Verifye",
+    "trusted_professional": "Pwofesyonèl Fye",
+    "jobsDone": "travay konplè",
+    "satisfied": "satisfè",
+    "reviews": "revizyon",
+    "newMemberNote": "Fini premye travay ou pou jwenn badge Verified Worker",
+    "jobsToTrusted": "travay anko pou Trusted Professional"
+  },
+  "worker": {
+    "editProfile": "Modifye",
+    "jobsDone": "Travay",
+    "rating": "Nòt",
+    "views": "Vizit",
+    "availability": "Disponibilite",
+    "bio": "Bio",
+    "noBio": "Pa gen bio. Klike ✏️ pou ajoute youn.",
+    "skills": "Konpetans",
+    "noSkills": "Pa gen konpetans ajoute",
+    "languages": "Lang",
+    "noLocation": "Lokasyon pa disponib",
+    "reviews": "Evalyasyon",
+    "portfolio": "Portfolio",
+    "addPhoto": "Ajoute Foto",
+    "noPortfolio": "Pa gen foto. Ajoute travay ou fè.",
+    "experience": "Eksperyans",
+    "add": "Ajoute",
+    "noExperience": "Pa gen eksperyans. Ajoute istwa travay ou.",
+    "addExperience": "Ajoute Eksperyans",
+    "documents": "Dokiman",
+    "upload": "Telechaje",
+    "resume": "CV / Rezime",
+    "certificate": "Sètifika",
+    "id": "Pyès Idantite",
+    "uploaded": "Telechaje",
+    "savedJobs": "Travay Sove",
+    "noSaved": "Pa gen travay sove",
+    "tab": {
+      "profile": "Pwofil",
+      "portfolio": "Portfolio",
+      "experience": "Eksperyans",
+      "documents": "Dokiman",
+      "saved": "Sove"
+    }
+  },
+  "provider": {
+    "activeServices": "Sèvis Aktif",
+    "pendingBookings": "Rezèvas",
+    "earned": "Gagnen",
+    "totalBookings": "Total Rezèvas",
+    "avgRating": "Nòt Mwayen",
+    "completed": "Fini",
+    "repeatClients": "Kliyan Fidèl",
+    "recentBookings": "Rezèvas Resan",
+    "createService": "Kreye Nouvo Sèvis",
+    "serviceName": "Non sèvis la…",
+    "category": "Kategori…",
+    "description": "Deskripsyon sèvis la…",
+    "publishService": "Pibliye Sèvis",
+    "customers": "Kliyan",
+    "recentReviews": "Dènye Evalyasyon",
+    "photos": "Foto & Videyo",
+    "addMedia": "Ajoute",
+    "noMedia": "Ajoute foto travay ou fè",
+    "tab": {
+      "overview": "Apèsi",
+      "services": "Sèvis",
+      "bookings": "Rezèvas",
+      "customers": "Kliyan",
+      "ratings": "Nòt",
+      "media": "Medya"
     }
   }
 }

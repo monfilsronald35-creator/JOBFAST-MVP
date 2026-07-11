@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Search, Plus, Bell, User, Menu, X, Settings, LogOut,
   ChevronLeft, Zap, MessageSquare, MapPin, Wallet, Globe, CalendarDays, Lock,
+  Briefcase, Wrench,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext.jsx";
 import { useTranslation } from "react-i18next";
@@ -20,9 +21,11 @@ const MENU_NAV = [
   { path: "/dashboard",     labelKey: "nav.home",          icon: Home          },
   { path: "/market",        labelKey: "nav.market",        icon: Globe         },
   { path: "/wallet",        labelKey: "nav.wallet",        icon: Wallet        },
-  { path: "/booking",       labelKey: "nav.booking",       icon: CalendarDays  },
-  { path: "/escrow",        labelKey: "nav.escrow",        icon: Lock          },
-  { path: "/search",        labelKey: "nav.search",        icon: Search        },
+  { path: "/booking",            labelKey: "nav.booking",         icon: CalendarDays  },
+  { path: "/escrow",             labelKey: "nav.escrow",          icon: Lock          },
+  { path: "/worker-profile",     labelKey: "nav.workerProfile",   icon: Briefcase     },
+  { path: "/provider-dashboard", labelKey: "nav.providerDash",    icon: Wrench        },
+  { path: "/search",             labelKey: "nav.search",          icon: Search        },
   { path: "/chat",          labelKey: "nav.messages",      icon: MessageSquare },
   { path: "/notifications", labelKey: "nav.notifications", icon: Bell          },
   { path: "/settings",      labelKey: "nav.profile",       icon: User          },
