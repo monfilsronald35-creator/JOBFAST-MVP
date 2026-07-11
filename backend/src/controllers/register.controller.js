@@ -37,12 +37,12 @@ export const registerController = async (req, res, next) => {
     } = req.body;
 
     // 1. 🛡️ DATA SANITIZATION & MANDATORY FIELDS CHECK
-    if (!name || !email || !password || !accountType || !city || !state) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
         error: {
           code: "MISSING_REGISTRATION_FIELDS",
-          message: "Operasyon echwe. Tout jaden yo obligatwa pou kreye pwofil la nan sistèm lan.",
+          message: "Non, imèl, ak modpas obligatwa.",
           requestId
         }
       });
@@ -163,45 +163,48 @@ export const registerController = async (req, res, next) => {
       createdAt: new Date()
     };
 
-    // Sove nouvo kont lan nan memwa a
-    usersDatabase.set(userId, newUser);
+    // 💾 PERSIST TO MONGODB FIRST (synchronous — data must survive server restarts)
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const mongoDoc = await User.create({
+          name: newUser.name,
+          email: newUser.email,
+          password,                   // plain — User model pre-save hook hashes it
+          phone: req.body.phone || null,
+          role: role?.toLowerCase().trim() || 'user',
+          category: userCategory || null,
+          profession: userProfession || null,
+          professionLabel: req.body.professionLabel || null,
+          profileMetadata: categoryMetadata,
+          profileCompleteness: newUser.profileCompleteness,
+          location: {
+            type: 'Point',
+            coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
+            city: city.trim(),
+            country: 'Haiti',
+          },
+        });
+        // Use the real MongoDB _id going forward
+        newUser.id  = mongoDoc._id.toString();
+        newUser._id = mongoDoc._id.toString();
+        console.log(`💾 User persisted to MongoDB: ${cleanEmail} (${mongoDoc._id})`);
+      } catch (mongoErr) {
+        console.warn(`⚠️ MongoDB persist failed (in-memory fallback): ${mongoErr.message}`);
+      }
+    }
+
+    // In-memory backup (serves same Render instance until next restart)
+    usersDatabase.set(newUser.id, newUser);
 
     // Generate JWT token so the user is immediately logged in after registration
     const accessToken = jwt.sign(
-      { id: userId, email: cleanEmail, role: newUser.role },
+      { id: newUser.id, email: cleanEmail, role: newUser.role },
       env.JWT_SECRET,
       { expiresIn: env.JWT_EXPIRES_IN }
     );
 
-    // 💾 PERSIST TO MONGODB — fire-and-forget via setImmediate so the HTTP
-    // response is sent to the client immediately, without waiting for the DB write.
-    setImmediate(async () => {
-      if (mongoose.connection.readyState === 1) {
-        try {
-          await User.create({
-            name: newUser.name,
-            email: newUser.email,
-            password,                   // plain — User model pre-save will hash it
-            phone: req.body.phone || null,
-            role: role?.toLowerCase().trim() || 'user',
-            category: userCategory || null,
-            profession: userProfession || null,
-            profileMetadata: categoryMetadata,
-            profileCompleteness: newUser.profileCompleteness,
-            location: {
-              type: 'Point',
-              coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
-              city: city.trim(),
-              country: 'Haiti',
-            },
-          });
-          console.log(`💾 User persisted to MongoDB: ${cleanEmail}`);
-        } catch (mongoErr) {
-          console.warn(`⚠️ MongoDB persist failed (in-memory only): ${mongoErr.message}`);
-        }
-      }
-
-      // 📢 TRIGGER MATCHING SERVICE (always after DB write attempt)
+    // 📢 TRIGGER MATCHING SERVICE (non-blocking, after response)
+    setImmediate(() => {
       try {
         notifyNewCategoryMember(newUser).catch(err =>
           console.error('Error notifying about new member:', err.message)
@@ -210,6 +213,7 @@ export const registerController = async (req, res, next) => {
         console.error('Matching service error (non-blocking):', err.message);
       }
     });
+
     console.log(`✅ Register: ${cleanEmail} (${newUser.role})`);
 
     // 8. 📦 RESPONSE MATRIX
@@ -222,8 +226,9 @@ export const registerController = async (req, res, next) => {
       },
       data: {
         message: "Pwofil ou kreye ak siksè nan rezo entènasyonal JOBFAST la!",
-        userId: newUser.id,
-        token: accessToken,
+        userId:  newUser.id,
+        _id:     newUser.id,
+        token:   accessToken,
         user: {
           id: newUser.id,
           _id: newUser._id,
