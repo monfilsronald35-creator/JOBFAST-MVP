@@ -139,10 +139,11 @@ export const registerController = async (req, res, next) => {
     // 6. 🏗️ MATRIX PROFILE CONSTRUCTOR (Daprè bèl foto MVP a)
     const userId = `usr_${crypto.randomBytes(8).toString('hex')}`;
 
-    // Calculate profile completeness
-    const totalFields = userProfession ? (getRequiredFields(userProfession)?.length || 0) + 5 : 5; // +5 for basic fields
-    const filledFields = 5 + Object.keys(categoryMetadata).filter(k => categoryMetadata[k]).length;
-    const profileCompleteness = Math.round((filledFields / totalFields) * 100);
+    // Calculate profile completeness (capped at 100)
+    const requiredCount = userProfession ? (getRequiredFields(userProfession)?.length || 0) : 0;
+    const totalFields   = Math.max(requiredCount + 5, Object.keys(categoryMetadata).length + 5);
+    const filledFields  = 5 + Object.keys(categoryMetadata).filter(k => categoryMetadata[k]).length;
+    const profileCompleteness = Math.min(100, Math.round((filledFields / totalFields) * 100));
 
     const newUser = {
       id: userId,
