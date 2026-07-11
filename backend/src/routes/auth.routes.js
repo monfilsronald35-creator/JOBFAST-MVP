@@ -3,11 +3,13 @@
 // ======================================================
 
 import express from 'express';
+import mongoose from 'mongoose';
 
 import { loginController } from '../controllers/login.controller.js';
 import { registerController } from '../controllers/register.controller.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 import { usersDatabase } from '../controllers/register.controller.js';
+import User from '../models/user.model.js';
 
 const router = express.Router();
 
@@ -59,11 +61,23 @@ router.post('/register', rateLimit, registerController);
 router.post('/login', rateLimit, loginController);
 
 // ── Authenticated endpoints ───────────────────────────────────────────────────
-router.get('/me', authMiddleware, (req, res) => {
-  // Resolve user from in-memory store (ADR-001: in-memory auth for MVP)
-  const user = Array.from(usersDatabase.values()).find(
-    (u) => u.id === req.user.id || u.userId === req.user.id
+router.get('/me', authMiddleware, async (req, res) => {
+  const userId = req.user.id;
+
+  // 1. Try in-memory first (fast path, same Render instance)
+  let user = Array.from(usersDatabase.values()).find(
+    (u) => u.id === userId || u.userId === userId || String(u._id) === userId
   );
+
+  // 2. Fallback to MongoDB (survives restarts)
+  if (!user && mongoose.connection.readyState === 1) {
+    try {
+      const mongoUser = await User.findById(userId).lean();
+      if (mongoUser) {
+        user = { ...mongoUser, id: mongoUser._id.toString(), _id: mongoUser._id.toString() };
+      }
+    } catch (_) {}
+  }
 
   if (!user) {
     return res.status(404).json({ success: false, message: 'User not found' });
@@ -73,7 +87,7 @@ router.get('/me', authMiddleware, (req, res) => {
 
   return res.status(200).json({
     success: true,
-    data: { user: { ...safeUser, _id: safeUser.id } },
+    data: { user: { ...safeUser, _id: safeUser.id || safeUser._id } },
   });
 });
 

@@ -5,9 +5,9 @@
 
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import { usersDatabase } from "../controllers/register.controller.js";
 import { HTTP_STATUS } from "../config/constants.js";
-
 import { env } from "../config/env.js";
 
 const JWT_SECRET = env.JWT_SECRET;
@@ -163,7 +163,19 @@ const logout = async ({ userId }) => {
 // ======================================================
 
 const getMe = async ({ userId }) => {
-  const user = usersDatabase.get(userId);
+  // In-memory first
+  let user = usersDatabase.get(userId);
+
+  // MongoDB fallback (survives restarts)
+  if (!user && mongoose.connection.readyState === 1) {
+    try {
+      const { default: User } = await import('../models/user.model.js');
+      const mongoUser = await User.findById(userId).lean();
+      if (mongoUser) {
+        user = { ...mongoUser, id: mongoUser._id.toString(), _id: mongoUser._id.toString() };
+      }
+    } catch (_) {}
+  }
 
   if (!user) {
     throw new Error("User not found");

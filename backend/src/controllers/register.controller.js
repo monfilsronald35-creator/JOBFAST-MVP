@@ -114,16 +114,27 @@ export const registerController = async (req, res, next) => {
     };
 
     // 5. 📍 LOCATION INJECTION & COORDINATES SIMULATION (GPS READY)
-    // Nou simule kowòdone GPS Bavaro/Punta Cana daprè foto a pou sistèm distance sorting lan
     const gpsLocation = {
-      city: city.trim(),
-      state: state.trim(),
+      city:    (city    || '').trim(),
+      state:   (state   || '').trim(),
       country: "Haiti",
       coordinates: {
-        latitude: 18.5432 + (Math.random() - 0.5) * 0.02,
+        latitude:  18.5432 + (Math.random() - 0.5) * 0.02,
         longitude: -72.3395 + (Math.random() - 0.5) * 0.02
       }
     };
+
+    // ⚠️ Require MongoDB to be connected — in-memory-only registrations are lost on restart
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: 'SERVER_STARTING',
+          message: 'Sèvè a ap reveye. Tanpri eseye ankò nan 30 segond.',
+          requestId
+        }
+      });
+    }
 
     // 6. 🏗️ MATRIX PROFILE CONSTRUCTOR (Daprè bèl foto MVP a)
     const userId = `usr_${crypto.randomBytes(8).toString('hex')}`;
@@ -163,37 +174,31 @@ export const registerController = async (req, res, next) => {
       createdAt: new Date()
     };
 
-    // 💾 PERSIST TO MONGODB FIRST (synchronous — data must survive server restarts)
-    if (mongoose.connection.readyState === 1) {
-      try {
-        const mongoDoc = await User.create({
-          name: newUser.name,
-          email: newUser.email,
-          password,                   // plain — User model pre-save hook hashes it
-          phone: req.body.phone || null,
-          role: role?.toLowerCase().trim() || 'user',
-          category: userCategory || null,
-          profession: userProfession || null,
-          professionLabel: req.body.professionLabel || null,
-          profileMetadata: categoryMetadata,
-          profileCompleteness: newUser.profileCompleteness,
-          location: {
-            type: 'Point',
-            coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
-            city: city.trim(),
-            country: 'Haiti',
-          },
-        });
-        // Use the real MongoDB _id going forward
-        newUser.id  = mongoDoc._id.toString();
-        newUser._id = mongoDoc._id.toString();
-        console.log(`💾 User persisted to MongoDB: ${cleanEmail} (${mongoDoc._id})`);
-      } catch (mongoErr) {
-        console.warn(`⚠️ MongoDB persist failed (in-memory fallback): ${mongoErr.message}`);
-      }
-    }
+    // 💾 PERSIST TO MONGODB — required; we already confirmed connection above
+    const mongoDoc = await User.create({
+      name: newUser.name,
+      email: newUser.email,
+      password,                   // plain — User model pre-save hook hashes it
+      phone: req.body.phone || null,
+      role: role?.toLowerCase().trim() || 'user',
+      category: userCategory || null,
+      profession: userProfession || null,
+      profileMetadata: categoryMetadata,
+      profileCompleteness: newUser.profileCompleteness,
+      location: {
+        type: 'Point',
+        coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
+        city: gpsLocation.city,
+        country: 'Haiti',
+      },
+    });
 
-    // In-memory backup (serves same Render instance until next restart)
+    // Use real MongoDB _id going forward
+    newUser.id  = mongoDoc._id.toString();
+    newUser._id = mongoDoc._id.toString();
+    console.log(`💾 User persisted to MongoDB: ${cleanEmail} (${mongoDoc._id})`);
+
+    // In-memory cache for same Render instance (speed; not relied upon for persistence)
     usersDatabase.set(newUser.id, newUser);
 
     // Generate JWT token so the user is immediately logged in after registration
