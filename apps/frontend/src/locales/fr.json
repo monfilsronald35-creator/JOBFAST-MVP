@@ -961,7 +961,9 @@
     "back": "Retour",
     "openMenu": "Ouvrir le menu",
     "market": "Marché",
-    "wallet": "Portefeuille"
+    "wallet": "Portefeuille",
+    "booking": "Réservations",
+    "escrow": "Séquestre"
   },
   "postJob": {
     "title": "Publier un Projet",
@@ -1098,5 +1100,91 @@
     "recipientPlaceholder": "Téléphone, email ou @username",
     "notePlaceholder": "Note (optionnel)",
     "escrowDesc": "Les fonds sont sécurisés jusqu'à validation du travail par les deux parties."
+  },
+  "stories": {
+    "myStory": "Mon histoire",
+    "addStory": "Ajouter",
+    "createStory": "Créer une histoire",
+    "typeText": "Texte",
+    "typePhoto": "Photo",
+    "typeVideo": "Vidéo",
+    "textPlaceholder": "Écrivez un message…",
+    "publish": "Publier",
+    "addHighlight": "Ajouter aux faits saillants",
+    "deleteStory": "Supprimer l'histoire",
+    "reportStory": "Signaler",
+    "blockUser": "Bloquer l'utilisateur",
+    "react": "Réagir",
+    "reply": "Répondre…",
+    "viewed": "Vu"
+  },
+  "booking": {
+    "title": "Réservations",
+    "new": "+ Nouveau",
+    "upcoming": "À venir",
+    "past": "Passées",
+    "all": "Toutes",
+    "empty": "Aucune réservation",
+    "step1": "Choisir le type",
+    "step2": "Détails",
+    "step3": "Résumé",
+    "continue": "Continuer",
+    "confirm": "Confirmer la réservation",
+    "cancel": "Annuler",
+    "contact": "Contacter",
+    "rate": "Évaluer",
+    "paymentMethod": "Méthode de paiement",
+    "escrowNote": "Paiement sécurisé par JOBFAST Escrow",
+    "types": {
+      "hotel": "Hôtel",
+      "restaurant": "Restaurant",
+      "clinic": "Clinique",
+      "hospital": "Hôpital",
+      "tourism": "Tourisme",
+      "rental": "Location",
+      "event": "Événement"
+    },
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmée",
+      "completed": "Terminée",
+      "cancelled": "Annulée"
+    }
+  },
+  "escrow": {
+    "title": "Séquestre JOBFAST",
+    "totalLocked": "Total en séquestre",
+    "protectedNote": "Fonds protégés jusqu'à validation",
+    "processTitle": "Comment fonctionne le séquestre",
+    "employer": "Employeur",
+    "worker": "Travailleur",
+    "active": "Actif",
+    "completed": "Terminé",
+    "disputed": "Litigieux",
+    "all": "Tout",
+    "empty": "Aucun séquestre actif",
+    "fundedAmount": "Montant en séquestre",
+    "heldSafely": "Fonds sécurisés par JOBFAST",
+    "jobDescription": "Description du travail",
+    "validateWork": "Confirmer la fin du travail",
+    "waitingOther": "En attente de l'autre partie…",
+    "openDispute": "Ouvrir un litige",
+    "submitDispute": "Envoyer le litige",
+    "disputeNote": "JOBFAST examinera le litige dans 48h.",
+    "disputeReason": "Raison du litige",
+    "howItWorks": "Comment fonctionne l'Escrow",
+    "step1": "L'employeur dépose les fonds dans JOBFAST Escrow",
+    "step2": "Le travail commence",
+    "step3": "Les deux parties valident la fin du travail",
+    "step4": "JOBFAST libère les fonds au travailleur",
+    "releaseCondition": "Les fonds ne sont libérés qu'après validation mutuelle",
+    "status": {
+      "funded": "Financé",
+      "in_progress": "En cours",
+      "pending_validation": "En attente de validation",
+      "completed": "Fonds libérés",
+      "disputed": "Litigieux",
+      "cancelled": "Annulé"
+    }
   }
 }

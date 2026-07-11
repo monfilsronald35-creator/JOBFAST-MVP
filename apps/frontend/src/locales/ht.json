@@ -1146,7 +1146,9 @@
     "back": "Tounen",
     "openMenu": "Ouvri menu",
     "market": "Mache",
-    "wallet": "Pòtfèy"
+    "wallet": "Pòtfèy",
+    "booking": "Rezèvasyon",
+    "escrow": "Escrow"
   },
   "postJob": {
     "title": "Pibliye Pwojè a",
@@ -1283,5 +1285,91 @@
     "recipientPlaceholder": "Telefòn, email, oswa @username",
     "notePlaceholder": "Nòt (opsyonèl)",
     "escrowDesc": "Lajan travay yo kenbe an sekurité jiskaske travay la valide pa tou de pati yo. Sa pwoteje Travayè ak Anplwayè."
+  },
+  "stories": {
+    "myStory": "Istwa Mwen",
+    "addStory": "Ajoute",
+    "createStory": "Kreye Istwa",
+    "typeText": "Tèks",
+    "typePhoto": "Foto",
+    "typeVideo": "Videyo",
+    "textPlaceholder": "Ekri yon mesaj…",
+    "publish": "Pibliye",
+    "addHighlight": "Mete nan Highlights",
+    "deleteStory": "Efase Istwa",
+    "reportStory": "Rapòte",
+    "blockUser": "Bloke Itilizatè",
+    "react": "Reaji",
+    "reply": "Repòn…",
+    "viewed": "Wè"
+  },
+  "booking": {
+    "title": "Rezèvasyon",
+    "new": "+ Nouvo",
+    "upcoming": "Kap vini",
+    "past": "Pase",
+    "all": "Tout",
+    "empty": "Pa gen rezèvasyon",
+    "step1": "Chwazi tip",
+    "step2": "Detay",
+    "step3": "Rezime",
+    "continue": "Kontinye",
+    "confirm": "Konfime Rezèvasyon",
+    "cancel": "Anile",
+    "contact": "Kontakte",
+    "rate": "Evalye",
+    "paymentMethod": "Metòd Peman",
+    "escrowNote": "Peman pwoteje pa JOBFAST Escrow",
+    "types": {
+      "hotel": "Otèl",
+      "restaurant": "Restoran",
+      "clinic": "Klinik",
+      "hospital": "Lopital",
+      "tourism": "Touris",
+      "rental": "Lwaye",
+      "event": "Evènman"
+    },
+    "status": {
+      "pending": "Kap tann",
+      "confirmed": "Konfime",
+      "completed": "Konplè",
+      "cancelled": "Anile"
+    }
+  },
+  "escrow": {
+    "title": "JOBFAST Escrow",
+    "totalLocked": "Total Kenbe nan Escrow",
+    "protectedNote": "Fon pwoteje jiskaske travay valide",
+    "processTitle": "Kijan Escrow travay",
+    "employer": "Anplwayè",
+    "worker": "Travayè",
+    "active": "Aktif",
+    "completed": "Konplè",
+    "disputed": "Dispute",
+    "all": "Tout",
+    "empty": "Pa gen escrow aktif",
+    "fundedAmount": "Montan nan Escrow",
+    "heldSafely": "Kenbe an sekurité pa JOBFAST",
+    "jobDescription": "Deskripsyon Travay",
+    "validateWork": "Konfime Travay Fini",
+    "waitingOther": "Kap tann lòt pati…",
+    "openDispute": "Ouvri Dispute",
+    "submitDispute": "Voye Dispute",
+    "disputeNote": "JOBFAST ap revize dispute a nan 48è.",
+    "disputeReason": "Rezon Dispute",
+    "howItWorks": "Kijan Escrow travay",
+    "step1": "Anplwayè depoze lajan nan JOBFAST Escrow",
+    "step2": "Travay la kòmanse",
+    "step3": "Tou de valide travay la fin",
+    "step4": "JOBFAST lage lajan bay Travayè a",
+    "releaseCondition": "Lajan lage sèlman apre tou de valide",
+    "status": {
+      "funded": "Finanse",
+      "in_progress": "An kou",
+      "pending_validation": "Kap tann validasyon",
+      "completed": "Lajan lage",
+      "disputed": "Dispute",
+      "cancelled": "Anile"
+    }
   }
 }

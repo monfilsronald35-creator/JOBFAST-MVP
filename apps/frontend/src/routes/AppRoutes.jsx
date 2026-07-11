@@ -27,8 +27,10 @@ import UserProfileDisplay from "@/pages/UserProfileDisplay.jsx";
 import ChatScreen from "@/pages/ChatScreen.jsx";
 import MapNavigationScreen from "@/pages/MapNavigationScreen.jsx";
 import PublicProfileScreen from "@/pages/PublicProfileScreen.jsx";
-import MarketPage  from "@/pages/Market/index.jsx";
-import WalletPage  from "@/pages/Wallet/index.jsx";
+import MarketPage   from "@/pages/Market/index.jsx";
+import WalletPage   from "@/pages/Wallet/index.jsx";
+import BookingPage  from "@/pages/Booking/index.jsx";
+import EscrowPage   from "@/pages/Escrow/index.jsx";
 
 // Admin Pages (Lazy Loaded for better performance)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
@@ -106,8 +108,10 @@ function AppRoutes() {
           <Route path="/rating/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/booking/:id" element={<AuthGate><Dashboard /></AuthGate>} />
           <Route path="/map"    element={<AuthGate><MapNavigationScreen /></AuthGate>} />
-          <Route path="/market" element={<AuthGate><MarketPage /></AuthGate>} />
-          <Route path="/wallet" element={<AuthGate><WalletPage /></AuthGate>} />
+          <Route path="/market"   element={<AuthGate><MarketPage  /></AuthGate>} />
+          <Route path="/wallet"   element={<AuthGate><WalletPage  /></AuthGate>} />
+          <Route path="/booking"  element={<AuthGate><BookingPage /></AuthGate>} />
+          <Route path="/escrow"   element={<AuthGate><EscrowPage  /></AuthGate>} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />

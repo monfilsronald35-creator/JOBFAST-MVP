@@ -11,6 +11,7 @@ import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
 import { getAllCategoryConfigs } from "../config/marketplaceConfig";
+import StoryRing from "../components/stories/StoryRing";
 import CompanyContent, {
   COMPANY_TABS, CompanyOverviewSupplement,
 } from "./company/CompanyDashboard";
@@ -586,6 +587,9 @@ function WorkerHome({
       <ContactModal employer={contactTarget} onClose={handleCloseContact} navigate={navigate} />
 
       <div className="pb-8 space-y-5">
+
+        {/* ── STORIES ─────────────────────────────────────────────── */}
+        <StoryRing />
 
         {/* ── PREMIUM HERO ────────────────────────────────────────── */}
         <div className="mx-4 relative rounded-3xl overflow-hidden p-5 border border-slate-800/50 shadow-2xl shadow-black/60">

@@ -966,7 +966,9 @@
     "back": "Volver",
     "openMenu": "Abrir menú",
     "market": "Mercado",
-    "wallet": "Billetera"
+    "wallet": "Billetera",
+    "booking": "Reservas",
+    "escrow": "Depósito en garantía"
   },
   "postJob": {
     "title": "Publicar un Proyecto",
@@ -1103,5 +1105,91 @@
     "recipientPlaceholder": "Teléfono, email o @username",
     "notePlaceholder": "Nota (opcional)",
     "escrowDesc": "Los fondos se retienen de forma segura hasta que el trabajo sea validado por ambas partes."
+  },
+  "stories": {
+    "myStory": "Mi historia",
+    "addStory": "Agregar",
+    "createStory": "Crear historia",
+    "typeText": "Texto",
+    "typePhoto": "Foto",
+    "typeVideo": "Video",
+    "textPlaceholder": "Escribe un mensaje…",
+    "publish": "Publicar",
+    "addHighlight": "Agregar a Destacados",
+    "deleteStory": "Eliminar historia",
+    "reportStory": "Reportar",
+    "blockUser": "Bloquear usuario",
+    "react": "Reaccionar",
+    "reply": "Responder…",
+    "viewed": "Visto"
+  },
+  "booking": {
+    "title": "Reservas",
+    "new": "+ Nueva",
+    "upcoming": "Próximas",
+    "past": "Pasadas",
+    "all": "Todas",
+    "empty": "Sin reservas",
+    "step1": "Elegir tipo",
+    "step2": "Detalles",
+    "step3": "Resumen",
+    "continue": "Continuar",
+    "confirm": "Confirmar reserva",
+    "cancel": "Cancelar",
+    "contact": "Contactar",
+    "rate": "Calificar",
+    "paymentMethod": "Método de pago",
+    "escrowNote": "Pago protegido por JOBFAST Escrow",
+    "types": {
+      "hotel": "Hotel",
+      "restaurant": "Restaurante",
+      "clinic": "Clínica",
+      "hospital": "Hospital",
+      "tourism": "Turismo",
+      "rental": "Alquiler",
+      "event": "Evento"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmada",
+      "completed": "Completada",
+      "cancelled": "Cancelada"
+    }
+  },
+  "escrow": {
+    "title": "JOBFAST Garantía",
+    "totalLocked": "Total en garantía",
+    "protectedNote": "Fondos protegidos hasta validación",
+    "processTitle": "Cómo funciona la garantía",
+    "employer": "Empleador",
+    "worker": "Trabajador",
+    "active": "Activo",
+    "completed": "Completado",
+    "disputed": "En disputa",
+    "all": "Todos",
+    "empty": "Sin garantías activas",
+    "fundedAmount": "Monto en garantía",
+    "heldSafely": "Retenido de forma segura por JOBFAST",
+    "jobDescription": "Descripción del trabajo",
+    "validateWork": "Confirmar trabajo completado",
+    "waitingOther": "Esperando a la otra parte…",
+    "openDispute": "Abrir disputa",
+    "submitDispute": "Enviar disputa",
+    "disputeNote": "JOBFAST revisará la disputa en 48h.",
+    "disputeReason": "Motivo de la disputa",
+    "howItWorks": "Cómo funciona el Escrow",
+    "step1": "El empleador deposita fondos en JOBFAST Escrow",
+    "step2": "El trabajo comienza",
+    "step3": "Ambas partes validan que el trabajo está completo",
+    "step4": "JOBFAST libera los fondos al Trabajador",
+    "releaseCondition": "Fondos liberados solo tras validación mutua",
+    "status": {
+      "funded": "Financiado",
+      "in_progress": "En progreso",
+      "pending_validation": "Pendiente de validación",
+      "completed": "Fondos liberados",
+      "disputed": "En disputa",
+      "cancelled": "Cancelado"
+    }
   }
 }

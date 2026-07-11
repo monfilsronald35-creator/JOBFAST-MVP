@@ -966,7 +966,9 @@
     "back": "Back",
     "openMenu": "Open menu",
     "market": "Market",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "booking": "Bookings",
+    "escrow": "Escrow"
   },
   "postJob": {
     "title": "Post a Project",
@@ -1103,5 +1105,91 @@
     "recipientPlaceholder": "Phone, email, or @username",
     "notePlaceholder": "Note (optional)",
     "escrowDesc": "Job funds are held securely until the work is validated by both parties. This protects both Workers and Employers."
+  },
+  "stories": {
+    "myStory": "My Story",
+    "addStory": "Add",
+    "createStory": "Create Story",
+    "typeText": "Text",
+    "typePhoto": "Photo",
+    "typeVideo": "Video",
+    "textPlaceholder": "Write a message…",
+    "publish": "Publish",
+    "addHighlight": "Add to Highlights",
+    "deleteStory": "Delete Story",
+    "reportStory": "Report",
+    "blockUser": "Block User",
+    "react": "React",
+    "reply": "Reply…",
+    "viewed": "Seen"
+  },
+  "booking": {
+    "title": "Bookings",
+    "new": "+ New",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "all": "All",
+    "empty": "No bookings yet",
+    "step1": "Choose type",
+    "step2": "Details",
+    "step3": "Summary",
+    "continue": "Continue",
+    "confirm": "Confirm Booking",
+    "cancel": "Cancel",
+    "contact": "Contact",
+    "rate": "Rate",
+    "paymentMethod": "Payment Method",
+    "escrowNote": "Payment protected by JOBFAST Escrow",
+    "types": {
+      "hotel": "Hotel",
+      "restaurant": "Restaurant",
+      "clinic": "Clinic",
+      "hospital": "Hospital",
+      "tourism": "Tourism",
+      "rental": "Rental",
+      "event": "Event"
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "escrow": {
+    "title": "JOBFAST Escrow",
+    "totalLocked": "Total Held in Escrow",
+    "protectedNote": "Funds protected until work is validated",
+    "processTitle": "How Escrow works",
+    "employer": "Employer",
+    "worker": "Worker",
+    "active": "Active",
+    "completed": "Completed",
+    "disputed": "Disputed",
+    "all": "All",
+    "empty": "No active escrows",
+    "fundedAmount": "Amount in Escrow",
+    "heldSafely": "Held securely by JOBFAST",
+    "jobDescription": "Job Description",
+    "validateWork": "Confirm Work Completed",
+    "waitingOther": "Waiting for the other party…",
+    "openDispute": "Open Dispute",
+    "submitDispute": "Submit Dispute",
+    "disputeNote": "JOBFAST will review the dispute within 48h.",
+    "disputeReason": "Dispute Reason",
+    "howItWorks": "How Escrow Works",
+    "step1": "Employer deposits funds into JOBFAST Escrow",
+    "step2": "Work begins",
+    "step3": "Both parties validate work is complete",
+    "step4": "JOBFAST releases funds to the Worker",
+    "releaseCondition": "Funds released only after mutual validation",
+    "status": {
+      "funded": "Funded",
+      "in_progress": "In Progress",
+      "pending_validation": "Pending Validation",
+      "completed": "Funds Released",
+      "disputed": "Disputed",
+      "cancelled": "Cancelled"
+    }
   }
 }
