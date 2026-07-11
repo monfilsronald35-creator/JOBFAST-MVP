@@ -362,7 +362,7 @@ function Register() {
             t('registration.ui.stepBasicInfo'),
             t('registration.complete', { defaultValue: 'Konplè' }),
           ]}
-          stepTextFormatter={(c, tot) => t('registration.stepOf', { c, tot, defaultValue: `Etap ${c} sou ${tot}` })}
+          stepTextFormatter={(cur, tot) => t('registration.stepOf', { cur, tot, defaultValue: `Etap ${cur} sou ${tot}` })}
         />
       )}
 
