@@ -8,32 +8,38 @@ const CARD   = '#111827';
 const BORDER = '#1F2937';
 const GOLD   = '#FACC15';
 
-// ── 10 notification categories ────────────────────────────────
+// ── 14 notification categories ────────────────────────────────
 const CATEGORIES = [
-  { id: 'all',         icon: '🔔', label: 'Tout'        },
-  { id: 'jobs',        icon: '💼', label: 'Jobs'         },
-  { id: 'payments',    icon: '💳', label: 'Payments'     },
-  { id: 'reservations',icon: '📅', label: 'Reservations' },
-  { id: 'messages',    icon: '💬', label: 'Messages'     },
-  { id: 'stories',     icon: '📖', label: 'Stories'      },
-  { id: 'marketplace', icon: '🛒', label: 'Marketplace'  },
-  { id: 'companies',   icon: '🏢', label: 'Companies'    },
-  { id: 'system',      icon: '⚙️', label: 'System'       },
-  { id: 'security',    icon: '🔒', label: 'Security'     },
-  { id: 'ai',          icon: '✨', label: 'AI'           },
+  { id: 'all',         icon: '🔔', label: 'Tout'          },
+  { id: 'jobs',        icon: '💼', label: 'Jobs'           },
+  { id: 'messages',    icon: '💬', label: 'Messages'       },
+  { id: 'calls',       icon: '📞', label: 'Calls'          },
+  { id: 'payments',    icon: '💳', label: 'Payments'       },
+  { id: 'reservations',icon: '📅', label: 'Reservations'  },
+  { id: 'marketplace', icon: '🛒', label: 'Marketplace'   },
+  { id: 'stories',     icon: '📖', label: 'Stories'        },
+  { id: 'followers',   icon: '👥', label: 'Followers'      },
+  { id: 'reviews',     icon: '⭐', label: 'Reviews'        },
+  { id: 'companies',   icon: '🏢', label: 'Companies'      },
+  { id: 'security',    icon: '🔒', label: 'Security'       },
+  { id: 'promotions',  icon: '🎯', label: 'Promotions'    },
+  { id: 'ai',          icon: '✨', label: 'AI'             },
 ];
 
 // ── Category color map ─────────────────────────────────────────
 const CAT_COLOR = {
   jobs:         { dot:'#3b82f6', bg:'rgba(59,130,246,0.12)'   },
+  messages:     { dot:'#f59e0b', bg:'rgba(245,158,11,0.12)'   },
+  calls:        { dot:'#10b981', bg:'rgba(16,185,129,0.12)'   },
   payments:     { dot:'#10b981', bg:'rgba(16,185,129,0.12)'   },
   reservations: { dot:'#6366f1', bg:'rgba(99,102,241,0.12)'   },
-  messages:     { dot:'#f59e0b', bg:'rgba(245,158,11,0.12)'   },
-  stories:      { dot:'#a855f7', bg:'rgba(168,85,247,0.12)'   },
   marketplace:  { dot:'#f97316', bg:'rgba(249,115,22,0.12)'   },
+  stories:      { dot:'#a855f7', bg:'rgba(168,85,247,0.12)'   },
+  followers:    { dot:'#06b6d4', bg:'rgba(6,182,212,0.12)'    },
+  reviews:      { dot:'#f59e0b', bg:'rgba(245,158,11,0.12)'   },
   companies:    { dot:'#06b6d4', bg:'rgba(6,182,212,0.12)'    },
-  system:       { dot:'#64748b', bg:'rgba(100,116,139,0.12)'  },
   security:     { dot:'#ef4444', bg:'rgba(239,68,68,0.12)'    },
+  promotions:   { dot:'#f97316', bg:'rgba(249,115,22,0.10)'   },
   ai:           { dot: GOLD,     bg:'rgba(250,204,21,0.10)'   },
 };
 
@@ -61,16 +67,19 @@ const MOCK_NOTIFS = [
 
 // ── Destination page per category ─────────────────────────────
 const CAT_ROUTE = {
-  jobs:         '/search',
+  jobs:         '/jobs',
+  messages:     '/chat',
+  calls:        '/chat',
   payments:     '/wallet',
   reservations: '/booking',
-  messages:     '/chat',
-  stories:      '/market',
   marketplace:  '/market',
+  stories:      '/market',
+  followers:    '/search',
+  reviews:      '/settings',
   companies:    '/search',
-  system:       '/settings',
   security:     '/settings',
-  ai:           '/search',
+  promotions:   '/market',
+  ai:           '/jobs',
 };
 
 // ── Quick action chips per category ───────────────────────────
@@ -95,6 +104,24 @@ const CAT_ACTIONS = {
     { label: 'Reply',    icon: '💬', route: '/chat'    },
     { label: 'Call',     icon: '📞', route: '/chat'    },
     { label: 'Video',    icon: '📹', route: '/chat'    },
+  ],
+  calls: [
+    { label: 'Rappèl',   icon: '📞', route: '/chat'    },
+    { label: 'Message',  icon: '💬', route: '/chat'    },
+    { label: 'Video',    icon: '📹', route: '/chat'    },
+  ],
+  followers: [
+    { label: 'Profile',  icon: '👤', route: '/search'  },
+    { label: 'Follow',   icon: '➕', toggle: true       },
+    { label: 'Message',  icon: '💬', route: '/chat'     },
+  ],
+  reviews: [
+    { label: 'Wè',       icon: '⭐', route: '/settings'},
+    { label: 'Reponn',   icon: '💬', route: '/settings'},
+  ],
+  promotions: [
+    { label: 'Wè Ofè',  icon: '🎯', route: '/market'  },
+    { label: 'Sove',     icon: '🔖', toggle: true       },
   ],
   stories: [
     { label: 'View',     icon: '👁',  route: '/market'  },

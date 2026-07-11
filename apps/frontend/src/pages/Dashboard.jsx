@@ -705,7 +705,7 @@ function WorkerHome({
             {/* Stat tiles */}
             <div className="grid grid-cols-4 gap-2">
               {[
-                { icon: '💼', label: 'Nouvo Djòb', value: loading ? '…' : (jobs.length || 18), color: 'text-amber-400',  path: '/search'  },
+                { icon: '💼', label: 'Nouvo Djòb', value: loading ? '…' : (jobs.length || 18), color: 'text-amber-400',  path: '/jobs'    },
                 { icon: '💬', label: 'Mesaj',      value: user?.stats?.messages    ?? 5,        color: 'text-blue-400',  path: '/chat'    },
                 { icon: '📅', label: 'Rezèvas',    value: user?.stats?.reservations ?? 3,       color: 'text-indigo-400',path: '/booking' },
                 { icon: '💳', label: 'Wallet',     value: '$245',                               color: 'text-green-400', path: '/wallet'  },
@@ -726,14 +726,14 @@ function WorkerHome({
           <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2.5">⚡ Quick Actions</p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { icon:'🔍', label:'Find Job',       path:'/search'            },
+              { icon:'💼', label:'Find Job',       path:'/jobs'              },
               { icon:'🛠', label:'Offer Service',  path:'/provider-dashboard'},
-              { icon:'💼', label:'Create Job',     path:'/post-job'          },
+              { icon:'📝', label:'Post Job',       path:'/post-job'          },
               { icon:'🛒', label:'Marketplace',    path:'/market'            },
               { icon:'📅', label:'Reservations',   path:'/booking'           },
               { icon:'💳', label:'Payments',       path:'/wallet'            },
               { icon:'💬', label:'Messages',       path:'/chat'              },
-              { icon:'✨', label:'AI Assistant',   path:'/chat'              },
+              { icon:'🔍', label:'Search',         path:'/search'            },
             ].map(a => (
               <button key={a.label} type="button" onClick={() => navigate(a.path)}
                 className="flex flex-col items-center gap-1.5 py-3 bg-[#0d1526] border border-slate-800 rounded-2xl hover:border-amber-500/30 transition-all active:scale-95">
@@ -839,7 +839,7 @@ function WorkerHome({
         <div className="space-y-3">
           <div className="flex items-center justify-between px-4">
             <p className="text-[12px] font-black uppercase tracking-widest text-orange-400">🔥 Trending Jobs</p>
-            <button type="button" onClick={() => navigate('/search')}
+            <button type="button" onClick={() => navigate('/jobs')}
               className="text-[11px] text-slate-500 hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
               Wè tout <ArrowRight className="w-3 h-3" />
             </button>

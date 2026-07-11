@@ -31,6 +31,7 @@ import MarketPage               from "@/pages/Market/index.jsx";
 import WalletPage               from "@/pages/Wallet/index.jsx";
 import UniversalSearch          from "@/pages/UniversalSearch/index.jsx";
 import SmartNotifications       from "@/pages/SmartNotifications/index.jsx";
+import JobsHub                  from "@/pages/Jobs/index.jsx";
 import BookingPage              from "@/pages/Booking/index.jsx";
 import EscrowPage               from "@/pages/Escrow/index.jsx";
 import ProfessionDetailPage     from "@/pages/Profession/index.jsx";
@@ -102,6 +103,7 @@ function AppRoutes() {
           <Route path="/status" element={<AuthGate><AvailabilityStatus /></AuthGate>} />
           <Route path="/profile" element={<AuthGate><UserProfileDisplay /></AuthGate>} />
           <Route path="/search" element={<AuthGate><UniversalSearch /></AuthGate>} />
+          <Route path="/jobs"   element={<AuthGate><JobsHub /></AuthGate>} />
           
           {/* Additional Protected Routes (Placeholders) */}
           <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
