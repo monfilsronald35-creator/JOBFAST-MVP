@@ -141,7 +141,11 @@
       "stepSubcategory": "Choose Field",
       "stepProfession": "Choose Profession",
       "stepBasicInfo": "Basic Information",
-      "stepProfessional": "Professional Profile"
+      "stepProfessional": "Professional Profile",
+      "stepRole": "Choose your role",
+      "searchProfession": "Search profession...",
+      "searchResults": "Search results",
+      "noResults": "No results found"
     },
     "categories": {
       "construction": "Construction",
@@ -492,6 +496,14 @@
       "grant_writer": "Grant Writer",
       "mne_officer": "M&E Officer",
       "communications_officer": "Communications Officer"
+    },
+    "roles": {
+      "worker": "Worker",
+      "worker_desc": "I'm looking for a job",
+      "employer": "Employer / Company",
+      "employer_desc": "I'm hiring",
+      "service_provider": "Service Provider",
+      "service_provider_desc": "I offer my services"
     }
   },
   "user": {

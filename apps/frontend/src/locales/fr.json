@@ -317,7 +317,11 @@
       "stepSubcategory": "Choisir le domaine",
       "stepProfession": "Choisir la profession",
       "stepBasicInfo": "Informations de base",
-      "stepProfessional": "Profil professionnel"
+      "stepProfessional": "Profil professionnel",
+      "stepRole": "Choisissez votre rôle",
+      "searchProfession": "Rechercher une profession...",
+      "searchResults": "Résultats",
+      "noResults": "Aucun résultat"
     },
     "categories": {
       "construction": "Construction",
@@ -668,6 +672,14 @@
       "grant_writer": "Rédacteur de Subventions",
       "mne_officer": "Agent S&E",
       "communications_officer": "Responsable Communication"
+    },
+    "roles": {
+      "worker": "Travailleur",
+      "worker_desc": "Je cherche un emploi",
+      "employer": "Employeur / Entreprise",
+      "employer_desc": "Je recrute des employés",
+      "service_provider": "Prestataire de Services",
+      "service_provider_desc": "Je propose mes services"
     }
   },
   "dashboard": {

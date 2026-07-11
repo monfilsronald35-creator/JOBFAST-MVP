@@ -260,7 +260,11 @@
       "stepSubcategory": "Chwazi Domèn",
       "stepProfession": "Chwazi Pwofesyon",
       "stepBasicInfo": "Enfòmasyon Debaz",
-      "stepProfessional": "Pwofil Pwofesyonèl"
+      "stepProfessional": "Pwofil Pwofesyonèl",
+      "stepRole": "Chwazi Wòl ou",
+      "searchProfession": "Chèche pwofesyon...",
+      "searchResults": "Rezilta rechèch",
+      "noResults": "Pa gen rezilta"
     },
     "categories": {
       "construction": "Konstriksyon",
@@ -611,6 +615,14 @@
       "grant_writer": "Redaktè Sibvansyon",
       "mne_officer": "Ofisyèl S&E",
       "communications_officer": "Responsab Kominikasyon"
+    },
+    "roles": {
+      "worker": "Travayè",
+      "worker_desc": "Mwen ap chèche travay",
+      "employer": "Anplwayè / Konpayi",
+      "employer_desc": "Mwen ap rekrute travayè",
+      "service_provider": "Founisè Sèvis",
+      "service_provider_desc": "Mwen ofri sèvis mwen"
     }
   },
   "professionFields": {

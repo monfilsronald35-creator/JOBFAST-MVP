@@ -5,54 +5,40 @@ import API from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { getRoleDefaultPath } from '../../config/roleConfig';
 
-// ── New 3-step category/profession selection ──────────────────
+// ── Registration steps (selection) ───────────────────────────
+import Step0_RoleSelect     from '../../components/registration/Step0_RoleSelect';
 import Step1_CategorySelect from '../../components/registration/Step1_CategorySelect';
 import Step2_SubCategory    from '../../components/registration/Step2_SubCategory';
 import Step3_Profession     from '../../components/registration/Step3_Profession';
 
-// ── Existing form steps ───────────────────────────────────────
+// ── Registration steps (form) ─────────────────────────────────
 import Step3_BasicInfo            from './Step3_BasicInfo';
 import Step4_ProfessionalDetails  from './Step4_ProfessionalDetails';
 import RegistrationProgress       from './RegistrationProgress';
 
-// ── Category → backend role mapping ──────────────────────────
-// Maps new registrationCategories IDs to backend USER_ROLES values
-const CATEGORY_TO_ROLE = {
-  construction:        'worker',
-  services:            'service_provider',
-  healthcare:          'worker',
-  company:             'company',
+// ── Role type → backend role resolution ──────────────────────
+// employer maps to category-specific backend role; worker/service_provider are flat
+const EMPLOYER_CATEGORY_ROLE = {
   hotel:               'hotel',
   restaurant:          'restaurant',
   hospital:            'hospital',
   clinic:              'clinic',
   tourism:             'tourism',
-  supplier:            'service_provider',
   enterprise:          'enterprise',
-  it_software:         'worker',
-  design_creative:     'worker',
-  marketing_sales:     'worker',
-  education:           'worker',
-  legal:               'worker',
-  finance_banking:     'worker',
-  agriculture:         'worker',
-  manufacturing:       'worker',
-  logistics:           'service_provider',
-  real_estate:         'worker',
-  automotive:          'service_provider',
-  pet_services:        'service_provider',
-  beauty_spa:          'service_provider',
-  entertainment:       'service_provider',
-  music:               'worker',
-  photography:         'service_provider',
-  video_production:    'service_provider',
-  marketplace_sellers: 'company',
-  government:          'worker',
+  company:             'company',
   ngo:                 'company',
+  marketplace_sellers: 'company',
 };
+
+function resolveBackendRole(roleType, categoryId) {
+  if (roleType === 'worker')           return 'worker';
+  if (roleType === 'service_provider') return 'service_provider';
+  return EMPLOYER_CATEGORY_ROLE[categoryId] || 'company';
+}
 
 // ── Internal step IDs ─────────────────────────────────────────
 const STEPS = {
+  ROLE:         0,
   CATEGORY:     1,
   SUBCATEGORY:  2,
   PROFESSION:   3,
@@ -61,31 +47,46 @@ const STEPS = {
 };
 
 // Maps internal steps to visual progress position (1–4)
+// Returns 0 on ROLE step → progress bar hidden
 const toVisualStep = (step) => {
+  if (step <= STEPS.ROLE)        return 0;
   if (step <= STEPS.SUBCATEGORY) return 1;
   if (step === STEPS.PROFESSION) return 2;
   if (step === STEPS.BASIC_INFO) return 3;
   return 4;
 };
 
+// Step title i18n key lookup
+const STEP_KEY = {
+  [STEPS.ROLE]:         'stepRole',
+  [STEPS.CATEGORY]:     'stepCategory',
+  [STEPS.SUBCATEGORY]:  'stepSubcategory',
+  [STEPS.PROFESSION]:   'stepProfession',
+  [STEPS.BASIC_INFO]:   'stepBasicInfo',
+  [STEPS.PROFESSIONAL]: 'stepProfessional',
+};
 
 // ─────────────────────────────────────────────────────────────
 function Register() {
-  const navigate    = useNavigate();
-  const { t }       = useTranslation();
+  const navigate             = useNavigate();
+  const { t }                = useTranslation();
   const { login: authLogin } = useAuth();
 
-  const [currentStep, setCurrentStep] = useState(STEPS.CATEGORY);
-  const [loading,      setLoading]      = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [currentStep,    setCurrentStep]    = useState(STEPS.ROLE);
+  const [loading,        setLoading]        = useState(false);
+  const [errorMessage,   setErrorMessage]   = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Role type selected in Step 0 ('worker' | 'employer' | 'service_provider')
+  const [selectedRoleType,    setSelectedRoleType]    = useState(null);
+
   // Selection state — objects from registrationCategories / professionData
-  const [selectedCategory,   setSelectedCategory]   = useState(null);
-  const [selectedSubcategory,setSelectedSubcategory] = useState(null);
-  const [selectedProfession, setSelectedProfession]  = useState(null);
+  const [selectedCategory,    setSelectedCategory]    = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [selectedProfession,  setSelectedProfession]  = useState(null);
 
   const [formData, setFormData] = useState({
+    roleType:        '',
     role:            '',
     category:        '',
     subcategory:     '',
@@ -138,21 +139,46 @@ function Register() {
     }));
   }, []);
 
+  // ── Step 0: Role type selected ──────────────────────────────
+  const handleRoleSelect = useCallback((roleObj) => {
+    setSelectedRoleType(roleObj.id);
+    setFormData(prev => ({ ...prev, roleType: roleObj.id }));
+    setCurrentStep(STEPS.CATEGORY);
+  }, []);
+
   // ── Step 1: Category selected ───────────────────────────────
   const handleCategorySelect = useCallback((cat) => {
     setSelectedCategory(cat);
     setSelectedSubcategory(null);
     setSelectedProfession(null);
+    const backendRole = resolveBackendRole(selectedRoleType, cat.id);
     setFormData(prev => ({
       ...prev,
       category:        cat.id,
       subcategory:     '',
       profession:      '',
       professionLabel: '',
-      role:            CATEGORY_TO_ROLE[cat.id] || 'worker',
+      role:            backendRole,
     }));
     setCurrentStep(cat.hasSubcategories ? STEPS.SUBCATEGORY : STEPS.PROFESSION);
-  }, []);
+  }, [selectedRoleType]);
+
+  // ── Step 1 search: direct profession select ─────────────────
+  const handleDirectSelect = useCallback((cat, sub, profession) => {
+    const backendRole = resolveBackendRole(selectedRoleType, cat.id);
+    setSelectedCategory(cat);
+    setSelectedSubcategory(sub);
+    setSelectedProfession(profession);
+    setFormData(prev => ({
+      ...prev,
+      category:        cat.id,
+      subcategory:     sub?.id || '',
+      profession:      profession.id,
+      professionLabel: profession.label,
+      role:            backendRole,
+    }));
+    setCurrentStep(STEPS.BASIC_INFO);
+  }, [selectedRoleType]);
 
   // ── Step 2: Subcategory selected ────────────────────────────
   const handleSubcategorySelect = useCallback((sub) => {
@@ -218,6 +244,7 @@ function Register() {
         phone:           formData.phone,
         password:        formData.password,
         role:            formData.role,
+        roleType:        formData.roleType,
         category:        formData.category,
         subcategory:     formData.subcategory || '',
         profession:      formData.profession,
@@ -264,8 +291,8 @@ function Register() {
         isTimeout || isNetworkError
           ? 'Sèvè a ap reveye (Render free tier). Tanpri eseye ankò nan 30 segond.'
           : err?.response?.data?.error?.message ||
-            err?.response?.data?.message       ||
-            err?.message                        ||
+            err?.response?.data?.message        ||
+            err?.message                         ||
             'Enskripsyon echwe — tanpri eseye ankò'
       );
     } finally {
@@ -276,7 +303,10 @@ function Register() {
 
   // ── Back navigation ─────────────────────────────────────────
   const handleBack = useCallback(() => {
-    if (currentStep === STEPS.SUBCATEGORY) {
+    if (currentStep === STEPS.CATEGORY) {
+      setSelectedRoleType(null);
+      setCurrentStep(STEPS.ROLE);
+    } else if (currentStep === STEPS.SUBCATEGORY) {
       setSelectedCategory(null);
       setCurrentStep(STEPS.CATEGORY);
     } else if (currentStep === STEPS.PROFESSION) {
@@ -294,6 +324,8 @@ function Register() {
     }
   }, [currentStep, selectedCategory]);
 
+  const visualStep = toVisualStep(currentStep);
+
   // ─────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-navy-900 text-white flex flex-col p-6 relative overflow-hidden">
@@ -301,7 +333,7 @@ function Register() {
 
       {/* Header */}
       <div className="flex items-center justify-between max-w-2xl mx-auto w-full z-10 mb-2">
-        {currentStep > STEPS.CATEGORY ? (
+        {currentStep > STEPS.ROLE ? (
           <button
             onClick={handleBack}
             className="text-xl hover:opacity-70 transition"
@@ -313,33 +345,26 @@ function Register() {
           <div className="w-8" />
         )}
         <h1 className="font-bold text-lg flex-1 text-center">
-          {(() => {
-            const k = {
-              [STEPS.CATEGORY]:     'stepCategory',
-              [STEPS.SUBCATEGORY]:  'stepSubcategory',
-              [STEPS.PROFESSION]:   'stepProfession',
-              [STEPS.BASIC_INFO]:   'stepBasicInfo',
-              [STEPS.PROFESSIONAL]: 'stepProfessional',
-            }[currentStep];
-            return t(`registration.ui.${k}`);
-          })()}
+          {t(`registration.ui.${STEP_KEY[currentStep]}`)}
         </h1>
         <div className="w-8" />
       </div>
 
-      {/* Progress indicator */}
-      <RegistrationProgress
-        current={toVisualStep(currentStep)}
-        total={4}
-        title={t('registration.progress', { defaultValue: 'Pwogrè Enskripsyon' })}
-        stepLabels={[
-          t('registration.ui.stepCategory'),
-          t('registration.ui.stepProfession'),
-          t('registration.ui.stepBasicInfo'),
-          t('registration.complete', { defaultValue: 'Konplè' }),
-        ]}
-        stepTextFormatter={(c, tot) => t('registration.stepOf', { c, tot, defaultValue: `Etap ${c} sou ${tot}` })}
-      />
+      {/* Progress indicator — hidden on ROLE step */}
+      {visualStep > 0 && (
+        <RegistrationProgress
+          current={visualStep}
+          total={4}
+          title={t('registration.progress', { defaultValue: 'Pwogrè Enskripsyon' })}
+          stepLabels={[
+            t('registration.ui.stepCategory'),
+            t('registration.ui.stepProfession'),
+            t('registration.ui.stepBasicInfo'),
+            t('registration.complete', { defaultValue: 'Konplè' }),
+          ]}
+          stepTextFormatter={(c, tot) => t('registration.stepOf', { c, tot, defaultValue: `Etap ${c} sou ${tot}` })}
+        />
+      )}
 
       {/* Alerts */}
       <div className="w-full max-w-2xl mx-auto z-10">
@@ -358,8 +383,15 @@ function Register() {
       {/* Step content */}
       <div className="w-full max-w-2xl mx-auto flex-1 z-10 pb-4 overflow-y-auto">
 
+        {currentStep === STEPS.ROLE && (
+          <Step0_RoleSelect onSelect={handleRoleSelect} />
+        )}
+
         {currentStep === STEPS.CATEGORY && (
-          <Step1_CategorySelect onSelect={handleCategorySelect} />
+          <Step1_CategorySelect
+            onSelect={handleCategorySelect}
+            onDirectSelect={handleDirectSelect}
+          />
         )}
 
         {currentStep === STEPS.SUBCATEGORY && selectedCategory && (

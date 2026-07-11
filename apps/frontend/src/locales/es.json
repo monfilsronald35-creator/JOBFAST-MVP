@@ -141,7 +141,11 @@
       "stepSubcategory": "Elegir Campo",
       "stepProfession": "Elegir Profesión",
       "stepBasicInfo": "Información Básica",
-      "stepProfessional": "Perfil Profesional"
+      "stepProfessional": "Perfil Profesional",
+      "stepRole": "Elige tu rol",
+      "searchProfession": "Buscar profesión...",
+      "searchResults": "Resultados",
+      "noResults": "Sin resultados"
     },
     "categories": {
       "construction": "Construcción",
@@ -492,6 +496,14 @@
       "grant_writer": "Escritor de Proyectos",
       "mne_officer": "Oficial S&E",
       "communications_officer": "Oficial de Comunicaciones"
+    },
+    "roles": {
+      "worker": "Trabajador",
+      "worker_desc": "Estoy buscando trabajo",
+      "employer": "Empleador / Empresa",
+      "employer_desc": "Estoy contratando",
+      "service_provider": "Proveedor de Servicios",
+      "service_provider_desc": "Ofrezco mis servicios"
     }
   },
   "user": {
