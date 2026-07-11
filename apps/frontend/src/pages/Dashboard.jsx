@@ -5,6 +5,7 @@ import {
   Search, Building2, MapPin, Briefcase, Star, CheckCircle,
   ArrowRight, RefreshCcw, Navigation, Bookmark,
   Mic, QrCode, SlidersHorizontal, X, Wallet,
+  Heart, MessageCircle, Share2, Play,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { getRoleDashboard, isEmployerRole } from "../config/roleConfig";
 import { getAllCategoryConfigs } from "../config/marketplaceConfig";
 import StoryRing from "../components/stories/StoryRing";
+import { getFeed, likePost, unlikePost, isLiked, getLikeCount } from "../services/social";
 import CompanyContent, {
   COMPANY_TABS, CompanyOverviewSupplement,
 } from "./company/CompanyDashboard";
@@ -670,6 +672,9 @@ function WorkerHome({
         {/* ── STORIES ─────────────────────────────────────────────── */}
         <StoryRing />
 
+        {/* ── SOCIAL FEED ─────────────────────────────────────────── */}
+        <SocialFeedSection myId={String(user?._id || user?.id || '')} />
+
         {/* ── 1. QUICK DASHBOARD ──────────────────────────────────── */}
         <div className="mx-4">
           <div className="bg-gradient-to-br from-slate-800/80 via-[#111827] to-[#0a1628] border border-slate-700/50 rounded-3xl p-4 shadow-xl">
@@ -1036,6 +1041,122 @@ function WorkerHome({
 
       </div>
     </>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// SOCIAL FEED — posts from followed users
+// ════════════════════════════════════════════════════════════════
+const FEED_BG = '#050B18'; const FEED_CARD = '#0d1526'; const FEED_BORDER = '#1F2937'; const FEED_GOLD = '#FACC15';
+
+function timeAgoFeed(date) {
+  if (!date) return '';
+  const s = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (s < 60)   return `${s}s`;
+  if (s < 3600) return `${Math.floor(s/60)}m`;
+  if (s < 86400) return `${Math.floor(s/3600)}h`;
+  return `${Math.floor(s/86400)}j`;
+}
+
+const FeedPost = memo(function FeedPost({ post, myId, navigate }) {
+  const [liked, setLiked] = useState(() => isLiked(myId, post.id || post._id));
+  const [likes, setLikes] = useState(() => getLikeCount(post.id || post._id) || post.likesCount || 0);
+
+  const toggleLike = useCallback(() => {
+    if (liked) { unlikePost(myId, post); setLikes(l => Math.max(0, l - 1)); }
+    else       { likePost(myId, post);   setLikes(l => l + 1); }
+    setLiked(l => !l);
+  }, [liked, myId, post]);
+
+  return (
+    <div className="border-b" style={{ borderColor: FEED_BORDER }}>
+      {/* Post header */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button type="button" onClick={() => navigate(`/u/${post.userId}`)} className="shrink-0">
+          <img src={post.userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`}
+            alt="" className="w-9 h-9 rounded-full object-cover border-2" style={{ borderColor: FEED_GOLD }} />
+        </button>
+        <div className="flex-1 min-w-0">
+          <button type="button" onClick={() => navigate(`/u/${post.userId}`)}>
+            <p className="text-xs font-black text-white leading-none">{post.userName || 'Itilizatè'}</p>
+            {post.userProfession && <p className="text-[10px] text-amber-400 font-semibold mt-0.5">{post.userProfession}</p>}
+          </button>
+        </div>
+        <span className="text-[10px] text-slate-500 shrink-0">{timeAgoFeed(post.createdAt)}</span>
+      </div>
+
+      {/* Media */}
+      {post.mediaUrl ? (
+        post.type === 'video'
+          ? <div className="relative"><video src={post.mediaUrl} className="w-full max-h-[420px] object-cover" muted playsInline />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-12 h-12 rounded-full bg-black/40 flex items-center justify-center">
+                  <Play className="w-6 h-6 text-white fill-white" />
+                </div>
+              </div>
+            </div>
+          : <img src={post.mediaUrl} alt="" className="w-full object-cover max-h-[420px]" />
+      ) : post.type === 'promotion' ? (
+        <div className="mx-4 mb-2 p-3 rounded-2xl" style={{ background: `${FEED_GOLD}12`, border: `1px solid ${FEED_GOLD}30` }}>
+          <p className="text-xs text-amber-300 font-bold">📢 Pwomosyon</p>
+          {post.caption && <p className="text-sm text-slate-200 mt-1">{post.caption}</p>}
+        </div>
+      ) : null}
+
+      {/* Actions */}
+      <div className="flex items-center gap-4 px-4 pt-2 pb-1">
+        <button type="button" onClick={toggleLike} className="flex items-center gap-1.5 active:scale-90 transition-transform">
+          <Heart className={`w-5 h-5 transition-colors ${liked ? 'text-red-500 fill-red-500' : 'text-slate-400'}`} />
+          {likes > 0 && <span className="text-xs text-slate-400">{likes}</span>}
+        </button>
+        <button type="button" onClick={() => navigate(`/u/${post.userId}`)} className="flex items-center gap-1.5 text-slate-400">
+          <MessageCircle className="w-5 h-5" />
+          {post.commentsCount > 0 && <span className="text-xs">{post.commentsCount}</span>}
+        </button>
+        <button type="button" className="text-slate-400">
+          <Share2 className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Caption */}
+      {post.caption && post.type !== 'promotion' && (
+        <p className="px-4 pb-3 text-xs text-slate-300 leading-relaxed">
+          <span className="font-black text-white mr-1">{post.userName}</span>{post.caption}
+        </p>
+      )}
+    </div>
+  );
+});
+
+function SocialFeedSection({ myId }) {
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const local = getFeed(myId);
+    setPosts(local);
+    setLoaded(true);
+  }, [myId]);
+
+  if (!loaded || posts.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between px-4 mb-2">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">📸 Fil Sosyal</p>
+        <button type="button" onClick={() => navigate('/create-post')}
+          className="text-[11px] font-black px-3 py-1 rounded-full"
+          style={{ background: `${FEED_GOLD}20`, color: FEED_GOLD }}>
+          + Pibliye
+        </button>
+      </div>
+      <div style={{ background: FEED_BG }}>
+        {posts.slice(0, 10).map(p => (
+          <FeedPost key={p.id || p._id} post={p} myId={myId} navigate={navigate} />
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -2,6 +2,9 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { X, Camera, Video, Megaphone, Image, Upload, ChevronRight } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { addPost } from "../../services/social";
+import API from "../../api/axios";
 
 const BG     = "#050B18";
 const CARD   = "#111827";
@@ -35,6 +38,7 @@ const POST_TYPES = [
 export default function CreatePostScreen() {
   const navigate      = useNavigate();
   const { t }         = useTranslation();
+  const { user }      = useAuth();
   const fileInputRef  = useRef(null);
   const videoInputRef = useRef(null);
 
@@ -61,11 +65,32 @@ export default function CreatePostScreen() {
 
   async function handlePost() {
     setPosting(true);
-    // MVP: simulate post delay; real implementation posts to /api/v1/posts
-    await new Promise(r => setTimeout(r, 1200));
+    const myId = String(user?._id || user?.id || '');
+    const postData = {
+      id: `post_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+      userId: myId,
+      userName: user?.name || '',
+      userAvatar: user?.profileMetadata?.profilePhoto || '',
+      type: postType,
+      mediaUrl: media?.url || '',
+      caption: caption.trim(),
+      audience: 'public',
+      likesCount: 0,
+      commentsCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Persist to localStorage immediately
+    addPost(postData);
+
+    // Background sync to API
+    API.post('/posts', { type: postType, mediaUrl: media?.url || '', caption: caption.trim(), audience: 'public' })
+      .catch(() => {});
+
+    await new Promise(r => setTimeout(r, 800));
     setPosting(false);
     setDone(true);
-    setTimeout(() => navigate("/dashboard"), 1800);
+    setTimeout(() => navigate("/dashboard"), 1500);
   }
 
   const accent = POST_TYPES.find(p => p.id === postType)?.accent || GOLD;

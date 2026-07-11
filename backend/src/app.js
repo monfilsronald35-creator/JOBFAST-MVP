@@ -24,6 +24,7 @@ import paymentRoutes     from './routes/payment.routes.js';
 import escrowRoutes      from './routes/escrow.routes.js';
 import payoutRoutes      from './routes/payout.routes.js';
 import messageRoutes    from './routes/messages.routes.js';
+import postRoutes       from './routes/posts.routes.js';
 
 // ✅ CHEMEN KORÈK LA: Nou retire "/middlewares" paske fichye a nan menm nivo ak app.js
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
@@ -103,6 +104,7 @@ app.use(`${API_PREFIX}/payments`,   paymentRoutes);
 app.use(`${API_PREFIX}/escrow`,     escrowRoutes);
 app.use(`${API_PREFIX}/payouts`,    payoutRoutes);
 app.use(`${API_PREFIX}/messages`,   messageRoutes);
+app.use(`${API_PREFIX}/posts`,      postRoutes);
 
 // Public community feed — returns latest registered members (no auth required)
 app.get(`${API_PREFIX}/community/members`, async (req, res) => {

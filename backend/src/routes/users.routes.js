@@ -12,6 +12,7 @@ import {
   deleteUser,
   getUserStats,
 } from '../controllers/userController.js';
+import { followUserHandler, unfollowUserHandler } from '../controllers/follow.controller.js';
 import { USER_ROLES } from '../config/constants.js';
 
 const router = Router();
@@ -35,6 +36,10 @@ router.get(
   authorizeRoles(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   getUserStats
 );
+
+// ── Follow / unfollow ─────────────────────────────────────────────────────────
+router.post('/:id/follow',    followUserHandler);
+router.delete('/:id/follow',  unfollowUserHandler);
 
 // ── Public (auth'd) profile lookup ───────────────────────────────────────────
 router.get('/:id', getUserById);
