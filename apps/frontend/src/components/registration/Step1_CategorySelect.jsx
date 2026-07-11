@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { REGISTRATION_CATEGORIES } from '../../config/registrationCategories';
 
 const COLOR_RING = {
@@ -23,10 +24,11 @@ const COLOR_RING = {
 };
 
 export default function Step1_CategorySelect({ onSelect }) {
+  const { t } = useTranslation();
   return (
     <div className="w-full">
       <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
-        Chwazi Kategori ou
+        {t('registration.ui.selectCategory')}
       </h2>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -43,7 +45,7 @@ export default function Step1_CategorySelect({ onSelect }) {
                 {cat.icon}
               </span>
               <span className="text-sm font-semibold text-white leading-tight">
-                {cat.label}
+                {t(`registration.categories.${cat.id}`, { defaultValue: cat.label })}
               </span>
             </button>
           );

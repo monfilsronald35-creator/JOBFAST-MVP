@@ -68,14 +68,6 @@ const toVisualStep = (step) => {
   return 4;
 };
 
-// ── Step titles ───────────────────────────────────────────────
-const STEP_TITLES = {
-  [STEPS.CATEGORY]:     'Chwazi Kategori',
-  [STEPS.SUBCATEGORY]:  'Chwazi Domèn',
-  [STEPS.PROFESSION]:   'Chwazi Pwofesyon',
-  [STEPS.BASIC_INFO]:   'Enfòmasyon Debaz',
-  [STEPS.PROFESSIONAL]: 'Pwofil Pwofesyonèl',
-};
 
 // ─────────────────────────────────────────────────────────────
 function Register() {
@@ -321,7 +313,16 @@ function Register() {
           <div className="w-8" />
         )}
         <h1 className="font-bold text-lg flex-1 text-center">
-          {STEP_TITLES[currentStep]}
+          {(() => {
+            const k = {
+              [STEPS.CATEGORY]:     'stepCategory',
+              [STEPS.SUBCATEGORY]:  'stepSubcategory',
+              [STEPS.PROFESSION]:   'stepProfession',
+              [STEPS.BASIC_INFO]:   'stepBasicInfo',
+              [STEPS.PROFESSIONAL]: 'stepProfessional',
+            }[currentStep];
+            return t(`registration.ui.${k}`);
+          })()}
         </h1>
         <div className="w-8" />
       </div>
@@ -330,9 +331,14 @@ function Register() {
       <RegistrationProgress
         current={toVisualStep(currentStep)}
         total={4}
-        title="Pwogrè Enskripsyon"
-        stepLabels={['Kategori', 'Pwofesyon', 'Enfòmasyon', 'Konplè']}
-        stepTextFormatter={(c, tot) => `Etap ${c} sou ${tot}`}
+        title={t('registration.progress', { defaultValue: 'Pwogrè Enskripsyon' })}
+        stepLabels={[
+          t('registration.ui.stepCategory'),
+          t('registration.ui.stepProfession'),
+          t('registration.ui.stepBasicInfo'),
+          t('registration.complete', { defaultValue: 'Konplè' }),
+        ]}
+        stepTextFormatter={(c, tot) => t('registration.stepOf', { c, tot, defaultValue: `Etap ${c} sou ${tot}` })}
       />
 
       {/* Alerts */}

@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getSubcategories } from '../../config/professionData';
 
 export default function Step2_SubCategory({ category, onSelect, onBack }) {
+  const { t } = useTranslation();
   const subcategories = getSubcategories(category.id);
 
   return (
@@ -18,12 +20,14 @@ export default function Step2_SubCategory({ category, onSelect, onBack }) {
         </button>
         <div className="flex items-center gap-2">
           <span className="text-xl" aria-hidden="true">{category.icon}</span>
-          <h2 className="text-sm font-bold text-white">{category.label}</h2>
+          <h2 className="text-sm font-bold text-white">
+            {t(`registration.categories.${category.id}`, { defaultValue: category.label })}
+          </h2>
         </div>
       </div>
 
       <p className="text-xs text-slate-400 mb-4 uppercase tracking-wider font-bold">
-        Chwazi yon sous-kategori
+        {t('registration.ui.selectSubcategory')}
       </p>
 
       <div className="space-y-2">
@@ -34,7 +38,9 @@ export default function Step2_SubCategory({ category, onSelect, onBack }) {
             onClick={() => onSelect(sub)}
             className="flex items-center justify-between w-full px-4 py-3.5 bg-[#0f172a] rounded-2xl border border-slate-800 hover:border-slate-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
           >
-            <span className="text-sm font-semibold text-white">{sub.label}</span>
+            <span className="text-sm font-semibold text-white">
+              {t(`registration.subcategories.${sub.id}`, { defaultValue: sub.label })}
+            </span>
             <span className="text-slate-500 text-xs">→</span>
           </button>
         ))}
