@@ -4,6 +4,7 @@ import React, {
 import {
   Search, Building2, MapPin, Briefcase, Star, CheckCircle,
   ArrowRight, RefreshCcw, Navigation, Bookmark,
+  Mic, QrCode, SlidersHorizontal, X, Wallet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -548,6 +549,84 @@ function RoleDashboard({ dashConfig }) {
   );
 }
 
+// ── Smart filter chips (9 items, horizontal scroll) ────────────────
+const SMART_FILTERS = [
+  { id: 'location',  icon: '📍', label: 'Lokasyon'  },
+  { id: 'category',  icon: '📂', label: 'Kategori'  },
+  { id: 'salary',    icon: '💰', label: 'Salè'      },
+  { id: 'country',   icon: '🌎', label: 'Peyi'      },
+  { id: 'date',      icon: '📅', label: 'Dat'       },
+  { id: 'rating',    icon: '⭐', label: 'Nòt'       },
+  { id: 'available', icon: '🟢', label: 'Disponib'  },
+  { id: 'company',   icon: '🏢', label: 'Antrepriz' },
+  { id: 'urgent',    icon: '⚡', label: 'Ijan'      },
+];
+
+// ── Service industry list (6 sectors) ─────────────────────────────
+const SERVICE_INDUSTRIES = [
+  { id: 'restaurant',   icon: '🍽',  label: 'Restaurant',   count: 1248,  unit: 'Businesses', role: 'restaurant'   },
+  { id: 'hotel',        icon: '🏨',  label: 'Hôtel',        count: 824,   unit: 'Hotels',     role: 'hotel'        },
+  { id: 'hospital',     icon: '🏥',  label: 'Lopital',      count: 216,   unit: 'Hospitals',  role: 'hospital'     },
+  { id: 'clinic',       icon: '🩺',  label: 'Klinik',       count: 378,   unit: 'Clinics',    role: 'clinic'       },
+  { id: 'tourism',      icon: '✈',   label: 'Touris',       count: 561,   unit: 'Companies',  role: 'tourism'      },
+  { id: 'construction', icon: '🏗',  label: 'Konstriksyon', count: 5812,  unit: 'Companies',  role: 'construction' },
+];
+
+// ── AI recommendation mock data ────────────────────────────────────
+const MOCK_AI_RECS = [
+  { id: 'ai1', profession: 'Elektrisyen',    match: 92, icon: '⚡' },
+  { id: 'ai2', profession: 'Chef / Kuyinye', match: 88, icon: '👨‍🍳' },
+  { id: 'ai3', profession: 'Chofè',          match: 85, icon: '🚗' },
+  { id: 'ai4', profession: 'Plombye',        match: 79, icon: '🔧' },
+];
+
+// ── Compact list-style job card (LinkedIn / Indeed pattern) ────────
+const JobListCard = memo(function JobListCard({ job, navigate, userCity }) {
+  const title   = job.title || job.profession || 'Position';
+  const company = job.company || job.name || '';
+  const salary  = job.salary || job.budget || job.rate || '';
+  const city    = job.location?.city || job.city || userCity || '';
+  const timeAgo = formatTimeAgo(job.createdAt);
+  const userId  = job.userId || job._id || job.id;
+  const photo   = job.companyLogo || job.profileMetadata?.profilePhoto
+    || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(company || 'J')}&backgroundColor=1e293b`;
+
+  return (
+    <div role="button" tabIndex={0}
+      onClick={() => navigate(`/u/${userId}`, { state: { profile: job } })}
+      onKeyDown={e => e.key === 'Enter' && navigate(`/u/${userId}`, { state: { profile: job } })}
+      className="flex items-center gap-3 px-4 py-4 cursor-pointer hover:bg-white/[0.015] transition-colors active:bg-white/[0.025]"
+      style={{ WebkitTapHighlightColor: 'transparent' }}>
+      <div className="relative shrink-0">
+        <img src={photo} alt={company}
+          className="w-12 h-12 rounded-[14px] object-cover border border-[#1F2937] bg-[#111827]"
+          onError={e => { e.currentTarget.src = 'https://api.dicebear.com/7.x/initials/svg?seed=J'; }} />
+        {!!job.verified && (
+          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#111827] flex items-center justify-center">
+            <CheckCircle className="w-2 h-2 text-white" />
+          </span>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-black text-white truncate leading-tight">{title}</p>
+        <p className="text-[11px] text-slate-400 truncate mt-0.5">
+          {company}{company && city ? ' · ' : ''}{city}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <span className="text-[9px] bg-[#1F2937] text-slate-400 rounded-lg px-1.5 py-0.5 font-medium">Tan Plen</span>
+          {salary && <span className="text-[9px] font-black text-amber-400">{salary}</span>}
+          {timeAgo && <span className="text-[9px] text-slate-600">{timeAgo}</span>}
+        </div>
+      </div>
+      <button type="button"
+        onClick={e => { e.stopPropagation(); navigate(`/u/${userId}`, { state: { profile: job } }); }}
+        className="shrink-0 px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-black transition-all active:scale-95">
+        Apply
+      </button>
+    </div>
+  );
+});
+
 // ════════════════════════════════════════════════════════════════
 // PREMIUM WORKER HOME
 // ════════════════════════════════════════════════════════════════
@@ -591,234 +670,356 @@ function WorkerHome({
         {/* ── STORIES ─────────────────────────────────────────────── */}
         <StoryRing />
 
-        {/* ── PREMIUM HERO ────────────────────────────────────────── */}
-        <div className="mx-4 relative rounded-3xl overflow-hidden p-5 border border-slate-800/50 shadow-2xl shadow-black/60">
-          {/* Layered backgrounds */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#111827] via-[#1a1240] to-[#0a1628]" aria-hidden="true" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.12),transparent_60%)]" aria-hidden="true" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.08),transparent_55%)]" aria-hidden="true" />
-          {/* Decorative blurs */}
-          <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "3s" }} aria-hidden="true" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-600/6 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "4s", animationDelay: "1.2s" }} aria-hidden="true" />
-          <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-violet-500/4 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDuration: "5s", animationDelay: "0.6s" }} aria-hidden="true" />
-
-          <div className="relative">
-            {/* Avatar + greeting row */}
-            <div className="flex items-start gap-3">
-              <div className="relative shrink-0">
+        {/* ── 1. QUICK DASHBOARD ──────────────────────────────────── */}
+        <div className="mx-4">
+          <div className="bg-gradient-to-br from-slate-800/80 via-[#111827] to-[#0a1628] border border-slate-700/50 rounded-3xl p-4 shadow-xl">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70">{greeting}</p>
+                <h1 className="text-[18px] font-black text-white leading-tight">{firstName || user?.name}</h1>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <MapPin className="w-3 h-3 text-amber-400 shrink-0" aria-hidden="true" />
+                  <span className="text-[11px] text-slate-400">{geo.city}</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2 shrink-0">
                 <img src={avatarSrc} alt={user?.name}
-                  className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-500/40 shadow-xl shadow-black/40" />
-                <span
-                  className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#111827] shadow-md ${
-                    availability === "available" ? "bg-green-500" : "bg-slate-500"
-                  }`}
-                  aria-hidden="true"
-                />
+                  className="w-12 h-12 rounded-2xl object-cover border-2 border-amber-500/40 shadow-lg"
+                  onError={e => { e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=user`; }} />
+                <button type="button" onClick={toggleAvailability} aria-pressed={availability === 'available'}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black border transition-all active:scale-95 ${
+                    availability === 'available'
+                      ? 'bg-green-500/15 border-green-500/30 text-green-400'
+                      : 'bg-slate-800 border-slate-700 text-slate-500'
+                  }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${availability === 'available' ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
+                  {availability === 'available' ? 'Disponib' : 'Okipe'}
+                </button>
               </div>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400/70 leading-tight">{greeting}</p>
-                <h1 className="text-[15px] font-bold text-slate-300 leading-tight mt-0.5">
-                  {t("dashboard.welcomeBack")},
-                </h1>
-                <h2 className="text-[22px] font-black text-white leading-tight tracking-tight truncate">
-                  {firstName || user?.name}
-                </h2>
-              </div>
-              {/* Availability toggle */}
-              <button
-                type="button"
-                onClick={toggleAvailability}
-                aria-label={availability === "available" ? t("dashboard.available") : t("dashboard.busy")}
-                aria-pressed={availability === "available"}
-                className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[10px] font-bold transition-all active:scale-95 mt-1 ${
-                  availability === "available"
-                    ? "bg-green-500/15 border-green-500/30 text-green-400 shadow-lg shadow-green-500/10"
-                    : "bg-slate-800/60 border-slate-700/50 text-slate-400"
-                }`}>
-                <span className={`w-2 h-2 rounded-full shrink-0 ${availability === "available" ? "bg-green-400 animate-pulse" : "bg-slate-500"}`} aria-hidden="true" />
-                {availability === "available" ? t("dashboard.available") : t("dashboard.busy")}
-              </button>
             </div>
-
-            {/* Subtitle */}
-            <p className="text-[12px] text-slate-400 mt-2.5 leading-relaxed">{t("dashboard.heroSubtitle")}</p>
-
-            {/* Profile chips */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/50 border border-slate-700/40 backdrop-blur-sm">
-                <MapPin className="w-3 h-3 text-amber-400 shrink-0" aria-hidden="true" />
-                <span className="text-[10px] font-semibold text-slate-300">{geo.city}</span>
-              </div>
-              {rating && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 backdrop-blur-sm">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" aria-hidden="true" />
-                  <span className="text-[10px] font-bold text-amber-300">{Number(rating).toFixed(1)}</span>
-                </div>
-              )}
-              {verified && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm">
-                  <CheckCircle className="w-3 h-3 text-emerald-400 shrink-0" aria-hidden="true" />
-                  <span className="text-[10px] font-semibold text-emerald-300">{t("dashboard.verified")}</span>
-                </div>
-              )}
-            </div>
-
             {retrying && (
-              <p className="text-[10px] text-amber-400 mt-2 animate-pulse" aria-live="polite">
-                {t("dashboard.reconnecting")}
+              <p className="text-[10px] text-amber-400 mb-2 animate-pulse" aria-live="polite">
+                {t('dashboard.reconnecting')}
               </p>
             )}
+            {/* Stat tiles */}
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { icon: '💼', label: 'Nouvo Djòb', value: loading ? '…' : (jobs.length || 18), color: 'text-amber-400',  path: '/search'  },
+                { icon: '💬', label: 'Mesaj',      value: user?.stats?.messages    ?? 5,        color: 'text-blue-400',  path: '/chat'    },
+                { icon: '📅', label: 'Rezèvas',    value: user?.stats?.reservations ?? 3,       color: 'text-indigo-400',path: '/booking' },
+                { icon: '💳', label: 'Wallet',     value: '$245',                               color: 'text-green-400', path: '/wallet'  },
+              ].map(s => (
+                <button key={s.label} type="button" onClick={() => navigate(s.path)}
+                  className="flex flex-col items-center gap-1 p-2 bg-slate-800/50 rounded-2xl border border-slate-700/40 hover:border-amber-500/30 transition-all active:scale-95">
+                  <span className="text-base leading-none">{s.icon}</span>
+                  <span className={`text-sm font-black leading-none ${s.color}`}>{s.value}</span>
+                  <span className="text-[7px] text-slate-500 text-center leading-tight">{s.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* ── PREMIUM SEARCH ───────────────────────────────────────── */}
-        <div className="px-4 space-y-2.5">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center gap-2.5 bg-slate-900/80 border border-slate-700/50 rounded-2xl px-4 py-3 shadow-inner
-              focus-within:border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/10 transition-all">
-              <Search className="w-4 h-4 text-slate-500 shrink-0" aria-hidden="true" />
-              <input
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t("dashboard.searchPlaceholder")}
-                aria-label={t("dashboard.searchPlaceholder")}
-                className="flex-1 bg-transparent text-[13px] text-white placeholder-slate-500 outline-none"
-              />
-              {searchQuery && (
-                <button type="button" onClick={() => setSearchQuery("")}
-                  aria-label="Efase rechèch"
-                  className="text-slate-500 hover:text-white text-xs w-4 h-4 flex items-center justify-center shrink-0">✕</button>
-              )}
-            </div>
-            <button type="button" onClick={handleRefresh}
-              aria-label="Rafraîchi done yo"
-              className="w-11 h-11 flex items-center justify-center bg-slate-900/80 border border-slate-700/50 rounded-2xl text-slate-400 hover:text-amber-400 hover:border-amber-500/40 active:scale-95 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
-              <RefreshCcw className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-
-          {/* Filter chips */}
-          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {SEARCH_FILTERS.map(f => (
-              <button key={f.id} type="button"
-                onClick={() => setActiveFilter(prev => prev === f.id ? null : f.id)}
-                aria-pressed={activeFilter === f.id}
-                className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold border transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
-                  activeFilter === f.id
-                    ? "bg-amber-500 text-slate-950 border-amber-500 shadow-lg shadow-amber-500/20"
-                    : "bg-slate-900/70 text-slate-400 border-slate-700/50 hover:border-amber-500/30 hover:text-slate-300"
-                }`}>
-                <span aria-hidden="true">{f.icon}</span>
-                <span>{t(`dashboard.${f.key}`)}</span>
+        {/* ── QUICK ACTIONS ────────────────────────────────────────── */}
+        <div className="px-4">
+          <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-2.5">⚡ Quick Actions</p>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { icon:'🔍', label:'Find Job',       path:'/search'            },
+              { icon:'🛠', label:'Offer Service',  path:'/provider-dashboard'},
+              { icon:'💼', label:'Create Job',     path:'/post-job'          },
+              { icon:'🛒', label:'Marketplace',    path:'/market'            },
+              { icon:'📅', label:'Reservations',   path:'/booking'           },
+              { icon:'💳', label:'Payments',       path:'/wallet'            },
+              { icon:'💬', label:'Messages',       path:'/chat'              },
+              { icon:'✨', label:'AI Assistant',   path:'/chat'              },
+            ].map(a => (
+              <button key={a.label} type="button" onClick={() => navigate(a.path)}
+                className="flex flex-col items-center gap-1.5 py-3 bg-[#0d1526] border border-slate-800 rounded-2xl hover:border-amber-500/30 transition-all active:scale-95">
+                <span className="text-xl leading-none">{a.icon}</span>
+                <span className="text-[8px] font-bold text-slate-400 text-center leading-tight">{a.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* ── PRIMARY + SECONDARY CTA ───────────────────────────────── */}
-        <div className="px-4 grid grid-cols-2 gap-3">
-          {/* Find Work — primary (only amber CTA on screen) */}
-          <button type="button" onClick={() => directoryRef.current?.scrollIntoView({ behavior: "smooth" })}
-            className="relative overflow-hidden flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
-              bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black
-              active:scale-[0.97] transition-all duration-200 shadow-xl shadow-amber-500/30 group
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]">
-            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300 rounded-2xl" aria-hidden="true" />
-            <span className="text-[26px] leading-none relative" aria-hidden="true">🔍</span>
-            <span className="text-[13px] font-black relative">{t("dashboard.findWork")}</span>
-            <span className="text-[9px] font-semibold opacity-60 relative">{t("dashboard.findWorkSub")}</span>
-          </button>
+        {/* ── 2. SEARCH BAR ────────────────────────────────────────── */}
+        <div className="px-4 space-y-3">
+          <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-700/50 rounded-2xl px-3 py-3
+            focus-within:border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/10 transition-all shadow-inner">
+            <Search className="w-4 h-4 text-slate-500 shrink-0" aria-hidden="true" />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') navigate(`/search?q=${encodeURIComponent(searchQuery)}`); }}
+              placeholder="Chèche djòb, antrepriz, sèvis…"
+              aria-label="Rechèch"
+              className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none"
+            />
+            {searchQuery && (
+              <button type="button" onClick={() => setSearchQuery('')} aria-label="Efase rechèch"
+                className="text-slate-500 hover:text-white shrink-0">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <div className="flex items-center gap-0.5 border-l border-slate-700/50 pl-2 ml-1">
+              <button type="button" aria-label="Rechèch vwa"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-amber-400 hover:bg-slate-800/70 transition-all">
+                <Mic className="w-3.5 h-3.5" />
+              </button>
+              <button type="button" aria-label="Scanner QR"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-amber-400 hover:bg-slate-800/70 transition-all">
+                <QrCode className="w-3.5 h-3.5" />
+              </button>
+              <button type="button" aria-label="Filtè avanse"
+                onClick={() => setActiveFilter(prev => prev === 'advanced' ? null : 'advanced')}
+                className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
+                  activeFilter === 'advanced' ? 'text-amber-400 bg-amber-500/10' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/70'
+                }`}>
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
 
-          {/* Offer Services — secondary (outline only, no gradient) */}
-          <button type="button" onClick={() => navigate("/post-job")}
-            className="flex flex-col items-center justify-center gap-2 py-5 rounded-2xl
-              border border-slate-700/50 text-white font-black
-              active:scale-[0.97] transition-all duration-200 hover:border-amber-500/30 hover:bg-slate-800/40
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">
-            <span className="text-[26px] leading-none" aria-hidden="true">⚡</span>
-            <span className="text-[13px] font-black">{t("dashboard.offerServices")}</span>
-            <span className="text-[9px] font-semibold opacity-40">{t("dashboard.offerServicesSub")}</span>
-          </button>
+          {/* ── 3. SMART FILTER CHIPS — 9 items ─────────────────────── */}
+          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+            {SMART_FILTERS.map(f => (
+              <button key={f.id} type="button"
+                onClick={() => setActiveFilter(prev => prev === f.id ? null : f.id)}
+                aria-pressed={activeFilter === f.id}
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all active:scale-95 ${
+                  activeFilter === f.id
+                    ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-lg shadow-amber-500/20'
+                    : 'bg-slate-900/70 text-slate-400 border-slate-700/50 hover:border-amber-500/30 hover:text-slate-300'
+                }`}>
+                <span aria-hidden="true">{f.icon}</span> {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* ── MARKETPLACE CTA ───────────────────────────────────────── */}
-        <div className="px-4">
-          <button type="button" onClick={() => navigate("/marketplace")}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl
-              bg-indigo-500/10 border border-indigo-500/20 text-left
-              hover:border-indigo-400/40 hover:bg-indigo-500/15
-              active:scale-[0.98] transition-all duration-200 group
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
-            <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-indigo-500/15 border border-indigo-500/20 text-xl" aria-hidden="true">
-              🏪
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-black text-white leading-tight">Marketplace</p>
-              <p className="text-[11px] text-slate-400 leading-tight mt-0.5 truncate">{t("dashboard.marketplaceSub")}</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-indigo-400 shrink-0 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
-          </button>
-        </div>
-
-        {/* ── SERVICE CATEGORY CAROUSEL (15 categories) ────────────── */}
+        {/* ── 4. SERVICES SECTION ──────────────────────────────────── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-4">
-            <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">{t("dashboard.categories")}</p>
-            <button type="button" onClick={() => navigate("/search")}
-              className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-lg px-1">
-              {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3" aria-hidden="true" />
+            <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">🏪 Sektè &amp; Sèvis</p>
+            <button type="button" onClick={() => navigate('/marketplace')}
+              className="text-[11px] text-amber-400 font-bold flex items-center gap-1 hover:text-amber-300 transition-colors">
+              Wè tout <ArrowRight className="w-3 h-3" />
             </button>
           </div>
-          <div className="flex gap-2.5 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            {MARKETPLACE_CATEGORIES.map(cat => {
-              const gradient = ACCENT_GRADIENT[cat.accentColor] || "from-slate-600/20 to-transparent";
-              return (
-                <button key={cat.role} type="button" onClick={() => navigate(`/marketplace/${cat.role}`)}
-                  className={`shrink-0 w-[78px] flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border
-                    bg-gradient-to-b ${gradient} bg-slate-900/80 border-slate-800/60 text-slate-300
-                    hover:border-amber-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40
-                    active:scale-95 transition-all duration-200 relative overflow-hidden group
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60`}>
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/3 rounded-2xl transition-all duration-300" aria-hidden="true" />
-                  <span className="text-[24px] leading-none relative" aria-hidden="true">{cat.icon}</span>
-                  <span className="text-[9px] font-bold leading-tight text-center px-1 w-full truncate text-slate-400 relative">
-                    {cat.label}
-                  </span>
+          <div className="mx-4 rounded-[20px] overflow-hidden bg-[#111827] border border-[#1F2937]">
+            {SERVICE_INDUSTRIES.map((s, idx, arr) => (
+              <React.Fragment key={s.id}>
+                <button type="button" onClick={() => navigate(`/marketplace/${s.role}`)}
+                  className="flex items-center gap-3 w-full px-4 py-4 hover:bg-white/[0.015] transition-colors active:bg-white/[0.025] text-left"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}>
+                  <div className="w-11 h-11 rounded-[14px] bg-[#1A2335] flex items-center justify-center text-2xl shrink-0">
+                    {s.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-black text-white">{s.label}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">{s.count.toLocaleString()} {s.unit}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-700 shrink-0" />
                 </button>
-              );
-            })}
+                {idx < arr.length - 1 && <div className="h-px mx-4 bg-[#1F2937]" />}
+              </React.Fragment>
+            ))}
           </div>
         </div>
 
         {error && (
-          <div
-            role="alert"
-            aria-live="assertive"
-            className="mx-4 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20"
-          >
+          <div role="alert" aria-live="assertive" className="mx-4 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20">
             {error}
           </div>
         )}
 
-        {/* ── FEATURED JOBS ───────────────────────────────────────── */}
-        <HSection icon="🔥" titleKey="featuredJobs" accentColor="text-orange-400" t={t}
-          onViewAll={() => navigate("/search")}>
-          {loading
-            ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
-            : featuredJobs.length > 0
-              ? featuredJobs.map((j, i) => <PremiumJobCard key={j._id || j.id || i} job={j} navigate={navigate} t={t} userCity={geo.city} />)
-              : <PremiumEmpty emoji="💼" title={t("dashboard.emptyJobsTitle")} subtitle={t("dashboard.emptyJobsSubtitle")} actionLabel={t("dashboard.viewAll")} onAction={() => navigate("/search")} />
-          }
-        </HSection>
+        {/* ── 5. FEATURED JOBS — list style (LinkedIn / Indeed) ────── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-4">
+            <p className="text-[12px] font-black uppercase tracking-widest text-orange-400">🔥 Trending Jobs</p>
+            <button type="button" onClick={() => navigate('/search')}
+              className="text-[11px] text-slate-500 hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
+              Wè tout <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="mx-4 rounded-[20px] overflow-hidden bg-[#111827] border border-[#1F2937]">
+            {loading
+              ? [1, 2, 3].map(i => (
+                  <React.Fragment key={i}>
+                    <div className="flex items-center gap-3 px-4 py-4 animate-pulse">
+                      <div className="w-12 h-12 rounded-[14px] bg-[#1F2937] shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 bg-[#1F2937] rounded-full w-3/4" />
+                        <div className="h-2 bg-[#1F2937] rounded-full w-1/2" />
+                        <div className="h-2 bg-[#1F2937] rounded-full w-1/3" />
+                      </div>
+                      <div className="w-14 h-8 rounded-xl bg-[#1F2937] shrink-0" />
+                    </div>
+                    {i < 2 && <div className="h-px mx-4 bg-[#1F2937]" />}
+                  </React.Fragment>
+                ))
+              : featuredJobs.length > 0
+                ? featuredJobs.slice(0, 5).map((j, idx, arr) => (
+                    <React.Fragment key={j._id || j.id || idx}>
+                      <JobListCard job={j} navigate={navigate} userCity={geo.city} />
+                      {idx < arr.length - 1 && <div className="h-px mx-4 bg-[#1F2937]" />}
+                    </React.Fragment>
+                  ))
+                : <div className="text-center py-8 text-slate-500 text-sm">{t('dashboard.emptyJobsTitle')}</div>
+            }
+          </div>
+        </div>
+
+        {/* ── 6. AI RECOMMENDATIONS ────────────────────────────────── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-4">
+            <p className="text-[12px] font-black uppercase tracking-widest text-indigo-400">✨ AI Recommendations</p>
+            <span className="text-[9px] bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 px-2 py-0.5 rounded-full font-bold">Pou ou</span>
+          </div>
+          <div className="mx-4 rounded-[20px] overflow-hidden bg-[#111827] border border-[#1F2937]">
+            {MOCK_AI_RECS.map((rec, idx, arr) => (
+              <React.Fragment key={rec.id}>
+                <div className="flex items-center gap-3 px-4 py-4">
+                  <div className="w-11 h-11 rounded-[14px] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl shrink-0">
+                    {rec.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-black text-white">{rec.profession}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex-1 h-1.5 bg-[#1F2937] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all"
+                          style={{ width: `${rec.match}%` }} />
+                      </div>
+                      <span className="text-[10px] font-black text-indigo-400 shrink-0">{rec.match}% Match</span>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => navigate('/search')}
+                    className="shrink-0 px-3 py-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-[11px] font-black hover:bg-indigo-500 hover:text-white hover:border-indigo-500 transition-all active:scale-95">
+                    Apply
+                  </button>
+                </div>
+                {idx < arr.length - 1 && <div className="h-px mx-4 bg-[#1F2937]" />}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* ── AI SMART FEED ────────────────────────────────────────── */}
+        <div className="space-y-4">
+          {/* Recommended Products */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-4">
+              <p className="text-[12px] font-black uppercase tracking-widest text-orange-400">🛒 Recommended Products</p>
+              <button type="button" onClick={() => navigate('/market')}
+                className="text-[11px] text-slate-500 hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
+                Wè tout <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="flex gap-2.5 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth:'none' }}>
+              {[
+                { icon:'📱', name:'iPhone 16 Pro', price:'$1,099', seller:'TechShop', match:95 },
+                { icon:'💻', name:'MacBook Pro M3', price:'$2,499', seller:'iCenter', match:88 },
+                { icon:'🚗', name:'Toyota Hilux',   price:'$32,000',seller:'AutoDeal',match:82 },
+                { icon:'⚡', name:'Groupe élect. 5KW',price:'$3,500',seller:'PowerDR',match:76 },
+              ].map(p => (
+                <button key={p.name} type="button" onClick={() => navigate('/market')}
+                  className="shrink-0 w-32 flex flex-col gap-2 p-3 bg-[#0d1526] border border-slate-800 rounded-2xl hover:border-amber-500/30 transition-all active:scale-95 text-left">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl">{p.icon}</div>
+                  <div>
+                    <p className="text-[11px] font-black text-white leading-tight truncate">{p.name}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{p.seller}</p>
+                    <p className="text-[11px] font-black text-amber-400 mt-1">{p.price}</p>
+                  </div>
+                  <span className="self-start text-[8px] bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 px-1.5 py-0.5 rounded-full font-bold">
+                    {p.match}% match
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommended Hotels */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-4">
+              <p className="text-[12px] font-black uppercase tracking-widest text-blue-400">🏨 Recommended Hotels</p>
+              <button type="button" onClick={() => navigate('/marketplace/hotel')}
+                className="text-[11px] text-slate-500 hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
+                Wè tout <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="px-4 space-y-2">
+              {[
+                { name:'Hotel Montana',      city:'Port-au-Prince', price:'$120/nuit', stars:4, verified:true  },
+                { name:'Royal Decameron DR', city:'Montrouis',      price:'$280/nuit', stars:5, verified:true  },
+                { name:'Karibe Convention',  city:'Pétionville',    price:'$150/nuit', stars:4, verified:false },
+              ].map(h => (
+                <div key={h.name}
+                  className="flex items-center gap-3 p-3 bg-[#0d1526] border border-slate-800 rounded-2xl hover:border-blue-500/30 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xl shrink-0">🏨</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <p className="text-sm font-black text-white truncate">{h.name}</p>
+                      {h.verified && <span className="text-[8px] text-amber-400">✓</span>}
+                    </div>
+                    <p className="text-xs text-slate-400">{h.city} · {'★'.repeat(h.stars)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[11px] font-black text-amber-400">{h.price}</p>
+                    <button type="button" onClick={() => navigate('/booking')}
+                      className="mt-1 text-[9px] font-black px-2 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500 hover:text-white transition-all">
+                      Rezève
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommended Workers */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-4">
+              <p className="text-[12px] font-black uppercase tracking-widest text-emerald-400">👷 Recommended Workers</p>
+              <button type="button" onClick={() => navigate('/search')}
+                className="text-[11px] text-slate-500 hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
+                Wè tout <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="flex gap-2.5 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth:'none' }}>
+              {[
+                { icon:'⚡', name:'Jean-Pierre M.', job:'Électricien',  rating:4.9, match:94, avail:true  },
+                { icon:'👩‍⚕️', name:'Marie Celeste', job:'Infirmière',   rating:4.8, match:89, avail:true  },
+                { icon:'👨‍🍳', name:'Carlos Mendez', job:'Chef Kuyinye', rating:5.0, match:85, avail:false },
+                { icon:'🔧', name:'Paul Fils',      job:'Plombye',      rating:4.7, match:79, avail:true  },
+              ].map(w => (
+                <button key={w.name} type="button" onClick={() => navigate('/search')}
+                  className="shrink-0 w-28 flex flex-col items-center gap-2 p-3 bg-[#0d1526] border border-slate-800 rounded-2xl hover:border-emerald-500/30 transition-all active:scale-95">
+                  <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xl">{w.icon}</div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-white leading-tight">{w.name}</p>
+                    <p className="text-[9px] text-slate-500">{w.job}</p>
+                    <p className="text-[9px] text-amber-400 font-bold">★ {w.rating}</p>
+                  </div>
+                  <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${
+                    w.avail ? 'bg-green-500/15 border border-green-500/25 text-green-400' : 'bg-slate-800 border border-slate-700 text-slate-500'
+                  }`}>
+                    {w.avail ? 'Disponib' : 'Okipe'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* ── TOP COMPANIES ────────────────────────────────────────── */}
         <HSection icon="🏢" titleKey="topCompanies" accentColor="text-blue-400" t={t}
-          onViewAll={() => directoryRef.current?.scrollIntoView({ behavior: "smooth" })}>
+          onViewAll={() => directoryRef.current?.scrollIntoView({ behavior: 'smooth' })}>
           {employersLoading
             ? [1, 2, 3].map(i => <PremiumSkeleton key={i} wide />)
             : topCompanies.length > 0
               ? topCompanies.map((c, i) => <PremiumCompanyCard key={c._id || c.id || i} company={c} navigate={navigate} t={t} onContact={setContactTarget} />)
-              : <PremiumEmpty emoji="🏢" title={t("dashboard.noEmployers")} subtitle={t("dashboard.noEmployersYet")} />
+              : <PremiumEmpty emoji="🏢" title={t('dashboard.noEmployers')} subtitle={t('dashboard.noEmployersYet')} />
           }
         </HSection>
 
@@ -827,7 +1028,7 @@ function WorkerHome({
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true" />
             <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">
-              {t("dashboard.employersTitle")}
+              {t('dashboard.employersTitle')}
             </p>
           </div>
           <EmployerDirectory searchQuery={searchQuery} onContact={setContactTarget} />

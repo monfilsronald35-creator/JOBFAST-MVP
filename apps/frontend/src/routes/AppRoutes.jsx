@@ -29,6 +29,8 @@ import MapNavigationScreen from "@/pages/MapNavigationScreen.jsx";
 import PublicProfileScreen from "@/pages/PublicProfileScreen.jsx";
 import MarketPage               from "@/pages/Market/index.jsx";
 import WalletPage               from "@/pages/Wallet/index.jsx";
+import UniversalSearch          from "@/pages/UniversalSearch/index.jsx";
+import SmartNotifications       from "@/pages/SmartNotifications/index.jsx";
 import BookingPage              from "@/pages/Booking/index.jsx";
 import EscrowPage               from "@/pages/Escrow/index.jsx";
 import ProfessionDetailPage     from "@/pages/Profession/index.jsx";
@@ -99,13 +101,13 @@ function AppRoutes() {
           <Route path="/post-job" element={<AuthGate><PostJobScreen /></AuthGate>} />
           <Route path="/status" element={<AuthGate><AvailabilityStatus /></AuthGate>} />
           <Route path="/profile" element={<AuthGate><UserProfileDisplay /></AuthGate>} />
-          <Route path="/search" element={<AuthGate><SearchScreen /></AuthGate>} />
+          <Route path="/search" element={<AuthGate><UniversalSearch /></AuthGate>} />
           
           {/* Additional Protected Routes (Placeholders) */}
           <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
+          <Route path="/notifications" element={<AuthGate><SmartNotifications /></AuthGate>} />
           <Route path="/chat" element={<AuthGate><ChatScreen /></AuthGate>} />
           <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
           <Route path="/u/:userId" element={<AuthGate><PublicProfileScreen /></AuthGate>} />

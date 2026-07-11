@@ -14,14 +14,12 @@ import { changeLanguage } from "../i18n";
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────
 
-// type: 'sos' | 'link' | 'fab'
+// type: 'sos' | 'link' | 'fab'  — 5 buttons total
 const BOTTOM_NAV = [
   { type: 'sos',  labelKey: 'nav.sos'                                          },
   { type: 'link', path: "/dashboard",  labelKey: "nav.home",     icon: Home          },
-  { type: 'link', path: "/market",     labelKey: "nav.market",   icon: Globe         },
   { type: 'fab',  labelKey: 'nav.create'                                       },
   { type: 'link', path: "/chat",       labelKey: "nav.messages", icon: MessageSquare },
-  { type: 'link', path: "/search",     labelKey: "nav.search",   icon: Search        },
   { type: 'link', path: "/settings",   labelKey: "nav.profile",  icon: User          },
 ];
 
@@ -390,59 +388,80 @@ export default function MainLayout({ children }) {
             </button>
           </div>
 
-          {/* Right: action cluster */}
-          <div className="flex items-center gap-1">
-            {/* Global Search */}
-            <button type="button" onClick={() => setSearchOpen(true)} aria-label="Chèche"
-              className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800/70 transition-all">
-              <Search className="w-[18px] h-[18px]" />
-            </button>
+          {/* Right: 🌐 EN · 🔔 · 💬 · 👤 */}
+          <div className="flex items-center gap-0.5">
 
-            {/* QR Scanner */}
-            <button type="button" onClick={() => setQrOpen(true)} aria-label="Scanner QR"
-              className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800/70 transition-all">
-              <QrCode className="w-[17px] h-[17px]" />
-            </button>
+            {/* Language selector */}
+            <div className="relative">
+              <button type="button" onClick={() => { setLangOpen(v => !v); setCurrOpen(false); }}
+                aria-label="Chanje lang"
+                className="flex items-center gap-1 h-8 px-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800/60 transition-all">
+                <Globe className="w-[15px] h-[15px]" />
+                <span className="text-[10px] font-black">{currentCode}</span>
+              </button>
+              {langOpen && (
+                <>
+                  <div className="fixed inset-0 z-[150]" onClick={() => setLangOpen(false)} />
+                  <div className="absolute right-0 top-9 z-[200] w-36 bg-[#0d1526] border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden">
+                    {LANGS.map(l => (
+                      <button key={l.code} type="button" onClick={() => handleLangChange(l.code)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[11px] font-bold transition hover:bg-slate-800/80 ${
+                          currentLang === l.code ? "text-amber-400 bg-amber-500/10" : "text-slate-300"
+                        }`}>
+                        <span className="text-sm">{l.flag}</span>
+                        <span className="flex-1 text-left">{l.label}</span>
+                        {currentLang === l.code && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
-            {/* Notifications with badge */}
+            {/* Notifications */}
             <NavLink to="/notifications" aria-label="Notifikasyon"
               className={({ isActive }) => `relative w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
                 isActive ? "text-amber-400 bg-amber-500/10" : "text-slate-400 hover:text-amber-400 hover:bg-slate-800/70"
               }`}>
               <Bell className="w-[18px] h-[18px]" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-[#0b1120]" aria-label="Nouvo notifikasyon" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-[#0b1120]" />
             </NavLink>
 
-            {isHome && (
-              /* Avatar (home only) */
-              <button type="button" onClick={() => navigate("/settings")} aria-label="Profil"
-                className="relative w-8 h-8 rounded-xl overflow-hidden border-2 border-amber-500/40 hover:border-amber-400 transition-all shadow-lg shadow-amber-500/10 ml-0.5 shrink-0">
-                <img src={avatarSrc} alt={user?.name || "user"} className="w-full h-full object-cover" />
-                <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0b1120] ${isOnline ? 'bg-green-500' : 'bg-slate-500'}`} />
-              </button>
-            )}
+            {/* Messages / Chat */}
+            <NavLink to="/chat" aria-label="Mesaj"
+              className={({ isActive }) => `relative w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+                isActive ? "text-amber-400 bg-amber-500/10" : "text-slate-400 hover:text-amber-400 hover:bg-slate-800/70"
+              }`}>
+              <MessageSquare className="w-[18px] h-[18px]" />
+            </NavLink>
+
+            {/* Avatar / Profile */}
+            <button type="button" onClick={() => navigate("/settings")} aria-label="Profil"
+              className="relative w-8 h-8 rounded-xl overflow-hidden border-2 border-amber-500/40 hover:border-amber-400 transition-all shadow-lg shadow-amber-500/10 ml-0.5 shrink-0">
+              <img src={avatarSrc} alt={user?.name || "user"} className="w-full h-full object-cover" />
+              <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0b1120] ${isOnline ? 'bg-green-500' : 'bg-slate-500'}`} />
+            </button>
           </div>
         </div>
 
-        {/* Row 2 — context bar (home only) */}
+        {/* Row 2 — context sub-bar: 📍 Location | ● Online | Wallet */}
         {isHome && (
-          <div className="h-9 flex items-center px-4 border-t border-slate-800/40 bg-[#070e1c]/60 gap-3">
+          <div className="h-9 flex items-center px-4 border-t border-slate-800/40 bg-[#070e1c]/60 gap-2.5">
 
             {/* Location */}
             <button type="button" onClick={() => navigate("/map")}
               className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400/90 hover:text-amber-400 transition-colors shrink-0">
               <MapPin className="w-3 h-3 shrink-0" />
-              <span className="truncate max-w-[90px]">{userCity || "—"}</span>
+              <span className="truncate max-w-[100px]">{userCity || "—"}</span>
             </button>
 
             <div className="w-px h-3 bg-slate-700/60 shrink-0" />
 
-            {/* Wallet balance */}
-            <NavLink to="/wallet"
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-green-400/80 hover:text-green-400 transition-colors shrink-0">
-              <Wallet className="w-3 h-3 shrink-0" />
-              <span>HTG 0.00</span>
-            </NavLink>
+            {/* Online status */}
+            <div className="flex items-center gap-1 shrink-0">
+              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+              <span className="text-[10px] font-bold text-slate-400">{isOnline ? 'Online' : 'Offline'}</span>
+            </div>
 
             <div className="flex-1" />
 
@@ -472,37 +491,12 @@ export default function MainLayout({ children }) {
               )}
             </div>
 
-            {/* Language switcher */}
-            <div className="relative">
-              <button type="button" onClick={() => { setLangOpen(v => !v); setCurrOpen(false); }}
-                className="flex items-center gap-1 h-6 px-2 rounded-lg bg-slate-800/70 border border-slate-700/50 hover:border-amber-500/40 transition-all">
-                <span className="text-sm leading-none">{currentFlag}</span>
-                <span className="text-[9px] font-bold text-slate-400">{currentCode}</span>
-              </button>
-              {langOpen && (
-                <>
-                  <div className="fixed inset-0 z-[150]" onClick={() => setLangOpen(false)} />
-                  <div className="absolute right-0 top-8 z-[200] w-36 bg-[#0d1526] border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden">
-                    {LANGS.map(l => (
-                      <button key={l.code} type="button" onClick={() => handleLangChange(l.code)}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[11px] font-bold transition hover:bg-slate-800/80 ${
-                          currentLang === l.code ? "text-amber-400 bg-amber-500/10" : "text-slate-300"
-                        }`}>
-                        <span className="text-sm">{l.flag}</span>
-                        <span className="flex-1 text-left">{l.label}</span>
-                        {currentLang === l.code && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Network status dot */}
-            <div className="flex items-center gap-1">
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-              <span className="text-[9px] font-medium text-slate-500">{isOnline ? 'Online' : 'Offline'}</span>
-            </div>
+            {/* Wallet balance */}
+            <NavLink to="/wallet"
+              className="flex items-center gap-1.5 text-[11px] font-bold text-green-400/80 hover:text-green-400 transition-colors shrink-0">
+              <Wallet className="w-3 h-3 shrink-0" />
+              <span>$245.00</span>
+            </NavLink>
           </div>
         )}
       </header>
