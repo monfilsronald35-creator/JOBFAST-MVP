@@ -964,7 +964,9 @@
     "available": "Available",
     "online": "Online",
     "back": "Back",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "market": "Market",
+    "wallet": "Wallet"
   },
   "postJob": {
     "title": "Post a Project",
@@ -1040,5 +1042,66 @@
       "manageListing": "Manage Listing",
       "findServices": "Find Services"
     }
+  },
+  "market": {
+    "title": "Marketplace",
+    "search": "Search marketplace…",
+    "sell": "Sell",
+    "browse": "Browse",
+    "myListings": "My Listings",
+    "empty": "No listings yet",
+    "createFirst": "Create your first listing",
+    "createListing": "New Listing",
+    "addPhotos": "Add photos (max 5)",
+    "title_field": "Title",
+    "category": "Category",
+    "price": "Price",
+    "currency": "Currency",
+    "city": "City",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your item…",
+    "publishListing": "Publish Listing",
+    "contact": "Contact Seller",
+    "negotiable": "Negotiable",
+    "condition": "Condition",
+    "new": "New",
+    "location": "Location",
+    "posted": "Posted",
+    "views": "Views",
+    "cat": {
+      "all": "All",
+      "products": "Products",
+      "services": "Services",
+      "equipment": "Equipment",
+      "vehicles": "Vehicles",
+      "materials": "Materials",
+      "medical": "Medical",
+      "electronics": "Electronics",
+      "furniture": "Furniture",
+      "clothes": "Clothes",
+      "real_estate": "Real Estate"
+    }
+  },
+  "wallet": {
+    "balance": "Total Balance",
+    "send": "Send",
+    "receive": "Receive",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw",
+    "rates": "Exchange rates",
+    "all": "All",
+    "received": "Received",
+    "sent": "Sent",
+    "pending": "Pending",
+    "noTransactions": "No transactions yet",
+    "cardsAndAccounts": "Cards & Bank Accounts",
+    "add": "Add",
+    "escrowTitle": "JOBFAST Escrow",
+    "depositVia": "Deposit via",
+    "escrowProtected": "Escrow protected",
+    "sendNow": "Send Now",
+    "recipientPlaceholder": "Phone, email, or @username",
+    "notePlaceholder": "Note (optional)",
+    "escrowDesc": "Job funds are held securely until the work is validated by both parties. This protects both Workers and Employers."
   }
 }

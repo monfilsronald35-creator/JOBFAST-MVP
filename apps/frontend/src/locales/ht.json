@@ -1144,7 +1144,9 @@
     "available": "Disponib",
     "online": "Online",
     "back": "Tounen",
-    "openMenu": "Ouvri menu"
+    "openMenu": "Ouvri menu",
+    "market": "Mache",
+    "wallet": "Pòtfèy"
   },
   "postJob": {
     "title": "Pibliye Pwojè a",
@@ -1220,5 +1222,66 @@
       "manageListing": "Jere Lis Ou",
       "findServices": "Jwenn Sèvis"
     }
+  },
+  "market": {
+    "title": "Marketplace",
+    "search": "Chèche nan marketplace…",
+    "sell": "Vann",
+    "browse": "Navige",
+    "myListings": "Lis Mwen",
+    "empty": "Pa gen lis kounye a",
+    "createFirst": "Kreye premye lis ou",
+    "createListing": "Nouvo Lis",
+    "addPhotos": "Ajoute foto (maks 5)",
+    "title_field": "Tit",
+    "category": "Kategori",
+    "price": "Pri",
+    "currency": "Deviz",
+    "city": "Vil",
+    "description": "Deskripsyon",
+    "descriptionPlaceholder": "Dekri pwodui ou a…",
+    "publishListing": "Pibliye Lis",
+    "contact": "Kontakte Vandè",
+    "negotiable": "Negosyab",
+    "condition": "Kondisyon",
+    "new": "Nèf",
+    "location": "Lokasyon",
+    "posted": "Poste",
+    "views": "Vit",
+    "cat": {
+      "all": "Tout",
+      "products": "Pwodui",
+      "services": "Sèvis",
+      "equipment": "Ekipman",
+      "vehicles": "Veyikil",
+      "materials": "Materyèl",
+      "medical": "Medikal",
+      "electronics": "Elektwonik",
+      "furniture": "Mèb",
+      "clothes": "Rad",
+      "real_estate": "Imobilye"
+    }
+  },
+  "wallet": {
+    "balance": "Balans Total",
+    "send": "Voye",
+    "receive": "Resevwa",
+    "deposit": "Depoze",
+    "withdraw": "Retire",
+    "rates": "Taux echanj",
+    "all": "Tout",
+    "received": "Resevwa",
+    "sent": "Voye",
+    "pending": "An Atant",
+    "noTransactions": "Okenn tranzaksyon",
+    "cardsAndAccounts": "Kat & Kont Bank",
+    "add": "Ajoute",
+    "escrowTitle": "JOBFAST Escrow",
+    "depositVia": "Depoze via",
+    "escrowProtected": "Escrow pwoteje",
+    "sendNow": "Voye Kounye a",
+    "recipientPlaceholder": "Telefòn, email, oswa @username",
+    "notePlaceholder": "Nòt (opsyonèl)",
+    "escrowDesc": "Lajan travay yo kenbe an sekurité jiskaske travay la valide pa tou de pati yo. Sa pwoteje Travayè ak Anplwayè."
   }
 }

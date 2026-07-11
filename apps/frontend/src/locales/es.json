@@ -964,7 +964,9 @@
     "available": "Disponible",
     "online": "Online",
     "back": "Volver",
-    "openMenu": "Abrir menú"
+    "openMenu": "Abrir menú",
+    "market": "Mercado",
+    "wallet": "Billetera"
   },
   "postJob": {
     "title": "Publicar un Proyecto",
@@ -1040,5 +1042,66 @@
       "manageListing": "Gestionar ficha",
       "findServices": "Buscar servicios"
     }
+  },
+  "market": {
+    "title": "Marketplace",
+    "search": "Buscar…",
+    "sell": "Vender",
+    "browse": "Explorar",
+    "myListings": "Mis Anuncios",
+    "empty": "Sin anuncios",
+    "createFirst": "Crea tu primer anuncio",
+    "createListing": "Nuevo Anuncio",
+    "addPhotos": "Agregar fotos (máx 5)",
+    "title_field": "Título",
+    "category": "Categoría",
+    "price": "Precio",
+    "currency": "Divisa",
+    "city": "Ciudad",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Describe tu artículo…",
+    "publishListing": "Publicar",
+    "contact": "Contactar Vendedor",
+    "negotiable": "Negociable",
+    "condition": "Estado",
+    "new": "Nuevo",
+    "location": "Ubicación",
+    "posted": "Publicado",
+    "views": "Vistas",
+    "cat": {
+      "all": "Todo",
+      "products": "Productos",
+      "services": "Servicios",
+      "equipment": "Equipos",
+      "vehicles": "Vehículos",
+      "materials": "Materiales",
+      "medical": "Médico",
+      "electronics": "Electrónica",
+      "furniture": "Muebles",
+      "clothes": "Ropa",
+      "real_estate": "Bienes Raíces"
+    }
+  },
+  "wallet": {
+    "balance": "Saldo Total",
+    "send": "Enviar",
+    "receive": "Recibir",
+    "deposit": "Depositar",
+    "withdraw": "Retirar",
+    "rates": "Tipos de cambio",
+    "all": "Todo",
+    "received": "Recibidos",
+    "sent": "Enviados",
+    "pending": "Pendiente",
+    "noTransactions": "Sin transacciones",
+    "cardsAndAccounts": "Tarjetas y Cuentas",
+    "add": "Agregar",
+    "escrowTitle": "JOBFAST Escrow",
+    "depositVia": "Depositar vía",
+    "escrowProtected": "Protegido por escrow",
+    "sendNow": "Enviar ahora",
+    "recipientPlaceholder": "Teléfono, email o @username",
+    "notePlaceholder": "Nota (opcional)",
+    "escrowDesc": "Los fondos se retienen de forma segura hasta que el trabajo sea validado por ambas partes."
   }
 }

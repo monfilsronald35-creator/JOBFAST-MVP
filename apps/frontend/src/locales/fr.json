@@ -959,7 +959,9 @@
     "available": "Disponible",
     "online": "Online",
     "back": "Retour",
-    "openMenu": "Ouvrir le menu"
+    "openMenu": "Ouvrir le menu",
+    "market": "Marché",
+    "wallet": "Portefeuille"
   },
   "postJob": {
     "title": "Publier un Projet",
@@ -1035,5 +1037,66 @@
       "manageListing": "Gérer ma fiche",
       "findServices": "Trouver des services"
     }
+  },
+  "market": {
+    "title": "Marketplace",
+    "search": "Rechercher…",
+    "sell": "Vendre",
+    "browse": "Parcourir",
+    "myListings": "Mes Annonces",
+    "empty": "Aucune annonce",
+    "createFirst": "Créer votre première annonce",
+    "createListing": "Nouvelle Annonce",
+    "addPhotos": "Ajouter des photos (max 5)",
+    "title_field": "Titre",
+    "category": "Catégorie",
+    "price": "Prix",
+    "currency": "Devise",
+    "city": "Ville",
+    "description": "Description",
+    "descriptionPlaceholder": "Décrivez votre article…",
+    "publishListing": "Publier",
+    "contact": "Contacter le vendeur",
+    "negotiable": "Négociable",
+    "condition": "État",
+    "new": "Neuf",
+    "location": "Localisation",
+    "posted": "Publié",
+    "views": "Vues",
+    "cat": {
+      "all": "Tout",
+      "products": "Produits",
+      "services": "Services",
+      "equipment": "Équipement",
+      "vehicles": "Véhicules",
+      "materials": "Matériaux",
+      "medical": "Médical",
+      "electronics": "Électronique",
+      "furniture": "Meubles",
+      "clothes": "Vêtements",
+      "real_estate": "Immobilier"
+    }
+  },
+  "wallet": {
+    "balance": "Solde Total",
+    "send": "Envoyer",
+    "receive": "Recevoir",
+    "deposit": "Déposer",
+    "withdraw": "Retirer",
+    "rates": "Taux de change",
+    "all": "Tout",
+    "received": "Reçus",
+    "sent": "Envoyés",
+    "pending": "En attente",
+    "noTransactions": "Aucune transaction",
+    "cardsAndAccounts": "Cartes & Comptes",
+    "add": "Ajouter",
+    "escrowTitle": "Séquestre JOBFAST",
+    "depositVia": "Déposer via",
+    "escrowProtected": "Protégé par séquestre",
+    "sendNow": "Envoyer maintenant",
+    "recipientPlaceholder": "Téléphone, email ou @username",
+    "notePlaceholder": "Note (optionnel)",
+    "escrowDesc": "Les fonds sont sécurisés jusqu'à validation du travail par les deux parties."
   }
 }

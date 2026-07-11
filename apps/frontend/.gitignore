@@ -28,7 +28,6 @@ Thumbs.db
 packages/
 modules/
 prisma/
-wallet/
 global/
 firebase/
 microservices/

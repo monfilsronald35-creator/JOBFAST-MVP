@@ -10,15 +10,16 @@ import { changeLanguage } from "../i18n";
 
 const BOTTOM_NAV = [
   { path: "/dashboard",     labelKey: "nav.home",     icon: Home          },
-  { path: "/search",        labelKey: "nav.search",   icon: Search        },
+  { path: "/market",        labelKey: "nav.market",   icon: Globe         },
   { path: "/post-job",      labelKey: "nav.post",     icon: Plus, center: true },
   { path: "/chat",          labelKey: "nav.messages", icon: MessageSquare },
-  { path: "/notifications", labelKey: "nav.notif",    icon: Bell          },
-  { path: "/settings",      labelKey: "nav.profile",  icon: User          },
+  { path: "/search",        labelKey: "nav.search",   icon: Search        },
 ];
 
 const MENU_NAV = [
   { path: "/dashboard",     labelKey: "nav.home",          icon: Home          },
+  { path: "/market",        labelKey: "nav.market",        icon: Globe         },
+  { path: "/wallet",        labelKey: "nav.wallet",        icon: Wallet        },
   { path: "/search",        labelKey: "nav.search",        icon: Search        },
   { path: "/chat",          labelKey: "nav.messages",      icon: MessageSquare },
   { path: "/notifications", labelKey: "nav.notifications", icon: Bell          },
