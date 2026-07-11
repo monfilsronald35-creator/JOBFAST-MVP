@@ -52,13 +52,13 @@ const MSG_TYPE = Object.freeze({
  */
 const FEATURE_FLAGS = Object.freeze({
   SOCKET_MESSAGING: false, // socket message:receive / conversation:join
-  SEND_VIA_API:     false, // POST /api/v1/messages
+  SEND_VIA_API:     true,  // POST /api/v1/messages
   TYPING_INDICATOR: false, // typing:start / typing:stop socket events
-  READ_RECEIPTS:    false, // PATCH /messages/:id/read + message:read_ack
+  READ_RECEIPTS:    true,  // PATCH /messages/:conversationId/read
   ONLINE_PRESENCE:  false, // presence:update socket event
   ATTACHMENTS:      false, // upload service for audio/image/document blobs
   REACTIONS:        false, // reaction API
-  PAGINATION:       false, // cursor-based GET /messages/:conversationId
+  PAGINATION:       true,  // cursor-based GET /messages/:conversationId
 });
 
 /** Socket event names — single source of truth to prevent string drift. */

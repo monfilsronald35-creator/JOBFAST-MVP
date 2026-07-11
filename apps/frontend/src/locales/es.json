@@ -973,7 +973,9 @@
     "escrow": "Depósito en garantía",
     "workerProfile": "Perfil Trabajador",
     "providerDash": "Panel Proveedor",
-    "enterprise": "Empresa"
+    "enterprise": "Empresa",
+    "create": "Crear",
+    "sos": "SOS"
   },
   "postJob": {
     "title": "Publicar un Proyecto",
@@ -1378,5 +1380,16 @@
       "withdraw": "Retirar",
       "paySalaries": "Pagar salarios de empleados"
     }
+  },
+  "fab": {
+    "createJob":         "Publicar Trabajo",
+    "createStory":       "Compartir Historia",
+    "createService":     "Ofrecer Servicio",
+    "createReservation": "Hacer Reserva",
+    "createEvent":       "Crear Evento",
+    "createProduct":     "Agregar Producto",
+    "createCompany":     "Crear Empresa",
+    "createBranch":      "Agregar Sucursal",
+    "createInvoice":     "Crear Factura"
   }
 }

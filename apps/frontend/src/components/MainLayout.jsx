@@ -40,7 +40,7 @@ const MENU_NAV = [
 
 const FAB_ACTIONS = [
   { icon: '💼', labelKey: 'fab.createJob',         path: '/post-job'               },
-  { icon: '📖', labelKey: 'fab.createStory',       path: '/stories'                },
+  { icon: '📖', labelKey: 'fab.createStory',       path: '/create-post'            },
   { icon: '🛠',  labelKey: 'fab.createService',     path: '/provider-dashboard'     },
   { icon: '📅', labelKey: 'fab.createReservation', path: '/booking'                },
   { icon: '🎉', labelKey: 'fab.createEvent',       path: '/market'                 },
@@ -248,27 +248,18 @@ function SpeedDial({ open, onClose, actions, t }) {
       {/* Action stack above center FAB */}
       <div className="absolute bottom-20 left-0 right-0 flex flex-col items-center gap-2 pb-2 px-4">
         {actions.map((action, i) => (
-          <div key={action.labelKey}
-            className="flex items-center gap-3"
-            style={{
-              transform:    `translateY(0)`,
-              opacity:      1,
-              animation:    `slideUp 200ms cubic-bezier(0.34,1.56,0.64,1) ${i * 35}ms both`,
-            }}>
-            <span className="bg-[#0d1526] border border-slate-700/70 text-slate-100 text-xs font-bold px-3 py-2 rounded-xl shadow-lg whitespace-nowrap">
+          <button key={action.labelKey} type="button"
+            onClick={(e) => { e.stopPropagation(); navigate(action.path); onClose(); }}
+            aria-label={t(action.labelKey, { defaultValue: action.labelKey.split('.').pop() })}
+            className="flex items-center gap-3 active:scale-95 transition-transform"
+            style={{ animation: `slideUp 200ms cubic-bezier(0.34,1.56,0.64,1) ${i * 35}ms both` }}>
+            <span className="bg-[#0d1526] border border-slate-700/70 text-slate-100 text-xs font-bold px-3 py-2 rounded-xl shadow-lg whitespace-nowrap hover:border-amber-500/50 hover:text-amber-400 transition-colors">
               {t(action.labelKey, { defaultValue: action.labelKey.split('.').pop() })}
             </span>
-            <button type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(action.path);
-                onClose();
-              }}
-              aria-label={t(action.labelKey)}
-              className="w-11 h-11 flex items-center justify-center rounded-2xl bg-[#0d1526] border border-slate-700/50 text-lg shadow-xl hover:border-amber-500/50 hover:text-amber-400 transition-all active:scale-90">
+            <div className="w-11 h-11 flex items-center justify-center rounded-2xl bg-[#0d1526] border border-slate-700/50 text-lg shadow-xl hover:border-amber-500/50 hover:text-amber-400 transition-all">
               {action.icon}
-            </button>
-          </div>
+            </div>
+          </button>
         ))}
       </div>
       <style>{`

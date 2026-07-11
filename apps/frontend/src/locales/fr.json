@@ -968,7 +968,9 @@
     "escrow": "Séquestre",
     "workerProfile": "Profil Travailleur",
     "providerDash": "Tableau Prestataire",
-    "enterprise": "Entreprise"
+    "enterprise": "Entreprise",
+    "create": "Créer",
+    "sos": "SOS"
   },
   "postJob": {
     "title": "Publier un Projet",
@@ -1373,5 +1375,16 @@
       "withdraw": "Retirer",
       "paySalaries": "Payer les salaires"
     }
+  },
+  "fab": {
+    "createJob":         "Publier un Emploi",
+    "createStory":       "Partager une Histoire",
+    "createService":     "Offrir un Service",
+    "createReservation": "Faire une Réservation",
+    "createEvent":       "Créer un Événement",
+    "createProduct":     "Ajouter un Produit",
+    "createCompany":     "Créer une Entreprise",
+    "createBranch":      "Ajouter une Succursale",
+    "createInvoice":     "Créer une Facture"
   }
 }

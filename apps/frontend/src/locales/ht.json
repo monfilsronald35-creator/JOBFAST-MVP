@@ -1153,7 +1153,9 @@
     "escrow": "Escrow",
     "workerProfile": "Pwofil Travayè",
     "providerDash": "Tableau Prestatè",
-    "enterprise": "Antrepriz"
+    "enterprise": "Antrepriz",
+    "create": "Kreye",
+    "sos": "SOS"
   },
   "postJob": {
     "title": "Pibliye Pwojè a",
@@ -1558,5 +1560,16 @@
       "withdraw": "Retir",
       "paySalaries": "Peye Salè Anplwaye yo"
     }
+  },
+  "fab": {
+    "createJob":         "Pibliye Djòb",
+    "createStory":       "Pataje Istwa",
+    "createService":     "Ofri Sèvis",
+    "createReservation": "Fè Rezèvasyon",
+    "createEvent":       "Kreye Evènman",
+    "createProduct":     "Ajoute Pwodui",
+    "createCompany":     "Kreye Konpayi",
+    "createBranch":      "Ajoute Branch",
+    "createInvoice":     "Kreye Fakti"
   }
 }

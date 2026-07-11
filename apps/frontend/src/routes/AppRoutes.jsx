@@ -38,6 +38,7 @@ import ProfessionDetailPage     from "@/pages/Profession/index.jsx";
 import WorkerProfilePage        from "@/pages/WorkerProfile/index.jsx";
 import ServiceProviderDashboard from "@/pages/ServiceProviderDashboard/index.jsx";
 import EnterpriseDashboard      from "@/pages/EnterpriseDashboard/index.jsx";
+import CreatePostScreen         from "@/pages/CreatePost/index.jsx";
 
 // Admin Pages (Lazy Loaded for better performance)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
@@ -124,6 +125,7 @@ function AppRoutes() {
           <Route path="/worker-profile"    element={<AuthGate><WorkerProfilePage        /></AuthGate>} />
           <Route path="/provider-dashboard"   element={<AuthGate><ServiceProviderDashboard /></AuthGate>} />
           <Route path="/enterprise-dashboard" element={<AuthGate><EnterpriseDashboard      /></AuthGate>} />
+          <Route path="/create-post"          element={<AuthGate><CreatePostScreen         /></AuthGate>} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />

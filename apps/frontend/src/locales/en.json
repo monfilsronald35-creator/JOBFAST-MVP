@@ -1378,5 +1378,16 @@
       "withdraw": "Withdraw",
       "paySalaries": "Pay Employee Salaries"
     }
+  },
+  "fab": {
+    "createJob":         "Post a Job",
+    "createStory":       "Share Story",
+    "createService":     "Offer a Service",
+    "createReservation": "Make Reservation",
+    "createEvent":       "Create Event",
+    "createProduct":     "Add Product",
+    "createCompany":     "Create Company",
+    "createBranch":      "Add Branch",
+    "createInvoice":     "Create Invoice"
   }
 }
