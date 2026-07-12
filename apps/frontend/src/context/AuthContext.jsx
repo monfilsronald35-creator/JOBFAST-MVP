@@ -22,10 +22,17 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ||
 const socket = io(SOCKET_URL, {
   autoConnect: false,
   reconnection: true,
-  reconnectionAttempts: 3,
-  reconnectionDelay: 2000,
+  reconnectionAttempts: 2,   // was 3 — fewer retries = faster silent failure
+  reconnectionDelay: 3000,
+  timeout: 8000,             // fail fast so Safari doesn't block pending requests
   transports: ["websocket", "polling"],
 });
+
+// Silence all socket connection errors — they must never crash the app or
+// block Safari's network queue (iOS is strict about unhandled rejected fetches)
+socket.on("connect_error", () => {});
+socket.on("error",         () => {});
+socket.on("disconnect",    () => {});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

@@ -1,18 +1,82 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import http from 'http';
+import { Server as SocketIO } from 'socket.io';
 import mongoose from 'mongoose';
 import app from './src/app.js';
 import { env } from './src/config/env.js';
 
 const PORT = env.PORT || 5000;
 
+// ── Socket.io server ──────────────────────────────────────────────────────────
+// Wrap Express app in a plain http.Server so socket.io can share the port.
+const httpServer = http.createServer(app);
+
+const io = new SocketIO(httpServer, {
+  cors: {
+    // Allow any origin — Vercel domains, local dev, ngrok, etc.
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: false,
+  },
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  // Attach to /socket.io path (socket.io-client default)
+  path: '/socket.io',
+});
+
+io.on('connection', (socket) => {
+  // Auth: user joins their personal room (receives targeted events)
+  socket.on('auth:join', ({ userId, role } = {}) => {
+    if (userId) socket.join(`user:${userId}`);
+    if (role)   socket.join(`role:${role}`);
+  });
+
+  // Auth: user leaves their room on logout
+  socket.on('auth:logout', ({ userId } = {}) => {
+    if (userId) socket.leave(`user:${userId}`);
+  });
+
+  // Presence: broadcast status change to everyone
+  socket.on('user:status_change', ({ userId, status } = {}) => {
+    if (userId) socket.broadcast.emit('user:status_change', { userId, status });
+  });
+
+  // Chat: join/leave a conversation room
+  socket.on('conversation:join',  ({ conversationId } = {}) => {
+    if (conversationId) socket.join(conversationId);
+  });
+  socket.on('conversation:leave', ({ conversationId } = {}) => {
+    if (conversationId) socket.leave(conversationId);
+  });
+
+  // Chat: relay a message to everyone else in the conversation
+  socket.on('message:send', (data = {}) => {
+    if (data.conversationId) {
+      socket.to(data.conversationId).emit('message:receive', data);
+    }
+  });
+
+  // Typing indicators
+  socket.on('typing:start', ({ conversationId, userId } = {}) => {
+    if (conversationId) socket.to(conversationId).emit('typing:start', { userId });
+  });
+  socket.on('typing:stop',  ({ conversationId, userId } = {}) => {
+    if (conversationId) socket.to(conversationId).emit('typing:stop',  { userId });
+  });
+});
+
+// Export io so routes can push events (e.g. notifications, payment webhooks)
+export { io };
+
 async function start() {
   try {
-    // Start HTTP server immediately — don't block on DB
-    const server = app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log('=================================');
       console.log(`🚀 JOBFAST BACKEND LIVE ON PORT: ${PORT}`);
+      console.log(`🔌 Socket.io ready on /socket.io`);
       console.log('=================================');
     });
 
@@ -51,7 +115,7 @@ async function start() {
 
     const shutdown = async (signal) => {
       console.log(`⚠️ ${signal} received. Stopping gracefully...`);
-      server.close(async () => {
+      httpServer.close(async () => {
         try { await mongoose.disconnect(); } catch (_) {}
         console.log('🛑 Server stopped.');
         process.exit(0);
