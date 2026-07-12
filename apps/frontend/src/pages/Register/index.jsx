@@ -74,8 +74,10 @@ function Register() {
 
   const [currentStep,    setCurrentStep]    = useState(STEPS.ROLE);
   const [loading,        setLoading]        = useState(false);
+  const [slowLoad,       setSlowLoad]       = useState(false); // shown after 8s of loading
   const [errorMessage,   setErrorMessage]   = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const slowTimer = useRef(null);
 
   // Role type selected in Step 0 ('worker' | 'employer' | 'service_provider')
   const [selectedRoleType,    setSelectedRoleType]    = useState(null);
@@ -113,8 +115,21 @@ function Register() {
       mountedRef.current = false;
       abortRef.current?.abort();
       clearTimeout(alertTimer.current);
+      clearTimeout(slowTimer.current);
     };
   }, []);
+
+  // Show "sèvè ap reveye" hint after 8s of loading
+  useEffect(() => {
+    clearTimeout(slowTimer.current);
+    if (loading) {
+      slowTimer.current = setTimeout(() => {
+        if (mountedRef.current) setSlowLoad(true);
+      }, 8000);
+    } else {
+      setSlowLoad(false);
+    }
+  }, [loading]);
 
   useEffect(() => {
     if (!errorMessage && !successMessage) return;
@@ -329,6 +344,23 @@ function Register() {
   // ─────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-navy-900 text-white flex flex-col p-6 relative overflow-hidden">
+
+      {/* ── Cold-start overlay — shows after 8s of loading ── */}
+      {loading && slowLoad && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050B18]/90 backdrop-blur-sm px-8 text-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-amber-400/30 border-t-amber-400 animate-spin" />
+          <p className="text-base font-black text-white">Sèvè a ap reveye...</p>
+          <p className="text-xs text-slate-400 max-w-xs">
+            Sèvè gratuit la dòmi apre 15 min inaktivite. Tann 30 sègonn — li pral bon!
+          </p>
+          <div className="flex gap-1">
+            {[0,1,2].map(i => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"
+                style={{ animationDelay: `${i * 0.2}s` }} />
+            ))}
+          </div>
+        </div>
+      )}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(30,136,229,0.15),transparent_60%)] pointer-events-none" />
 
       {/* Header */}

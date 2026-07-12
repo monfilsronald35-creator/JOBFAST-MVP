@@ -15,6 +15,7 @@ export default function Login() {
 
   const mounted = useRef(false);
   const lastSubmit = useRef(0);
+  const slowTimer = useRef(null);
 
   const [formData, setFormData] = useState({
     identifier: "",
@@ -22,6 +23,7 @@ export default function Login() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [slowLoad, setSlowLoad] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [langReady, setLangReady] = useState(false);
@@ -32,8 +34,20 @@ export default function Login() {
     setLangReady(true);
     return () => {
       mounted.current = false;
+      clearTimeout(slowTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    clearTimeout(slowTimer.current);
+    if (loading) {
+      slowTimer.current = setTimeout(() => {
+        if (mounted.current) setSlowLoad(true);
+      }, 8000);
+    } else {
+      setSlowLoad(false);
+    }
+  }, [loading]);
 
   /* INPUT */
   const handleChange = (e) => {
@@ -149,7 +163,24 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center bg-navy-900 px-6">
+    <div className="min-h-screen flex flex-col justify-center bg-navy-900 px-6 relative">
+
+      {/* Cold-start overlay */}
+      {loading && slowLoad && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050B18]/90 backdrop-blur-sm px-8 text-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-amber-400/30 border-t-amber-400 animate-spin" />
+          <p className="text-base font-black text-white">Sèvè a ap reveye...</p>
+          <p className="text-xs text-slate-400 max-w-xs">
+            Sèvè gratuit la dòmi apre 15 min inaktivite. Tann 30 sègonn — li pral bon!
+          </p>
+          <div className="flex gap-1">
+            {[0,1,2].map(i => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"
+                style={{ animationDelay: `${i * 0.2}s` }} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="text-center mb-8">
         <h2 className="text-xl font-black text-white">{t("auth.welcome")}</h2>

@@ -173,11 +173,6 @@ app.get(`${API_PREFIX}/community/members`, async (req, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// ── Keep Render free tier alive (pings self every 14 min) ──────────────────
-// Render sleeps after 15 min of inactivity. This prevents that.
-const SELF_URL = process.env.SELF_PING_URL || 'https://jobfast-backend.onrender.com/api/v1/health';
-setInterval(() => {
-  fetch(SELF_URL).catch(() => {});
-}, 14 * 60 * 1000);
+// Keep-alive ping is handled in server.js (every 9 min). No duplicate here.
 
 export default app;

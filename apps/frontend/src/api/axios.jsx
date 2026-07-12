@@ -6,7 +6,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 
 const API = axios.create({
   baseURL: BASE_URL,
-  timeout: 65000, // 65s — Render free tier can take up to 60s to wake
+  timeout: 70000, // 70s — Render free tier can take up to 60s to wake from cold start
   headers: {
     "Content-Type": "application/json",
   },
@@ -46,12 +46,16 @@ API.interceptors.response.use(
 
     const status = error.response.status;
 
-    // 503 Service Unavailable OR 504 Gateway Timeout = Render waking up
-    // Retry once after 14s — enough time for Render's cold start (~10-30s).
-    if ((status === 503 || status === 504) && !error.config._retried) {
-      error.config._retried = true;
-      await new Promise((r) => setTimeout(r, 14000));
-      return API(error.config);
+    // 503 / 504 = Render cold start (can take 30-60s on free tier).
+    // Retry up to 2× with increasing delay so users aren't locked out.
+    if (status === 503 || status === 504) {
+      const retryCount = error.config._retryCount || 0;
+      if (retryCount < 2) {
+        error.config._retryCount = retryCount + 1;
+        const waitMs = retryCount === 0 ? 20000 : 30000; // 20s, then 30s
+        await new Promise((r) => setTimeout(r, waitMs));
+        return API(error.config);
+      }
     }
 
     // 401 — only auto-logout on auth-specific routes (token expired/invalid).

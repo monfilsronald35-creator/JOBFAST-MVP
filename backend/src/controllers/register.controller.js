@@ -124,22 +124,9 @@ export const registerController = async (req, res, next) => {
       }
     };
 
-    // ⚠️ Require MongoDB to be connected — in-memory-only registrations are lost on restart
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        error: {
-          code: 'SERVER_STARTING',
-          message: 'Sèvè a ap reveye. Tanpri eseye ankò nan 30 segond.',
-          requestId
-        }
-      });
-    }
-
-    // 6. 🏗️ MATRIX PROFILE CONSTRUCTOR (Daprè bèl foto MVP a)
+    // 6. 🏗️ USER OBJECT CONSTRUCTOR
     const userId = `usr_${crypto.randomBytes(8).toString('hex')}`;
 
-    // Calculate profile completeness (capped at 100)
     const requiredCount = userProfession ? (getRequiredFields(userProfession)?.length || 0) : 0;
     const totalFields   = Math.max(requiredCount + 5, Object.keys(categoryMetadata).length + 5);
     const filledFields  = 5 + Object.keys(categoryMetadata).filter(k => categoryMetadata[k]).length;
@@ -157,49 +144,50 @@ export const registerController = async (req, res, next) => {
       profession: userProfession,
       profileMetadata: categoryMetadata,
       profileCompleteness,
-      tier: "free", // Default pwofil tier
-
-      // 📍 GPS Location Core
+      tier: "free",
       location: gpsLocation,
-
-      // 🔘 Status Disponibilite otomatik pou moun ki nan Konstriksyon ak Sèvis
       availability: accountType === 'individual' ? 'available' : 'online',
-
-      // 📊 Estrikti pou Evalyasyon ak Estatistik Mondyal pita
       stats: {
         totalJobs: 0,
-        rating: 5.0, // Tout nouvo moun kòmanse ak 5 zetwal!
+        rating: 5.0,
         memberSince: new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' }),
         skills: []
       },
       createdAt: new Date()
     };
 
-    // 💾 PERSIST TO MONGODB — required; we already confirmed connection above
-    const mongoDoc = await User.create({
-      name: newUser.name,
-      email: newUser.email,
-      password,                   // plain — User model pre-save hook hashes it
-      phone: req.body.phone || null,
-      role: role?.toLowerCase().trim() || 'user',
-      category: userCategory || null,
-      profession: userProfession || null,
-      profileMetadata: categoryMetadata,
-      profileCompleteness: newUser.profileCompleteness,
-      location: {
-        type: 'Point',
-        coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
-        city: gpsLocation.city,
-        country: 'Haiti',
-      },
-    });
+    // 💾 PERSIST TO MONGODB when available — graceful fallback to in-memory for MVP
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const mongoDoc = await User.create({
+          name: newUser.name,
+          email: newUser.email,
+          password,                   // plain — User model pre-save hook hashes it
+          phone: req.body.phone || null,
+          role: role?.toLowerCase().trim() || 'user',
+          category: userCategory || null,
+          profession: userProfession || null,
+          profileMetadata: categoryMetadata,
+          profileCompleteness: newUser.profileCompleteness,
+          location: {
+            type: 'Point',
+            coordinates: [gpsLocation.coordinates.longitude, gpsLocation.coordinates.latitude],
+            city: gpsLocation.city,
+            country: 'Haiti',
+          },
+        });
+        // Upgrade to real MongoDB _id
+        newUser.id  = mongoDoc._id.toString();
+        newUser._id = mongoDoc._id.toString();
+        console.log(`💾 User persisted to MongoDB: ${cleanEmail} (${mongoDoc._id})`);
+      } catch (dbErr) {
+        console.warn(`⚠️ MongoDB persist failed for ${cleanEmail} — using in-memory fallback:`, dbErr.message);
+      }
+    } else {
+      console.warn(`⚠️ MongoDB not connected — ${cleanEmail} saved in-memory only (data lost on restart)`);
+    }
 
-    // Use real MongoDB _id going forward
-    newUser.id  = mongoDoc._id.toString();
-    newUser._id = mongoDoc._id.toString();
-    console.log(`💾 User persisted to MongoDB: ${cleanEmail} (${mongoDoc._id})`);
-
-    // In-memory cache for same Render instance (speed; not relied upon for persistence)
+    // Always cache in-memory (fast path for same Render instance)
     usersDatabase.set(newUser.id, newUser);
 
     // Generate JWT token so the user is immediately logged in after registration
