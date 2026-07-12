@@ -1,70 +1,100 @@
-// JOBFAST Service Worker — Push Notifications + Offline Cache
-const CACHE_NAME = 'jobfast-v1';
+// JOBFAST Service Worker v2 — Push Notifications + Smart Offline Cache
+const CACHE_NAME = 'jobfast-v2';
 
-// ── Install: cache shell ──────────────────────────────────────────────────────
+// ── Install: cache only true static assets (NOT index.html) ──────────────────
 self.addEventListener('install', (e) => {
-  self.skipWaiting();
+  self.skipWaiting(); // activate immediately, don't wait for old SW to die
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
-      cache.addAll(['/', '/index.html', '/manifest.json', '/favicon.ico']).catch(() => {})
+      cache.addAll([
+        '/manifest.json',
+        '/favicon.ico',
+        '/icons/icon-192x192.png',
+        '/icons/icon-512x512.png',
+        '/apple-touch-icon.png',
+      ]).catch(() => {})
     )
   );
 });
 
-// ── Activate: clean old caches ────────────────────────────────────────────────
+// ── Activate: delete old caches (jobfast-v1, etc.) ───────────────────────────
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim()) // take control of all open tabs immediately
   );
 });
 
-// ── Fetch: serve from cache first, network fallback ──────────────────────────
+// ── Fetch: smart strategy by request type ────────────────────────────────────
 self.addEventListener('fetch', (e) => {
-  // Only cache GET requests to same origin
   if (e.request.method !== 'GET') return;
   if (!e.request.url.startsWith(self.location.origin)) return;
-  // Never cache API calls
-  if (e.request.url.includes('/api/')) return;
+  if (e.request.url.includes('/api/')) return; // never cache API calls
 
+  // NAVIGATION (HTML pages) → network-first so we always get the latest index.html
+  // This is the critical fix: avoids serving a stale HTML that references old JS bundles
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
+        .catch(() => caches.match('/index.html')) // offline fallback only
+    );
+    return;
+  }
+
+  // STATIC ASSETS (JS, CSS, images, fonts) → cache-first, update in background
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    caches.match(e.request).then(cached => {
+      const networkFetch = fetch(e.request).then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      });
+      return cached || networkFetch;
+    })
   );
 });
 
 // ── Push: receive from backend and show notification ─────────────────────────
 self.addEventListener('push', (e) => {
-  let data = { title: 'JOBFAST', body: 'Ou gen yon nouvo notifikasyon', url: '/', icon: '/favicon.ico' };
+  let data = {
+    title: 'JOBFAST',
+    body:  'Ou gen yon nouvo notifikasyon',
+    url:   '/',
+    icon:  '/icons/icon-192x192.png',
+  };
   try { data = { ...data, ...e.data.json() }; } catch (_) {}
 
   e.waitUntil(
     self.registration.showNotification(data.title, {
-      body:    data.body,
-      icon:    data.icon || '/favicon.ico',
-      badge:   '/favicon.ico',
-      tag:     'jobfast-push',
+      body:     data.body,
+      icon:     data.icon || '/icons/icon-192x192.png',
+      badge:    '/icons/icon-96x96.png',
+      tag:      'jobfast-push',
       renotify: true,
-      vibrate: [200, 100, 200, 100, 400],   // vibre: ×-·-×-·-×
-      data:    { url: data.url || '/' },
-      actions: [
-        { action: 'open',    title: 'Ouvri' },
-        { action: 'dismiss', title: 'Fèmen' },
+      vibrate:  [200, 100, 200, 100, 400],
+      data:     { url: data.url || '/' },
+      actions:  [
+        { action: 'open',    title: 'Ouvri'  },
+        { action: 'dismiss', title: 'Fèmen'  },
       ],
     })
   );
 });
 
-// ── Notification click: open or focus app ─────────────────────────────────────
+// ── Notification click: open or focus app ────────────────────────────────────
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
   if (e.action === 'dismiss') return;
 
-  const targetUrl = e.notification.data?.url || '/';
+  const targetUrl = e.notification.data?.url || '/dashboard';
 
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
-      // If app already open, focus it and navigate
       for (const client of clients) {
         if (client.url.startsWith(self.location.origin)) {
           client.focus();
@@ -72,13 +102,12 @@ self.addEventListener('notificationclick', (e) => {
           return;
         }
       }
-      // Otherwise open a new window
       return self.clients.openWindow(targetUrl);
     })
   );
 });
 
-// ── Background sync: retry failed API calls when back online ─────────────────
+// ── Background sync ───────────────────────────────────────────────────────────
 self.addEventListener('sync', (e) => {
   if (e.tag === 'retry-api') {
     // Future: replay queued mutations
