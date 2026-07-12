@@ -14,10 +14,10 @@ import { changeLanguage } from "../i18n";
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────
 
-// type: 'sos' | 'link' | 'fab'  — 5 buttons total
+// type: 'link' | 'fab'  — 5 buttons: Home · Search · Create · Messages · Profile
 const BOTTOM_NAV = [
-  { type: 'sos',  labelKey: 'nav.sos'                                          },
   { type: 'link', path: "/dashboard",  labelKey: "nav.home",     icon: Home          },
+  { type: 'link', path: "/search",     labelKey: "nav.search",   icon: Search        },
   { type: 'fab',  labelKey: 'nav.create'                                       },
   { type: 'link', path: "/chat",       labelKey: "nav.messages", icon: MessageSquare },
   { type: 'link', path: "/settings",   labelKey: "nav.profile",  icon: User          },
@@ -448,11 +448,18 @@ export default function MainLayout({ children }) {
 
             <div className="w-px h-3 bg-slate-700/60 shrink-0" />
 
-            {/* Online status */}
-            <div className="flex items-center gap-1 shrink-0">
-              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-              <span className="text-[10px] font-bold text-slate-400">{isOnline ? 'Online' : 'Offline'}</span>
-            </div>
+            {/* Work availability status */}
+            {(() => {
+              const avail = (() => { try { const raw = localStorage.getItem('jf_availability'); return raw || 'available'; } catch { return 'available'; } })();
+              return (
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className={`w-1.5 h-1.5 rounded-full ${avail === 'available' ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`} />
+                  <span className={`text-[10px] font-bold ${avail === 'available' ? 'text-green-400' : 'text-slate-500'}`}>
+                    {avail === 'available' ? 'Available' : 'Busy'}
+                  </span>
+                </div>
+              );
+            })()}
 
             <div className="flex-1" />
 
@@ -597,20 +604,6 @@ export default function MainLayout({ children }) {
       >
         <div className="flex items-end justify-around h-16 px-0.5 relative">
           {BOTTOM_NAV.map((item, idx) => {
-
-            /* ── SOS ─────────────────────────────────────── */
-            if (item.type === 'sos') return (
-              <button key="sos" type="button"
-                onClick={() => setEmergencyOpen(true)}
-                aria-label="SOS Ijans"
-                className="relative flex flex-col items-center justify-center flex-1 gap-0.5 py-2 text-red-500 hover:text-red-400 transition-all active:scale-90">
-                <div className="relative">
-                  <ShieldAlert className="w-[18px] h-[18px]" />
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 border border-[#0b1120] animate-pulse" />
-                </div>
-                <span className="text-[8px] font-black leading-none tracking-tight">SOS</span>
-              </button>
-            );
 
             /* ── FAB ─────────────────────────────────────── */
             if (item.type === 'fab') return (
