@@ -9,8 +9,9 @@ const getCtx = () => {
   return _ctx;
 };
 
-// enabled flag — user can mute via settings
-let _enabled = localStorage.getItem('jf_sound') !== 'off';
+// enabled flag — user can mute via settings (guarded for iOS Safari private mode)
+let _enabled = true;
+try { _enabled = localStorage.getItem('jf_sound') !== 'off'; } catch (_) {}
 
 export const setSoundEnabled = (v) => {
   _enabled = v;

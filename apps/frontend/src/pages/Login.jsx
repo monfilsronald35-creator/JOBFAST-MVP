@@ -121,8 +121,8 @@ export default function Login() {
       if (user?.id && !user?._id) user._id = user.id;
 
       // Update AuthContext so AuthGate recognises the session immediately
-      sounds.login();
       authLogin({ ...user, token });
+      try { sounds.login(); } catch (_) {}
 
       if (mounted.current) navigate(getRoleDefaultPath(user?.role));
 

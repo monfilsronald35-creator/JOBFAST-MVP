@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext.jsx";
 import { getRoleDefaultPath } from "@/config/roleConfig";
@@ -41,13 +41,46 @@ import ServiceProviderDashboard from "@/pages/ServiceProviderDashboard/index.jsx
 import EnterpriseDashboard      from "@/pages/EnterpriseDashboard/index.jsx";
 import CreatePostScreen         from "@/pages/CreatePost/index.jsx";
 
-// Admin Pages (Lazy Loaded for better performance)
-const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard.jsx"));
-const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers.jsx"));
-const AdminJobs = lazy(() => import("@/pages/admin/AdminJobs.jsx"));
-const AdminSupport = lazy(() => import("@/pages/admin/AdminSupport.jsx"));
-const AdminSettings = lazy(() => import("@/pages/admin/AdminSettings.jsx"));
-const AdminGovernance = lazy(() => import("@/pages/admin/AdminGovernance.jsx"));
+// ── Error Boundary ─────────────────────────────────────────────────────────────
+// Prevents any render crash or failed lazy-chunk from showing a blank page.
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#050B18', color: '#f8fafc', gap: '16px', padding: '24px', textAlign: 'center' }}>
+          <p style={{ fontSize: '1.5rem', fontWeight: 900 }}>Yon erè te rive</p>
+          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Tanpri refrechi paj la pou kontinye</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ padding: '12px 28px', background: '#FACC15', color: '#020617', fontWeight: 900, borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
+          >
+            Refrechi
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// Lazy import with one automatic retry on network failure (fixes blank page on bad iPad connections)
+const lazyWithRetry = (importFn) =>
+  lazy(() => importFn().catch(() => importFn()));
+
+// Admin Pages (Lazy Loaded for better performance — with auto-retry on network failure)
+const AdminDashboard  = lazyWithRetry(() => import("@/pages/admin/AdminDashboard.jsx"));
+const AdminUsers      = lazyWithRetry(() => import("@/pages/admin/AdminUsers.jsx"));
+const AdminJobs       = lazyWithRetry(() => import("@/pages/admin/AdminJobs.jsx"));
+const AdminSupport    = lazyWithRetry(() => import("@/pages/admin/AdminSupport.jsx"));
+const AdminSettings   = lazyWithRetry(() => import("@/pages/admin/AdminSettings.jsx"));
+const AdminGovernance = lazyWithRetry(() => import("@/pages/admin/AdminGovernance.jsx"));
 
 // ── Security Gates ────────────────────────────────────────────────────────
 // AuthGate: any authenticated user; admin/super_admin are redirected to /admin
@@ -85,61 +118,63 @@ const AdminGate = ({ children }) => {
 function AppRoutes() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<Loader text="Loading application..." />}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<SplashScreen />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/home" element={<PublicLayout><HomeMarketplace /></PublicLayout>} />
+      <AppErrorBoundary>
+        <Suspense fallback={<Loader text="Loading application..." />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<SplashScreen />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/home" element={<PublicLayout><HomeMarketplace /></PublicLayout>} />
 
-          {/* Auth Routes */}
-          <Route path="/register" element={<GuestGate><RegisterScreen /></GuestGate>} />
-          <Route path="/login" element={<GuestGate><LoginScreen /></GuestGate>} />
-          <Route path="/forgot-password" element={<GuestGate><div className="p-8 text-center"><h2 className="text-2xl font-bold mb-4">Forgot Password</h2><p className="text-slate-400">Feature coming soon</p></div></GuestGate>} />
+            {/* Auth Routes */}
+            <Route path="/register" element={<GuestGate><RegisterScreen /></GuestGate>} />
+            <Route path="/login" element={<GuestGate><LoginScreen /></GuestGate>} />
+            <Route path="/forgot-password" element={<GuestGate><div className="p-8 text-center"><h2 className="text-2xl font-bold mb-4">Forgot Password</h2><p className="text-slate-400">Feature coming soon</p></div></GuestGate>} />
 
-          {/* Protected User Routes */}
-          <Route path="/dashboard" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/marketplace" element={<AuthGate><HomeMarketplace /></AuthGate>} />
-          <Route path="/marketplace/:categoryId" element={<AuthGate><CategoryMarketplace /></AuthGate>} />
-          <Route path="/post-job" element={<AuthGate><PostJobScreen /></AuthGate>} />
-          <Route path="/status" element={<AuthGate><AvailabilityStatus /></AuthGate>} />
-          <Route path="/profile" element={<AuthGate><UserProfileDisplay /></AuthGate>} />
-          <Route path="/search" element={<AuthGate><UniversalSearch /></AuthGate>} />
-          <Route path="/jobs"   element={<AuthGate><JobsHub /></AuthGate>} />
-          
-          {/* Additional Protected Routes (Placeholders) */}
-          <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
-          <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
-          <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
-          <Route path="/chat" element={<AuthGate><ChatScreen /></AuthGate>} />
-          <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
-          <Route path="/u/:userId" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
-          <Route path="/rating/:id" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
-          <Route path="/booking/:id" element={<AuthGate><BookingPage /></AuthGate>} />
-          <Route path="/map"    element={<AuthGate><MapNavigationScreen /></AuthGate>} />
-          <Route path="/market"            element={<AuthGate><MarketPage               /></AuthGate>} />
-          <Route path="/wallet"            element={<AuthGate><WalletPage               /></AuthGate>} />
-          <Route path="/booking"           element={<AuthGate><BookingPage              /></AuthGate>} />
-          <Route path="/escrow"            element={<AuthGate><EscrowPage               /></AuthGate>} />
-          <Route path="/profession/:professionId" element={<AuthGate><ProfessionDetailPage /></AuthGate>} />
-          <Route path="/worker-profile"    element={<AuthGate><WorkerProfilePage        /></AuthGate>} />
-          <Route path="/provider-dashboard"   element={<AuthGate><ServiceProviderDashboard /></AuthGate>} />
-          <Route path="/enterprise-dashboard" element={<AuthGate><EnterpriseDashboard      /></AuthGate>} />
-          <Route path="/create-post"          element={<AuthGate><CreatePostScreen         /></AuthGate>} />
+            {/* Protected User Routes */}
+            <Route path="/dashboard" element={<AuthGate><Dashboard /></AuthGate>} />
+            <Route path="/marketplace" element={<AuthGate><HomeMarketplace /></AuthGate>} />
+            <Route path="/marketplace/:categoryId" element={<AuthGate><CategoryMarketplace /></AuthGate>} />
+            <Route path="/post-job" element={<AuthGate><PostJobScreen /></AuthGate>} />
+            <Route path="/status" element={<AuthGate><AvailabilityStatus /></AuthGate>} />
+            <Route path="/profile" element={<AuthGate><UserProfileDisplay /></AuthGate>} />
+            <Route path="/search" element={<AuthGate><UniversalSearch /></AuthGate>} />
+            <Route path="/jobs"   element={<AuthGate><JobsHub /></AuthGate>} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
-          <Route path="/admin/users" element={<AdminGate><AdminUsers /></AdminGate>} />
-          <Route path="/admin/jobs" element={<AdminGate><AdminJobs /></AdminGate>} />
-          <Route path="/admin/support" element={<AdminGate><AdminSupport /></AdminGate>} />
-          <Route path="/admin/settings" element={<AdminGate><AdminSettings /></AdminGate>} />
-          <Route path="/admin/governance" element={<AdminGate><AdminGovernance /></AdminGate>} />
+            {/* Additional Protected Routes */}
+            <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
+            <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
+            <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
+            <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
+            <Route path="/chat" element={<AuthGate><ChatScreen /></AuthGate>} />
+            <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
+            <Route path="/u/:userId" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
+            <Route path="/rating/:id" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
+            <Route path="/booking/:id" element={<AuthGate><BookingPage /></AuthGate>} />
+            <Route path="/map"    element={<AuthGate><MapNavigationScreen /></AuthGate>} />
+            <Route path="/market"            element={<AuthGate><MarketPage               /></AuthGate>} />
+            <Route path="/wallet"            element={<AuthGate><WalletPage               /></AuthGate>} />
+            <Route path="/booking"           element={<AuthGate><BookingPage              /></AuthGate>} />
+            <Route path="/escrow"            element={<AuthGate><EscrowPage               /></AuthGate>} />
+            <Route path="/profession/:professionId" element={<AuthGate><ProfessionDetailPage /></AuthGate>} />
+            <Route path="/worker-profile"    element={<AuthGate><WorkerProfilePage        /></AuthGate>} />
+            <Route path="/provider-dashboard"   element={<AuthGate><ServiceProviderDashboard /></AuthGate>} />
+            <Route path="/enterprise-dashboard" element={<AuthGate><EnterpriseDashboard      /></AuthGate>} />
+            <Route path="/create-post"          element={<AuthGate><CreatePostScreen         /></AuthGate>} />
 
-          {/* Fallback Route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+            {/* Admin Routes */}
+            <Route path="/admin"            element={<AdminGate><AdminDashboard  /></AdminGate>} />
+            <Route path="/admin/users"      element={<AdminGate><AdminUsers      /></AdminGate>} />
+            <Route path="/admin/jobs"       element={<AdminGate><AdminJobs       /></AdminGate>} />
+            <Route path="/admin/support"    element={<AdminGate><AdminSupport    /></AdminGate>} />
+            <Route path="/admin/settings"   element={<AdminGate><AdminSettings   /></AdminGate>} />
+            <Route path="/admin/governance" element={<AdminGate><AdminGovernance /></AdminGate>} />
+
+            {/* Fallback Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </AppErrorBoundary>
     </BrowserRouter>
   );
 }
