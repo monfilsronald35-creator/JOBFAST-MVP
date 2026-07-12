@@ -1,8 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
-import "./styles/global.css"; // <--- Nou ranje liy sa a isit la!
+import "./styles/global.css";
 import { initI18n } from "./i18n";
+
+// Register Service Worker for PWA (offline + installability)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+  });
+}
 
 const rootElement = document.getElementById("root");
 

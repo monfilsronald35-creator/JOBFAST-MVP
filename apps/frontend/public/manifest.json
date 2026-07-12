@@ -10,52 +10,38 @@
   "scope": "/",
 
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone"
-  ],
+  "display_override": ["window-controls-overlay", "standalone"],
 
   "orientation": "portrait-primary",
 
-  "theme_color": "#020617",
-  "background_color": "#020617",
+  "theme_color": "#050B18",
+  "background_color": "#050B18",
 
-  "categories": [
-    "business",
-    "productivity",
-    "utilities",
-    "maps",
-    "jobs"
-  ],
+  "categories": ["business", "productivity", "utilities", "maps"],
 
   "prefer_related_applications": false,
 
   "shortcuts": [
-    {
-      "name": "Find Workers",
-      "short_name": "Workers",
-      "url": "/workers",
-      "description": "Find nearby workers"
-    },
-    {
-      "name": "Businesses",
-      "short_name": "Business",
-      "url": "/businesses",
-      "description": "Find nearby businesses"
-    },
-    {
-      "name": "Services",
-      "short_name": "Services",
-      "url": "/services",
-      "description": "Browse services"
-    }
+    { "name": "Chèche Travay",   "short_name": "Djòb",      "url": "/jobs",     "icons": [{ "src": "/icons/icon-96x96.png",  "sizes": "96x96"  }] },
+    { "name": "Chèche Travayè", "short_name": "Travayè",   "url": "/search",   "icons": [{ "src": "/icons/icon-96x96.png",  "sizes": "96x96"  }] },
+    { "name": "Pòtefèy",         "short_name": "Pòtefèy",   "url": "/wallet",   "icons": [{ "src": "/icons/icon-96x96.png",  "sizes": "96x96"  }] }
   ],
 
   "icons": [
+    { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+
+  "screenshots": [
     {
-      "src": "/favicon.ico",
-      "sizes": "32x32 16x16",
-      "type": "image/x-icon"
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "JobFast Home"
     }
   ]
 }

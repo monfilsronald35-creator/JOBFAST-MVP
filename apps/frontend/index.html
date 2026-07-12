@@ -2,16 +2,42 @@
 <html lang="ht">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Favicon + standard icon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+
+    <!-- iOS / Safari PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="JobFast" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Android / Chrome -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#050B18" />
+    <meta name="msapplication-TileColor" content="#050B18" />
+    <meta name="msapplication-TileImage" content="/icons/icon-192x192.png" />
+
+    <!-- SEO / Social -->
+    <meta name="description" content="Platfòm GPS elit pou jwenn djòb, travayè, sèvis ak biznis ann Ayiti." />
+    <meta name="keywords" content="jobfast, djob, travay, haiti, services, plombier, electricien" />
+    <meta property="og:title" content="JobFast Global Marketplace" />
+    <meta property="og:description" content="Jwenn djòb, travayè, sèvis ann Ayiti." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+
     <title>JobFast Global Marketplace</title>
   </head>
   <body class="bg-navy-950 text-slate-100">
-    <!-- Se div sa a kòd main.jsx la ap chache a! -->
     <div id="root"></div>
-    
-    <!-- Lyen ki lye HTML la ak kòd React ou a -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { changeLanguage } from "../i18n";
 import { sounds } from "../utils/sounds";
 import { usePush } from "../hooks/usePush";
+import InstallPrompt from "./InstallPrompt";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -716,6 +717,9 @@ export default function MainLayout({ children }) {
       {searchOpen    && <GlobalSearchModal onClose={() => setSearchOpen(false)} />}
       {qrOpen        && <QRScannerModal    onClose={() => setQrOpen(false)} />}
       {emergencyOpen && <EmergencyModal    onClose={() => setEmergencyOpen(false)} />}
+
+      {/* ── PWA install prompt ──────────────────────────────────── */}
+      <InstallPrompt />
     </div>
   );
 }
