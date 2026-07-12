@@ -26,6 +26,7 @@ import payoutRoutes      from './routes/payout.routes.js';
 import messageRoutes    from './routes/messages.routes.js';
 import postRoutes       from './routes/posts.routes.js';
 import bookingRoutes    from './routes/bookings.routes.js';
+import pushRoutes       from './routes/push.routes.js';
 
 // ✅ CHEMEN KORÈK LA: Nou retire "/middlewares" paske fichye a nan menm nivo ak app.js
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
@@ -107,6 +108,7 @@ app.use(`${API_PREFIX}/payouts`,    payoutRoutes);
 app.use(`${API_PREFIX}/messages`,   messageRoutes);
 app.use(`${API_PREFIX}/posts`,      postRoutes);
 app.use(`${API_PREFIX}/bookings`,   bookingRoutes);
+app.use(`${API_PREFIX}/push`,       pushRoutes);
 
 // Public community feed — returns latest registered members (no auth required)
 app.get(`${API_PREFIX}/community/members`, async (req, res) => {
@@ -170,5 +172,12 @@ app.get(`${API_PREFIX}/community/members`, async (req, res) => {
 
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+// ── Keep Render free tier alive (pings self every 14 min) ──────────────────
+// Render sleeps after 15 min of inactivity. This prevents that.
+const SELF_URL = process.env.SELF_PING_URL || 'https://jobfast-backend.onrender.com/api/v1/health';
+setInterval(() => {
+  fetch(SELF_URL).catch(() => {});
+}, 14 * 60 * 1000);
 
 export default app;

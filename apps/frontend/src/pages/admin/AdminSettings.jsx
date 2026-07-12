@@ -89,9 +89,12 @@ export default function AdminSettings() {
     if (!notifMsg.trim()) return;
     setSending(true);
     try {
-      const res = await API.post('/admin/notifications/global', { title: notifTitle, message: notifMsg });
-      const sent = res.data?.data?.sent || 0;
-      setToast({ msg: `Notification sent to ${sent} users`, type: 'success' });
+      // Send to in-app notification system
+      await API.post('/admin/notifications/global', { title: notifTitle, message: notifMsg }).catch(() => {});
+      // Also push to all subscribed devices (phones vibrate + ring)
+      const pushRes = await API.post('/push/send-all', { title: notifTitle || 'JOBFAST', body: notifMsg, url: '/notifications' });
+      const sent = pushRes.data?.data?.sent || 0;
+      setToast({ msg: `Push sent to ${sent} device${sent !== 1 ? 's' : ''}`, type: 'success' });
       setNotifTitle(''); setNotifMsg('');
     } catch {
       setToast({ msg: 'Failed to send notification', type: 'error' });

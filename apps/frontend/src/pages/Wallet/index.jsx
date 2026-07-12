@@ -1,6 +1,7 @@
 import React, { useState, useCallback, memo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { walletAPI } from '../../services/wallet';
+import { sounds } from '../../utils/sounds';
 
 // ── Design tokens ────────────────────────────────────────────────
 const BG   = '#050B18';
@@ -308,6 +309,7 @@ function SendPanel({ onClose }) {
               setLoading(true);
               await walletAPI.sendMoney({ recipient, amount, currency, desc, method }).catch(() => {});
               setLoading(false);
+              sounds.payment();
               setSent(true);
             }}
             className="w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-900 font-black text-sm transition">
@@ -408,6 +410,7 @@ function DepositPanel({ onClose }) {
           setLoading(true);
           await walletAPI.deposit({ method: selected.id, amount }).catch(() => {});
           setLoading(false);
+          sounds.deposit();
           setDone(true);
         }} className="w-full py-3.5 rounded-xl bg-amber-500 disabled:opacity-30 text-slate-900 font-black text-sm">
           {loading ? 'Processing…' : 'Continue →'}
@@ -465,6 +468,7 @@ function WithdrawPanel({ onClose }) {
           setLoading(true);
           await walletAPI.withdraw({ method: selected.id, amount }).catch(() => {});
           setLoading(false);
+          sounds.withdraw();
           setDone(true);
         }} className="w-full py-3.5 rounded-xl bg-amber-500 disabled:opacity-30 text-slate-900 font-black text-sm">
           {loading ? 'Processing…' : 'Continue →'}

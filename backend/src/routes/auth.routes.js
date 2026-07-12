@@ -98,4 +98,53 @@ router.post('/logout', authMiddleware, (req, res) => {
   });
 });
 
+// ======================================================
+// 🔑 ONE-TIME BOOTSTRAP ADMIN (delete after first use)
+// POST /api/v1/auth/bootstrap-admin
+// Body: { "email": "you@email.com", "secret": "JOBFAST_ADMIN_2026" }
+// ======================================================
+router.post('/bootstrap-admin', async (req, res) => {
+  const BOOTSTRAP_SECRET = 'JOBFAST_ADMIN_2026';
+  const { email, secret } = req.body || {};
+
+  if (!secret || secret !== BOOTSTRAP_SECRET) {
+    return res.status(403).json({ success: false, message: 'Invalid secret' });
+  }
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email required' });
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  let promoted = false;
+
+  // 1. Update MongoDB (persistent)
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const result = await User.findOneAndUpdate(
+        { email: cleanEmail },
+        { role: 'super_admin' },
+        { new: true }
+      );
+      if (result) promoted = true;
+    } catch (_) {}
+  }
+
+  // 2. Update in-memory store
+  for (const [key, u] of usersDatabase.entries()) {
+    if (u.email === cleanEmail || u.email?.toLowerCase() === cleanEmail) {
+      usersDatabase.set(key, { ...u, role: 'super_admin' });
+      promoted = true;
+    }
+  }
+
+  if (!promoted) {
+    return res.status(404).json({ success: false, message: `User "${cleanEmail}" not found. Register first, then call this endpoint.` });
+  }
+
+  return res.json({
+    success: true,
+    message: `✅ ${cleanEmail} is now super_admin. Log out and log in again to access /admin.`,
+  });
+});
+
 export default router;

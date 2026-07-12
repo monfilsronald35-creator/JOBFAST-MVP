@@ -6,6 +6,7 @@ import Input from "../components/Input.jsx";
 import { login } from "../services/auth";
 import { useAuth } from "../context/AuthContext";
 import { getRoleDefaultPath } from "../config/roleConfig";
+import { sounds } from "../utils/sounds";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -97,6 +98,7 @@ export default function Login() {
       // services/auth.js returns { success, data, message, status } — never throws
       if (!res?.success) {
         const status = res?.status;
+        sounds.error();
         if (status === 503 || status === 0 || !status) {
           setError(t("errors.serverWaking"));
         } else if (status === 401) {
@@ -119,6 +121,7 @@ export default function Login() {
       if (user?.id && !user?._id) user._id = user.id;
 
       // Update AuthContext so AuthGate recognises the session immediately
+      sounds.login();
       authLogin({ ...user, token });
 
       if (mounted.current) navigate(getRoleDefaultPath(user?.role));

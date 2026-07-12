@@ -9,6 +9,8 @@ import {
 import { useAuth } from "@/context/AuthContext.jsx";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "../i18n";
+import { sounds } from "../utils/sounds";
+import { usePush } from "../hooks/usePush";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -250,7 +252,7 @@ function SpeedDial({ open, onClose, actions, t }) {
       <div className="absolute bottom-20 left-0 right-0 flex flex-col items-center gap-2 pb-2 px-4">
         {actions.map((action, i) => (
           <button key={action.labelKey} type="button"
-            onClick={(e) => { e.stopPropagation(); navigate(action.path); onClose(); }}
+            onClick={(e) => { e.stopPropagation(); sounds.open(); navigate(action.path); onClose(); }}
             aria-label={t(action.labelKey, { defaultValue: action.labelKey.split('.').pop() })}
             className="flex items-center gap-3 active:scale-95 transition-transform"
             style={{ animation: `slideUp 200ms cubic-bezier(0.34,1.56,0.64,1) ${i * 35}ms both` }}>
@@ -282,6 +284,16 @@ export default function MainLayout({ children }) {
   const location          = useLocation();
   const { user, logout }  = useAuth();
   const { t, i18n }       = useTranslation();
+  const { subscribe, subscribed, supported } = usePush();
+
+  // Auto-subscribe to push notifications on first load (if supported + logged in)
+  useEffect(() => {
+    if (supported && user && !subscribed) {
+      // Small delay so it doesn't interrupt the UI startup
+      const t = setTimeout(() => { subscribe().catch(() => {}); }, 3000);
+      return () => clearTimeout(t);
+    }
+  }, [supported, user, subscribed]);
 
   // UI state
   const [menuOpen,     setMenuOpen]     = useState(false);
@@ -333,6 +345,7 @@ export default function MainLayout({ children }) {
   }, []);
 
   const handleLogout = useCallback(() => {
+    sounds.logout();
     setMenuOpen(false);
     logout();
     navigate("/login", { replace: true });
@@ -589,9 +602,9 @@ export default function MainLayout({ children }) {
               <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black mb-2">Aksyon Rapid</p>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { icon:<Sparkles className="w-4 h-4" />, label:'AI',    action:() => { setMenuOpen(false); setAiOpen(true);      } },
-                  { icon:<QrCode className="w-4 h-4" />,   label:'QR',    action:() => { setMenuOpen(false); setQrOpen(true);       } },
-                  { icon:<ShieldAlert className="w-4 h-4" />,label:'SOS', action:() => { setMenuOpen(false); setEmergencyOpen(true);} },
+                  { icon:<Sparkles className="w-4 h-4" />, label:'AI',    action:() => { sounds.open(); setMenuOpen(false); setAiOpen(true);      } },
+                  { icon:<QrCode className="w-4 h-4" />,   label:'QR',    action:() => { sounds.click(); setMenuOpen(false); setQrOpen(true);       } },
+                  { icon:<ShieldAlert className="w-4 h-4" />,label:'SOS', action:() => { sounds.emergency(); setMenuOpen(false); setEmergencyOpen(true);} },
                 ].map(qa => (
                   <button key={qa.label} type="button" onClick={qa.action}
                     className="flex flex-col items-center gap-1 p-2 bg-slate-800 rounded-xl hover:bg-slate-700 transition-all text-slate-300 hover:text-white">
@@ -638,7 +651,7 @@ export default function MainLayout({ children }) {
               <div key="fab" className="flex flex-col items-center justify-center flex-1">
                 <button
                   type="button"
-                  onClick={() => setFabOpen(v => !v)}
+                  onClick={() => { sounds.click(); setFabOpen(v => !v); }}
                   aria-label="Kreye"
                   aria-expanded={fabOpen}
                   className="relative w-11 h-11 -mt-5"
@@ -659,6 +672,7 @@ export default function MainLayout({ children }) {
                 key={item.path}
                 to={item.path}
                 end={item.path === "/dashboard"}
+                onClick={() => sounds.tab()}
                 aria-label={t(item.labelKey, { defaultValue: item.labelKey })}
                 className={({ isActive }) =>
                   `relative flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all ${
