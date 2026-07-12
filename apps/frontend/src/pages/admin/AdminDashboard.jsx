@@ -1,267 +1,169 @@
-import React, { memo, useMemo } from "react";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API from '@/api/axios';
 
-/* =========================
-   FORMATTERS (PURE + SAFE)
-========================= */
-const formatNumber = (value, locale = "en-US") => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "0";
-  return new Intl.NumberFormat(locale).format(n);
-};
+const fmtNum  = n => Number.isFinite(+n) ? (+n).toLocaleString() : '0';
+const fmtPct  = n => `${Number.isFinite(+n) ? (+n).toFixed(1) : '0'}%`;
 
-const formatCurrency = (value, currency = "USD", locale = "en-US") => {
-  const n = Number(value);
-  const safe = Number.isFinite(n) ? n : 0;
-
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(safe);
-};
-
-const formatPercent = (value) => {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "0%";
-  return `${n > 0 ? "+" : ""}${n}%`;
-};
-
-/* =========================
-   SINGLE CARD COMPONENT
-========================= */
-const MetricCard = memo(({ icon, label, value, highlight }) => {
+function KpiCard({ icon, label, value, sub, color = 'text-amber-400', loading }) {
   return (
-    <div className={`card ${highlight ? "highlight" : ""}`}>
-      <div className="top">
-        <span className="icon">{icon}</span>
-        <span className="label">{label}</span>
+    <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xl">{icon}</span>
+        <span className={`text-[10px] font-black uppercase tracking-widest ${color}`}>{label}</span>
       </div>
-      <div className="value">{value}</div>
+      {loading
+        ? <div className="h-8 w-24 rounded-lg bg-slate-800 animate-pulse" />
+        : <p className={`text-3xl font-black ${color}`}>{value}</p>
+      }
+      {sub && <p className="text-[11px] text-slate-500 mt-1">{sub}</p>}
     </div>
   );
-});
+}
 
-/* =========================
-   MAIN DASHBOARD
-========================= */
-function AdminDashboard({
-  stats = {},
-  loading = false,
-  locale = "en-US",
-  currency = "USD",
-}) {
-  const safe = stats ?? {};
-
-  const {
-    users = 0,
-    activeUsers = 0,
-    jobs = 0,
-    revenue = 0,
-    growth = 0,
-  } = safe;
-
-  /* =========================
-     METRICS (OPTIMIZED + STABLE)
-  ========================= */
-  const metrics = useMemo(() => {
-    return [
-      {
-        key: "users",
-        icon: "👤",
-        label: "Users",
-        value: formatNumber(users, locale),
-      },
-      {
-        key: "activeUsers",
-        icon: "🟢",
-        label: "Active Users",
-        value: formatNumber(activeUsers, locale),
-      },
-      {
-        key: "jobs",
-        icon: "💼",
-        label: "Jobs",
-        value: formatNumber(jobs, locale),
-      },
-      {
-        key: "revenue",
-        icon: "💰",
-        label: "Revenue",
-        value: formatCurrency(revenue, currency, locale),
-      },
-      {
-        key: "growth",
-        icon: "📈",
-        label: "Growth",
-        value: formatPercent(growth),
-        highlight: true,
-      },
-    ];
-  }, [users, activeUsers, jobs, revenue, growth, locale, currency]);
-
-  /* =========================
-     LOADING STATE (FAST PATH)
-  ========================= */
-  if (loading) {
-    return (
-      <section className="dashboard" aria-busy="true">
-        <Header loading />
-        <SkeletonGrid />
-        <style jsx>{styles}</style>
-      </section>
-    );
-  }
-
-  /* =========================
-     EMPTY STATE CHECK
-  ========================= */
-  const isEmpty = metrics.every((m) => m.value === "0" || m.value === "$0");
-
+function RoleBar({ label, count, total, color }) {
+  const pct = total > 0 ? (count / total) * 100 : 0;
   return (
-    <section className="dashboard" aria-label="Admin Dashboard">
-      <Header />
-
-      {isEmpty ? (
-        <div className="empty">No data available</div>
-      ) : (
-        <div className="grid">
-          {metrics.map((m) => (
-            <MetricCard
-              key={m.key}
-              icon={m.icon}
-              label={m.label}
-              value={m.value}
-              highlight={m.highlight}
-            />
-          ))}
-        </div>
-      )}
-
-      <style jsx>{styles}</style>
-    </section>
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-slate-400 w-28 shrink-0">{label}</span>
+      <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <span className="text-xs font-bold text-white w-8 text-right">{count}</span>
+    </div>
   );
 }
 
-/* =========================
-   HEADER (MEMOIZED)
-========================= */
-const Header = memo(({ loading }) => (
-  <div className="header">
-    <h1>Admin Dashboard</h1>
-    <p>
-      {loading
-        ? "Loading analytics..."
-        : "Overview of your platform performance"}
-    </p>
-  </div>
-));
+const ROLE_COLORS = {
+  worker: '#3b82f6', boss: '#f59e0b', admin: '#ef4444', super_admin: '#8b5cf6',
+  restaurant: '#22c55e', hotel: '#06b6d4', hospital: '#ec4899', user: '#94a3b8',
+};
 
-/* =========================
-   SKELETON GRID
-========================= */
-const SkeletonGrid = memo(() => (
-  <div className="grid">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <div key={i} className="card skeleton" />
-    ))}
-  </div>
-));
+export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const [stats,    setStats]    = useState(null);
+  const [health,   setHealth]   = useState(null);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(null);
 
-/* =========================
-   STYLES (PRO UI SYSTEM)
-========================= */
-const styles = `
-.dashboard {
-  padding: 22px;
-  min-height: 100vh;
-  background: #0a0f1c;
-  color: #fff;
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [sRes, hRes] = await Promise.allSettled([
+          API.get('/admin/dashboard'),
+          API.get('/admin/health'),
+        ]);
+        if (sRes.status === 'fulfilled') setStats(sRes.value.data?.data || sRes.value.data);
+        if (hRes.status === 'fulfilled') setHealth(hRes.value.data?.data || hRes.value.data);
+      } catch (e) {
+        setError('Failed to load dashboard stats');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const roles  = stats?.roles || {};
+  const total  = stats?.totalUsers || 0;
+  const active = stats?.activeUsers || 0;
+  const verified = stats?.verifiedUsers || 0;
+
+  const QUICK_LINKS = [
+    { icon:'👥', label:'Manage Users',   path:'/admin/users'      },
+    { icon:'💼', label:'Review Jobs',    path:'/admin/jobs'       },
+    { icon:'🎫', label:'Support Queue',  path:'/admin/support'    },
+    { icon:'⚙️', label:'System Settings',path:'/admin/settings'   },
+    { icon:'🛡', label:'Governance',     path:'/admin/governance' },
+  ];
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black">Admin Dashboard</h1>
+          <p className="text-slate-500 text-sm">Platform overview · {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}</p>
+        </div>
+        <button onClick={() => window.location.reload()}
+          className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:text-white hover:border-amber-500/40 transition">
+          🔄 Refresh
+        </button>
+      </div>
+
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
+      )}
+
+      {/* KPI row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard icon="👥" label="Total Users"    value={fmtNum(total)}   sub="All registered" loading={loading} />
+        <KpiCard icon="🟢" label="Active Users"   value={fmtNum(active)}  sub="Not suspended"  loading={loading} color="text-green-400" />
+        <KpiCard icon="✅" label="Verified"       value={fmtNum(verified)} sub="Identity confirmed" loading={loading} color="text-blue-400" />
+        <KpiCard icon="📈" label="Verify Rate"    value={fmtPct(total > 0 ? (verified/total)*100 : 0)} sub="of all users" loading={loading} color="text-purple-400" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* User breakdown by role */}
+        <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+          <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">👤 Users by Role</p>
+          {loading
+            ? <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-4 bg-slate-800 rounded animate-pulse" />)}</div>
+            : Object.entries(roles).length > 0
+              ? <div className="space-y-3">
+                  {Object.entries(roles).sort((a,b) => b[1]-a[1]).map(([role, count]) => (
+                    <RoleBar key={role} label={role} count={count} total={total} color={ROLE_COLORS[role] || '#64748b'} />
+                  ))}
+                </div>
+              : <p className="text-slate-600 text-sm text-center py-6">No users yet</p>
+          }
+        </div>
+
+        {/* System health */}
+        <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+          <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">🔧 System Health</p>
+          {loading
+            ? <div className="space-y-3">{[1,2,3,4].map(i => <div key={i} className="h-4 bg-slate-800 rounded animate-pulse" />)}</div>
+            : health
+              ? <div className="space-y-3">
+                  {[
+                    ['Status',   health.status === 'healthy' ? '🟢 Healthy' : '🔴 Degraded'],
+                    ['Uptime',   `${Math.floor((health.uptime||0)/3600)}h ${Math.floor(((health.uptime||0)%3600)/60)}m`],
+                    ['Heap',     `${health.memory?.heapUsedMb || 0} MB`],
+                    ['RSS',      `${health.memory?.rssMb || 0} MB`],
+                    ['DB Users', `${health.users || 0} in memory`],
+                  ].map(([k,v]) => (
+                    <div key={k} className="flex justify-between items-center">
+                      <span className="text-xs text-slate-500">{k}</span>
+                      <span className="text-xs font-bold text-white">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              : <p className="text-slate-600 text-sm text-center py-6">Health check unavailable</p>
+          }
+        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">⚡ Quick Actions</p>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {QUICK_LINKS.map(({ icon, label, path }) => (
+            <button key={path} onClick={() => navigate(path)}
+              className="flex flex-col items-center gap-2 py-4 bg-slate-800/50 border border-slate-700/60 hover:border-amber-500/50 hover:bg-amber-500/5 rounded-2xl transition active:scale-95">
+              <span className="text-2xl">{icon}</span>
+              <span className="text-[11px] font-semibold text-slate-300">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer info */}
+      <p className="text-center text-[10px] text-slate-700">
+        JOBFAST Admin Panel · {stats?.generatedAt ? new Date(stats.generatedAt).toLocaleTimeString() : 'Live'}
+      </p>
+    </div>
+  );
 }
-
-.header h1 {
-  font-size: 26px;
-  margin: 0;
-}
-
-.header p {
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-}
-
-/* CARD */
-.card {
-  background: #111827;
-  border: 1px solid #1f2937;
-  border-radius: 14px;
-  padding: 16px;
-  transition: 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  border-color: #38bdf8;
-}
-
-.highlight {
-  border-color: #38bdf8;
-  background: rgba(56, 189, 248, 0.08);
-}
-
-.top {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.icon {
-  font-size: 18px;
-}
-
-.label {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.value {
-  font-size: 22px;
-  font-weight: 700;
-}
-
-/* EMPTY */
-.empty {
-  padding: 40px;
-  text-align: center;
-  color: #64748b;
-}
-
-/* SKELETON */
-.skeleton {
-  height: 80px;
-  border-radius: 14px;
-  background: linear-gradient(90deg,#1f2937,#374151,#1f2937);
-  background-size: 200% 100%;
-  animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 600px) {
-  .grid { grid-template-columns: 1fr; }
-}
-`;
-
-export default memo(AdminDashboard);

@@ -5,6 +5,7 @@ import { getRoleDefaultPath } from "@/config/roleConfig";
 
 // Layouts & UI Components
 import MainLayout from "@/components/MainLayout.jsx";
+import AdminLayout from "@/components/AdminLayout.jsx";
 import PublicLayout from "@/components/PublicLayout.jsx";
 import Loader from "@/components/Loader.jsx";
 
@@ -78,7 +79,7 @@ const AdminGate = ({ children }) => {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   const isAdminRole = user?.role === "admin" || user?.role === "super_admin";
   if (!isAdminRole) return <Navigate to="/dashboard" replace />;
-  return <MainLayout>{children}</MainLayout>;
+  return <AdminLayout>{children}</AdminLayout>;
 };
 
 function AppRoutes() {

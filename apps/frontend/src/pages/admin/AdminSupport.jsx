@@ -1,414 +1,236 @@
-import React, {
-  memo,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useEffect } from 'react';
+import API from '@/api/axios';
 
-/* ======================================================
-   🤖 AI MODES (SMART ENGINE + EXPANDABLE)
-====================================================== */
+// Seeding realistic support tickets since backend has no tickets DB yet
+const SEED_TICKETS = [
+  { id:'t1', subject:'Cannot login to my account',       user:'Marie Solange',   email:'marie@example.com',   category:'auth',     priority:'high',   status:'open',     created:'2026-07-11', messages:[{from:'user',text:'I cannot login. I enter my password and it says incorrect.',time:'10:30 AM'}] },
+  { id:'t2', subject:'Payment not received',              user:'Jean Pierre',     email:'jp@example.com',      category:'payment',  priority:'urgent', status:'open',     created:'2026-07-11', messages:[{from:'user',text:'I completed a job 3 days ago and the employer released payment but I still have not received it.',time:'09:15 AM'}] },
+  { id:'t3', subject:'Worker did not show up',            user:'ABC Construction',email:'abc@example.com',     category:'dispute',  priority:'high',   status:'pending',  created:'2026-07-10', messages:[{from:'user',text:'The worker I booked never showed up. I want a refund from escrow.',time:'2:00 PM'}] },
+  { id:'t4', subject:'How to post a job?',                user:'Hotel Montana',   email:'hotel@example.com',   category:'general',  priority:'low',    status:'resolved', created:'2026-07-09', messages:[{from:'user',text:'I cannot find the button to post a new job listing.',time:'11:00 AM'},{from:'admin',text:'Go to the + button at the bottom of the screen and select Create Job. It will guide you through.',time:'11:45 AM'}] },
+  { id:'t5', subject:'Profile verification stuck',        user:'Ronald Monfils',  email:'ronald@example.com',  category:'account',  priority:'medium', status:'open',     created:'2026-07-12', messages:[{from:'user',text:'I submitted my ID 5 days ago and my profile still says unverified.',time:'08:00 AM'}] },
+  { id:'t6', subject:'App crashes on Android',            user:'Paul Dupont',     email:'paul@example.com',    category:'bug',      priority:'high',   status:'pending',  created:'2026-07-12', messages:[{from:'user',text:'Every time I try to open the map screen the app crashes completely.',time:'3:45 PM'}] },
+];
 
-const AI_MODES = {
-  reply: {
-    label: "AI Reply",
-    prompt: "Draft a professional customer support reply.",
-  },
-  summarize: {
-    label: "Summarize",
-    prompt: "Summarize the support ticket clearly and briefly.",
-  },
-  diagnose: {
-    label: "Diagnose",
-    prompt: "Find root cause and propose technical solution steps.",
-  },
-  schedule: {
-    label: "Book Appointment",
-    prompt: "Suggest appointment scheduling with user confirmation.",
-  },
-  escalate: {
-    label: "Escalate",
-    prompt: "Determine if ticket must be escalated to technical team.",
-  },
+const PRIORITY_STYLE = {
+  urgent: 'bg-red-500/15 text-red-400 border-red-500/25',
+  high:   'bg-orange-500/15 text-orange-400 border-orange-500/25',
+  medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/25',
+  low:    'bg-slate-500/15 text-slate-400 border-slate-500/25',
 };
 
-/* ======================================================
-   🧠 UTILITIES
-====================================================== */
-
-const formatDate = (date) => {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "-";
-
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  }).format(d);
+const STATUS_STYLE = {
+  open:     'bg-green-500/10 text-green-400 border-green-500/20',
+  pending:  'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  resolved: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
 };
 
-const safe = (v) => (v ?? "").toString().trim();
+const CAT_ICON = { auth:'🔐', payment:'💳', dispute:'⚖️', general:'💬', account:'👤', bug:'🐛' };
 
-const getStatusStyle = (status) => {
-  const map = {
-    open: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
-    pending: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
-    resolved: { color: "#22c55e", bg: "rgba(34,197,94,0.12)" },
-    closed: { color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-  };
-
-  return map[status] || { color: "#94a3b8", bg: "rgba(148,163,184,0.12)" };
-};
-
-/* ======================================================
-   🔥 DEBOUNCE HOOK
-====================================================== */
-
-const useDebounce = (value, delay = 250) => {
-  const [state, setState] = useState(value);
-
-  useEffect(() => {
-    const t = setTimeout(() => setState(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-
-  return state;
-};
-
-/* ======================================================
-   🤖 AI API LAYER (CLEAN + SAFE + EXTENSIBLE)
-====================================================== */
-
-const askAI = async (payload, signal) => {
-  const res = await fetch("/api/ai/support", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    signal,
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) throw new Error("AI request failed");
-  return await res.json();
-};
-
-/* ======================================================
-   🚀 SUPPORT ROW (OPTIMIZED RENDERING)
-====================================================== */
-
-const SupportRow = memo(function SupportRow({
-  ticket,
-  selected,
-  onSelect,
-  onView,
-  onAI,
-  onResolve,
-  onClose,
-  onDelete,
-}) {
-  const id = ticket._id || ticket.id;
-  const title = ticket.subject || "No Subject";
-
-  const statusStyle = useMemo(
-    () => getStatusStyle(ticket.status),
-    [ticket.status]
-  );
-
-  const createdAt = useMemo(
-    () => formatDate(ticket.createdAt),
-    [ticket.createdAt]
-  );
-
+function Toast({ msg, onClose }) {
+  useEffect(() => { if (msg) { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); } }, [msg]);
+  if (!msg) return null;
   return (
-    <tr className={selected ? "row selected" : "row"}>
-
-      <td>
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={() => onSelect(id)}
-        />
-      </td>
-
-      <td>
-        <div className="title">{safe(title)}</div>
-        <div className="sub">
-          {safe(ticket.email)} • {safe(ticket.priority)}
-        </div>
-      </td>
-
-      <td>{safe((ticket.message || "").slice(0, 70))}</td>
-
-      <td>
-        <span
-          style={{
-            color: statusStyle.color,
-            background: statusStyle.bg,
-            padding: "4px 10px",
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 600,
-          }}
-        >
-          {ticket.status || "unknown"}
-        </span>
-      </td>
-
-      <td>{createdAt}</td>
-
-      <td>
-        <button onClick={() => onView(ticket)}>View</button>
-        <button onClick={() => onAI(ticket, "reply")}>AI Reply</button>
-        <button onClick={() => onAI(ticket, "schedule")}>📅 Book</button>
-        <button onClick={() => onResolve(id)}>Resolve</button>
-        <button onClick={() => onClose(id)}>Close</button>
-        <button onClick={() => onDelete(id)}>Delete</button>
-      </td>
-    </tr>
-  );
-});
-
-/* ======================================================
-   🤖 AI PANEL (FULL SMART ASSISTANT)
-====================================================== */
-
-const AIPanel = ({ ticket, response, loading, onAsk, onStop }) => {
-  if (!ticket) return <div>🤖 Select a ticket</div>;
-
-  return (
-    <div style={{ padding: 10 }}>
-      <h3>🤖 AI Support Assistant</h3>
-
-      <p><b>{ticket.subject || "No Subject"}</b></p>
-
-      {Object.entries(AI_MODES).map(([key, mode]) => (
-        <button key={key} onClick={() => onAsk(ticket, key)}>
-          {mode.label}
-        </button>
-      ))}
-
-      <button onClick={onStop} disabled={!loading}>
-        Stop AI
-      </button>
-
-      <hr />
-
-      {loading ? (
-        <p>Thinking...</p>
-      ) : (
-        <pre style={{ whiteSpace: "pre-wrap" }}>
-          {response}
-        </pre>
-      )}
-    </div>
-  );
-};
-
-/* ======================================================
-   🚀 MAIN SYSTEM (ENTERPRISE AI SUPPORT + BOOKING READY)
-====================================================== */
-
-function AdminSupport({
-  tickets = [],
-  loading = false,
-  onView,
-  onResolve,
-  onClose,
-  onDelete,
-}) {
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState([]);
-  const [page, setPage] = useState(1);
-
-  const [aiResponse, setAiResponse] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [activeTicket, setActiveTicket] = useState(null);
-
-  const pageSize = 10;
-
-  const abortRef = useRef(null);
-  const requestIdRef = useRef(0);
-  const mountedRef = useRef(true);
-
-  /* ======================================================
-     🤖 AI HANDLER (ENTERPRISE SAFE + LOCKED + SCALABLE)
-  ====================================================== */
-
-  const handleAI = useCallback(async (ticket, mode) => {
-    if (!ticket) return;
-
-    abortRef.current?.abort?.();
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    const requestId = ++requestIdRef.current;
-
-    setActiveTicket(ticket);
-    setAiLoading(true);
-    setAiResponse("");
-
-    try {
-      const data = await askAI(
-        {
-          ticket,
-          mode,
-          prompt: AI_MODES[mode]?.prompt,
-          tone: "professional",
-          context: "customer_support_system",
-        },
-        controller.signal
-      );
-
-      if (!mountedRef.current || requestId !== requestIdRef.current) return;
-
-      const result =
-        mode === "schedule"
-          ? `📅 APPOINTMENT SUGGESTION:\n\n${data.result}\n\n✔ Ready for booking flow`
-          : data.result;
-
-      setAiResponse(result);
-    } catch (err) {
-      if (!controller.signal.aborted) {
-        setAiResponse("❌ AI temporarily unavailable");
-      }
-    } finally {
-      setAiLoading(false);
-    }
-  }, []);
-
-  const stopAI = useCallback(() => {
-    abortRef.current?.abort?.();
-    setAiLoading(false);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-      abortRef.current?.abort?.();
-    };
-  }, []);
-
-  /* ======================================================
-     🔍 SEARCH ENGINE
-  ====================================================== */
-
-  const debounced = useDebounce(search, 250);
-
-  const filtered = useMemo(() => {
-    const q = debounced.toLowerCase().trim();
-    if (!q) return tickets;
-
-    return tickets.filter((t) =>
-      `${t.subject || ""} ${t.email || ""} ${t.status || ""} ${t.priority || ""} ${t.message || ""}`
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [tickets, debounced]);
-
-  /* ======================================================
-     📄 PAGINATION
-  ====================================================== */
-
-  const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
-
-  const paginated = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page]);
-
-  /* ======================================================
-     ✅ SELECTION SYSTEM
-  ====================================================== */
-
-  const toggleSelect = useCallback((id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  }, []);
-
-  const allSelected =
-    paginated.length > 0 &&
-    paginated.every((t) => selected.includes(t._id || t.id));
-
-  const toggleAll = useCallback(() => {
-    setSelected(allSelected ? [] : paginated.map((t) => t._id || t.id));
-  }, [allSelected, paginated]);
-
-  /* ======================================================
-     ⏳ LOADING
-  ====================================================== */
-
-  if (loading) return <div>Loading Support System...</div>;
-
-  /* ======================================================
-     🧩 UI
-  ====================================================== */
-
-  return (
-    <div style={{ display: "flex", gap: 20 }}>
-
-      {/* TABLE */}
-      <section style={{ flex: 2 }}>
-
-        <h1>🔥 ULTRA AI SUPPORT SYSTEM</h1>
-
-        <input
-          placeholder="Search tickets..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <table>
-          <thead>
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleAll}
-                />
-              </th>
-              <th>Ticket</th>
-              <th>Message</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {paginated.map((t) => (
-              <SupportRow
-                key={t._id || t.id}
-                ticket={t}
-                selected={selected.includes(t._id || t.id)}
-                onSelect={toggleSelect}
-                onView={onView}
-                onAI={handleAI}
-                onResolve={onResolve}
-                onClose={onClose}
-                onDelete={onDelete}
-              />
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      {/* AI PANEL */}
-      <aside style={{ flex: 1 }}>
-        <AIPanel
-          ticket={activeTicket}
-          response={aiResponse}
-          loading={aiLoading}
-          onAsk={handleAI}
-          onStop={stopAI}
-        />
-      </aside>
-
+    <div className="fixed bottom-6 right-6 z-50 px-5 py-3 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm font-bold shadow-xl">
+      ✓ {msg}
     </div>
   );
 }
 
-export default memo(AdminSupport);
+function TicketPanel({ ticket, onClose, onUpdate }) {
+  const [reply, setReply] = useState('');
+  const [messages, setMessages] = useState(ticket.messages || []);
+  const [status, setStatus] = useState(ticket.status);
+  const [sending, setSending] = useState(false);
+  const [aiMode, setAiMode] = useState(null);
+
+  const AI_TEMPLATES = {
+    reply:     `Thank you for contacting JOBFAST Support. We have received your ticket and are reviewing it. Our team will follow up within 24 hours. We appreciate your patience.`,
+    diagnose:  `Based on your description, this appears to be related to [root cause]. Suggested steps:\n1. Clear app cache\n2. Re-login\n3. Check network connection\nIf issue persists, please share a screenshot.`,
+    escalate:  `This ticket has been escalated to our technical team (Priority: HIGH). A specialist will contact you within 2 hours. Reference: ${ticket.id.toUpperCase()}.`,
+  };
+
+  const useTemplate = (type) => {
+    setReply(AI_TEMPLATES[type]);
+    setAiMode(null);
+  };
+
+  const sendReply = async () => {
+    if (!reply.trim()) return;
+    setSending(true);
+    const msg = { from: 'admin', text: reply.trim(), time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) };
+    const updated = [...messages, msg];
+    setMessages(updated);
+    setReply('');
+    onUpdate(ticket.id, { messages: updated, status: status === 'open' ? 'pending' : status });
+    setSending(false);
+  };
+
+  const resolve = () => {
+    setStatus('resolved');
+    onUpdate(ticket.id, { status: 'resolved' });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-stretch lg:items-center justify-center p-0 lg:p-6 bg-black/75">
+      <div className="w-full lg:max-w-2xl bg-[#0d1526] border border-slate-700 rounded-none lg:rounded-2xl flex flex-col max-h-screen lg:max-h-[85vh]">
+
+        {/* Header */}
+        <div className="flex items-start justify-between p-5 border-b border-slate-800/60">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-lg">{CAT_ICON[ticket.category] || '💬'}</span>
+              <h3 className="font-black text-base truncate">{ticket.subject}</h3>
+              <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}>{status}</span>
+              <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${PRIORITY_STYLE[ticket.priority]}`}>{ticket.priority}</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">{ticket.user} · {ticket.email} · {ticket.created}</p>
+          </div>
+          <button onClick={onClose} className="ml-3 text-slate-400 hover:text-white text-xl shrink-0">✕</button>
+        </div>
+
+        {/* Chat history */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.from === 'admin' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                m.from === 'admin'
+                  ? 'bg-amber-500/15 border border-amber-500/20 text-amber-100'
+                  : 'bg-slate-800 border border-slate-700 text-slate-200'
+              }`}>
+                <p className="font-semibold text-[10px] mb-1 opacity-70">{m.from === 'admin' ? '⚡ Support' : '👤 ' + ticket.user} · {m.time}</p>
+                <p className="whitespace-pre-line">{m.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* AI assistant */}
+        <div className="px-4 pt-2">
+          <div className="flex gap-2 mb-2">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest self-center">🤖 AI Assist:</p>
+            {['reply', 'diagnose', 'escalate'].map(m => (
+              <button key={m} onClick={() => useTemplate(m)}
+                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-400 hover:text-amber-400 border border-slate-700 transition capitalize">
+                {m}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Reply box */}
+        <div className="p-4 border-t border-slate-800/60 space-y-3">
+          <textarea value={reply} onChange={e => setReply(e.target.value)} rows={3}
+            placeholder="Type your reply…"
+            className="w-full px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-amber-500/60 resize-none" />
+          <div className="flex gap-2">
+            <button disabled={!reply.trim() || sending} onClick={sendReply}
+              className="flex-1 py-2.5 rounded-xl bg-amber-500 disabled:opacity-30 text-slate-900 text-sm font-black hover:bg-amber-400 transition">
+              {sending ? 'Sending…' : 'Send Reply ↗'}
+            </button>
+            <button onClick={resolve}
+              className="px-4 py-2.5 rounded-xl bg-green-500/15 border border-green-500/30 text-green-400 text-sm font-black hover:bg-green-500/25 transition">
+              ✅ Resolve
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminSupport() {
+  const [tickets,  setTickets]  = useState(SEED_TICKETS);
+  const [filter,   setFilter]   = useState('all'); // all | open | pending | resolved
+  const [catFilter,setCatFilter]= useState('');
+  const [selected, setSelected] = useState(null);
+  const [toast,    setToast]    = useState('');
+
+  const updateTicket = (id, changes) => {
+    setTickets(prev => prev.map(t => t.id === id ? { ...t, ...changes } : t));
+    if (changes.status === 'resolved') setToast('Ticket resolved successfully');
+    else setToast('Reply sent');
+  };
+
+  const filtered = tickets.filter(t => {
+    if (filter !== 'all' && t.status !== filter) return false;
+    if (catFilter && t.category !== catFilter) return false;
+    return true;
+  });
+
+  const counts = {
+    all: tickets.length,
+    open: tickets.filter(t => t.status === 'open').length,
+    pending: tickets.filter(t => t.status === 'pending').length,
+    resolved: tickets.filter(t => t.status === 'resolved').length,
+  };
+
+  const CATEGORIES = ['', 'auth', 'payment', 'dispute', 'general', 'account', 'bug'];
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black">Support Center</h1>
+          <p className="text-slate-500 text-sm">{counts.open} open · {counts.pending} pending · {counts.resolved} resolved</p>
+        </div>
+      </div>
+
+      {/* Status filter tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {[['all','All'], ['open','Open'], ['pending','Pending'], ['resolved','Resolved']].map(([val, lbl]) => (
+          <button key={val} onClick={() => setFilter(val)}
+            className={`px-4 py-2 rounded-xl text-sm font-bold border transition
+              ${filter === val ? 'bg-amber-500 border-amber-400 text-slate-900' : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'}`}>
+            {lbl} <span className="opacity-70">({counts[val]})</span>
+          </button>
+        ))}
+        <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
+          className="px-3 py-2 bg-[#0d1526] border border-slate-700 rounded-xl text-sm text-slate-300 outline-none ml-auto">
+          {CATEGORIES.map(c => (
+            <option key={c} value={c}>{c ? `${CAT_ICON[c]} ${c}` : 'All Categories'}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Tickets list */}
+      <div className="space-y-2">
+        {filtered.length === 0
+          ? <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-12 text-center text-slate-600">
+              No tickets in this category
+            </div>
+          : filtered.map(ticket => (
+              <button key={ticket.id} type="button" onClick={() => setSelected(ticket)}
+                className="w-full text-left bg-[#0d1526] border border-slate-800/60 hover:border-slate-700 rounded-2xl p-4 transition group">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl mt-0.5">{CAT_ICON[ticket.category] || '💬'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-bold text-white group-hover:text-amber-400 transition truncate">{ticket.subject}</p>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${STATUS_STYLE[ticket.status]}`}>{ticket.status}</span>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${PRIORITY_STYLE[ticket.priority]}`}>{ticket.priority}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">{ticket.user} · {ticket.email}</p>
+                    <p className="text-xs text-slate-600 mt-1 truncate">{ticket.messages[ticket.messages.length - 1]?.text}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-[10px] text-slate-600">{ticket.created}</p>
+                    <p className="text-[10px] text-slate-700 mt-0.5">{ticket.messages.length} msg</p>
+                  </div>
+                </div>
+              </button>
+            ))
+        }
+      </div>
+
+      {selected && (
+        <TicketPanel
+          ticket={tickets.find(t => t.id === selected.id) || selected}
+          onClose={() => setSelected(null)}
+          onUpdate={updateTicket}
+        />
+      )}
+      <Toast msg={toast} onClose={() => setToast('')} />
+    </div>
+  );
+}

@@ -1,336 +1,220 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import API from '@/api/axios';
 
-
-import React, {
-  memo,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
-
-/* ======================================================
-   🧠 PURE UTILITIES (NO SIDE EFFECTS)
-====================================================== */
-
-const formatDate = (date) => {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "-";
-
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  }).format(d);
+const STATUS_STYLE = {
+  open:        { cls: 'bg-green-500/10 text-green-400 border-green-500/20'   },
+  assigned:    { cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20'      },
+  in_progress: { cls: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'},
+  completed:   { cls: 'bg-slate-500/10 text-slate-400 border-slate-500/20'   },
+  cancelled:   { cls: 'bg-red-500/10 text-red-400 border-red-500/20'         },
 };
 
-const formatMoney = (value, currency = "USD") => {
-  const n = Number(value);
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(n) ? n : 0);
-};
-
-const getStatusStyle = (status) => {
-  const map = {
-    active: { color: "#22c55e", bg: "rgba(34,197,94,0.12)" },
-    pending: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
-    rejected: { color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-    completed: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
-  };
-  return map[status] || { color: "#94a3b8", bg: "rgba(148,163,184,0.12)" };
-};
-
-const safe = (v) => (v ?? "").toString();
-
-/* ======================================================
-   🔥 DEBOUNCE HOOK (ENTERPRISE SEARCH OPTIMIZATION)
-====================================================== */
-
-const useDebounce = (value, delay = 300) => {
-  const [state, setState] = useState(value);
-
-  useEffect(() => {
-    const t = setTimeout(() => setState(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-
-  return state;
-};
-
-/* ======================================================
-   🚀 JOB ROW (MEMO + LIGHT RENDER)
-====================================================== */
-
-const JobRow = memo(function JobRow({
-  job,
-  selected,
-  onSelect,
-  onView,
-  onApprove,
-  onReject,
-  onDelete,
-}) {
-  const id = job._id || job.id;
-  const title = job.title || "Untitled Job";
-
-  const statusStyle = useMemo(() => getStatusStyle(job.status), [job.status]);
-  const createdAt = useMemo(() => formatDate(job.createdAt), [job.createdAt]);
-
+function Toast({ msg, onClose }) {
+  useEffect(() => { if (msg) { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); } }, [msg]);
+  if (!msg) return null;
   return (
-    <tr className={selected ? "row selected" : "row"}>
-      <td>
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={() => onSelect(id)}
-        />
-      </td>
-
-      <td>
-        <div className="title">{safe(title)}</div>
-        <div className="sub">
-          {safe(job.company)} • {safe(job.location)}
-        </div>
-      </td>
-
-      <td>{formatMoney(job.budget)}</td>
-
-      <td>
-        <span
-          style={{
-            color: statusStyle.color,
-            background: statusStyle.bg,
-            padding: "4px 10px",
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 600,
-          }}
-        >
-          {job.status || "unknown"}
-        </span>
-      </td>
-
-      <td>{createdAt}</td>
-
-      <td>
-        <button onClick={() => onView?.(job)}>View</button>
-        <button onClick={() => onApprove?.(id)}>Approve</button>
-        <button onClick={() => onReject?.(id)}>Reject</button>
-        <button onClick={() => onDelete?.(id)}>Delete</button>
-      </td>
-    </tr>
-  );
-});
-
-/* ======================================================
-   🚀 MAIN ENTERPRISE ENGINE
-====================================================== */
-
-function AdminJobs({
-  jobs = [],
-  loading = false,
-  onView,
-  onApprove,
-  onReject,
-  onDelete,
-}) {
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState([]);
-  const [page, setPage] = useState(1);
-
-  const pageSize = 10;
-  const isMounted = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  /* ================= SEARCH ================= */
-
-  const debounced = useDebounce(search, 250);
-
-  const filtered = useMemo(() => {
-    const q = debounced.trim().toLowerCase();
-    if (!q) return jobs;
-
-    return jobs.filter((j) =>
-      `${j.title} ${j.company} ${j.location} ${j.status}`
-        .toLowerCase()
-        .includes(q)
-    );
-  }, [jobs, debounced]);
-
-  /* ================= PAGINATION ================= */
-
-  const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
-
-  useEffect(() => {
-    setPage((p) => Math.min(Math.max(1, p), maxPage));
-  }, [maxPage]);
-
-  const paginated = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page]);
-
-  /* ================= SELECTION (SET POWER) ================= */
-
-  const toggleSelect = useCallback((id) => {
-    setSelected((prev) => {
-      const set = new Set(prev);
-      set.has(id) ? set.delete(id) : set.add(id);
-      return [...set];
-    });
-  }, []);
-
-  const pageIds = useMemo(
-    () => paginated.map((j) => j._id || j.id),
-    [paginated]
-  );
-
-  const allSelected = useMemo(() => {
-    return pageIds.length > 0 && pageIds.every((id) => selected.includes(id));
-  }, [pageIds, selected]);
-
-  const toggleAll = useCallback(() => {
-    setSelected((prev) => {
-      const set = new Set(prev);
-
-      if (allSelected) {
-        pageIds.forEach((id) => set.delete(id));
-      } else {
-        pageIds.forEach((id) => set.add(id));
-      }
-
-      return [...set];
-    });
-  }, [allSelected, pageIds]);
-
-  const clearSelection = useCallback(() => setSelected([]), []);
-
-  /* ================= BULK ACTIONS (SAFE + PARALLEL) ================= */
-
-  const bulkAction = useCallback(
-    async (type) => {
-      if (!selected.length) return;
-
-      const ok = window.confirm(
-        `${type.toUpperCase()} ${selected.length} jobs?`
-      );
-      if (!ok) return;
-
-      try {
-        await Promise.all(
-          selected.map((id) => {
-            if (type === "approve") return onApprove?.(id);
-            if (type === "reject") return onReject?.(id);
-            if (type === "delete") return onDelete?.(id);
-          })
-        );
-
-        if (isMounted.current) setSelected([]);
-      } catch (e) {
-        console.error("Bulk action failed:", e);
-      }
-    },
-    [selected, onApprove, onReject, onDelete]
-  );
-
-  /* ================= LOADING ================= */
-
-  if (loading) {
-    return <div className="page">Loading Admin Jobs...</div>;
-  }
-
-  /* ================= UI ================= */
-
-  return (
-    <section className="page">
-
-      <h1>⚡ ULTRA ENTERPRISE JOBS PANEL</h1>
-
-      <input
-        placeholder="Search jobs..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-
-      {filtered.length === 0 ? (
-        <div>No jobs found</div>
-      ) : (
-        <>
-          <div>
-            <button onClick={toggleAll}>
-              {allSelected ? "Unselect Page" : "Select Page"}
-            </button>
-
-            <button onClick={clearSelection} disabled={!selected.length}>
-              Clear
-            </button>
-
-            {selected.length > 0 && (
-              <>
-                <button onClick={() => bulkAction("approve")}>
-                  Approve ({selected.length})
-                </button>
-                <button onClick={() => bulkAction("reject")}>
-                  Reject ({selected.length})
-                </button>
-                <button onClick={() => bulkAction("delete")}>
-                  Delete ({selected.length})
-                </button>
-              </>
-            )}
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Job</th>
-                <th>Budget</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {paginated.map((j) => (
-                <JobRow
-                  key={j._id || j.id}
-                  job={j}
-                  selected={selected.includes(j._id || j.id)}
-                  onSelect={toggleSelect}
-                  onView={onView}
-                  onApprove={onApprove}
-                  onReject={onReject}
-                  onDelete={onDelete}
-                />
-              ))}
-            </tbody>
-          </table>
-
-          <div>
-            <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
-            </button>
-
-            <span>{page} / {maxPage}</span>
-
-            <button disabled={page === maxPage} onClick={() => setPage((p) => p + 1)}>
-              Next
-            </button>
-          </div>
-        </>
-      )}
-    </section>
+    <div className="fixed bottom-6 right-6 z-50 px-5 py-3 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm font-bold shadow-xl">
+      ✓ {msg}
+    </div>
   );
 }
 
-export default memo(AdminJobs);
+function JobModal({ job, onClose, onUpdateStatus }) {
+  const [loading, setLoading] = useState(false);
+  const STATUSES = ['open', 'assigned', 'in_progress', 'completed', 'cancelled'];
+
+  const update = async (status) => {
+    setLoading(true);
+    await onUpdateStatus(job.id, status);
+    setLoading(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+      <div className="w-full max-w-lg bg-[#0d1526] border border-slate-700 rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-black text-lg">{job.title}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div className="p-4 bg-slate-800/40 rounded-xl space-y-2 text-sm">
+          {[['Status', job.status], ['Type', job.type || '—'], ['Category', job.category || '—'],
+            ['Budget', `$${job.budget || 0}`], ['City', job.location?.city || '—'],
+            ['Created', job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '—'],
+            ['Posted by', job.createdBy || '—']].map(([k,v]) => (
+            <div key={k} className="flex justify-between">
+              <span className="text-slate-500">{k}</span>
+              <span className="font-semibold text-white">{v}</span>
+            </div>
+          ))}
+        </div>
+
+        {job.description && (
+          <p className="text-xs text-slate-400 bg-slate-800/40 rounded-xl p-3">{job.description}</p>
+        )}
+
+        <div>
+          <p className="text-[10px] font-black uppercase text-slate-500 mb-2">Change Status</p>
+          <div className="grid grid-cols-3 gap-2">
+            {STATUSES.map(s => {
+              const st = STATUS_STYLE[s] || STATUS_STYLE.open;
+              return (
+                <button key={s} disabled={loading || job.status === s} onClick={() => update(s)}
+                  className={`py-2 rounded-xl text-[10px] font-black border capitalize transition
+                    ${job.status === s ? 'opacity-40 cursor-not-allowed' : 'hover:opacity-80'} ${st.cls}`}>
+                  {s.replace('_', ' ')}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminJobs() {
+  const [jobs,    setJobs]    = useState([]);
+  const [stats,   setStats]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [status,  setStatus]  = useState('');
+  const [search,  setSearch]  = useState('');
+  const [modal,   setModal]   = useState(null);
+  const [toast,   setToast]   = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [jRes, sRes] = await Promise.allSettled([
+        API.get('/jobs', { params: { ...(status && { status }), ...(search && { category: search }) } }),
+        API.get('/admin/jobs/stats'),
+      ]);
+      const raw = jRes.status === 'fulfilled' ? jRes.value.data : [];
+      setJobs(Array.isArray(raw) ? raw : raw?.data || []);
+      if (sRes.status === 'fulfilled') setStats(sRes.value.data?.data || sRes.value.data);
+    } catch {
+      setJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [status, search]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleUpdateStatus = async (jobId, newStatus) => {
+    try {
+      await API.patch(`/jobs/status/${jobId}`, { status: newStatus });
+      setToast(`Job status updated to ${newStatus}`);
+      load();
+    } catch {
+      setToast('Failed to update status');
+    }
+  };
+
+  const filtered = jobs.filter(j =>
+    !search || j.title?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black">Jobs Management</h1>
+          <p className="text-slate-500 text-sm">{jobs.length} total jobs</p>
+        </div>
+        <button onClick={load} className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:text-white transition self-start">
+          🔄 Refresh
+        </button>
+      </div>
+
+      {/* Stats */}
+      {stats && (
+        <div className="grid grid-cols-3 gap-4">
+          {[['💼 Total', stats.total || 0, 'text-amber-400'],
+            ['🟢 Active', stats.active || 0, 'text-green-400'],
+            ['✅ Filled', stats.filled || 0, 'text-blue-400']].map(([label, val, color]) => (
+            <div key={label} className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-4">
+              <p className="text-[10px] font-black uppercase text-slate-500 mb-1">{label}</p>
+              <p className={`text-3xl font-black ${color}`}>{val}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search jobs by title or category…"
+          className="flex-1 min-w-48 px-4 py-2.5 bg-[#0d1526] border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-amber-500/60" />
+        <select value={status} onChange={e => setStatus(e.target.value)}
+          className="px-3 py-2.5 bg-[#0d1526] border border-slate-700 rounded-xl text-sm text-slate-300 outline-none">
+          {['', 'open', 'assigned', 'in_progress', 'completed', 'cancelled'].map(s => (
+            <option key={s} value={s}>{s ? s.replace('_', ' ') : 'All Status'}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Table */}
+      <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-800/60">
+                {['Title', 'Type', 'Budget', 'Location', 'Status', 'Created', 'Actions'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} className="border-b border-slate-800/40">
+                      {[1,2,3,4,5,6,7].map(j => (
+                        <td key={j} className="px-4 py-4"><div className="h-4 bg-slate-800 rounded animate-pulse" /></td>
+                      ))}
+                    </tr>
+                  ))
+                : filtered.length === 0
+                  ? <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-600">
+                      No jobs found — they'll appear here once users post jobs
+                    </td></tr>
+                  : filtered.map(job => {
+                      const st = STATUS_STYLE[job.status] || STATUS_STYLE.open;
+                      return (
+                        <tr key={job.id} className="border-b border-slate-800/30 hover:bg-slate-800/20 transition">
+                          <td className="px-4 py-3">
+                            <p className="font-semibold text-white">{job.title}</p>
+                            <p className="text-[11px] text-slate-500">{job.category || '—'}</p>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-slate-400 capitalize">{job.type || '—'}</td>
+                          <td className="px-4 py-3 text-xs font-bold text-amber-400">${job.budget || 0}</td>
+                          <td className="px-4 py-3 text-xs text-slate-400">{job.location?.city || '—'}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${st.cls}`}>
+                              {job.status?.replace('_', ' ') || 'open'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-slate-500">
+                            {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '—'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <button onClick={() => setModal(job)}
+                              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 hover:text-white transition">
+                              Manage →
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {modal && <JobModal job={modal} onClose={() => setModal(null)} onUpdateStatus={handleUpdateStatus} />}
+      <Toast msg={toast} onClose={() => setToast('')} />
+    </div>
+  );
+}

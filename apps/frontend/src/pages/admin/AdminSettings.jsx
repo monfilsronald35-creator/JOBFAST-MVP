@@ -1,267 +1,209 @@
-import React, {
-  memo,
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useEffect } from 'react';
+import API from '@/api/axios';
 
-/* ======================================================
-   🌍 CONSTANTS
-====================================================== */
-
-const DEFAULT_CONFIG = Object.freeze({
-  appName: "Ultra System",
-  language: "en",
-  currency: "USD",
-  theme: "dark",
-  notifications: true,
-});
-
-const LANGUAGES = Object.freeze([
-  { code: "en", label: "English" },
-  { code: "fr", label: "Français" },
-  { code: "ht", label: "Kreyòl" },
-  { code: "es", label: "Español" },
-]);
-
-const CURRENCIES = Object.freeze([
-  { code: "USD", label: "US Dollar" },
-  { code: "EUR", label: "Euro" },
-  { code: "HTG", label: "Gourde" },
-  { code: "DOP", label: "Peso DR" },
-]);
-
-const STORAGE_KEY = "app_config";
-
-/* ======================================================
-   🧠 UTIL: DEEP EQUALITY (FAST + SAFE)
-====================================================== */
-
-const isEqual = (a, b) =>
-  a.appName === b.appName &&
-  a.language === b.language &&
-  a.currency === b.currency &&
-  a.theme === b.theme &&
-  a.notifications === b.notifications;
-
-/* ======================================================
-   💾 STORAGE ENGINE
-====================================================== */
-
-const loadConfig = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_CONFIG;
-
-    return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
-  } catch {
-    return DEFAULT_CONFIG;
-  }
-};
-
-const saveConfig = (config) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-
-    window.dispatchEvent(
-      new CustomEvent("app_config_update", {
-        detail: config,
-      })
-    );
-
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-/* ======================================================
-   ⚡ FIELD COMPONENT
-====================================================== */
-
-const SettingItem = memo(({ id, label, hint, children }) => (
-  <div style={{ marginBottom: 16 }}>
-    <label htmlFor={id} style={{ fontWeight: 600, display: "block" }}>
-      {label}
-    </label>
-    {children}
-    {hint && (
-      <small style={{ opacity: 0.7, display: "block", marginTop: 4 }}>
-        {hint}
-      </small>
-    )}
-  </div>
-));
-
-/* ======================================================
-   🚀 ADMIN SETTINGS (FINAL CLEAN ARCHITECTURE)
-====================================================== */
-
-function AdminSettings() {
-  const [config, setConfig] = useState(loadConfig);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const initialRef = useRef(loadConfig());
-
-  /* ======================================================
-     🔄 DERIVED STATE (NO REF STATE BUG)
-  ====================================================== */
-
-  const dirty = useMemo(() => {
-    return !isEqual(config, initialRef.current);
-  }, [config]);
-
-  /* ======================================================
-     🔄 UPDATE FIELD (PURE + SAFE)
-  ====================================================== */
-
-  const updateField = useCallback((key, value) => {
-    setConfig((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-
-    setMessage("");
-  }, []);
-
-  /* ======================================================
-     💱 LABELS
-  ====================================================== */
-
-  const languageLabel = useMemo(
-    () =>
-      LANGUAGES.find((l) => l.code === config.language)?.label ||
-      "Unknown",
-    [config.language]
-  );
-
-  const currencyLabel = useMemo(
-    () =>
-      CURRENCIES.find((c) => c.code === config.currency)?.label ||
-      "Unknown",
-    [config.currency]
-  );
-
-  /* ======================================================
-     💾 SAVE
-  ====================================================== */
-
-  const saveSettings = useCallback(async (e) => {
-    e?.preventDefault?.();
-
-    setSaving(true);
-
-    try {
-      const ok = saveConfig(config);
-      if (!ok) throw new Error();
-
-      initialRef.current = config;
-      setMessage("✅ Saved successfully");
-    } catch {
-      setMessage("❌ Save failed");
-    } finally {
-      setSaving(false);
-    }
-  }, [config]);
-
-  /* ======================================================
-     🔁 RESET
-  ====================================================== */
-
-  const resetToDefaults = useCallback(() => {
-    setConfig(DEFAULT_CONFIG);
-    setMessage("↩️ Reset done (not saved yet)");
-  }, []);
-
-  /* ======================================================
-     🧩 UI
-  ====================================================== */
-
+function Toggle({ checked, onChange, label, description }) {
   return (
-    <form
-      onSubmit={saveSettings}
-      style={{ padding: 24, maxWidth: 650, margin: "0 auto" }}
-    >
-      <h1>⚙️ Admin Settings</h1>
-
-      <p style={{ opacity: 0.8 }}>
-        {dirty ? "⚠️ Unsaved changes" : "✔ Synced"}
-      </p>
-
-      <SettingItem id="appName" label="App Name">
-        <input
-          value={config.appName}
-          onChange={(e) => updateField("appName", e.target.value)}
-        />
-      </SettingItem>
-
-      <SettingItem id="language" label="Language" hint={languageLabel}>
-        <select
-          value={config.language}
-          onChange={(e) => updateField("language", e.target.value)}
-        >
-          {LANGUAGES.map((l) => (
-            <option key={l.code} value={l.code}>
-              {l.label}
-            </option>
-          ))}
-        </select>
-      </SettingItem>
-
-      <SettingItem id="currency" label="Currency" hint={currencyLabel}>
-        <select
-          value={config.currency}
-          onChange={(e) => updateField("currency", e.target.value)}
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-      </SettingItem>
-
-      <SettingItem id="theme" label="Theme">
-        <select
-          value={config.theme}
-          onChange={(e) => updateField("theme", e.target.value)}
-        >
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-        </select>
-      </SettingItem>
-
-      <SettingItem id="notifications" label="Notifications">
-        <input
-          type="checkbox"
-          checked={config.notifications}
-          onChange={(e) =>
-            updateField("notifications", e.target.checked)
-          }
-        />
-        <span style={{ marginLeft: 8 }}>Enable</span>
-      </SettingItem>
-
-      <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-        <button type="submit" disabled={saving || !dirty}>
-          {saving ? "Saving..." : "Save"}
-        </button>
-
-        <button type="button" onClick={resetToDefaults}>
-          Reset
-        </button>
+    <div className="flex items-center justify-between py-3 border-b border-slate-800/40 last:border-none">
+      <div className="flex-1 min-w-0 mr-4">
+        <p className="text-sm font-semibold text-white">{label}</p>
+        {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
       </div>
-
-      {message && (
-        <p style={{ marginTop: 12, fontWeight: 600 }}>
-          {message}
-        </p>
-      )}
-    </form>
+      <button type="button" onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 transition-colors duration-200
+          ${checked ? 'bg-amber-500 border-amber-500' : 'bg-slate-700 border-slate-600'}`}>
+        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200
+          ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+      </button>
+    </div>
   );
 }
 
-export default memo(AdminSettings);
+function Toast({ msg, type = 'success', onClose }) {
+  useEffect(() => { if (msg) { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); } }, [msg]);
+  if (!msg) return null;
+  const cls = type === 'error'
+    ? 'bg-red-500/10 border-red-500/30 text-red-400'
+    : 'bg-green-500/10 border-green-500/30 text-green-400';
+  return (
+    <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 border rounded-xl text-sm font-bold shadow-xl ${cls}`}>
+      {type === 'error' ? '✕' : '✓'} {msg}
+    </div>
+  );
+}
+
+export default function AdminSettings() {
+  const [settings,     setSettings]     = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [saving,       setSaving]       = useState(false);
+  const [maintenance,  setMaintenance]  = useState(false);
+  const [regOpen,      setRegOpen]      = useState(true);
+  const [gpsEnabled,   setGpsEnabled]   = useState(true);
+  const [maxSearch,    setMaxSearch]    = useState(50);
+  const [toast,        setToast]        = useState({ msg: '', type: 'success' });
+
+  // Global notification
+  const [notifTitle,   setNotifTitle]   = useState('');
+  const [notifMsg,     setNotifMsg]     = useState('');
+  const [sending,      setSending]      = useState(false);
+
+  useEffect(() => {
+    API.get('/admin/settings')
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setSettings(d);
+        setMaintenance(d?.maintenance ?? false);
+        setRegOpen(d?.registrationOpen ?? true);
+        setGpsEnabled(d?.gpsEnabled ?? true);
+        setMaxSearch(d?.maxUsersPerSearch ?? 50);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const saveSettings = async () => {
+    setSaving(true);
+    try {
+      await API.put('/admin/settings', {
+        maintenance, registrationOpen: regOpen, gpsEnabled, maxUsersPerSearch: maxSearch,
+      });
+      setToast({ msg: 'Settings saved successfully', type: 'success' });
+    } catch {
+      setToast({ msg: 'Failed to save settings', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleMaintenance = async () => {
+    const next = !maintenance;
+    try {
+      await API.patch('/admin/maintenance', { enabled: next });
+      setMaintenance(next);
+      setToast({ msg: `Maintenance mode ${next ? 'enabled' : 'disabled'}`, type: 'success' });
+    } catch {
+      setToast({ msg: 'Failed to toggle maintenance', type: 'error' });
+    }
+  };
+
+  const sendGlobalNotif = async () => {
+    if (!notifMsg.trim()) return;
+    setSending(true);
+    try {
+      const res = await API.post('/admin/notifications/global', { title: notifTitle, message: notifMsg });
+      const sent = res.data?.data?.sent || 0;
+      setToast({ msg: `Notification sent to ${sent} users`, type: 'success' });
+      setNotifTitle(''); setNotifMsg('');
+    } catch {
+      setToast({ msg: 'Failed to send notification', type: 'error' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const clearCache = async () => {
+    try {
+      await API.delete('/admin/cache');
+      setToast({ msg: 'Cache cleared', type: 'success' });
+    } catch {
+      setToast({ msg: 'Failed to clear cache', type: 'error' });
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-3xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-black">System Settings</h1>
+        <p className="text-slate-500 text-sm">Configure the JOBFAST platform</p>
+      </div>
+
+      {/* ── Platform Toggles ─────────────────────────────────── */}
+      <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">⚙️ Platform Settings</p>
+
+        {loading
+          ? <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-10 bg-slate-800 rounded-xl animate-pulse" />)}</div>
+          : <>
+              <Toggle
+                checked={maintenance}  onChange={toggleMaintenance}
+                label="Maintenance Mode"
+                description="When ON, the app shows a maintenance page to all users"
+              />
+              <Toggle
+                checked={regOpen}      onChange={setRegOpen}
+                label="Open Registration"
+                description="Allow new users to create accounts"
+              />
+              <Toggle
+                checked={gpsEnabled}   onChange={setGpsEnabled}
+                label="GPS / Location"
+                description="Enable GPS-based features and job matching"
+              />
+
+              <div className="py-3 border-b border-slate-800/40">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold">Max Results per Search</p>
+                  <span className="text-sm font-black text-amber-400">{maxSearch}</span>
+                </div>
+                <input type="range" min={10} max={200} step={10} value={maxSearch} onChange={e => setMaxSearch(+e.target.value)}
+                  className="w-full accent-amber-400" />
+                <div className="flex justify-between text-[10px] text-slate-600 mt-1">
+                  <span>10</span><span>200</span>
+                </div>
+              </div>
+
+              <div className="pt-3">
+                <button onClick={saveSettings} disabled={saving}
+                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-slate-900 font-black text-sm transition">
+                  {saving ? 'Saving…' : '💾 Save Settings'}
+                </button>
+              </div>
+            </>
+        }
+      </div>
+
+      {/* ── Global Notification ─────────────────────────────── */}
+      <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">📢 Send Global Notification</p>
+        <div className="space-y-3">
+          <label className="block">
+            <p className="text-[10px] text-slate-500 mb-1.5">Title</p>
+            <input value={notifTitle} onChange={e => setNotifTitle(e.target.value)}
+              placeholder="e.g. Platform maintenance tonight"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-amber-500/60" />
+          </label>
+          <label className="block">
+            <p className="text-[10px] text-slate-500 mb-1.5">Message</p>
+            <textarea value={notifMsg} onChange={e => setNotifMsg(e.target.value)} rows={3}
+              placeholder="Write your message to all users…"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 outline-none focus:border-amber-500/60 resize-none" />
+          </label>
+          <button disabled={!notifMsg.trim() || sending} onClick={sendGlobalNotif}
+            className="px-6 py-2.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-400 disabled:opacity-30 font-black text-sm transition">
+            {sending ? 'Sending…' : '📢 Send to All Users'}
+          </button>
+        </div>
+      </div>
+
+      {/* ── System Tools ────────────────────────────────────── */}
+      <div className="bg-[#0d1526] border border-slate-800/60 rounded-2xl p-5">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-4">🔧 System Tools</p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon:'🗑', label:'Clear Cache',    fn: clearCache,    cls:'text-yellow-400 border-yellow-500/20 bg-yellow-500/10 hover:bg-yellow-500/20' },
+            { icon:'📊', label:'Export Data',    fn: () => window.open('/api/v1/admin/export?type=users'), cls:'text-blue-400 border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/20' },
+            { icon:'📋', label:'Audit Logs',     fn: () => {}, cls:'text-purple-400 border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20' },
+            { icon:'🏥', label:'Health Check',   fn: () => window.open('/api/v1/admin/health'), cls:'text-green-400 border-green-500/20 bg-green-500/10 hover:bg-green-500/20' },
+          ].map(({ icon, label, fn, cls }) => (
+            <button key={label} onClick={fn}
+              className={`flex items-center gap-3 p-4 rounded-xl border font-bold text-sm transition ${cls}`}>
+              <span className="text-xl">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: '', type: 'success' })} />
+    </div>
+  );
+}
