@@ -25,6 +25,7 @@ export default defineConfig({
 
   server: {
     port: 5173,
+    host: true,        // expose on 0.0.0.0 so phones on same WiFi can connect
     strictPort: true,
     open: true,
     proxy: {
@@ -53,7 +54,10 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: false,
-    target: "es2020",
+    // Target ES2015 baseline so esbuild transpiles optional chaining, nullish
+    // coalescing, etc. → supports iOS Safari 13+, Android Chrome 71+.
+    // es2020 was causing blank screens on older phones/tablets.
+    target: ["es2015", "safari13.1", "chrome71"],
     minify: "esbuild",
 
     rollupOptions: {

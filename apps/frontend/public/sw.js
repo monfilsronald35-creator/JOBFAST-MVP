@@ -1,5 +1,5 @@
-// JOBFAST Service Worker v2 — Push Notifications + Smart Offline Cache
-const CACHE_NAME = 'jobfast-v2';
+// JOBFAST Service Worker v3 — Push Notifications + Smart Offline Cache
+const CACHE_NAME = 'jobfast-v3';
 
 // ── Install: cache only true static assets (NOT index.html) ──────────────────
 self.addEventListener('install', (e) => {
