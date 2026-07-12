@@ -180,7 +180,7 @@ export default function WorkerProfilePage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-slate-400 uppercase tracking-wide font-bold">{t('worker.portfolio', { defaultValue:'Portfolio' })}</p>
-              <button type="button" className="text-xs text-amber-400 font-bold">+ {t('worker.addPhoto', { defaultValue:'Ajoute Foto' })}</button>
+              <button type="button" onClick={() => navigate('/create-post')} className="text-xs text-amber-400 font-bold">+ {t('worker.addPhoto', { defaultValue:'Ajoute Foto' })}</button>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {(user?.portfolio || []).length === 0 ? (
@@ -202,13 +202,13 @@ export default function WorkerProfilePage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-slate-400 uppercase tracking-wide font-bold">{t('worker.experience', { defaultValue:'Eksperyans' })}</p>
-              <button type="button" className="text-xs text-amber-400 font-bold">+ {t('worker.add', { defaultValue:'Ajoute' })}</button>
+              <button type="button" onClick={() => navigate('/edit-profile')} className="text-xs text-amber-400 font-bold">+ {t('worker.add', { defaultValue:'Ajoute' })}</button>
             </div>
             {(user?.experience || []).length === 0 ? (
               <div className="flex flex-col items-center py-10 gap-2">
                 <span className="text-4xl">💼</span>
                 <p className="text-xs text-slate-500">{t('worker.noExperience', { defaultValue:'Pa gen eksperyans. Ajoute istwa travay ou.' })}</p>
-                <button type="button" className="px-4 py-2 bg-amber-500 text-slate-950 text-xs font-black rounded-xl mt-1">
+                <button type="button" onClick={() => navigate('/edit-profile')} className="px-4 py-2 bg-amber-500 text-slate-950 text-xs font-black rounded-xl mt-1">
                   + {t('worker.addExperience', { defaultValue:'Ajoute Eksperyans' })}
                 </button>
               </div>
@@ -228,7 +228,7 @@ export default function WorkerProfilePage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-slate-400 uppercase tracking-wide font-bold">{t('worker.documents', { defaultValue:'Dokiman' })}</p>
-              <button type="button" className="text-xs text-amber-400 font-bold">+ {t('worker.upload', { defaultValue:'Telechaje' })}</button>
+              <button type="button" onClick={() => navigate('/edit-profile')} className="text-xs text-amber-400 font-bold">+ {t('worker.upload', { defaultValue:'Telechaje' })}</button>
             </div>
             {[
               { icon:'📄', label:t('worker.resume', { defaultValue:'CV / Rezime' }), status:'missing' },
@@ -239,7 +239,7 @@ export default function WorkerProfilePage() {
                 <span className="text-xl">{d.icon}</span>
                 <span className="text-sm text-slate-300 flex-1">{d.label}</span>
                 {d.status === 'missing' ? (
-                  <button type="button" className="text-xs text-amber-400 font-bold border border-amber-500/40 px-2 py-1 rounded-lg">
+                  <button type="button" onClick={() => navigate('/edit-profile')} className="text-xs text-amber-400 font-bold border border-amber-500/40 px-2 py-1 rounded-lg">
                     + {t('worker.add', { defaultValue:'Ajoute' })}
                   </button>
                 ) : (

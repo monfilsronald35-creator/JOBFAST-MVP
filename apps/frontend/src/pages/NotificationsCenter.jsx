@@ -220,7 +220,7 @@ function NotificationsCenter() {
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-xs text-gray-500">
-                        {new Date(notification.createdAt).toLocaleDateString('ht')}
+                        {new Date(notification.createdAt).toLocaleDateString('fr')}
                       </span>
                       {notification.category && (
                         <span className="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-300">

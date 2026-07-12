@@ -81,7 +81,7 @@ const TRENDING = [
   'Construction Haiti', 'MacBook Pro',
 ];
 
-const RECENT = [
+const RECENT_DEFAULT = [
   'electricien cap-haïtien',
   'hotel port-au-prince 4 etoile',
   'macbook pro m3',
@@ -124,10 +124,10 @@ function SearchInput({ value, onChange, inputRef }) {
 }
 
 // ── Result card inside a grouped section ──────────────────────
-function ResultItem({ item, isLast }) {
+function ResultItem({ item, isLast, onClick }) {
   return (
     <>
-      <div className="flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors hover:bg-white/[0.015] active:bg-white/[0.025]">
+      <div onClick={onClick} className="flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors hover:bg-white/[0.015] active:bg-white/[0.025]">
         <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-xl shrink-0"
           style={{ background: BORDER }}>
           {item.icon}
@@ -152,8 +152,17 @@ function ResultItem({ item, isLast }) {
   );
 }
 
+// ── Route for a result item based on entity type ─────────────
+function itemRoute(typeId, item) {
+  if (typeId === 'job')    return '/jobs';
+  if (typeId === 'worker' || typeId === 'user') return `/u/${item.id}`;
+  if (typeId === 'company' || typeId === 'hotel' || typeId === 'restaurant' ||
+      typeId === 'hospital' || typeId === 'clinic') return `/u/${item.id}`;
+  return '/search';
+}
+
 // ── Grouped section ───────────────────────────────────────────
-function ResultSection({ typeId, items }) {
+function ResultSection({ typeId, items, navigate }) {
   const info = ENTITY_TYPES.find(e => e.id === typeId);
   if (!info || !items?.length) return null;
   return (
@@ -165,7 +174,8 @@ function ResultSection({ typeId, items }) {
           <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold text-slate-600"
             style={{ background: BORDER }}>{items.length}</span>
         </div>
-        <button type="button" className="text-[11px] font-bold hover:opacity-80 transition-opacity"
+        <button type="button" onClick={() => navigate(`/search?type=${typeId}`)}
+          className="text-[11px] font-bold hover:opacity-80 transition-opacity"
           style={{ color: GOLD }}>
           Wè tout
         </button>
@@ -173,7 +183,8 @@ function ResultSection({ typeId, items }) {
       <div className="rounded-[20px] overflow-hidden shadow-xl shadow-black/30"
         style={{ background: CARD, border:`1px solid ${BORDER}` }}>
         {items.map((item, idx) => (
-          <ResultItem key={item.id} item={item} isLast={idx === items.length - 1} />
+          <ResultItem key={item.id} item={item} isLast={idx === items.length - 1}
+            onClick={() => navigate(itemRoute(typeId, item))} />
         ))}
       </div>
     </div>
@@ -191,6 +202,7 @@ export default function UniversalSearch() {
   const [results,     setResults]     = useState(null);
   const [loading,     setLoading]     = useState(false);
   const [hasSearched, setHasSearched] = useState(!!params.get('q'));
+  const [recent,      setRecent]      = useState(RECENT_DEFAULT);
 
   // Focus on mount
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
@@ -312,7 +324,7 @@ export default function UniversalSearch() {
         <div className="px-4 pt-4 space-y-5">
           {hasResults
             ? Object.entries(displayed).map(([type, items]) => (
-                <ResultSection key={type} typeId={type} items={items} />
+                <ResultSection key={type} typeId={type} items={items} navigate={navigate} />
               ))
             : (
               <div className="flex flex-col items-center justify-center pt-20 gap-3">
@@ -330,16 +342,17 @@ export default function UniversalSearch() {
         <div className="px-4 pt-5 space-y-7">
 
           {/* Recent searches */}
-          {RECENT.length > 0 && (
+          {recent.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Rechèch Resan</p>
-                <button type="button" className="text-[11px] font-bold text-slate-600 hover:text-slate-400 transition-colors">
+                <button type="button" onClick={() => setRecent([])}
+                  className="text-[11px] font-bold text-slate-600 hover:text-slate-400 transition-colors">
                   Efase tout
                 </button>
               </div>
               <div className="space-y-1">
-                {RECENT.map(r => (
+                {recent.map(r => (
                   <button key={r} type="button" onClick={() => setQuery(r)}
                     className="flex items-center gap-3 w-full px-3 py-2.5 rounded-[12px] text-sm text-slate-300 hover:text-white hover:bg-white/[0.03] transition-all text-left">
                     <svg className="w-4 h-4 text-slate-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

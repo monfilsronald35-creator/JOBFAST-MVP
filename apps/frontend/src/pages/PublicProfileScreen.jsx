@@ -778,7 +778,7 @@ function ProfileFooter({ profile, navigate }) {
       }
     },
     { icon:'🔗', label:'Copy Link',   fn: () => { navigator.clipboard?.writeText(window.location.href).catch(() => {}); showToast('Link copied!'); } },
-    { icon:'📲', label:'QR Code',     fn: () => { navigate(`/u/${profile._id || profile.id || 'me'}`); } },
+    { icon:'📲', label:'QR Code',     fn: () => { showToast('QR Code — coming soon'); } },
     { icon:'⬇',  label:'Download CV', fn: () => { showToast('CV download coming soon'); } },
     { icon:'🚩', label:'Report',      fn: () => { showToast('Report submitted. Thank you.'); } },
     { icon:'🚫', label:'Block',       fn: () => { showToast(`${profile.name} blocked.`); } },

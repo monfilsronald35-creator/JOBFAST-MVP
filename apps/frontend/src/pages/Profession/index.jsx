@@ -279,7 +279,7 @@ export default function ProfessionDetailPage() {
                   <span className="text-xs text-slate-500">📍 {job.city}</span>
                 </div>
                 {roleType === 'worker' && (
-                  <button type="button"
+                  <button type="button" onClick={() => navigate('/search', { state: { jobId: job.id } })}
                     className="mt-3 w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black">
                     ✏️ {t('profession.apply', { defaultValue:'Aplike' })}
                   </button>
@@ -304,7 +304,8 @@ export default function ProfessionDetailPage() {
                   <p className="text-xs text-green-400 font-bold">{s.price}</p>
                 </div>
                 {roleType !== 'service_provider' && (
-                  <button type="button" className="px-4 py-2 bg-amber-500 text-slate-950 text-xs font-black rounded-xl">
+                  <button type="button" onClick={() => navigate('/booking', { state: { service: s.name, profession: professionId } })}
+                    className="px-4 py-2 bg-amber-500 text-slate-950 text-xs font-black rounded-xl">
                     {t('profession.book', { defaultValue:'Rezève' })}
                   </button>
                 )}

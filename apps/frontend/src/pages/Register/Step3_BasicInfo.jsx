@@ -812,6 +812,12 @@ className={inputCls}
 
 />
 
+{errors.confirmPassword && (
+  <p className={errorCls}>
+    {t("registration.errors.passwordMismatch", { defaultValue: "Modpas yo pa menm" })}
+  </p>
+)}
+
 
 
 

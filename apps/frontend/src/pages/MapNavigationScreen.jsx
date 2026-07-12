@@ -134,11 +134,13 @@ export default function MapNavigationScreen() {
   // ── Voice ──────────────────────────────────────────────────
   const speak = useCallback((text) => {
     if (!voiceOn || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "fr-FR";
-    u.rate = 1.05;
-    window.speechSynthesis.speak(u);
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "fr-FR";
+      u.rate = 1.05;
+      window.speechSynthesis.speak(u);
+    } catch (_) {}
   }, [voiceOn]);
 
   // ── Auto-advance step when near waypoint ──────────────────

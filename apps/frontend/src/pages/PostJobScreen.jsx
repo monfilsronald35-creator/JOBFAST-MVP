@@ -241,7 +241,7 @@ export default function PostJobScreen() {
         fd.append("budget",          String(budgetNumber));
         fd.append("phone",           formData.phone.trim());
         fd.append("location",        formData.location.trim());
-        fd.append("deadline",        formData.deadline);
+        if (formData.deadline) fd.append("deadline", formData.deadline);
         fd.append("paymentType",     formData.paymentType);
         fd.append("experienceLevel", formData.experienceLevel);
         fd.append("isUrgent",        String(formData.isUrgent));

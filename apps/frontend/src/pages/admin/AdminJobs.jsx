@@ -25,7 +25,7 @@ function JobModal({ job, onClose, onUpdateStatus }) {
 
   const update = async (status) => {
     setLoading(true);
-    await onUpdateStatus(job.id, status);
+    await onUpdateStatus(job._id || job.id, status);
     setLoading(false);
     onClose();
   };
@@ -104,7 +104,7 @@ export default function AdminJobs() {
 
   const handleUpdateStatus = async (jobId, newStatus) => {
     try {
-      await API.patch(`/jobs/status/${jobId}`, { status: newStatus });
+      await API.patch(`/jobs/status/${jobId || ''}`, { status: newStatus });
       setToast(`Job status updated to ${newStatus}`);
       load();
     } catch {
@@ -182,7 +182,7 @@ export default function AdminJobs() {
                   : filtered.map(job => {
                       const st = STATUS_STYLE[job.status] || STATUS_STYLE.open;
                       return (
-                        <tr key={job.id} className="border-b border-slate-800/30 hover:bg-slate-800/20 transition">
+                        <tr key={job._id || job.id} className="border-b border-slate-800/30 hover:bg-slate-800/20 transition">
                           <td className="px-4 py-3">
                             <p className="font-semibold text-white">{job.title}</p>
                             <p className="text-[11px] text-slate-500">{job.category || '—'}</p>

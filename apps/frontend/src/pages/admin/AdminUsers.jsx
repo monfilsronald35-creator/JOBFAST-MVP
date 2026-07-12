@@ -109,9 +109,9 @@ export default function AdminUsers() {
 
   useEffect(() => { load(); }, [load]);
 
-  // debounce search
+  // debounce search: only reset page — the load() fires automatically via [load] effect above
   useEffect(() => {
-    const t = setTimeout(() => { setPage(1); load(); }, 400);
+    const t = setTimeout(() => setPage(1), 400);
     return () => clearTimeout(t);
   }, [search]);
 

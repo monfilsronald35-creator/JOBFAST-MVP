@@ -765,8 +765,8 @@ export default function Jobs() {
             </React.Fragment>
           ))}
 
-          {/* Load more */}
-          <button type="button"
+          {/* Load more — for now shows same list; will hook to real API pagination */}
+          <button type="button" onClick={() => { setLoading(true); setTimeout(() => setLoading(false), 600); }}
             className="w-full py-3 text-[11px] font-bold transition-colors"
             style={{ color: GOLD, borderTop: `1px solid ${BORDER}` }}>
             Chaje plis djòb ↓

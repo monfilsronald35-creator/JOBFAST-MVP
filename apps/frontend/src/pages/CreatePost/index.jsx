@@ -59,20 +59,23 @@ export default function CreatePostScreen() {
   function handleFileChange(e, mediaType) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setMedia({ url, type: mediaType, file });
+    // Use base64 so the image persists across page refreshes (blob URLs are session-only)
+    const reader = new FileReader();
+    reader.onload = (ev) => setMedia({ url: ev.target.result, type: mediaType, file });
+    reader.readAsDataURL(file);
   }
 
   async function handlePost() {
     setPosting(true);
     const myId = String(user?._id || user?.id || '');
+    const mediaUrl = media?.url || '';
     const postData = {
       id: `post_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
       userId: myId,
       userName: user?.name || '',
       userAvatar: user?.profileMetadata?.profilePhoto || '',
       type: postType,
-      mediaUrl: media?.url || '',
+      mediaUrl,
       caption: caption.trim(),
       audience: 'public',
       likesCount: 0,
@@ -80,11 +83,11 @@ export default function CreatePostScreen() {
       createdAt: new Date().toISOString(),
     };
 
-    // Persist to localStorage immediately
+    // Persist to localStorage immediately (base64 URL survives page refresh)
     addPost(postData);
 
-    // Background sync to API
-    API.post('/posts', { type: postType, mediaUrl: media?.url || '', caption: caption.trim(), audience: 'public' })
+    // Background sync to API (send caption only — large base64 stays local)
+    API.post('/posts', { type: postType, caption: caption.trim(), audience: 'public' })
       .catch(() => {});
 
     await new Promise(r => setTimeout(r, 800));

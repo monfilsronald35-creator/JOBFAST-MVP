@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CATEGORIES, PROFESSION_METADATA } from '../constants/categories';
 import AvatarUpload from '../components/AvatarUpload';
 
 function UserProfileDisplay() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [displayUser, setDisplayUser] = useState(user);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -154,10 +156,12 @@ function UserProfileDisplay() {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <button className="bg-yellow-400 text-black px-4 py-3 rounded font-bold hover:bg-yellow-300 transition">
+          <button onClick={() => navigate('/chat')}
+            className="bg-yellow-400 text-black px-4 py-3 rounded font-bold hover:bg-yellow-300 transition">
             💬 Mesaj
           </button>
-          <button className="bg-green-600 text-white px-4 py-3 rounded font-bold hover:bg-green-700 transition">
+          <button onClick={() => navigate(`/rating/${displayUser._id || displayUser.id || ''}`)}
+            className="bg-green-600 text-white px-4 py-3 rounded font-bold hover:bg-green-700 transition">
             ⭐ Evalye
           </button>
         </div>
