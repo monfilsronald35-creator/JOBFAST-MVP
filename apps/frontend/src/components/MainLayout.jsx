@@ -462,7 +462,7 @@ export default function MainLayout({ children }) {
           </div>
         </div>
 
-        {/* Row 2 — context sub-bar: 📍 Location | ● Online | Wallet */}
+        {/* Row 2 — context sub-bar: 📍 Location | ● Status | 🌍 Currency */}
         {isHome && (
           <div className="h-9 flex items-center px-4 border-t border-slate-800/40 bg-[#070e1c]/60 gap-2.5">
 
@@ -470,7 +470,7 @@ export default function MainLayout({ children }) {
             <button type="button" onClick={() => navigate("/map")}
               className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400/90 hover:text-amber-400 transition-colors shrink-0">
               <MapPin className="w-3 h-3 shrink-0" />
-              <span className="truncate max-w-[100px]">{userCity || "—"}</span>
+              <span className="truncate max-w-[120px]">{userCity || "Haiti"}</span>
             </button>
 
             <div className="w-px h-3 bg-slate-700/60 shrink-0" />
@@ -482,23 +482,9 @@ export default function MainLayout({ children }) {
                 <div className="flex items-center gap-1 shrink-0">
                   <span className={`w-1.5 h-1.5 rounded-full ${avail === 'available' ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`} />
                   <span className={`text-[10px] font-bold ${avail === 'available' ? 'text-green-400' : 'text-slate-500'}`}>
-                    {avail === 'available' ? 'Available' : 'Busy'}
+                    {avail === 'available' ? 'Disponib' : 'Okipe'}
                   </span>
                 </div>
-              );
-            })()}
-
-            <div className="w-px h-3 bg-slate-700/60 shrink-0" />
-
-            {/* Wallet balance */}
-            {(() => {
-              const bal = walletBalance ?? user?.wallet?.balance ?? user?.walletBalance ?? 245;
-              return (
-                <button type="button" onClick={() => navigate('/wallet')}
-                  className="flex items-center gap-1 shrink-0 active:opacity-70 transition">
-                  <span className="text-[10px]">💳</span>
-                  <span className="text-[10px] font-black text-amber-400">${Number(bal).toLocaleString()}</span>
-                </button>
               );
             })()}
 
@@ -529,13 +515,6 @@ export default function MainLayout({ children }) {
                 </>
               )}
             </div>
-
-            {/* Wallet balance */}
-            <NavLink to="/wallet"
-              className="flex items-center gap-1.5 text-[11px] font-bold text-green-400/80 hover:text-green-400 transition-colors shrink-0">
-              <Wallet className="w-3 h-3 shrink-0" />
-              <span>$245.00</span>
-            </NavLink>
           </div>
         )}
       </header>
