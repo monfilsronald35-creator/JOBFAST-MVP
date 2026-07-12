@@ -776,7 +776,7 @@ const ConversationList = memo(function ConversationList({
 
 // ── ChatHeader ──────────────────────────────────────────────────────────────
 
-const ChatHeader = memo(function ChatHeader({ chat, onBack, t }) {
+const ChatHeader = memo(function ChatHeader({ chat, onBack, onCall, t }) {
   return (
     <div className="h-14 flex items-center gap-3 px-3 bg-[#0f172a] border-b border-slate-800 shrink-0">
       <button
@@ -805,6 +805,7 @@ const ChatHeader = memo(function ChatHeader({ chat, onBack, t }) {
       <div className="flex items-center gap-1">
         <button
           type="button"
+          onClick={() => onCall?.('audio')}
           aria-label={t("chat.callLabel")}
           className="p-2 text-slate-400 hover:text-amber-400 transition rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
         >
@@ -812,6 +813,7 @@ const ChatHeader = memo(function ChatHeader({ chat, onBack, t }) {
         </button>
         <button
           type="button"
+          onClick={() => onCall?.('video')}
           aria-label={t("chat.videoLabel")}
           className="p-2 text-slate-400 hover:text-amber-400 transition rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
         >
@@ -907,6 +909,12 @@ function ChatWindow({ chat, currentUser, onBack, socket }) {
   const { t }        = useTranslation();
   const [input, setInput]           = useState("");
   const [voiceError, setVoiceError] = useState(null);
+  const [callToast, setCallToast]   = useState('');
+
+  const handleCall = useCallback((type) => {
+    setCallToast(type === 'video' ? 'Apèl vidéo — coming soon' : 'Apèl vwa — coming soon');
+    setTimeout(() => setCallToast(''), 2500);
+  }, []);
   const bottomRef = useRef(null);
 
   const { messages, sendTextMessage, sendAudioMessage, retryMessage } =
@@ -955,7 +963,14 @@ function ChatWindow({ chat, currentUser, onBack, socket }) {
 
   return (
     <div className="flex flex-col h-full bg-[#020617]">
-      <ChatHeader chat={chat} onBack={onBack} t={t} />
+      <ChatHeader chat={chat} onBack={onBack} onCall={handleCall} t={t} />
+
+      {/* Call toast */}
+      {callToast && (
+        <div className="mx-3 mt-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 text-center">
+          {callToast}
+        </div>
+      )}
 
       {/* Voice/mic error banner */}
       {voiceError && (

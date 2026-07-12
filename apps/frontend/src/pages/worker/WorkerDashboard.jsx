@@ -506,7 +506,14 @@ function ScheduleTab({ user, jobs }) {
         <div>
           <div className="flex justify-between mb-1">
             <span className="text-xs text-slate-400">Reyon sèvis</span>
-            <span className="text-xs font-bold text-amber-400">{serviceRadius} km</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-amber-400">{serviceRadius} km</span>
+              <button type="button"
+                onClick={() => API.patch('/workers/radius', { userId, serviceRadius }).catch(() => {})}
+                className="text-[10px] text-emerald-400 font-bold border border-emerald-500/30 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition">
+                Sove
+              </button>
+            </div>
           </div>
           <input
             type="range"

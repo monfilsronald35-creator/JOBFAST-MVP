@@ -231,6 +231,7 @@ function DetailModal({ item, onClose, onContact }) {
           💬 Kontakte Vandè
         </button>
         <button type="button"
+          onClick={() => { navigator.share?.({ title: item.title, url: window.location.href }).catch(() => {}); }}
           className="w-12 h-12 rounded-[16px] flex items-center justify-center text-lg transition-colors hover:text-white"
           style={{ background: CARD, border:`1px solid ${BORDER}` }}>
           ↗️
@@ -440,6 +441,7 @@ export default function MarketPage() {
       <div className="flex gap-3.5 overflow-x-auto px-4 pt-4 pb-2" style={{ scrollbarWidth:'none' }}>
         {SELLER_STORIES.map(s => (
           <button key={s.id} type="button"
+            onClick={() => s.mine ? navigate('/create-post') : navigate(`/u/${s.id}`)}
             className="flex flex-col items-center gap-1.5 shrink-0 transition-all active:scale-95">
             <div className="w-[56px] h-[56px] rounded-full flex items-center justify-center text-[22px] border-2 transition-all"
               style={s.mine
@@ -460,7 +462,8 @@ export default function MarketPage() {
         {/* Section header */}
         <div className="flex items-center justify-between mb-3 mt-2">
           <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Featured Products</p>
-          <button type="button" className="flex items-center gap-1 text-[11px] font-bold hover:opacity-80 transition-opacity"
+          <button type="button" onClick={() => navigate('/search?type=products')}
+            className="flex items-center gap-1 text-[11px] font-bold hover:opacity-80 transition-opacity"
             style={{ color: GOLD }}>
             Wè tout
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

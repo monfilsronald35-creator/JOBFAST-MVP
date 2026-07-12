@@ -940,7 +940,8 @@ function FinanceTab() {
       </div>
 
       {/* Salary payment button */}
-      <button type="button" className="w-full py-4 rounded-2xl bg-green-500/10 border border-green-500/40 text-green-400 font-black text-sm flex items-center justify-center gap-2">
+      <button type="button" onClick={() => setShowSend(true)}
+        className="w-full py-4 rounded-2xl bg-green-500/10 border border-green-500/40 text-green-400 font-black text-sm flex items-center justify-center gap-2">
         💰 Peye Salè Anplwaye yo
       </button>
 
@@ -973,8 +974,11 @@ function FinanceTab() {
 
 function ReservationsTab() {
   const [statusTab, setStatusTab] = useState('upcoming');
+  const [reservations, setReservations] = useState(MOCK_RESERVATIONS);
+  const confirmRes  = (id) => setReservations(p => p.map(r => r.id === id ? { ...r, status:'thisweek' } : r));
+  const cancelRes   = (id) => setReservations(p => p.map(r => r.id === id ? { ...r, status:'cancelled' } : r));
 
-  const filtered = MOCK_RESERVATIONS.filter(r => r.status === statusTab);
+  const filtered = reservations.filter(r => r.status === statusTab);
   const cfg = RESERVATION_STATUSES.find(s => s.id === statusTab) || RESERVATION_STATUSES[0];
 
   return (
@@ -983,7 +987,7 @@ function ReservationsTab() {
         {RESERVATION_STATUSES.map(s => (
           <button key={s.id} type="button" onClick={() => setStatusTab(s.id)}
             className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition ${statusTab === s.id ? `${s.bg} ${s.color}` : 'bg-slate-800 text-slate-400'}`}>
-            {s.label} ({MOCK_RESERVATIONS.filter(r => r.status === s.id).length})
+            {s.label} ({reservations.filter(r => r.status === s.id).length})
           </button>
         ))}
       </div>
@@ -1009,8 +1013,8 @@ function ReservationsTab() {
           </div>
           {r.status === 'upcoming' && (
             <div className="flex gap-2 mt-3">
-              <button type="button" className="flex-1 py-2 rounded-xl bg-green-500/10 border border-green-500/40 text-green-400 text-xs font-bold">✓ Konfime</button>
-              <button type="button" className="flex-1 py-2 rounded-xl border border-red-500/30 text-red-400 text-xs font-bold">✕ Anile</button>
+              <button type="button" onClick={() => confirmRes(r.id)} className="flex-1 py-2 rounded-xl bg-green-500/10 border border-green-500/40 text-green-400 text-xs font-bold">✓ Konfime</button>
+              <button type="button" onClick={() => cancelRes(r.id)}  className="flex-1 py-2 rounded-xl border border-red-500/30 text-red-400 text-xs font-bold">✕ Anile</button>
             </div>
           )}
         </div>

@@ -75,9 +75,10 @@ function useCompanyGPS() {
   const [acquiring, setAcquiring] = useState(false);
   const [gpsError,  setGpsError]  = useState(null);
 
-  const acquire = useCallback((onSuccess) => {
+  const acquire = useCallback((onSuccess, onFallback) => {
     if (!navigator.geolocation) {
       setGpsError('GPS pa disponib sou aparèy sa a');
+      onFallback?.();
       return;
     }
     setAcquiring(true);
@@ -90,6 +91,7 @@ function useCompanyGPS() {
       () => {
         setAcquiring(false);
         setGpsError('Pa ka jwenn lokasyon — ap itilize vil/peyi');
+        onFallback?.();
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
     );
@@ -781,8 +783,10 @@ function BranchesTab({ user }) {
   }, [userId, user, skillFilter]);
 
   const sendAlert = useCallback(() => {
-    acquire(({ lat, lng }) => doAlert({ lat, lng }));
-    // If GPS denied, the hook sets gpsError; we fall back to city in doAlert
+    acquire(
+      ({ lat, lng }) => doAlert({ lat, lng }),
+      () => doAlert(),   // GPS denied — fall back to city/country in payload
+    );
   }, [acquire, doAlert]);
 
   return (

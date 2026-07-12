@@ -306,7 +306,7 @@ export default function ServiceProviderDashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-slate-400 uppercase tracking-wide font-bold">{t('provider.photos', { defaultValue:'Foto & Videyo' })}</p>
-              <button type="button" className="text-xs text-amber-400 font-bold">+ {t('provider.addMedia', { defaultValue:'Ajoute' })}</button>
+              <button type="button" onClick={() => navigate('/create-post')} className="text-xs text-amber-400 font-bold">+ {t('provider.addMedia', { defaultValue:'Ajoute' })}</button>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {(user?.portfolio || []).length === 0 ? (

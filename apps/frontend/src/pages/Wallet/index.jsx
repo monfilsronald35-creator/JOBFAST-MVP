@@ -1,4 +1,5 @@
 import React, { useState, useCallback, memo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { walletAPI } from '../../services/wallet';
 import { sounds } from '../../utils/sounds';
@@ -166,6 +167,8 @@ function SendPanel({ onClose }) {
   const [search, setSearch] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [secToast, setSecToast] = useState('');
+  const showSecToast = (msg) => { setSecToast(msg); setTimeout(() => setSecToast(''), 2000); };
 
   const RECENT = ['Ronald Monfils','ABC Construction','Hotel Montana','Dr Jean Louis'];
   const CATS   = [['👷','Workers'],['🏢','Companies'],['🏨','Hotels'],['🍽','Restaurants'],['🏥','Hospitals'],['🛒','Marketplace']];
@@ -296,8 +299,10 @@ function SendPanel({ onClose }) {
           <div>
             <p className="text-[10px] text-slate-500 mb-2">Security</p>
             <div className="flex gap-2">
+              {secToast && <p className="col-span-3 text-center text-[10px] text-amber-400">{secToast}</p>}
               {['PIN 🔢','Face ID 👁','Fingerprint 🤞'].map(s => (
                 <button key={s} type="button"
+                  onClick={() => showSecToast(`${s.split(' ')[0]} — coming soon`)}
                   className="flex-1 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[11px] font-bold text-slate-300 hover:border-amber-500/50 transition">
                   {s}
                 </button>
@@ -325,8 +330,10 @@ function SendPanel({ onClose }) {
 
 // ── RECEIVE PANEL ────────────────────────────────────────────────
 function ReceivePanel({ onClose, user }) {
-  const [copied, setCopied] = useState('');
+  const [copied, setCopied]     = useState('');
+  const [rcvToast, setRcvToast] = useState('');
   const walletId = 'JOBFAST-45892';
+  const showRcvToast = (msg) => { setRcvToast(msg); setTimeout(() => setRcvToast(''), 2500); };
   const username = `@${(user?.name || 'user').toLowerCase().replace(/\s/g,'')}`;
   const acctNo   = '8745639201';
 
@@ -363,9 +370,15 @@ function ReceivePanel({ onClose, user }) {
         </div>
 
         {/* Actions */}
+        {rcvToast && <p className="text-center text-xs text-amber-400 font-bold py-1">{rcvToast}</p>}
         <div className="grid grid-cols-3 gap-2">
           {[['📤','Share'],['📋','Copy Link'],['📄','Generate Invoice']].map(([icon, label]) => (
             <button key={label} type="button"
+              onClick={() => label === 'Share'
+                ? navigator.share?.({ title:'JOBFAST Wallet', text: walletId }).catch(() => showRcvToast('Share — coming soon'))
+                : label === 'Copy Link'
+                  ? (navigator.clipboard?.writeText(walletId).catch(() => {}), showRcvToast('Wallet ID copied!'))
+                  : showRcvToast('Generate Invoice — coming soon')}
               className="flex flex-col items-center gap-1.5 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-xs text-slate-300 hover:border-amber-500/40 transition">
               <span className="text-xl">{icon}</span>
               <span className="text-[10px]">{label}</span>
@@ -552,6 +565,8 @@ function PayPanel({ onClose }) {
 
 // ── INVOICE PANEL ────────────────────────────────────────────────
 function InvoicePanel({ onClose }) {
+  const [invToast, setInvToast] = useState('');
+  const showInvToast = (msg) => { setInvToast(msg); setTimeout(() => setInvToast(''), 2500); };
   return (
     <Panel title="Invoice" onClose={onClose}>
       <div className="px-4 pt-4 space-y-4">
@@ -583,12 +598,15 @@ function InvoicePanel({ onClose }) {
           ))}
         </div>
 
+        {invToast && <p className="text-center text-xs text-amber-400 font-bold">{invToast}</p>}
         <div className="grid grid-cols-2 gap-2">
           <button type="button"
+            onClick={() => showInvToast('Generate PDF — coming soon')}
             className="py-3 rounded-xl bg-slate-800 border border-slate-700 text-sm font-bold text-slate-300 hover:border-amber-500/50 transition">
             📄 Generate PDF
           </button>
           <button type="button"
+            onClick={() => showInvToast('Invoice sent — coming soon')}
             className="py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm hover:bg-amber-400 transition">
             ✉️ Send Invoice
           </button>
@@ -740,13 +758,17 @@ function EscrowPanel({ onClose }) {
 // MAIN WALLET PAGE
 // ════════════════════════════════════════════════════════════════
 export default function WalletPage() {
-  const { user } = useAuth();
+  const { user }   = useAuth();
+  const navigate   = useNavigate();
 
   const [currencyIdx, setCurrencyIdx] = useState(0);
   const [txFilter,    setTxFilter]    = useState('All');
   const [panel,       setPanel]       = useState(null); // 'send'|'receive'|'deposit'|'withdraw'|'pay'|'invoice'|'exchange'|'escrow'
   const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
   const [securityState, setSecurity]  = useState({ pin: true, faceId: true, fingerprint: true, tfa: true });
+  const [pageToast, setPageToast]     = useState('');
+
+  const showPageToast = (msg) => { setPageToast(msg); setTimeout(() => setPageToast(''), 2500); };
 
   // Try to load real data; fall back silently to mock
   useEffect(() => {
@@ -777,6 +799,13 @@ export default function WalletPage() {
 
   return (
     <div className="flex flex-col min-h-screen text-white pb-6" style={{ background: BG }}>
+
+      {/* Page-level toast */}
+      {pageToast && (
+        <div className="mx-4 mt-3 px-4 py-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 text-xs font-bold text-center z-50 sticky top-16">
+          {pageToast}
+        </div>
+      )}
 
       {/* ── Header badge row ─────────────────────────────────── */}
       <div className="px-4 pt-5 pb-2 flex items-center justify-between">
@@ -878,6 +907,9 @@ export default function WalletPage() {
         <div className="flex gap-2">
           {['📋 Receipt','⬇ Download PDF','🔁 Repeat','📤 Share'].map(a => (
             <button key={a} type="button"
+              onClick={() => a.includes('Share')
+                ? navigator.share?.({ title:'JOBFAST Receipt', url: window.location.href }).catch(() => showPageToast('Share — coming soon'))
+                : showPageToast(`${a.replace(/^[^\s]+\s/,'').trim()} — coming soon`)}
               className="flex-1 py-1.5 text-[10px] font-bold bg-slate-700 rounded-lg text-slate-300 hover:bg-slate-600 transition">
               {a}
             </button>
@@ -900,7 +932,7 @@ export default function WalletPage() {
             </div>
             <div className="flex gap-2">
               {['Freeze','Limits','PIN'].map(a => (
-                <button key={a} type="button" className="text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">{a}</button>
+                <button key={a} type="button" onClick={() => showPageToast(`${a} — coming soon`)} className="text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">{a}</button>
               ))}
             </div>
           </div>
@@ -908,6 +940,7 @@ export default function WalletPage() {
         <div className="grid grid-cols-2 gap-2 mt-1">
           {[['🏦','Bank Accounts'],['🪙','Crypto Wallets'],['💳','Virtual Cards'],['🏧','Physical Cards']].map(([icon, label]) => (
             <button key={label} type="button"
+              onClick={() => showPageToast(`${label} — coming soon`)}
               className="flex items-center gap-2 px-3 py-3 bg-slate-800/50 border border-slate-700/60 rounded-xl hover:border-amber-500/40 transition">
               <span>{icon}</span>
               <span className="text-[11px] text-slate-300 font-semibold">{label}</span>
@@ -959,6 +992,7 @@ export default function WalletPage() {
         <div className="grid grid-cols-2 gap-2 mt-1">
           {['Trusted Devices 📱','Login History 📋','Security Alerts 🔔','Emergency Lock 🚨'].map(a => (
             <button key={a} type="button"
+              onClick={() => showPageToast(`${a.replace(/\s[^\s]+$/,'').trim()} — coming soon`)}
               className="py-2.5 px-3 bg-slate-800/50 border border-slate-700/60 rounded-xl text-[11px] text-slate-400 font-semibold hover:border-amber-500/40 transition text-left">
               {a}
             </button>
@@ -971,6 +1005,7 @@ export default function WalletPage() {
       <div className="px-4 grid grid-cols-3 gap-2 mb-4">
         {[['💬','Live Chat'],['🎫','Open Ticket'],['⚖','Dispute'],['💸','Refund'],['❓','Help Center'],['📞','Call']].map(([icon, label]) => (
           <button key={label} type="button"
+            onClick={() => label === 'Live Chat' ? navigate('/chat') : showPageToast(`${label} — coming soon`)}
             className="flex flex-col items-center gap-1.5 py-3 bg-slate-800/50 border border-slate-700/60 rounded-xl hover:border-amber-500/40 transition">
             <span className="text-xl">{icon}</span>
             <span className="text-[11px] text-slate-400">{label}</span>

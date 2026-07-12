@@ -274,18 +274,22 @@ export default function EscrowPage() {
   const handleValidate = useCallback(async (id) => {
     try { await escrowAPI.validate(id); } catch {}
     const isWorker = escrows.find(e => e._id === id)?.myRole === 'worker';
-    setEscrows(prev => prev.map(e => {
-      if (e._id !== id) return e;
-      const updated = {
-        ...e,
-        workerValidated:   isWorker ? true : e.workerValidated,
-        employerValidated: !isWorker ? true : e.employerValidated,
-      };
-      if (updated.workerValidated && updated.employerValidated) updated.status = 'completed';
-      else updated.status = 'pending_validation';
-      return updated;
-    }));
-    setDetail(prev => prev?._id === id ? escrows.find(e => e._id === id) : prev);
+    setEscrows(prev => {
+      const next = prev.map(e => {
+        if (e._id !== id) return e;
+        const updated = {
+          ...e,
+          workerValidated:   isWorker ? true : e.workerValidated,
+          employerValidated: !isWorker ? true : e.employerValidated,
+        };
+        if (updated.workerValidated && updated.employerValidated) updated.status = 'completed';
+        else updated.status = 'pending_validation';
+        return updated;
+      });
+      // Update detail using the freshly computed next array (avoids stale closure)
+      setDetail(prev => prev?._id === id ? (next.find(e => e._id === id) ?? prev) : prev);
+      return next;
+    });
   }, [escrows]);
 
   const handleDispute = useCallback(async (id, reason) => {

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api/axios";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import WorkerContent, { WORKER_TABS } from "./worker/WorkerDashboard";
@@ -78,7 +79,7 @@ function ProfileScreen() {
   }, []);
 
   // ── Save ─────────────────────────────────────────────────────
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!editName.trim()) return;
     setSaving(true);
     const updated = {
@@ -90,6 +91,13 @@ function ProfileScreen() {
         profilePhoto: editPhoto || user?.profileMetadata?.profilePhoto || "",
       },
     };
+    try {
+      await API.patch('/users/profile', {
+        name: updated.name,
+        bio: updated.profileMetadata.bio,
+        profilePhoto: updated.profileMetadata.profilePhoto,
+      });
+    } catch {}
     updateSession(updated);
     setSaving(false);
     setEditing(false);

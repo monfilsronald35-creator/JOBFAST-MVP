@@ -203,7 +203,8 @@ function CreateBookingModal({ onClose, onCreated }) {
 
 // ── Booking card ──────────────────────────────────────────────
 function BookingCard({ booking, onCancel }) {
-  const { t } = useTranslation();
+  const { t }    = useTranslation();
+  const navigate = useNavigate();
   const bt  = BOOKING_TYPES.find(b => b.id === booking.type) || BOOKING_TYPES[0];
   const st  = STATUS_STYLE[booking.status] || STATUS_STYLE.pending;
 
@@ -245,14 +246,17 @@ function BookingCard({ booking, onCancel }) {
             ✕ {t('booking.cancel', { defaultValue: 'Anile' })}
           </button>
           <div className="w-px bg-slate-800" />
-          <button type="button" className="flex-1 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition">
+          <button type="button" onClick={() => navigate('/chat')}
+            className="flex-1 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition">
             💬 {t('booking.contact', { defaultValue: 'Kontakte' })}
           </button>
         </div>
       )}
       {booking.status === 'completed' && (
         <div className="border-t border-slate-800 px-4 py-2.5">
-          <button type="button" className="w-full text-center text-xs font-bold text-amber-400">
+          <button type="button"
+            onClick={() => navigate(`/rating/${booking.providerId || booking._id || ''}`)}
+            className="w-full text-center text-xs font-bold text-amber-400">
             ⭐ {t('booking.rate', { defaultValue: 'Evalye Sèvis la' })}
           </button>
         </div>
