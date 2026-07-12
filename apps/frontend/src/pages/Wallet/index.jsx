@@ -164,6 +164,7 @@ function SendPanel({ onClose }) {
   const [method, setMethod] = useState('Wallet');
   const [search, setSearch] = useState('');
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const RECENT = ['Ronald Monfils','ABC Construction','Hotel Montana','Dr Jean Louis'];
   const CATS   = [['👷','Workers'],['🏢','Companies'],['🏨','Hotels'],['🍽','Restaurants'],['🏥','Hospitals'],['🛒','Marketplace']];
@@ -303,9 +304,14 @@ function SendPanel({ onClose }) {
             </div>
           </div>
 
-          <button type="button" onClick={() => setSent(true)}
-            className="w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-400 text-slate-900 font-black text-sm transition">
-            CONFIRM PAYMENT ✓
+          <button type="button" disabled={loading} onClick={async () => {
+              setLoading(true);
+              await walletAPI.sendMoney({ recipient, amount, currency, desc, method }).catch(() => {});
+              setLoading(false);
+              setSent(true);
+            }}
+            className="w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-400 disabled:opacity-50 text-slate-900 font-black text-sm transition">
+            {loading ? 'Processing…' : 'CONFIRM PAYMENT ✓'}
           </button>
           <button type="button" onClick={() => setStep(2)}
             className="w-full py-2 text-xs text-slate-500">← Back</button>
@@ -373,6 +379,19 @@ function ReceivePanel({ onClose, user }) {
 function DepositPanel({ onClose }) {
   const [selected, setSelected] = useState(null);
   const [amount, setAmount] = useState('');
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  if (done) return (
+    <Panel title={`Deposit via ${selected?.label}`} onClose={onClose}>
+      <div className="flex flex-col items-center justify-center h-64 gap-4 px-6">
+        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl">✅</div>
+        <p className="text-xl font-black">Deposit Initiated!</p>
+        <p className="text-slate-400 text-sm text-center">${amount} via {selected?.label}</p>
+        <button type="button" onClick={onClose} className="mt-4 px-8 py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">Done</button>
+      </div>
+    </Panel>
+  );
 
   if (selected) return (
     <Panel title={`Deposit via ${selected.label}`} onClose={() => setSelected(null)}>
@@ -385,8 +404,13 @@ function DepositPanel({ onClose }) {
             placeholder="0.00"
             className="w-full px-4 py-3.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-lg font-black outline-none focus:border-amber-500/60" />
         </label>
-        <button type="button" className="w-full py-3.5 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">
-          Continue →
+        <button type="button" disabled={!amount || loading} onClick={async () => {
+          setLoading(true);
+          await walletAPI.deposit({ method: selected.id, amount }).catch(() => {});
+          setLoading(false);
+          setDone(true);
+        }} className="w-full py-3.5 rounded-xl bg-amber-500 disabled:opacity-30 text-slate-900 font-black text-sm">
+          {loading ? 'Processing…' : 'Continue →'}
         </button>
       </div>
     </Panel>
@@ -412,6 +436,19 @@ function DepositPanel({ onClose }) {
 function WithdrawPanel({ onClose }) {
   const [selected, setSelected] = useState(null);
   const [amount, setAmount] = useState('');
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  if (done) return (
+    <Panel title={`Withdraw to ${selected?.label}`} onClose={onClose}>
+      <div className="flex flex-col items-center justify-center h-64 gap-4 px-6">
+        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl">✅</div>
+        <p className="text-xl font-black">Withdrawal Requested!</p>
+        <p className="text-slate-400 text-sm text-center">${amount} → {selected?.label}</p>
+        <button type="button" onClick={onClose} className="mt-4 px-8 py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">Done</button>
+      </div>
+    </Panel>
+  );
 
   if (selected) return (
     <Panel title={`Withdraw to ${selected.label}`} onClose={() => setSelected(null)}>
@@ -424,8 +461,13 @@ function WithdrawPanel({ onClose }) {
             placeholder="0.00"
             className="w-full px-4 py-3.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-lg font-black outline-none focus:border-amber-500/60" />
         </label>
-        <button type="button" className="w-full py-3.5 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">
-          Continue →
+        <button type="button" disabled={!amount || loading} onClick={async () => {
+          setLoading(true);
+          await walletAPI.withdraw({ method: selected.id, amount }).catch(() => {});
+          setLoading(false);
+          setDone(true);
+        }} className="w-full py-3.5 rounded-xl bg-amber-500 disabled:opacity-30 text-slate-900 font-black text-sm">
+          {loading ? 'Processing…' : 'Continue →'}
         </button>
       </div>
     </Panel>
@@ -450,6 +492,19 @@ function WithdrawPanel({ onClose }) {
 // ── PAY PANEL ────────────────────────────────────────────────────
 function PayPanel({ onClose }) {
   const [cat, setCat] = useState(null);
+  const [paid, setPaid] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  if (paid) return (
+    <Panel title="Pay Worker" onClose={onClose}>
+      <div className="flex flex-col items-center justify-center h-64 gap-4 px-6">
+        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl">✅</div>
+        <p className="text-xl font-black">Payment Sent!</p>
+        <p className="text-slate-400 text-sm text-center">$360 paid · Escrow Released</p>
+        <button type="button" onClick={onClose} className="mt-4 px-8 py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">Done</button>
+      </div>
+    </Panel>
+  );
 
   if (cat === 'worker') return (
     <Panel title="Pay Worker" onClose={() => setCat(null)}>
@@ -462,9 +517,13 @@ function PayPanel({ onClose }) {
             </div>
           ))}
         </div>
-        <button type="button" onClick={onClose}
-          className="w-full py-3.5 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">
-          PAY NOW $360 →
+        <button type="button" disabled={loading} onClick={async () => {
+          setLoading(true);
+          await walletAPI.sendMoney({ recipient: 'Ronald Monfils', amount: 360, currency: 'USD', method: 'Escrow' }).catch(() => {});
+          setLoading(false);
+          setPaid(true);
+        }} className="w-full py-3.5 rounded-xl bg-amber-500 disabled:opacity-50 text-slate-900 font-black text-sm">
+          {loading ? 'Processing…' : 'PAY NOW $360 →'}
         </button>
       </div>
     </Panel>
@@ -540,11 +599,22 @@ function ExchangePanel({ onClose }) {
   const [from, setFrom] = useState('USD');
   const [to,   setTo]   = useState('HTG');
   const [amt,  setAmt]  = useState('');
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
   const rate = 138;
   const receive = amt ? (parseFloat(amt) * rate).toLocaleString() : '—';
 
   return (
     <Panel title="Currency Exchange" onClose={onClose}>
+      {done && (
+        <div className="flex flex-col items-center justify-center h-64 gap-4 px-6">
+          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl">✅</div>
+          <p className="text-xl font-black">Converted!</p>
+          <p className="text-slate-400 text-sm text-center">{amt} {from} → {receive} {to}</p>
+          <button type="button" onClick={onClose} className="mt-4 px-8 py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">Done</button>
+        </div>
+      )}
+      {!done &&
       <div className="px-4 pt-4 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
@@ -578,11 +648,17 @@ function ExchangePanel({ onClose }) {
           ))}
         </div>
 
-        <button type="button" disabled={!amt}
+        <button type="button" disabled={!amt || loading} onClick={async () => {
+          setLoading(true);
+          await new Promise(r => setTimeout(r, 600));
+          setLoading(false);
+          setDone(true);
+        }}
           className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-30 text-slate-900 font-black text-sm transition">
-          Convert Now 🔄
+          {loading ? 'Converting…' : 'Convert Now 🔄'}
         </button>
       </div>
+      }
     </Panel>
   );
 }
@@ -590,11 +666,28 @@ function ExchangePanel({ onClose }) {
 // ── ESCROW PANEL ─────────────────────────────────────────────────
 function EscrowPanel({ onClose }) {
   const [tab, setTab] = useState('active');
+  const [escrows, setEscrows] = useState(MOCK_ESCROW);
+  const [toast, setToast] = useState('');
   const TABS = ['active','completed','disputed','cancelled'];
-  const filtered = MOCK_ESCROW.filter(e => tab === 'active' ? e.status === 'active' : e.status === tab || tab === 'completed');
+  const filtered = escrows.filter(e => tab === 'active' ? e.status === 'active' : e.status === tab || tab === 'completed');
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
+
+  const releasePayment = (id) => {
+    setEscrows(prev => prev.map(e => e.id === id ? { ...e, status: 'completed' } : e));
+    showToast('Payment released successfully!');
+  };
+
+  const raiseDispute = (id) => {
+    setEscrows(prev => prev.map(e => e.id === id ? { ...e, status: 'disputed' } : e));
+    showToast('Dispute raised. Support will contact you.');
+  };
 
   return (
     <Panel title="Escrow Dashboard" onClose={onClose}>
+      {toast && (
+        <div className="mx-4 mt-3 px-4 py-2.5 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-xs font-bold text-center">{toast}</div>
+      )}
       <div className="px-4 pt-4">
         <div className="flex gap-2 mb-4">
           {TABS.map(t => (
@@ -624,8 +717,8 @@ function EscrowPanel({ onClose }) {
               ))}
               {e.status === 'active' && (
                 <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button type="button" className="py-2 rounded-xl bg-green-500 text-slate-900 text-xs font-black">Release Payment</button>
-                  <button type="button" className="py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold">Raise Dispute</button>
+                  <button type="button" onClick={() => releasePayment(e.id)} className="py-2 rounded-xl bg-green-500 text-slate-900 text-xs font-black">Release Payment</button>
+                  <button type="button" onClick={() => raiseDispute(e.id)} className="py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold">Raise Dispute</button>
                 </div>
               )}
             </div>

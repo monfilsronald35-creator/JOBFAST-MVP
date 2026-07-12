@@ -76,7 +76,7 @@ const dedupe = (key, fn) => {
 export const getAllJobs = (params = {}) =>
   dedupe(
     makeKey("jobs:list", params),
-    () => request(() => API.get("/posts", { params }), "Failed to load jobs")
+    () => request(() => API.get("/jobs", { params }), "Failed to load jobs")
   );
 
 /* CREATE JOB */
@@ -84,20 +84,27 @@ export const createJob = (jobData) =>
   dedupe(
     makeKey("jobs:create", jobData),
     () =>
-      request(() => API.post("/posts/create", jobData), "Failed to create job")
+      request(() => API.post("/jobs/create", jobData), "Failed to create job")
   );
 
 /* GET JOB BY ID */
 export const getJobById = (id) =>
-  request(() => API.get(`/posts/${id}`), "Job not found");
+  request(() => API.get(`/jobs/${id}`), "Job not found");
 
-/* UPDATE JOB */
+/* UPDATE JOB STATUS */
 export const updateJob = (id, jobData) =>
   request(
-    () => API.put(`/posts/${id}`, jobData),
+    () => API.patch(`/jobs/status/${id}`, jobData),
     "You are not allowed to update this job"
   );
 
-/* DELETE JOB */
-export const deleteJob = (id) =>
-  request(() => API.delete(`/posts/${id}`), "Failed to delete job");
+/* APPLY FOR JOB */
+export const applyForJob = (jobId, data) =>
+  request(
+    () => API.post(`/jobs/apply/${jobId}`, data),
+    "Failed to apply for job"
+  );
+
+/* GET JOB APPLICATIONS */
+export const getJobApplications = (jobId) =>
+  request(() => API.get(`/jobs/applications/${jobId}`), "Failed to load applications");

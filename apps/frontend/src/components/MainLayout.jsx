@@ -207,11 +207,12 @@ function QRScannerModal({ onClose }) {
 // ─────────────────────────────────────────────────────────────
 
 function EmergencyModal({ onClose }) {
+  const navigate = useNavigate();
   const EMERGENCY_ACTIONS = [
-    { icon:'🚨', label:'Rapòte Ijan',   sublabel:'Djòb / Travayè',    color:'bg-red-500'    },
-    { icon:'🏥', label:'Ijans Medikal', sublabel:'Rele sekou medikal', color:'bg-red-600'    },
-    { icon:'👮', label:'Sekirite',      sublabel:'Rele lapolis',       color:'bg-blue-600'   },
-    { icon:'🔥', label:'Kontakte Support',sublabel:'24/7 JOBFAST',    color:'bg-amber-500'  },
+    { icon:'🚨', label:'Rapòte Ijan',     sublabel:'Djòb / Travayè',    color:'bg-red-500',   action: () => { navigate('/chat'); onClose(); } },
+    { icon:'🏥', label:'Ijans Medikal',   sublabel:'Rele sekou medikal', color:'bg-red-600',   action: () => { window.location.href = 'tel:119'; } },
+    { icon:'👮', label:'Sekirite',        sublabel:'Rele lapolis',       color:'bg-blue-600',  action: () => { window.location.href = 'tel:114'; } },
+    { icon:'🔥', label:'Kontakte Support',sublabel:'24/7 JOBFAST',       color:'bg-amber-500', action: () => { navigate('/chat'); onClose(); } },
   ];
   return (
     <div className="fixed inset-0 z-[200] flex items-end">
@@ -222,7 +223,7 @@ function EmergencyModal({ onClose }) {
         <p className="text-xs text-slate-400 mb-4">Chwazi aksyon ijan an</p>
         <div className="grid grid-cols-2 gap-3">
           {EMERGENCY_ACTIONS.map(a => (
-            <button key={a.label} type="button" onClick={onClose}
+            <button key={a.label} type="button" onClick={a.action}
               className={`${a.color} flex flex-col items-center gap-2 p-4 rounded-2xl text-white active:scale-95 transition-all shadow-lg`}>
               <span className="text-2xl">{a.icon}</span>
               <span className="text-xs font-black text-center">{a.label}</span>
@@ -298,6 +299,19 @@ export default function MainLayout({ children }) {
 
   // Selected currency (display only for now)
   const [activeCurrency, setActiveCurrency] = useState('HTG');
+
+  // Wallet balance (live from API, fallback to user context)
+  const [walletBalance, setWalletBalance] = useState(null);
+  useEffect(() => {
+    import('../services/wallet').then(({ walletAPI }) => {
+      walletAPI.getWallet()
+        .then(r => {
+          const bal = r?.data?.balance ?? r?.data?.data?.balance;
+          if (bal != null) setWalletBalance(bal);
+        })
+        .catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     const handleOnline  = () => { setIsOnline(true);  setOfflineBanner(false); };
@@ -465,7 +479,7 @@ export default function MainLayout({ children }) {
 
             {/* Wallet balance */}
             {(() => {
-              const bal = user?.wallet?.balance ?? user?.walletBalance ?? 245;
+              const bal = walletBalance ?? user?.wallet?.balance ?? user?.walletBalance ?? 245;
               return (
                 <button type="button" onClick={() => navigate('/wallet')}
                   className="flex items-center gap-1 shrink-0 active:opacity-70 transition">

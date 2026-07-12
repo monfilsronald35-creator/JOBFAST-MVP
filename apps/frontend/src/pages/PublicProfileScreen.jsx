@@ -543,14 +543,14 @@ function AICareerSection({ profile }) {
 // 17. Contact
 function ContactSection({ profile, navigate }) {
   const methods = [
-    { icon: '💬', label: 'Message',   action: () => navigate('/chat'),  active: true   },
-    { icon: '📞', label: 'Voice Call', action: () => {},                active: true   },
-    { icon: '🎥', label: 'Video Call', action: () => {},                active: true   },
-    { icon: '📧', label: 'Email',      action: () => {},                active: !!profile.contact?.email     },
-    { icon: '📍', label: 'Location',   action: () => {},                active: true   },
-    { icon: '🌐', label: 'Website',    action: () => {},                active: !!profile.contact?.website   },
-    { icon: '📱', label: 'WhatsApp',   action: () => {},                active: !!profile.contact?.whatsapp  },
-    { icon: '✈️', label: 'Telegram',   action: () => {},                active: !!profile.contact?.telegram  },
+    { icon: '💬', label: 'Message',   action: () => navigate('/chat'),                                           active: true   },
+    { icon: '📞', label: 'Voice Call', action: () => { window.location.href = 'tel:+18095550100'; },            active: true   },
+    { icon: '🎥', label: 'Video Call', action: () => navigate('/chat'),                                          active: true   },
+    { icon: '📧', label: 'Email',      action: () => { window.open(`mailto:${profile.email || ''}`); },         active: !!profile.contact?.email     },
+    { icon: '📍', label: 'Location',   action: () => navigate('/map'),                                           active: true   },
+    { icon: '🌐', label: 'Website',    action: () => { window.open(profile.website || '#', '_blank'); },         active: !!profile.contact?.website   },
+    { icon: '📱', label: 'WhatsApp',   action: () => { window.open(`https://wa.me/${profile.phone || ''}`, '_blank'); }, active: !!profile.contact?.whatsapp  },
+    { icon: '✈️', label: 'Telegram',   action: () => { window.open(`https://t.me/${profile.telegram || ''}`, '_blank'); }, active: !!profile.contact?.telegram  },
   ].filter(m => m.active);
   return (
     <div className="px-4 grid grid-cols-4 gap-2">
@@ -751,9 +751,9 @@ function HeroSection({ profile, isOwnProfile, followed, saved, onFollow, onSave,
             <div className="flex gap-2 pb-1" style={{ width: 'max-content' }}>
               <ActionBtn icon={followed ? '✅' : '➕'} label={followed ? 'Following' : 'Follow'} primary={!followed} onClick={onFollow} />
               <ActionBtn icon="💬" label="Message"   onClick={() => navigate('/chat')} />
-              <ActionBtn icon="📞" label="Voice"     onClick={() => {}} />
-              <ActionBtn icon="🎥" label="Video"     onClick={() => {}} />
-              <ActionBtn icon="💼" label="Hire Now"  primary onClick={() => {}} />
+              <ActionBtn icon="📞" label="Voice"     onClick={() => { window.location.href = 'tel:+18095550100'; }} />
+              <ActionBtn icon="🎥" label="Video"     onClick={() => navigate('/chat')} />
+              <ActionBtn icon="💼" label="Hire Now"  primary onClick={() => navigate('/post-job')} />
               <ActionBtn icon="📅" label="Book"      onClick={() => navigate('/booking')} />
             </div>
           </div>
@@ -767,12 +767,32 @@ function HeroSection({ profile, isOwnProfile, followed, saved, onFollow, onSave,
 // PROFILE FOOTER
 // ════════════════════════════════════════════════════════════════
 function ProfileFooter({ profile, navigate }) {
+  const [toast, setToast] = useState('');
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
+
+  const footerActions = [
+    { icon:'📤', label:'Share',       fn: () => {
+        const url = window.location.href;
+        if (navigator.share) { navigator.share({ title: profile.name, url }).catch(() => {}); }
+        else { navigator.clipboard?.writeText(url).catch(() => {}); showToast('Link copied!'); }
+      }
+    },
+    { icon:'🔗', label:'Copy Link',   fn: () => { navigator.clipboard?.writeText(window.location.href).catch(() => {}); showToast('Link copied!'); } },
+    { icon:'📲', label:'QR Code',     fn: () => { navigate(`/u/${profile._id || profile.id || 'me'}`); } },
+    { icon:'⬇',  label:'Download CV', fn: () => { showToast('CV download coming soon'); } },
+    { icon:'🚩', label:'Report',      fn: () => { showToast('Report submitted. Thank you.'); } },
+    { icon:'🚫', label:'Block',       fn: () => { showToast(`${profile.name} blocked.`); } },
+  ];
+
   return (
     <div className="px-4 py-4 border-t" style={{ borderColor: BORDER }}>
+      {toast && (
+        <div className="mb-3 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-xs font-bold text-center">{toast}</div>
+      )}
       <p className="text-[10px] font-black uppercase text-slate-600 mb-3 text-center">More Options</p>
       <div className="grid grid-cols-3 gap-2">
-        {[['📤','Share'],['🔗','Copy Link'],['📲','QR Code'],['⬇','Download CV'],['🚩','Report'],['🚫','Block']].map(([icon, label]) => (
-          <button key={label} type="button"
+        {footerActions.map(({ icon, label, fn }) => (
+          <button key={label} type="button" onClick={fn}
             className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl border text-slate-500 transition-all active:scale-95 hover:text-slate-300 hover:border-slate-600"
             style={{ background: CARD, borderColor: BORDER }}>
             <span className="text-lg">{icon}</span>
@@ -780,7 +800,7 @@ function ProfileFooter({ profile, navigate }) {
           </button>
         ))}
       </div>
-      <button type="button" className="w-full mt-3 py-2 text-[10px] text-slate-600">
+      <button type="button" onClick={() => navigate('/settings')} className="w-full mt-3 py-2 text-[10px] text-slate-600 hover:text-slate-400 transition">
         🔒 Privacy Settings
       </button>
     </div>

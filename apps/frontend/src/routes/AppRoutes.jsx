@@ -110,12 +110,12 @@ function AppRoutes() {
           <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
           <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/notifications" element={<AuthGate><SmartNotifications /></AuthGate>} />
+          <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
           <Route path="/chat" element={<AuthGate><ChatScreen /></AuthGate>} />
           <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
           <Route path="/u/:userId" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
-          <Route path="/rating/:id" element={<AuthGate><Dashboard /></AuthGate>} />
-          <Route path="/booking/:id" element={<AuthGate><Dashboard /></AuthGate>} />
+          <Route path="/rating/:id" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
+          <Route path="/booking/:id" element={<AuthGate><BookingPage /></AuthGate>} />
           <Route path="/map"    element={<AuthGate><MapNavigationScreen /></AuthGate>} />
           <Route path="/market"            element={<AuthGate><MarketPage               /></AuthGate>} />
           <Route path="/wallet"            element={<AuthGate><WalletPage               /></AuthGate>} />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import API from '../../api/axios';
 
 // ── Design tokens ─────────────────────────────────────────────
 const BG     = '#050B18';
@@ -194,14 +195,15 @@ export default function UniversalSearch() {
   // Focus on mount
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
 
-  // Debounced search
+  // Debounced search — tries real API then merges with mock fallback
   useEffect(() => {
     if (!query.trim()) { setResults(null); setHasSearched(false); return; }
     setHasSearched(true);
     setLoading(true);
-    const timer = setTimeout(() => {
-      // Filter mock results to query (simple contains match)
+    const timer = setTimeout(async () => {
       const q = query.toLowerCase();
+
+      // Filter mock data
       const filtered = {};
       Object.entries(MOCK).forEach(([type, items]) => {
         const matched = items.filter(it =>
@@ -211,6 +213,41 @@ export default function UniversalSearch() {
         );
         if (matched.length) filtered[type] = matched;
       });
+
+      // Try real jobs API — merge real results on top of mock jobs
+      try {
+        const res = await API.get('/jobs', { params: { category: query }, timeout: 5000 });
+        const apiJobs = Array.isArray(res?.data) ? res.data : [];
+        if (apiJobs.length > 0) {
+          const mapped = apiJobs.map(j => ({
+            id: j.id || j._id,
+            title: j.title,
+            sub: `${j.createdBy || 'JOBFAST'} · ${j.location?.city || ''}`,
+            meta: `$${j.budget || 0} · ${j.type || 'Full Time'}`,
+            icon: '💼',
+            badge: j.status === 'open' ? 'Open' : null,
+          }));
+          filtered.job = [...mapped, ...(filtered.job || [])];
+        }
+      } catch (_) { /* keep mock jobs */ }
+
+      // Try real users search
+      try {
+        const res = await API.get('/users', { params: { q: query }, timeout: 5000 });
+        const apiUsers = Array.isArray(res?.data?.data) ? res.data.data : Array.isArray(res?.data) ? res.data : [];
+        if (apiUsers.length > 0) {
+          const mapped = apiUsers.map(u => ({
+            id: u._id || u.id,
+            title: u.name,
+            sub: `${u.profession || u.role || 'Worker'} · ${u.location?.city || ''}`,
+            meta: `★ ${u.stats?.rating || '5.0'} · ${u.stats?.totalJobs || 0} jobs`,
+            icon: '👤',
+            badge: u.availability === 'available' ? 'Available' : null,
+          }));
+          filtered.user = [...mapped, ...(filtered.user || [])];
+        }
+      } catch (_) { /* keep mock users */ }
+
       setResults(Object.keys(filtered).length ? filtered : {});
       setLoading(false);
     }, 350);

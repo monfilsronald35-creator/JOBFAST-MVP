@@ -37,7 +37,6 @@ const getStoredUser = () => {
 };
 
 const getToken = () => getStoredUser()?.token || null;
-const getRefreshToken = () => getStoredUser()?.refreshToken || null;
 
 /* ================= LOGOUT ================= */
 const triggerLogout = () => {
@@ -47,17 +46,6 @@ const triggerLogout = () => {
   window.dispatchEvent(new Event("auth:logout"));
 };
 
-/* ================= REFRESH CONTROL ================= */
-let isRefreshing = false;
-let refreshQueue = [];
-
-/* safer queue handling */
-const subscribe = (cb) => refreshQueue.push(cb);
-
-const resolveQueue = (token) => {
-  refreshQueue.forEach((cb) => cb(token));
-  refreshQueue = [];
-};
 
 /* ================= REQUEST INTERCEPTOR ================= */
 API.interceptors.request.use(
@@ -89,72 +77,8 @@ API.interceptors.response.use(
 
     /* ================= 401 HANDLING ================= */
     if (res.status === 401) {
-      config._retry = config._retry || 0;
-
-      /* prevent infinite retry loop */
-      if (config._retry >= 1) {
-        triggerLogout();
-        return Promise.reject(error);
-      }
-
-      config._retry += 1;
-
-      const refreshToken = getRefreshToken();
-
-      if (!refreshToken) {
-        triggerLogout();
-        return Promise.reject(error);
-      }
-
-      /* ================= QUEUE IF ALREADY REFRESHING ================= */
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          subscribe((token) => {
-            if (!token) return reject(error);
-
-            config.headers.Authorization = `Bearer ${token}`;
-            resolve(API(config));
-          });
-        });
-      }
-
-      isRefreshing = true;
-
-      try {
-        const refreshRes = await axios.post(
-          `${BASE_URL}/auth/refresh`,
-          { refreshToken }
-        );
-
-        const newToken = refreshRes?.data?.token;
-
-        if (!newToken) throw new Error("Invalid refresh response");
-
-        /* ================= UPDATE STORAGE SAFELY ================= */
-        const user = getStoredUser();
-
-        if (user) {
-          localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({
-              ...user,
-              token: newToken,
-            })
-          );
-        }
-
-        /* ================= RESOLVE QUEUE ================= */
-        resolveQueue(newToken);
-
-        config.headers.Authorization = `Bearer ${newToken}`;
-        return API(config);
-      } catch (err) {
-        resolveQueue(null);
-        triggerLogout();
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
+      triggerLogout();
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);
