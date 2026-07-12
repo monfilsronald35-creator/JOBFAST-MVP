@@ -461,6 +461,20 @@ export default function MainLayout({ children }) {
               );
             })()}
 
+            <div className="w-px h-3 bg-slate-700/60 shrink-0" />
+
+            {/* Wallet balance */}
+            {(() => {
+              const bal = user?.wallet?.balance ?? user?.walletBalance ?? 245;
+              return (
+                <button type="button" onClick={() => navigate('/wallet')}
+                  className="flex items-center gap-1 shrink-0 active:opacity-70 transition">
+                  <span className="text-[10px]">💳</span>
+                  <span className="text-[10px] font-black text-amber-400">${Number(bal).toLocaleString()}</span>
+                </button>
+              );
+            })()}
+
             <div className="flex-1" />
 
             {/* Currency switcher */}

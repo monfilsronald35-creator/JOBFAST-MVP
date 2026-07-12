@@ -89,6 +89,17 @@ const AI_RECS = [
   { icon: "🛒", label: "Pwodwi Rekòmande",  path: "/market" },
 ];
 
+const STATIC_MARKET = [
+  { id: "m1", name: "iPhone 16 Pro",   emoji: "📱", tag: "Verified Seller", cta: "Buy",  path: "/market" },
+  { id: "m2", name: "Toyota Hilux",    emoji: "🚗", tag: "Verified Seller", cta: "View", path: "/market" },
+  { id: "m3", name: "Concrete Mixer",  emoji: "🏗",  tag: "Pro Equipment",  cta: "View", path: "/market" },
+];
+
+const RECENT_PAYMENTS = [
+  { id: "p1", from: "ABC Construction", label: "Sèvis Elektrik",      amount: "+$800",  date: "Jul 10", status: "completed" },
+  { id: "p2", from: "Hotel Montana",    label: "Rezèvasyon Chanm",    amount: "-$240",  date: "Jul 8",  status: "completed" },
+];
+
 // ════════════════════════════════════════════════════════════════
 // SHARED MICRO-COMPONENTS
 // ════════════════════════════════════════════════════════════════
@@ -443,34 +454,42 @@ function JobFastHome({
         <div>
           <SectionHeader title="🛒 Featured Marketplace" onViewAll={() => navigate("/market")} />
           <div className="flex gap-3 px-4 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-            {marketItems.length === 0 ? (
-              <div className="shrink-0 w-56 py-8 flex flex-col items-center justify-center rounded-2xl border"
-                style={{ background: CARD, borderColor: BORDER }}>
-                <p className="text-3xl mb-1">🛒</p>
-                <p className="text-xs text-slate-500">Pa gen atik pou kounye a</p>
-              </div>
-            ) : marketItems.map((item, i) => {
+            {(marketItems.length > 0 ? marketItems.slice(0, 3).map((item, i) => {
               const photo = item.profileMetadata?.profilePhoto || item.photo
                 || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.name || "M")}&backgroundColor=111827`;
               return (
                 <div key={item._id || item.id || i}
                   className="shrink-0 w-44 flex flex-col rounded-2xl border overflow-hidden"
                   style={{ background: CARD, borderColor: BORDER }}>
-                  <img src={photo} alt={item.name}
-                    className="w-full h-28 object-cover"
+                  <img src={photo} alt={item.name} className="w-full h-28 object-cover"
                     onError={e => { e.currentTarget.src = "https://api.dicebear.com/7.x/initials/svg?seed=M"; }} />
                   <div className="p-3 flex-1 flex flex-col">
                     <p className="text-[11px] font-black text-white truncate">{item.name}</p>
                     <p className="text-[9px] text-amber-400 font-bold mt-0.5">✔ Verified Seller</p>
-                    <button type="button"
-                      onClick={() => navigate(`/u/${item._id || item.id}`)}
-                      className="mt-auto pt-2">
+                    <button type="button" onClick={() => navigate(`/u/${item._id || item.id}`)} className="mt-auto pt-2">
                       <span className="text-[10px] font-black text-amber-400">View →</span>
                     </button>
                   </div>
                 </div>
               );
-            })}
+            }) : STATIC_MARKET.map(item => (
+              <div key={item.id} className="shrink-0 w-44 flex flex-col rounded-2xl border overflow-hidden"
+                style={{ background: CARD, borderColor: BORDER }}>
+                <div className="w-full h-28 flex items-center justify-center text-5xl"
+                  style={{ background: "#0a1020" }}>
+                  {item.emoji}
+                </div>
+                <div className="p-3 flex-1 flex flex-col">
+                  <p className="text-[11px] font-black text-white truncate">{item.name}</p>
+                  <p className="text-[9px] text-amber-400 font-bold mt-0.5">✔ {item.tag}</p>
+                  <button type="button" onClick={() => navigate(item.path)}
+                    className="mt-2 px-3 py-1.5 rounded-xl text-[10px] font-black text-slate-950 active:scale-95 transition self-start"
+                    style={{ background: GOLD }}>
+                    {item.cta}
+                  </button>
+                </div>
+              </div>
+            )))}
           </div>
         </div>
 
@@ -543,6 +562,49 @@ function JobFastHome({
               style={{ background: GOLD }}>
               Wè Rezèvasyon Yo
             </button>
+          </div>
+        </div>
+
+        {/* ── RECENT PAYMENTS ──────────────────────────────────── */}
+        <div className="px-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[12px] font-black uppercase tracking-widest text-slate-400">💰 Recent Payments</p>
+            <button type="button" onClick={() => navigate("/wallet")}
+              className="flex items-center gap-1 text-[11px] font-bold text-amber-400 active:opacity-70">
+              See All <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="rounded-2xl border overflow-hidden" style={{ background: CARD, borderColor: BORDER }}>
+            {RECENT_PAYMENTS.map((p, i) => (
+              <div key={p.id}
+                className="flex items-center gap-3 px-4 py-3.5"
+                style={{ borderBottom: i < RECENT_PAYMENTS.length - 1 ? `1px solid ${BORDER}` : 'none' }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base"
+                  style={{ background: "#0a1020" }}>
+                  💸
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-black text-white truncate">{p.from}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{p.label} · {p.date}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className={`text-sm font-black ${p.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                    {p.amount}
+                  </p>
+                  <div className="flex gap-1.5 mt-1 justify-end">
+                    <button type="button" onClick={() => navigate("/wallet")}
+                      className="text-[9px] font-bold text-slate-500 hover:text-amber-400 transition">
+                      Receipt
+                    </button>
+                    <span className="text-[9px] text-slate-700">·</span>
+                    <button type="button" onClick={() => navigate("/wallet")}
+                      className="text-[9px] font-bold text-slate-500 hover:text-amber-400 transition">
+                      Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
