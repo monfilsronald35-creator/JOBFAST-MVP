@@ -42,26 +42,44 @@ import EnterpriseDashboard      from "@/pages/EnterpriseDashboard/index.jsx";
 import CreatePostScreen         from "@/pages/CreatePost/index.jsx";
 
 // ── Error Boundary ─────────────────────────────────────────────────────────────
-// Prevents any render crash or failed lazy-chunk from showing a blank page.
 class AppErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMsg: '' };
   }
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, errorMsg: error?.message || '' };
+  }
+  componentDidCatch(error, info) {
+    // Log to console so dev tools on iOS (via Mac Safari remote debug) can see it
+    try { console.error('[JOBFAST ERROR]', error?.message, info?.componentStack?.slice(0, 300)); } catch (_) {}
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#050B18', color: '#f8fafc', gap: '16px', padding: '24px', textAlign: 'center' }}>
+        <div style={{
+          position: 'fixed', inset: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: '#050B18', color: '#f8fafc',
+          gap: '16px', padding: '24px', textAlign: 'center',
+          zIndex: 99999,
+        }}>
           <p style={{ fontSize: '1.5rem', fontWeight: 900 }}>Yon erè te rive</p>
-          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Tanpri refrechi paj la pou kontinye</p>
+          <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: 280 }}>
+            Tanpri refrechi paj la pou kontinye
+          </p>
           <button
-            onClick={() => window.location.reload()}
-            style={{ padding: '12px 28px', background: '#FACC15', color: '#020617', fontWeight: 900, borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
+            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            style={{ padding: '14px 32px', background: '#FACC15', color: '#020617', fontWeight: 900, borderRadius: '14px', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
           >
             Refrechi
+          </button>
+          <button
+            onClick={() => { window.history.back(); this.setState({ hasError: false }); }}
+            style={{ padding: '10px 24px', background: 'transparent', color: '#64748b', fontWeight: 700, borderRadius: '12px', border: '1px solid #1F2937', cursor: 'pointer', fontSize: '0.875rem' }}
+          >
+            ← Retounen
           </button>
         </div>
       );
