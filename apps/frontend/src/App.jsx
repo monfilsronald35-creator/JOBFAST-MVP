@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import AppRoutes from "./routes/AppRoutes";
+import IOSInstallBanner from "./components/IOSInstallBanner";
 import "./styles/global.css";
 import API from "./api/axios";
 
@@ -34,6 +35,7 @@ function App() {
   return (
     <AuthProvider>
       <AppRoutes />
+      <IOSInstallBanner />
     </AuthProvider>
   );
 }
