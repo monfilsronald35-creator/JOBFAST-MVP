@@ -80,91 +80,103 @@ const SECTION_PATHS = {
 
 // ── Exact quick-action grids per business role ─────────────────────
 // e = emoji, l = label, p = path
+// Quick-action nav for Company home (rendered above the tabs)
+const COMPANY_QUICK_NAV = [
+  { e:"➕", l:"Poste Travay",  p:"/post-job"       },
+  { e:"🔍", l:"Rekrite",      p:"/search"          },
+  { e:"💰", l:"Bous",         p:"/wallet"          },
+  { e:"💼", l:"Travay",       p:"/jobs"            },
+  { e:"📢", l:"Pwomosyon",    p:"/create-post"     },
+  { e:"💬", l:"Mesaj",        p:"/chat"            },
+  { e:"🔔", l:"Notif",        p:"/notifications"   },
+];
+
+// All paths below use only routes that exist in AppRoutes.jsx.
 const ROLE_QUICK_ACTIONS = {
   hotel: [
-    { e:"💰", l:"Bous",         p:"/wallet"       },
-    { e:"🛏️", l:"Rezèvasyon",  p:"/reservations" },
-    { e:"🏨", l:"Chanm",        p:"/rooms"        },
-    { e:"👷", l:"Anplwaye",     p:"/employees"    },
-    { e:"🛒", l:"Makèt",        p:"/market"       },
-    { e:"📢", l:"Pwomosyon",    p:"/promotions"   },
-    { e:"⭐", l:"Evalyasyon",   p:"/reviews"      },
+    { e:"💰", l:"Bous",        p:"/wallet"       },
+    { e:"🛏️", l:"Rezèvasyon", p:"/booking"      },
+    { e:"🏨", l:"Chanm",       p:"/search"       },
+    { e:"👷", l:"Anplwaye",    p:"/search"       },
+    { e:"🛒", l:"Makèt",       p:"/market"       },
+    { e:"📢", l:"Pwomosyon",   p:"/create-post"  },
+    { e:"⭐", l:"Evalyasyon",  p:"/profile"      },
   ],
   hospital: [
-    { e:"📅", l:"Randevou",     p:"/appointments" },
-    { e:"👨‍⚕️",l:"Doktè",      p:"/doctors"      },
-    { e:"👥", l:"Pasyan",       p:"/patients"     },
-    { e:"💰", l:"Pèman",        p:"/wallet"       },
-    { e:"🔬", l:"Laboratwa",    p:"/lab"          },
-    { e:"🚨", l:"Dijans",       p:"/emergency"    },
-    { e:"🏥", l:"Asirans",      p:"/insurance"    },
+    { e:"📅", l:"Randevou",    p:"/booking"      },
+    { e:"👨‍⚕️",l:"Doktè",     p:"/search"       },
+    { e:"👥", l:"Pasyan",      p:"/search"       },
+    { e:"💰", l:"Pèman",       p:"/wallet"       },
+    { e:"🔬", l:"Laboratwa",   p:"/search"       },
+    { e:"🚨", l:"Dijans",      p:"/notifications"},
+    { e:"🏥", l:"Asirans",     p:"/wallet"       },
   ],
   restaurant: [
-    { e:"🛒", l:"Kòmand",       p:"/orders"       },
-    { e:"📅", l:"Rezèvasyon",   p:"/reservations" },
-    { e:"🍳", l:"Kwizin",       p:"/kitchen"      },
-    { e:"🚀", l:"Livrezon",     p:"/delivery"     },
-    { e:"👷", l:"Pèsonèl",      p:"/staff"        },
-    { e:"📦", l:"Envantè",      p:"/inventory"    },
-    { e:"💰", l:"Pèman",        p:"/wallet"       },
+    { e:"🛒", l:"Kòmand",      p:"/market"       },
+    { e:"📅", l:"Rezèvasyon",  p:"/booking"      },
+    { e:"🍳", l:"Kwizin",      p:"/search"       },
+    { e:"🚀", l:"Livrezon",    p:"/map"          },
+    { e:"👷", l:"Pèsonèl",     p:"/search"       },
+    { e:"📦", l:"Envantè",     p:"/market"       },
+    { e:"💰", l:"Pèman",       p:"/wallet"       },
   ],
   clinic: [
-    { e:"📅", l:"Randevou",     p:"/appointments" },
-    { e:"👨‍⚕️",l:"Doktè",      p:"/doctors"      },
-    { e:"👥", l:"Pasyan",       p:"/patients"     },
-    { e:"💰", l:"Pèman",        p:"/wallet"       },
-    { e:"⭐", l:"Evalyasyon",   p:"/reviews"      },
+    { e:"📅", l:"Randevou",    p:"/booking"      },
+    { e:"👨‍⚕️",l:"Doktè",     p:"/search"       },
+    { e:"👥", l:"Pasyan",      p:"/search"       },
+    { e:"💰", l:"Pèman",       p:"/wallet"       },
+    { e:"⭐", l:"Evalyasyon",  p:"/profile"      },
   ],
   marketplace: [
-    { e:"📦", l:"Pwodwi",       p:"/products"     },
-    { e:"🛒", l:"Kòmand",       p:"/orders"       },
-    { e:"👥", l:"Kliyan",       p:"/customers"    },
-    { e:"💰", l:"Bous",         p:"/wallet"       },
-    { e:"🚚", l:"Ekspedisyon",  p:"/shipping"     },
-    { e:"📢", l:"Pwomosyon",    p:"/promotions"   },
+    { e:"📦", l:"Pwodwi",      p:"/market"       },
+    { e:"🛒", l:"Kòmand",      p:"/market"       },
+    { e:"👥", l:"Kliyan",      p:"/search"       },
+    { e:"💰", l:"Bous",        p:"/wallet"       },
+    { e:"🚚", l:"Ekspedisyon", p:"/map"          },
+    { e:"📢", l:"Pwomosyon",   p:"/create-post"  },
   ],
   tourism: [
-    { e:"🗺️", l:"Tou",         p:"/tours"        },
-    { e:"📅", l:"Rezèvasyon",   p:"/bookings"     },
-    { e:"✈️", l:"Touris",       p:"/tourists"     },
-    { e:"💰", l:"Pèman",        p:"/wallet"       },
-    { e:"⭐", l:"Evalyasyon",   p:"/reviews"      },
-    { e:"📢", l:"Pwomosyon",    p:"/promotions"   },
+    { e:"🗺️", l:"Tou",        p:"/search"       },
+    { e:"📅", l:"Rezèvasyon",  p:"/booking"      },
+    { e:"✈️", l:"Touris",      p:"/search"       },
+    { e:"💰", l:"Pèman",       p:"/wallet"       },
+    { e:"⭐", l:"Evalyasyon",  p:"/profile"      },
+    { e:"📢", l:"Pwomosyon",   p:"/create-post"  },
   ],
   rental: [
-    { e:"🏠", l:"Pwopiete",     p:"/properties"   },
-    { e:"📄", l:"Kontra",       p:"/contracts"    },
-    { e:"👥", l:"Lokatè",       p:"/tenants"      },
-    { e:"💰", l:"Pèman",        p:"/wallet"       },
-    { e:"🔧", l:"Antretyen",    p:"/maintenance"  },
+    { e:"🏠", l:"Pwopiete",    p:"/search"       },
+    { e:"📄", l:"Kontra",      p:"/search"       },
+    { e:"👥", l:"Lokatè",      p:"/search"       },
+    { e:"💰", l:"Pèman",       p:"/wallet"       },
+    { e:"🔧", l:"Antretyen",   p:"/search"       },
   ],
   office: [
-    { e:"👥", l:"Pèsonèl",      p:"/staff"        },
-    { e:"📅", l:"Orè",          p:"/schedule"     },
-    { e:"🔧", l:"Sèvis",        p:"/services"     },
-    { e:"💰", l:"Pèman",        p:"/wallet"       },
-    { e:"📊", l:"Rapò",         p:"/reports"      },
+    { e:"👥", l:"Pèsonèl",     p:"/search"       },
+    { e:"📅", l:"Orè",         p:"/booking"      },
+    { e:"🔧", l:"Sèvis",       p:"/search"       },
+    { e:"💰", l:"Pèman",       p:"/wallet"       },
+    { e:"📊", l:"Rapò",        p:"/jobs"         },
   ],
   service_provider: [
-    { e:"🔧", l:"Sèvis Mwen",   p:"/provider-dashboard" },
-    { e:"📅", l:"Travay Pwochèn",p:"/bookings"    },
-    { e:"👥", l:"Kliyan",       p:"/search"       },
-    { e:"💰", l:"Bous",         p:"/wallet"       },
-    { e:"⭐", l:"Rating Mwen",  p:"/settings"     },
+    { e:"🔧", l:"Sèvis Mwen",  p:"/provider-dashboard" },
+    { e:"📅", l:"Pwochèn",     p:"/booking"      },
+    { e:"👥", l:"Kliyan",      p:"/search"       },
+    { e:"💰", l:"Bous",        p:"/wallet"       },
+    { e:"⭐", l:"Rating",      p:"/profile"      },
   ],
   admin: [
-    { e:"📊", l:"Estatistik",   p:"/admin"            },
-    { e:"👥", l:"Itilizatè",    p:"/admin/users"      },
-    { e:"💼", l:"Travay",       p:"/admin/jobs"       },
-    { e:"💬", l:"Sipò",         p:"/admin/support"    },
-    { e:"⚙️", l:"Paramèt",     p:"/admin/settings"   },
+    { e:"📊", l:"Estatistik",  p:"/admin"            },
+    { e:"👥", l:"Itilizatè",   p:"/admin/users"      },
+    { e:"💼", l:"Travay",      p:"/admin/jobs"       },
+    { e:"💬", l:"Sipò",        p:"/admin/support"    },
+    { e:"⚙️", l:"Paramèt",    p:"/admin/settings"   },
   ],
   super_admin: [
-    { e:"📊", l:"Estatistik",   p:"/admin"            },
-    { e:"👥", l:"Itilizatè",    p:"/admin/users"      },
-    { e:"💼", l:"Travay",       p:"/admin/jobs"       },
-    { e:"💬", l:"Sipò",         p:"/admin/support"    },
-    { e:"⚙️", l:"Paramèt",     p:"/admin/settings"   },
+    { e:"📊", l:"Estatistik",  p:"/admin"            },
+    { e:"👥", l:"Itilizatè",   p:"/admin/users"      },
+    { e:"💼", l:"Travay",      p:"/admin/jobs"       },
+    { e:"💬", l:"Sipò",        p:"/admin/support"    },
+    { e:"⚙️", l:"Paramèt",    p:"/admin/settings"   },
   ],
 };
 
@@ -701,13 +713,57 @@ export default function Dashboard() {
 
   // ── Company dashboard ──────────────────────────────────────────
   if (isCompanyRole) {
+    const firstName = user?.name?.split(" ")[0] || "";
+    const hour      = new Date().getHours();
+    const greeting  = hour >= 5 && hour < 12 ? "Bonjou" : "Bonswa";
     return (
-      <div className="space-y-4 pb-8" style={{ background: BG }}>
-        <div className="p-5 rounded-2xl border mx-4 mt-2" style={{ background: CARD, borderColor: BORDER }}>
-          <h2 className="text-base font-black text-white">Bienveni{user?.name ? `, ${user.name.split(" ")[0]}` : ""}</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Konpayi Dashboard</p>
+      <div className="pb-28" style={{ background: BG }}>
+
+        {/* GREETING */}
+        <div className="px-4 pt-5 pb-3">
+          <p className="text-[13px] text-slate-400 font-medium leading-none">
+            {greeting}{firstName ? `, ${firstName}` : ""} 👋
+          </p>
+          <p className="text-[20px] font-black text-white mt-1 leading-tight">
+            Jere konpayi ou jodi a
+          </p>
         </div>
-        <div className="flex gap-1.5 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: "none" }}>
+
+        {/* QUICK NAV — 7 bouton ki fonksyone */}
+        <div className="px-4 mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+            {COMPANY_QUICK_NAV.map(({ e, l, p }) => (
+              <button key={l} type="button" onClick={() => navigate(p)}
+                className="shrink-0 flex flex-col items-center gap-1 pt-3 pb-2.5 rounded-2xl border text-[9px] font-black text-white active:scale-95 transition"
+                style={{ background: CARD, borderColor: BORDER, minWidth: 62 }}>
+                <span className="text-[19px] leading-none">{e}</span>
+                <span className="px-1 text-center leading-tight">{l}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* SEARCH BAR */}
+        <div className="px-4 mb-4">
+          <button type="button" onClick={() => navigate("/search")}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all active:scale-[0.98]"
+            style={{ background: CARD, borderColor: "#2a3548" }}>
+            <span className="text-slate-500 text-base">🔍</span>
+            <span className="text-sm text-slate-500 flex-1 text-left">Chèche travayè, pwofesyonèl...</span>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
+              style={{ background: `${GOLD}18`, color: GOLD }}>
+              Chèche
+            </span>
+          </button>
+        </div>
+
+        {/* KPI MINI-STATS */}
+        <div className="px-4 mb-4">
+          <CompanyOverviewSupplement user={user} />
+        </div>
+
+        {/* TABS */}
+        <div className="flex gap-1.5 overflow-x-auto px-4 pb-1 mb-3" style={{ scrollbarWidth: "none" }}>
           {COMPANY_TABS.map(tab => (
             <button key={tab.id} type="button" onClick={() => setCompanyTab(tab.id)}
               aria-pressed={companyTab === tab.id}
@@ -719,9 +775,42 @@ export default function Dashboard() {
             </button>
           ))}
         </div>
-        {companyTab === "overview"
-          ? <div className="space-y-4 px-4"><CompanyOverviewSupplement user={user} /></div>
-          : <CompanyContent tab={companyTab} user={user} />}
+
+        {/* TAB CONTENT */}
+        <div className="px-4">
+          {companyTab === "overview"
+            ? (
+              <div className="space-y-3">
+                {/* Recruit CTA */}
+                <div className="p-4 rounded-2xl border" style={{ background: CARD, borderColor: BORDER }}>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">👷 Rekrite Travayè</p>
+                  <p className="text-[11px] text-slate-400 mb-3">Jwenn travayè eksperyanse pou konpayi ou a.</p>
+                  <button type="button" onClick={() => navigate("/search")}
+                    className="w-full py-2.5 rounded-xl text-[12px] font-black text-slate-950 active:scale-95 transition"
+                    style={{ background: GOLD }}>
+                    Chèche Travayè →
+                  </button>
+                </div>
+                {/* Shared tools */}
+                <div className="flex gap-2">
+                  {[
+                    { e:"💬", l:"Mesaj",  p:"/chat"          },
+                    { e:"💰", l:"Bous",   p:"/wallet"        },
+                    { e:"🔔", l:"Notif",  p:"/notifications" },
+                  ].map(({ e, l, p }) => (
+                    <button key={p} type="button" onClick={() => navigate(p)}
+                      className="flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-2xl border text-[10px] font-black text-white active:scale-95 transition"
+                      style={{ background: CARD, borderColor: BORDER }}>
+                      <span className="text-lg">{e}</span>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+            : <CompanyContent tab={companyTab} user={user} />
+          }
+        </div>
       </div>
     );
   }
