@@ -331,11 +331,11 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
   ];
 
   const EMPLOYER_NAV = [
-    { e:"➕", l:"Poste Travay",  p:"/post-job"    },
-    { e:"👷", l:"Rekrite",       p:"/search"      },
-    { e:"📋", l:"Aplikasyon",    p:"/recruitment" },
-    { e:"💰", l:"Salè",          p:"/wallet"      },
-    { e:"📊", l:"Rapò",          p:"/reports"     },
+    { e:"➕", l:"Poste Travay",  p:"/post-job"  },
+    { e:"👷", l:"Rekrite",       p:"/search"    },
+    { e:"📋", l:"Aplikasyon",    p:"/search"    },
+    { e:"💰", l:"Salè",          p:"/wallet"    },
+    { e:"📊", l:"Rapò",          p:"/jobs"      },
   ];
 
   const quickNav = isEmployer ? EMPLOYER_NAV : WORKER_NAV;
