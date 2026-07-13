@@ -1,12 +1,12 @@
 {
   "id": "/",
-  "short_name": "JobFast",
-  "name": "JobFast Global Marketplace",
+  "short_name": "JOBFAST",
+  "name": "JOBFAST Global Marketplace",
   "description": "Platfòm GPS elit pou konstriksyon, sèvis sou demann, pwofesyonèl endepandan ak anyè biznis.",
   "lang": "ht",
   "dir": "ltr",
 
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
 
   "display": "standalone",
@@ -22,17 +22,38 @@
   "prefer_related_applications": false,
 
   "shortcuts": [
-    { "name": "Chèche Travay",   "short_name": "Djòb",      "url": "/jobs",     "icons": [{ "src": "/icons/icon-96x96.png",  "sizes": "96x96"  }] },
-    { "name": "Chèche Travayè", "short_name": "Travayè",   "url": "/search",   "icons": [{ "src": "/icons/icon-96x96.png",  "sizes": "96x96"  }] },
-    { "name": "Pòtefèy",         "short_name": "Pòtefèy",   "url": "/wallet",   "icons": [{ "src": "/icons/icon-96x96.png",  "sizes": "96x96"  }] }
+    {
+      "name": "Chèche Travay",
+      "short_name": "Djòb",
+      "url": "/search?type=jobs",
+      "description": "Jwenn djòb pre ou",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Chèche Travayè",
+      "short_name": "Travayè",
+      "url": "/search?type=workers",
+      "description": "Rekrite travayè eksperyanse",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Pòtefèy",
+      "short_name": "Bous",
+      "url": "/wallet",
+      "description": "Jere lajan ou",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+    }
   ],
 
   "icons": [
-    { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/apple-touch-icon.png",   "sizes": "180x180", "type": "image/png", "purpose": "any" }
   ],
 
   "screenshots": [
@@ -41,7 +62,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "JobFast Home"
+      "label": "JOBFAST — Jwenn Djòb ak Sèvis"
     }
   ]
 }

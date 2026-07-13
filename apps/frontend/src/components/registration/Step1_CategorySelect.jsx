@@ -46,23 +46,31 @@ function buildSearchIndex() {
   return index;
 }
 
-const STATIC_INDEX = buildSearchIndex();
+// Lazily built the first time the user types — not at module load.
+// This defers iterating all 100+ profession entries until actually needed.
+let _cachedRawIndex = null;
+function getRawIndex() {
+  if (!_cachedRawIndex) _cachedRawIndex = buildSearchIndex();
+  return _cachedRawIndex;
+}
 
 export default function Step1_CategorySelect({ onSelect, onDirectSelect }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
 
-  // Translated search index (rebuilds when language changes because t reference changes)
-  const searchIndex = useMemo(() => (
-    STATIC_INDEX.map((item) => ({
+  // Translated search index — only built when user has typed something.
+  // Cached between renders; rebuilds only when language (t) changes.
+  const searchIndex = useMemo(() => {
+    if (!query.trim()) return [];           // don't build until needed
+    return getRawIndex().map((item) => ({
       ...item,
-      label:      t(`registration.professions.${item.prof.id}`, { defaultValue: item.prof.label }),
-      catLabel:   t(`registration.categories.${item.cat.id}`,   { defaultValue: item.cat.label  }),
-      subLabel:   item.sub
+      label:    t(`registration.professions.${item.prof.id}`, { defaultValue: item.prof.label }),
+      catLabel: t(`registration.categories.${item.cat.id}`,   { defaultValue: item.cat.label  }),
+      subLabel: item.sub
         ? t(`registration.subcategories.${item.sub.id}`, { defaultValue: item.sub.label })
         : null,
-    }))
-  ), [t]);
+    }));
+  }, [query, t]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -70,7 +78,7 @@ export default function Step1_CategorySelect({ onSelect, onDirectSelect }) {
     return searchIndex
       .filter((item) => item.label.toLowerCase().includes(q) || item.rawKey.includes(q))
       .slice(0, 10);
-  }, [query, searchIndex]);
+  }, [query, searchIndex]); // searchIndex already depends on query — this is intentional
 
   const showResults = query.trim().length > 0;
 

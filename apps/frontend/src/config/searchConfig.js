@@ -197,6 +197,13 @@ const ROLE_SEARCH_CONFIGS = {
     cardFields:    ['profession', 'experience', 'trust_score', 'rating', 'availability', 'distance'],
   },
 
+  marketplace: {
+    heading:       'Chèche nan Makèt',
+    placeholder:   'Chèche pwodwi, boutik, mak...',
+    activeFilters: ['category', 'price_range', 'rating', 'distance', 'verified'],
+    cardFields:    ['product_name', 'price', 'rating', 'distance', 'store_name'],
+  },
+
   // Legacy aliases
   user:     null,
   business: null,

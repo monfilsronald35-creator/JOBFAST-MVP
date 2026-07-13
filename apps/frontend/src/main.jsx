@@ -4,10 +4,33 @@ import App from "./App.jsx";
 import "./styles/global.css";
 import { initI18n } from "./i18n";
 
-// Register Service Worker for PWA (offline + installability)
+// Register Service Worker — Android, iPhone ak iPad
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then(reg => {
+        // Detekte nouvo SW: pran kontwòl imedyatman san atann reload
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      })
+      .catch(() => {});
+
+    // Reload paj la lè nouvo SW pran kontwòl (evite sèvi vye assets)
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
   });
 }
 

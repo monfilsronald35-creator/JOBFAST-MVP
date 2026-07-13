@@ -2,53 +2,204 @@
 <html lang="ht">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
-    <!-- PWA manifest -->
+    <!-- ═══════════════════════════════════════════════════════
+         PWA MANIFEST
+    ═══════════════════════════════════════════════════════ -->
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Favicon + standard icon -->
+    <!-- ═══════════════════════════════════════════════════════
+         FAVICON
+    ═══════════════════════════════════════════════════════ -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="96x96"  href="/icons/icon-96x96.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png" />
 
-    <!-- iOS / Safari PWA -->
+    <!-- ═══════════════════════════════════════════════════════
+         APPLE / iOS / iPadOS — OBLIGATWA POU PWA
+    ═══════════════════════════════════════════════════════ -->
+
+    <!-- Fè iOS trete app la tankou yon app natif -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <!-- Ba'w full-screen — status bar transparan sou iPhone X+ -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="JobFast" />
+
+    <!-- Non app la sou Home Screen iPhone/iPad -->
+    <meta name="apple-mobile-web-app-title" content="JOBFAST" />
+
+    <!-- Apple Touch Icons — Ikòn sou Home Screen iOS -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
-    <!-- Android / Chrome -->
+    <!-- iOS Splash Screens (Startup Image) — kouvri tout modèl iPhone ak iPad
+         Yo ap itilize icon-512x512.png kom splash centré sou background #050B18 -->
+
+    <!-- iPhone SE (1st gen) / 5 -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 6/7/8 -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 6+/7+/8+ -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone X / XS / 11 Pro -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone XR / 11 -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone XS Max / 11 Pro Max -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 12 / 13 / 14 -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 12 Pro Max / 13 Pro Max / 14 Plus -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 14 Pro -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 14 Pro Max / 15 Pro Max -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPhone 15 / 16 -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPad mini (6th gen) -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPad (9th/10th gen) -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPad Air (4th/5th gen) -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPad Pro 11" -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- iPad Pro 12.9" -->
+    <link rel="apple-touch-startup-image"
+      media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)"
+      href="/icons/icon-512x512.png" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         ANDROID / CHROME
+    ═══════════════════════════════════════════════════════ -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#050B18" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050B18" />
+
+    <!-- Windows / Edge -->
     <meta name="msapplication-TileColor" content="#050B18" />
     <meta name="msapplication-TileImage" content="/icons/icon-192x192.png" />
+    <meta name="msapplication-config" content="none" />
 
-    <!-- SEO / Social -->
-    <meta name="description" content="Platfòm GPS elit pou jwenn djòb, travayè, sèvis ak biznis ann Ayiti." />
-    <meta name="keywords" content="jobfast, djob, travay, haiti, services, plombier, electricien" />
-    <meta property="og:title" content="JobFast Global Marketplace" />
-    <meta property="og:description" content="Jwenn djòb, travayè, sèvis ann Ayiti." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <!-- ═══════════════════════════════════════════════════════
+         SEO + OPEN GRAPH + TWITTER
+    ═══════════════════════════════════════════════════════ -->
+    <meta name="description" content="Platfòm GPS elit pou jwenn djòb, travayè, sèvis ak biznis ann Ayiti ak tout Karayib la." />
+    <meta name="keywords" content="jobfast, djob, travay, haiti, services, plombier, electricien, marketplace" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="JOBFAST" />
 
-    <title>JobFast Global Marketplace</title>
+    <meta property="og:type"        content="website" />
+    <meta property="og:site_name"   content="JOBFAST" />
+    <meta property="og:title"       content="JOBFAST — Platfòm Travay ak Sèvis" />
+    <meta property="og:description" content="Jwenn djòb, travayè, sèvis ann Ayiti ak tout Karayib la." />
+    <meta property="og:image"       content="/icons/icon-512x512.png" />
+    <meta property="og:image:width"  content="512" />
+    <meta property="og:image:height" content="512" />
+
+    <meta name="twitter:card"        content="summary" />
+    <meta name="twitter:title"       content="JOBFAST" />
+    <meta name="twitter:description" content="Jwenn djòb ak sèvis ann Ayiti." />
+    <meta name="twitter:image"       content="/icons/icon-512x512.png" />
+
+    <title>JOBFAST — Platfòm Travay ak Sèvis</title>
   </head>
-  <body class="bg-navy-950 text-slate-100">
+  <body>
     <div id="root">
-      <!-- Native app shell: shows immediately while JS downloads, disappears when React mounts -->
-      <div id="jf-shell" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#050B18;z-index:9999;">
-        <div style="font-size:2.25rem;font-weight:900;letter-spacing:-0.02em;line-height:1;">
-          <span style="color:#FACC15;">JOB</span><span style="color:#ffffff;">FAST</span>
+      <!-- Native splash shell: visible immediately while JS downloads.
+           #050B18 background matches theme_color so there is zero white flash. -->
+      <div id="jf-shell" style="
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #050B18;
+        z-index: 9999;
+      ">
+        <img
+          src="/icons/icon-192x192.png"
+          alt="JOBFAST"
+          width="80"
+          height="80"
+          style="border-radius: 20px; margin-bottom: 20px;"
+          onerror="this.style.display='none'"
+        />
+        <div style="font-size: 2rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1;">
+          <span style="color: #FACC15;">JOB</span><span style="color: #ffffff;">FAST</span>
         </div>
-        <div style="width:48px;height:3px;background:#FACC15;border-radius:2px;margin-top:18px;animation:jf-pulse 1.4s ease-in-out infinite;"></div>
+        <div style="
+          width: 48px;
+          height: 3px;
+          background: #FACC15;
+          border-radius: 2px;
+          margin-top: 20px;
+          animation: jf-pulse 1.4s ease-in-out infinite;
+        "></div>
+        <div id="jf-shell-style">
+          <style>
+            @keyframes jf-pulse {
+              0%,100% { opacity:1; transform:scaleX(1) }
+              50%      { opacity:0.35; transform:scaleX(0.55) }
+            }
+            body { margin: 0; background: #050B18; }
+          </style>
+        </div>
       </div>
     </div>
-    <style>
-      @keyframes jf-pulse { 0%,100%{opacity:1;transform:scaleX(1)} 50%{opacity:0.35;transform:scaleX(0.55)} }
-    </style>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -64,7 +64,7 @@ API.interceptors.response.use(
       const url = error.config?.url || "";
       const isAuthRoute = url.includes("/auth/");
       if (isAuthRoute) {
-        localStorage.removeItem("jobfast_user");
+        try { localStorage.removeItem("jobfast_user"); } catch {}
         window.dispatchEvent(new CustomEvent("auth:expired"));
       }
     }

@@ -7,8 +7,8 @@ import React, {
   useState,
   useCallback,
 } from "react";
-// 👑 KOREKSYON 1: Akolad sa yo ap debloke Rollup sou Vercel nèt!
 import { io } from "socket.io-client";
+import { safeSet, safeGet, safeRemove } from "../utils/safeStorage";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "jobfast_user";
@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
     let parsed = null;
 
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = safeGet(STORAGE_KEY);
       parsed = saved ? JSON.parse(saved) : null;
 
       // Backend retounen user.id, men AuthContext itilize _id
@@ -66,9 +66,9 @@ export function AuthProvider({ children }) {
     userRef.current = user;
 
     if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      safeSet(STORAGE_KEY, JSON.stringify(user));
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      safeRemove(STORAGE_KEY);
     }
   }, [user]);
 
@@ -144,7 +144,7 @@ export function AuthProvider({ children }) {
 
     setUser(data);
     userRef.current = data;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    safeSet(STORAGE_KEY, JSON.stringify(data));
 
     if (!socket.connected) {
       socket.connect();
@@ -165,7 +165,7 @@ export function AuthProvider({ children }) {
 
     setUser(null);
     userRef.current = null;
-    localStorage.removeItem(STORAGE_KEY);
+    safeRemove(STORAGE_KEY);
 
     if (socket.connected) {
       socket.disconnect();
@@ -209,7 +209,7 @@ export function AuthProvider({ children }) {
 
     setUser(updated);
     userRef.current = updated;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    safeSet(STORAGE_KEY, JSON.stringify(updated));
 
     socket.emit("user:status_change", {
       id: updated._id,

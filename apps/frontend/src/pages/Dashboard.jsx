@@ -5,7 +5,7 @@ import { Star, ChevronRight, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { isEmployerRole } from "../config/roleConfig";
+import { isEmployerRole, getRoleConfig } from "../config/roleConfig";
 import CompanyContent, {
   COMPANY_TABS, CompanyOverviewSupplement,
 } from "./company/CompanyDashboard";
@@ -18,6 +18,155 @@ const BG     = "#050B18";
 const CARD   = "#0d1526";
 const BORDER = "#1F2937";
 const GOLD   = "#FACC15";
+
+// ── Role accent colors (matches roleConfig color names → hex) ──
+const ROLE_ACCENT = {
+  restaurant:      "#F97316",
+  hotel:           "#06B6D4",
+  hospital:        "#EF4444",
+  clinic:          "#14B8A6",
+  tourism:         "#A855F7",
+  rental:          "#10B981",
+  office:          "#64748B",
+  service_provider:"#FACC15",
+  admin:           "#F43F5E",
+  super_admin:     "#F43F5E",
+};
+
+// ── Section id → nav path map for GenericRoleDashboard ─────────
+const SECTION_PATHS = {
+  todays_orders:         "/orders",
+  reservations:          "/reservations",
+  menu_overview:         "/menu",
+  top_customers:         "/customers",
+  room_status:           "/rooms",
+  todays_checkins:       "/reservations",
+  housekeeping:          "/housekeeping",
+  guest_requests:        "/guests",
+  emergency_status:      "/emergency",
+  todays_appointments:   "/appointments",
+  doctors_on_duty:       "/doctors",
+  patient_stats:         "/patients",
+  patient_list:          "/patients",
+  doctors:               "/doctors",
+  clinic_reviews:        "/reviews",
+  active_tours:          "/tours",
+  bookings:              "/bookings",
+  tourists:              "/tourists",
+  reviews:               "/reviews",
+  my_services:           "/provider-dashboard",
+  upcoming_jobs:         "/search",
+  clients:               "/search",
+  my_rating:             "/settings",
+  staff_overview:        "/staff",
+  schedule:              "/schedule",
+  services:              "/services",
+  office_stats:          "/reports",
+  properties:            "/properties",
+  active_leases:         "/properties",
+  maintenance:           "/properties",
+  open_jobs:             "/jobs",
+  employee_overview:     "/employees",
+  applications:          "/recruitment",
+  team_activity:         "/reports",
+  branches:              "/branches",
+  contracts:             "/contracts",
+  enterprise_stats:      "/reports",
+  platform_stats:        "/admin",
+  recent_users:          "/admin/users",
+  open_reports:          "/admin/support",
+  system_health:         "/admin",
+};
+
+// ── Exact quick-action grids per business role ─────────────────────
+// e = emoji, l = label, p = path
+const ROLE_QUICK_ACTIONS = {
+  hotel: [
+    { e:"💰", l:"Bous",         p:"/wallet"       },
+    { e:"🛏️", l:"Rezèvasyon",  p:"/reservations" },
+    { e:"🏨", l:"Chanm",        p:"/rooms"        },
+    { e:"👷", l:"Anplwaye",     p:"/employees"    },
+    { e:"🛒", l:"Makèt",        p:"/market"       },
+    { e:"📢", l:"Pwomosyon",    p:"/promotions"   },
+    { e:"⭐", l:"Evalyasyon",   p:"/reviews"      },
+  ],
+  hospital: [
+    { e:"📅", l:"Randevou",     p:"/appointments" },
+    { e:"👨‍⚕️",l:"Doktè",      p:"/doctors"      },
+    { e:"👥", l:"Pasyan",       p:"/patients"     },
+    { e:"💰", l:"Pèman",        p:"/wallet"       },
+    { e:"🔬", l:"Laboratwa",    p:"/lab"          },
+    { e:"🚨", l:"Dijans",       p:"/emergency"    },
+    { e:"🏥", l:"Asirans",      p:"/insurance"    },
+  ],
+  restaurant: [
+    { e:"🛒", l:"Kòmand",       p:"/orders"       },
+    { e:"📅", l:"Rezèvasyon",   p:"/reservations" },
+    { e:"🍳", l:"Kwizin",       p:"/kitchen"      },
+    { e:"🚀", l:"Livrezon",     p:"/delivery"     },
+    { e:"👷", l:"Pèsonèl",      p:"/staff"        },
+    { e:"📦", l:"Envantè",      p:"/inventory"    },
+    { e:"💰", l:"Pèman",        p:"/wallet"       },
+  ],
+  clinic: [
+    { e:"📅", l:"Randevou",     p:"/appointments" },
+    { e:"👨‍⚕️",l:"Doktè",      p:"/doctors"      },
+    { e:"👥", l:"Pasyan",       p:"/patients"     },
+    { e:"💰", l:"Pèman",        p:"/wallet"       },
+    { e:"⭐", l:"Evalyasyon",   p:"/reviews"      },
+  ],
+  marketplace: [
+    { e:"📦", l:"Pwodwi",       p:"/products"     },
+    { e:"🛒", l:"Kòmand",       p:"/orders"       },
+    { e:"👥", l:"Kliyan",       p:"/customers"    },
+    { e:"💰", l:"Bous",         p:"/wallet"       },
+    { e:"🚚", l:"Ekspedisyon",  p:"/shipping"     },
+    { e:"📢", l:"Pwomosyon",    p:"/promotions"   },
+  ],
+  tourism: [
+    { e:"🗺️", l:"Tou",         p:"/tours"        },
+    { e:"📅", l:"Rezèvasyon",   p:"/bookings"     },
+    { e:"✈️", l:"Touris",       p:"/tourists"     },
+    { e:"💰", l:"Pèman",        p:"/wallet"       },
+    { e:"⭐", l:"Evalyasyon",   p:"/reviews"      },
+    { e:"📢", l:"Pwomosyon",    p:"/promotions"   },
+  ],
+  rental: [
+    { e:"🏠", l:"Pwopiete",     p:"/properties"   },
+    { e:"📄", l:"Kontra",       p:"/contracts"    },
+    { e:"👥", l:"Lokatè",       p:"/tenants"      },
+    { e:"💰", l:"Pèman",        p:"/wallet"       },
+    { e:"🔧", l:"Antretyen",    p:"/maintenance"  },
+  ],
+  office: [
+    { e:"👥", l:"Pèsonèl",      p:"/staff"        },
+    { e:"📅", l:"Orè",          p:"/schedule"     },
+    { e:"🔧", l:"Sèvis",        p:"/services"     },
+    { e:"💰", l:"Pèman",        p:"/wallet"       },
+    { e:"📊", l:"Rapò",         p:"/reports"      },
+  ],
+  service_provider: [
+    { e:"🔧", l:"Sèvis Mwen",   p:"/provider-dashboard" },
+    { e:"📅", l:"Travay Pwochèn",p:"/bookings"    },
+    { e:"👥", l:"Kliyan",       p:"/search"       },
+    { e:"💰", l:"Bous",         p:"/wallet"       },
+    { e:"⭐", l:"Rating Mwen",  p:"/settings"     },
+  ],
+  admin: [
+    { e:"📊", l:"Estatistik",   p:"/admin"            },
+    { e:"👥", l:"Itilizatè",    p:"/admin/users"      },
+    { e:"💼", l:"Travay",       p:"/admin/jobs"       },
+    { e:"💬", l:"Sipò",         p:"/admin/support"    },
+    { e:"⚙️", l:"Paramèt",     p:"/admin/settings"   },
+  ],
+  super_admin: [
+    { e:"📊", l:"Estatistik",   p:"/admin"            },
+    { e:"👥", l:"Itilizatè",    p:"/admin/users"      },
+    { e:"💼", l:"Travay",       p:"/admin/jobs"       },
+    { e:"💬", l:"Sipò",         p:"/admin/support"    },
+    { e:"⚙️", l:"Paramèt",     p:"/admin/settings"   },
+  ],
+};
 
 // ── Job cache ──────────────────────────────────────────────────────
 let jobsCache = null;
@@ -142,7 +291,7 @@ const WorkerListCard = memo(function WorkerListCard({ worker, navigate }) {
 });
 
 // ════════════════════════════════════════════════════════════════
-// MAIN HOME — ultra-pro minimal layout
+// WORKER DASHBOARD
 // ════════════════════════════════════════════════════════════════
 function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }) {
   const city      = geo.city || "Haiti";
@@ -151,80 +300,113 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
   const greeting  = hour >= 5 && hour < 12 ? "Bonjou" : "Bonswa";
 
   const [storiesOpen, setStoriesOpen] = useState(false);
+  const [available,   setAvailable]   = useState(true);
 
   const workerMembers = useMemo(() =>
     members
       .filter(m => !["company","business","enterprise","employer","hotel",
-        "restaurant","hospital","clinic","tourism"].includes(m.role))
+        "restaurant","hospital","clinic","tourism","marketplace"].includes(m.role))
       .slice(0, 3),
   [members]);
 
   const topJobs = jobs.slice(0, 3);
 
+  const WORKER_NAV = [
+    { e:"🔍", l:"Jwenn Travay",   p:"/search"   },
+    { e:"💼", l:"Aplikasyon",     p:"/my-jobs"  },
+    { e:"📅", l:"Orè Jodi a",    p:"/booking"  },
+    { e:"💰", l:"Bous",          p:"/wallet"   },
+    { e:"💬", l:"Mesaj",         p:"/chat"     },
+  ];
+
+  const EMPLOYER_NAV = [
+    { e:"➕", l:"Poste Travay",  p:"/post-job"    },
+    { e:"👷", l:"Rekrite",       p:"/search"      },
+    { e:"📋", l:"Aplikasyon",    p:"/recruitment" },
+    { e:"💰", l:"Salè",          p:"/wallet"      },
+    { e:"📊", l:"Rapò",          p:"/reports"     },
+  ];
+
+  const quickNav = isEmployer ? EMPLOYER_NAV : WORKER_NAV;
+
   return (
     <div className="pb-28" style={{ background: BG }}>
       {storiesOpen && <StoriesModal onClose={() => setStoriesOpen(false)} />}
 
-      {/* ── GREETING + SEARCH ──────────────────────────────────── */}
-      <div className="px-4 pt-5 pb-4 space-y-3">
-        <div>
-          <p className="text-[13px] text-slate-400 font-medium leading-none">
-            {greeting}{firstName ? `, ${firstName}` : ""} 👋
-          </p>
-          <p className="text-[20px] font-black text-white mt-1 leading-tight">
-            Kisa w ap chèche jodi a?
-          </p>
-        </div>
-
-        {/* Search bar */}
-        <button type="button" onClick={() => navigate("/search")}
-          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all active:scale-[0.98]"
-          style={{ background: CARD, borderColor: "#2a3548" }}>
-          <span className="text-slate-500 text-base">🔍</span>
-          <span className="text-sm text-slate-500 flex-1 text-left">Djòb, travayè, sèvis...</span>
-          <span className="text-[10px] font-black text-amber-400 px-2.5 py-1 rounded-lg"
-            style={{ background: `${GOLD}18` }}>
-            Chèche
-          </span>
-        </button>
-
-        {/* Stories pill */}
-        <div>
-          <button type="button" onClick={() => setStoriesOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all active:scale-95"
-            style={{ background: CARD, borderColor: "#2a3548" }}>
-            <span className="text-sm">📖</span>
-            <span className="text-[12px] font-black text-slate-300">Stories</span>
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse ml-0.5" />
-          </button>
+      {/* ── GREETING + AVAILABILITY ──────────────────────────────── */}
+      <div className="px-4 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] text-slate-400 font-medium leading-none">
+              {greeting}{firstName ? `, ${firstName}` : ""} 👋
+            </p>
+            <p className="text-[20px] font-black text-white mt-1 leading-tight">
+              {isEmployer ? "Jere ekip ou jodi a" : "Kisa w ap chèche jodi a?"}
+            </p>
+          </div>
+          {!isEmployer && (
+            <button type="button" onClick={() => setAvailable(a => !a)}
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border mt-1 transition-all active:scale-95"
+              style={{
+                background:   available ? '#052e16' : `${CARD}`,
+                borderColor:  available ? '#16a34a' : BORDER,
+              }}>
+              <span className={`w-2 h-2 rounded-full ${available ? 'bg-green-400 animate-pulse' : 'bg-slate-600'}`} />
+              <span className={`text-[10px] font-black ${available ? 'text-green-400' : 'text-slate-500'}`}>
+                {available ? 'Disponib' : 'Okipe'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── SERVICES NEAR YOU — compact 4-col grid ─────────────── */}
-      <div className="px-4 mb-6">
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2.5">
-          ⚡ Sèvis Pre Ou
-        </p>
-        <div className="grid grid-cols-4 gap-2">
-          {SERVICES.map(s => (
-            <button key={s.label} type="button" onClick={() => navigate(s.path)}
-              className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl border transition-all active:scale-95"
-              style={{ background: CARD, borderColor: BORDER }}>
-              <span className="text-[17px] leading-none">{s.icon}</span>
-              <span className="text-[7.5px] font-black text-slate-400 text-center leading-tight px-0.5">
-                {s.label}
-              </span>
+      {/* ── 5-ITEM QUICK NAV (horizontal scroll) ─────────────────── */}
+      <div className="px-4 mb-5">
+        <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+          {quickNav.map(({ e, l, p }) => (
+            <button key={l} type="button" onClick={() => navigate(p)}
+              className="shrink-0 flex flex-col items-center gap-1 pt-3 pb-2.5 rounded-2xl border text-[9px] font-black text-white active:scale-95 transition"
+              style={{ background: CARD, borderColor: BORDER, minWidth: 62 }}>
+              <span className="text-[19px] leading-none">{e}</span>
+              <span className="px-1 text-center leading-tight">{l}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── JOBS NEAR YOU — workers only, hidden when empty ────── */}
+      {/* ── SEARCH BAR ────────────────────────────────────────────── */}
+      <div className="px-4 mb-4">
+        <button type="button" onClick={() => navigate("/search")}
+          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all active:scale-[0.98]"
+          style={{ background: CARD, borderColor: "#2a3548" }}>
+          <span className="text-slate-500 text-base">🔍</span>
+          <span className="text-sm text-slate-500 flex-1 text-left">
+            {isEmployer ? "Chèche travayè, pwofesyon..." : "Djòb, sèvis, opòtinite..."}
+          </span>
+          <span className="text-[10px] font-black text-amber-400 px-2.5 py-1 rounded-lg"
+            style={{ background: `${GOLD}18` }}>
+            Chèche
+          </span>
+        </button>
+      </div>
+
+      {/* ── STORIES ───────────────────────────────────────────────── */}
+      <div className="px-4 mb-5">
+        <button type="button" onClick={() => setStoriesOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all active:scale-95"
+          style={{ background: CARD, borderColor: "#2a3548" }}>
+          <span className="text-sm">📖</span>
+          <span className="text-[12px] font-black text-slate-300">Stories</span>
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse ml-0.5" />
+        </button>
+      </div>
+
+      {/* ── RECOMMENDED JOBS (workers only) ───────────────────────── */}
       {!isEmployer && (loading || topJobs.length > 0) && (
         <div className="px-4 mb-6">
           <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">💼 Djòb Pre Ou</p>
-            <button type="button" onClick={() => navigate("/jobs")}
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">⭐ Travay Rekòmande</p>
+            <button type="button" onClick={() => navigate("/search")}
               className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
               Wè Tout <ChevronRight className="w-3 h-3" />
             </button>
@@ -245,23 +427,241 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
         </div>
       )}
 
-      {/* ── WORKERS NEAR YOU — employers only, hidden when empty ─ */}
-      {isEmployer && workerMembers.length > 0 && (
+      {/* ── NEARBY JOBS CTA (workers only) ────────────────────────── */}
+      {!isEmployer && (
         <div className="px-4 mb-6">
           <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">👷 Travayè Pre Ou</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">📍 Travay Pre Ou</p>
+            <button type="button" onClick={() => navigate("/search")}
+              className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
+              Chèche <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+          <button type="button" onClick={() => navigate("/search")}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border active:scale-[0.98] transition"
+            style={{ background: CARD, borderColor: BORDER }}>
+            <span className="text-2xl">📍</span>
+            <div className="flex-1 text-left">
+              <p className="text-[12px] font-black text-white">Chèche travay nan {city}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Travay disponib bò kote ou</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
+          </button>
+        </div>
+      )}
+
+      {/* ── RECENT PAYMENTS (workers only) ────────────────────────── */}
+      {!isEmployer && (
+        <div className="px-4 mb-6">
+          <div className="flex items-center justify-between mb-2.5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">💰 Pèman Resan</p>
+            <button type="button" onClick={() => navigate("/wallet")}
+              className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
+              Bous <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="p-4 rounded-2xl border flex items-center justify-between"
+            style={{ background: CARD, borderColor: BORDER }}>
+            <div>
+              <p className="text-[13px] font-black text-white">Wè tout pèman ou yo</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Revni, salè, transfè</p>
+            </div>
+            <button type="button" onClick={() => navigate("/wallet")}
+              className="text-[11px] font-black px-3 py-1.5 rounded-xl active:scale-95 transition"
+              style={{ background: `${GOLD}22`, color: GOLD }}>
+              Ouvri →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── UPCOMING WORK (workers only) ──────────────────────────── */}
+      {!isEmployer && (
+        <div className="px-4 mb-6">
+          <div className="flex items-center justify-between mb-2.5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">📅 Travay Pwochèn</p>
+            <button type="button" onClick={() => navigate("/booking")}
+              className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
+              Orè <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="py-8 rounded-2xl border text-center"
+            style={{ background: CARD, borderColor: BORDER }}>
+            <p className="text-2xl mb-2">📅</p>
+            <p className="text-[12px] font-black text-slate-400">Pa gen travay pwograme</p>
+            <p className="text-[10px] text-slate-600 mt-0.5">Aksepte yon ofèt pou wè li isit la</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── RECOMMENDED WORKERS (employers only) ─────────────────── */}
+      {isEmployer && (
+        <div className="px-4 mb-6">
+          <div className="flex items-center justify-between mb-2.5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">⭐ Travayè Rekòmande</p>
             <button type="button" onClick={() => navigate("/search")}
               className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
               Wè Tout <ChevronRight className="w-3 h-3" />
             </button>
           </div>
-          <div className="space-y-2">
-            {workerMembers.map((w, i) => (
-              <WorkerListCard key={w._id || w.id || i} worker={w} navigate={navigate} />
+          {workerMembers.length > 0 ? (
+            <div className="space-y-2">
+              {workerMembers.map((w, i) => (
+                <WorkerListCard key={w._id || w.id || i} worker={w} navigate={navigate} />
+              ))}
+            </div>
+          ) : (
+            <button type="button" onClick={() => navigate("/search")}
+              className="w-full py-6 rounded-2xl border text-center active:scale-[0.98] transition"
+              style={{ background: CARD, borderColor: BORDER }}>
+              <p className="text-2xl mb-1">👷</p>
+              <p className="text-[12px] font-black text-slate-400">Chèche travayè disponib</p>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── SERVICES GRID (workers only) ──────────────────────────── */}
+      {!isEmployer && (
+        <div className="px-4 mb-6">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2.5">
+            ⚡ Sèvis Pre Ou
+          </p>
+          <div className="grid grid-cols-4 gap-2">
+            {SERVICES.map(s => (
+              <button key={s.label} type="button" onClick={() => navigate(s.path)}
+                className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl border transition-all active:scale-95"
+                style={{ background: CARD, borderColor: BORDER }}>
+                <span className="text-[17px] leading-none">{s.icon}</span>
+                <span className="text-[7.5px] font-black text-slate-400 text-center leading-tight px-0.5">
+                  {s.label}
+                </span>
+              </button>
             ))}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// GENERIC ROLE DASHBOARD — config-driven for all business roles
+// ════════════════════════════════════════════════════════════════
+function GenericRoleDashboard({ user, roleKey, navigate }) {
+  const config     = getRoleConfig(roleKey);
+  const { subtitle, widgets } = config.dashboard;
+  const firstName  = user?.name?.split(" ")[0] || "";
+  const accent     = ROLE_ACCENT[roleKey] || GOLD;
+  const hour       = new Date().getHours();
+  const salutation = hour >= 5 && hour < 12 ? "Bonjou" : "Bonswa";
+  const quickActions = ROLE_QUICK_ACTIONS[roleKey] || [];
+
+  return (
+    <div className="pb-28" style={{ background: BG }}>
+
+      {/* ── HEADER ─────────────────────────────────────────── */}
+      <div className="px-4 pt-5 pb-4">
+        <span className="inline-block text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full mb-2"
+          style={{ background: `${accent}22`, color: accent }}>
+          {config.label}
+        </span>
+        <p className="text-[13px] text-slate-400 font-medium leading-none">
+          {salutation}{firstName ? `, ${firstName}` : ""} 👋
+        </p>
+        <p className="text-[20px] font-black text-white mt-1 leading-tight">{subtitle}</p>
+      </div>
+
+      {/* ── KPI WIDGETS ────────────────────────────────────── */}
+      <div className="px-4 mb-5">
+        <div className="grid grid-cols-3 gap-2">
+          {widgets.map(w => (
+            <div key={w.id} className="flex flex-col items-center justify-center p-3 rounded-2xl border text-center"
+              style={{ background: CARD, borderColor: BORDER }}>
+              <p className="text-[24px] font-black leading-none" style={{ color: accent }}>—</p>
+              <p className="text-[8px] font-bold text-slate-500 mt-1 leading-tight px-1">{w.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── QUICK NAV (horizontal scroll, role-specific) ────── */}
+      {quickActions.length > 0 && (
+        <div className="px-4 mb-5">
+          <div className="flex gap-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+            {quickActions.map(({ e, l, p }) => (
+              <button key={l} type="button" onClick={() => navigate(p)}
+                className="shrink-0 flex flex-col items-center gap-1 pt-3 pb-2.5 rounded-2xl border text-[9px] font-black text-white active:scale-95 transition"
+                style={{ background: CARD, borderColor: BORDER, minWidth: 62 }}>
+                <span className="text-[19px] leading-none">{e}</span>
+                <span className="px-1 text-center leading-tight">{l}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── SEARCH ─────────────────────────────────────────── */}
+      <div className="px-4 mb-5">
+        <button type="button" onClick={() => navigate("/search")}
+          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all active:scale-[0.98]"
+          style={{ background: CARD, borderColor: "#2a3548" }}>
+          <span className="text-slate-500 text-base">🔍</span>
+          <span className="text-sm text-slate-500 flex-1 text-left">{config.searchBehavior.placeholder}</span>
+          <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
+            style={{ background: `${accent}20`, color: accent }}>
+            Chèche
+          </span>
+        </button>
+      </div>
+
+      {/* ── 4-COLUMN ICON GRID (role-specific actions) ─────── */}
+      {quickActions.length > 0 && (
+        <div className="px-4 mb-6">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2.5">⚡ Aksyon Rapid</p>
+          <div className="grid grid-cols-4 gap-2">
+            {quickActions.map(({ e, l, p }) => (
+              <button key={l + "-grid"} type="button" onClick={() => navigate(p)}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl border active:scale-95 transition"
+                style={{ background: CARD, borderColor: BORDER }}>
+                <span className="text-[20px] leading-none">{e}</span>
+                <span className="text-[8px] font-black text-slate-400 text-center leading-tight px-0.5">{l}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── RECRUIT WORKERS CTA ────────────────────────────── */}
+      <div className="px-4 mb-6">
+        <div className="p-4 rounded-2xl border" style={{ background: CARD, borderColor: BORDER }}>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">👷 Rekrite Travayè</p>
+          <p className="text-[11px] text-slate-400 mb-3">Jwenn travayè eksperyanse pou biznis ou a.</p>
+          <button type="button" onClick={() => navigate("/search")}
+            className="w-full py-2.5 rounded-xl text-[12px] font-black text-slate-950 active:scale-95 transition"
+            style={{ background: GOLD }}>
+            Chèche Travayè →
+          </button>
+        </div>
+      </div>
+
+      {/* ── SHARED TOOLS ───────────────────────────────────── */}
+      <div className="px-4 mb-6">
+        <div className="flex gap-2">
+          {[
+            { e: "💬", l: "Mesaj",  p: "/chat"          },
+            { e: "💰", l: "Bous",   p: "/wallet"        },
+            { e: "🔔", l: "Notif",  p: "/notifications" },
+          ].map(({ e, l, p }) => (
+            <button key={p} type="button" onClick={() => navigate(p)}
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-2xl border text-[10px] font-black text-white active:scale-95 transition"
+              style={{ background: CARD, borderColor: BORDER }}>
+              <span className="text-lg">{e}</span>
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -396,6 +796,16 @@ export default function Dashboard() {
           : <EnterpriseContent tab={enterpriseTab} user={user} />}
       </div>
     );
+  }
+
+  // ── Business roles with config-driven dashboards ──────────────
+  const GENERIC_ROLES = new Set([
+    "hotel", "restaurant", "hospital", "clinic",
+    "tourism", "rental", "office", "service_provider",
+    "marketplace", "admin", "super_admin",
+  ]);
+  if (GENERIC_ROLES.has(roleKey)) {
+    return <GenericRoleDashboard user={user} roleKey={roleKey} navigate={navigate} />;
   }
 
   // ── Main home (workers + employers) ───────────────────────────

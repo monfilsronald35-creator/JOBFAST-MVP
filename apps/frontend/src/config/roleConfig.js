@@ -733,6 +733,67 @@ const ROLE_CONFIGS = {
     },
   },
 
+  // ─── MARKETPLACE ───────────────────────────────────────────
+  marketplace: {
+    label:       "Makèt",
+    description: "Vann pwodwi ak jere boutik anliy",
+    icon:        ShoppingBag,
+    color:       "emerald",
+    defaultPath: "/dashboard",
+
+    nav: [
+      { label: "Tablo",      path: "/dashboard",  icon: Home,          end: true },
+      { label: "Pwodwi",     path: "/products",   icon: ShoppingBag },
+      { label: "Kòmand",     path: "/orders",     icon: ClipboardList },
+      { label: "Kliyan",     path: "/customers",  icon: Users },
+      { label: "Rapò",       path: "/reports",    icon: BarChart2 },
+    ],
+
+    dashboard: {
+      greeting: "Bonjou, Makèt!",
+      subtitle: "Jere pwodwi, kòmand, ak kliyan ou yo.",
+      sections: [
+        { id: "products",   label: "Pwodwi",       icon: "📦", priority: 1 },
+        { id: "orders",     label: "Kòmand",       icon: "🛒", priority: 2 },
+        { id: "customers",  label: "Kliyan",       icon: "👥", priority: 3 },
+        { id: "shipping",   label: "Ekspedisyon",  icon: "🚚", priority: 4 },
+        { id: "promotions", label: "Pwomosyon",    icon: "📢", priority: 5 },
+      ],
+      widgets: [
+        { id: "total_products",  label: "Pwodwi",         type: "counter" },
+        { id: "pending_orders",  label: "Kòmand Annatant", type: "counter" },
+        { id: "total_customers", label: "Kliyan",          type: "counter" },
+      ],
+    },
+
+    permissions: {
+      read:     ["products", "orders", "customers", "reviews", "reports"],
+      create:   ["product", "promotion", "message"],
+      update:   ["own_profile", "product", "order_status"],
+      delete:   ["product"],
+      approve:  ["order"],
+      reject:   ["order"],
+      moderate: [],
+      suspend:  [],
+    },
+
+    visibility: {
+      widgets:         ["total_products", "pending_orders", "total_customers"],
+      navActions:      ["add_product", "manage_orders"],
+      filters:         ["category", "price", "rating", "availability"],
+      categories:      ["marketplace", "business_directory"],
+      profileSections: ["shop_info", "products", "reviews", "policies"],
+      reports:         ["sales", "orders", "revenue"],
+      analytics:       ["sales_trends", "top_products", "customer_retention"],
+    },
+
+    searchBehavior: {
+      defaultType:  "workers",
+      placeholder:  "Chèche pwodwi, boutik, mak...",
+      filters:      ["category", "price", "rating", "location"],
+    },
+  },
+
   // ─── ADMIN ─────────────────────────────────────────────────
   admin: {
     label:       "Admin",

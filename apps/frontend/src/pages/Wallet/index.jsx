@@ -33,7 +33,129 @@ const MOCK_ESCROW = [
   { id:'e3', title:'Electrical Work',      amount:'$800',   employer:'Paul G.',          worker:'Ronald Monfils', status:'completed', color:'text-slate-400', dot:'bg-slate-500' },
 ];
 
-const TX_FILTERS = ['All','Income','Expenses','Marketplace','Reservations','Salary','Transfer','Crypto'];
+// ── Role-specific transaction filter tabs ────────────────────────
+// Each entry: { label: display text, type: API/mock type key }
+// 'all' type = no filter applied
+const ROLE_TX_FILTERS = {
+  worker: [
+    { label: 'Tout',    type: 'all'      },
+    { label: 'Revni',   type: 'income'   },
+    { label: 'Depans',  type: 'expenses' },
+    { label: 'Salè',    type: 'salary'   },
+    { label: 'Transfè', type: 'transfer' },
+    { label: 'Crypto',  type: 'crypto'   },
+  ],
+  user: [
+    { label: 'Tout',    type: 'all'      },
+    { label: 'Revni',   type: 'income'   },
+    { label: 'Depans',  type: 'expenses' },
+    { label: 'Salè',    type: 'salary'   },
+    { label: 'Transfè', type: 'transfer' },
+  ],
+  service_provider: [
+    { label: 'Tout',         type: 'all'         },
+    { label: 'Revni Kliyan', type: 'income'      },
+    { label: 'Depans',       type: 'expenses'    },
+    { label: 'Fakti',        type: 'marketplace' },
+    { label: 'Transfè',      type: 'transfer'    },
+  ],
+  company: [
+    { label: 'Tout',       type: 'all'         },
+    { label: 'Salè',       type: 'salary'      },
+    { label: 'Fèy Pèman',  type: 'income'      },
+    { label: 'Fakti',      type: 'marketplace' },
+    { label: 'Depans',     type: 'expenses'    },
+    { label: 'Transfè',    type: 'transfer'    },
+  ],
+  business: [
+    { label: 'Tout',       type: 'all'         },
+    { label: 'Salè',       type: 'salary'      },
+    { label: 'Fèy Pèman',  type: 'income'      },
+    { label: 'Fakti',      type: 'marketplace' },
+    { label: 'Depans',     type: 'expenses'    },
+    { label: 'Transfè',    type: 'transfer'    },
+  ],
+  enterprise: [
+    { label: 'Tout',     type: 'all'         },
+    { label: 'Salè',     type: 'salary'      },
+    { label: 'Kontra',   type: 'income'      },
+    { label: 'Fakti',    type: 'marketplace' },
+    { label: 'Depans',   type: 'expenses'    },
+    { label: 'Transfè',  type: 'transfer'    },
+  ],
+  hotel: [
+    { label: 'Tout',        type: 'all'         },
+    { label: 'Rezèvasyon',  type: 'reservation' },
+    { label: 'Ranbousman',  type: 'income'      },
+    { label: 'Fakti',       type: 'marketplace' },
+    { label: 'Sèvis',       type: 'salary'      },
+    { label: 'Depans',      type: 'expenses'    },
+  ],
+  restaurant: [
+    { label: 'Tout',      type: 'all'         },
+    { label: 'Kòmand',    type: 'marketplace' },
+    { label: 'Livrezon',  type: 'transfer'    },
+    { label: 'Pwant',     type: 'income'      },
+    { label: 'Founi',     type: 'expenses'    },
+    { label: 'Salè',      type: 'salary'      },
+  ],
+  hospital: [
+    { label: 'Tout',      type: 'all'         },
+    { label: 'Randevou',  type: 'reservation' },
+    { label: 'Asirans',   type: 'income'      },
+    { label: 'Salè',      type: 'salary'      },
+    { label: 'Ekipman',   type: 'marketplace' },
+    { label: 'Depans',    type: 'expenses'    },
+  ],
+  clinic: [
+    { label: 'Tout',      type: 'all'         },
+    { label: 'Randevou',  type: 'reservation' },
+    { label: 'Konsilta',  type: 'income'      },
+    { label: 'Salè',      type: 'salary'      },
+    { label: 'Depans',    type: 'expenses'    },
+  ],
+  tourism: [
+    { label: 'Tout',       type: 'all'         },
+    { label: 'Tou',        type: 'income'      },
+    { label: 'Rezèvasyon', type: 'reservation' },
+    { label: 'Transpò',    type: 'transfer'    },
+    { label: 'Kòmisyon',   type: 'marketplace' },
+    { label: 'Depans',     type: 'expenses'    },
+  ],
+  rental: [
+    { label: 'Tout',    type: 'all'         },
+    { label: 'Lwaye',   type: 'income'      },
+    { label: 'Depo',    type: 'salary'      },
+    { label: 'Kontra',  type: 'marketplace' },
+    { label: 'Depans',  type: 'expenses'    },
+  ],
+  office: [
+    { label: 'Tout',       type: 'all'         },
+    { label: 'Salè',       type: 'salary'      },
+    { label: 'Sèvis Biwo', type: 'marketplace' },
+    { label: 'Fakti',      type: 'income'      },
+    { label: 'Depans',     type: 'expenses'    },
+  ],
+  marketplace: [
+    { label: 'Tout',         type: 'all'         },
+    { label: 'Kòmand',       type: 'marketplace' },
+    { label: 'Ekspedisyon',  type: 'transfer'    },
+    { label: 'Pèman Vandè',  type: 'salary'      },
+    { label: 'Ranbousman',   type: 'income'      },
+    { label: 'Depans',       type: 'expenses'    },
+  ],
+};
+
+const DEFAULT_TX_FILTERS = [
+  { label: 'Tout',    type: 'all'      },
+  { label: 'Revni',   type: 'income'   },
+  { label: 'Depans',  type: 'expenses' },
+  { label: 'Transfè', type: 'transfer' },
+];
+
+function getRoleTxFilters(role) {
+  return ROLE_TX_FILTERS[role] || DEFAULT_TX_FILTERS;
+}
 
 const DEPOSIT_METHODS = [
   { id:'card',     icon:'💳', label:'Debit / Credit Card' },
@@ -761,8 +883,11 @@ export default function WalletPage() {
   const { user }   = useAuth();
   const navigate   = useNavigate();
 
+  const role        = user?.role || 'worker';
+  const txFilterDefs = getRoleTxFilters(role);
+
   const [currencyIdx, setCurrencyIdx] = useState(0);
-  const [txFilter,    setTxFilter]    = useState('All');
+  const [txFilter,    setTxFilter]    = useState('all');
   const [panel,       setPanel]       = useState(null); // 'send'|'receive'|'deposit'|'withdraw'|'pay'|'invoice'|'exchange'|'escrow'
   const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
   const [securityState, setSecurity]  = useState({ pin: true, faceId: true, fingerprint: true, tfa: true });
@@ -780,8 +905,8 @@ export default function WalletPage() {
   const currentBalance = MOCK_BALANCES[currencyIdx];
 
   const filteredTx = transactions.filter(tx => {
-    if (txFilter === 'All') return true;
-    return tx.type === txFilter.toLowerCase();
+    if (txFilter === 'all') return true;
+    return tx.type === txFilter;
   });
 
   const QUICK_ACTIONS = [
@@ -872,11 +997,11 @@ export default function WalletPage() {
       {/* ── Recent Transactions ───────────────────────────────── */}
       <SectionTitle>💰 Recent Transactions</SectionTitle>
 
-      {/* filter tabs */}
+      {/* role-specific filter tabs */}
       <div className="px-4 mb-3 overflow-x-auto scrollbar-hide">
         <div className="flex gap-2">
-          {TX_FILTERS.map(f => (
-            <Pill key={f} label={f} active={txFilter === f} onClick={() => setTxFilter(f)} />
+          {txFilterDefs.map(f => (
+            <Pill key={f.type} label={f.label} active={txFilter === f.type} onClick={() => setTxFilter(f.type)} />
           ))}
         </div>
       </div>
