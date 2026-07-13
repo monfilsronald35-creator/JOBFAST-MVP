@@ -37,9 +37,20 @@ const MOCK = {
     { id:'j4', title:'Infirmière Certifiée',  sub:'Hôpital Général · Port-au-Prince',meta:'$800/sem · Nuit',         icon:'👩‍⚕️', badge:null  },
   ],
   worker: [
-    { id:'w1', title:'Jean-Pierre M.',   sub:'Électricien · 8 ans expérience',  meta:'★ 4.9 · Disponib',  icon:'⚡', badge:'Top'    },
-    { id:'w2', title:'Marie Celeste R.', sub:'Infirmière · 5 ans',              meta:'★ 4.8 · Disponib',  icon:'👩‍⚕️', badge:null  },
-    { id:'w3', title:'Carlos Mendez',    sub:'Chef / Kuyinye · 12 ans',         meta:'★ 5.0 · Disponib',  icon:'👨‍🍳', badge:'Pro'  },
+    { id:'w1', title:'Jean-Pierre M.',   sub:'Électricien · 8 ans expérience',        meta:'★ 4.9 · Disponib',  icon:'⚡',  badge:'Top'      },
+    { id:'w2', title:'Marie Celeste R.', sub:'Infirmière · 5 ans',                    meta:'★ 4.8 · Disponib',  icon:'👩‍⚕️',badge:null       },
+    { id:'w3', title:'Carlos Mendez',    sub:'Chef / Kuyinye · 12 ans',               meta:'★ 5.0 · Disponib',  icon:'👨‍🍳',badge:'Pro'      },
+    // Asistan workers
+    { id:'w4', title:'Claudette V.',     sub:'Asistan Menaj · 3 ans',                 meta:'★ 4.7 · Disponib',  icon:'🤝', badge:'Disponib'  },
+    { id:'w5', title:'Louis Bernard T.', sub:'Asistan Biwo / Kouri Komisyon · 2 ans', meta:'★ 4.5 · Disponib',  icon:'🤝', badge:null        },
+    { id:'w6', title:'Rose-Marie J.',    sub:'Asistan Pèsonèl / Ajoudante · 4 ans',  meta:'★ 4.8 · Disponib',  icon:'🤝', badge:'Top'       },
+    { id:'w7', title:'Édouard P.',       sub:'Asistan Magazen · 1 an',                meta:'★ 4.3 · Disponib',  icon:'🤝', badge:null        },
+    // Construction workers
+    { id:'w8', title:'Moïse Jean-Gilles',sub:'Konstriksyon / Mason · 9 ans',          meta:'★ 4.9 · Disponib',  icon:'🏗️', badge:'Top'       },
+    { id:'w9', title:'Dieudonne F.',     sub:'Konstriksyon / Karpantye · 6 ans',       meta:'★ 4.7 · Disponib',  icon:'🏗️', badge:null        },
+    { id:'w10',title:'Pierre-Louis R.', sub:'Konstriksyon / Electricite · 11 ans',    meta:'★ 5.0 · Disponib',  icon:'🏗️', badge:'Pro'       },
+    { id:'w11',title:'Anita S.',        sub:'Konstriksyon / Peintire · 5 ans',        meta:'★ 4.6 · Disponib',  icon:'🏗️', badge:null        },
+    { id:'w12',title:'Marc Antoine B.', sub:'Konstriksyon / Plonbye · 8 ans',         meta:'★ 4.8 · Disponib',  icon:'🏗️', badge:'Disponib'  },
   ],
   company: [
     { id:'c1', title:'MATCO Construction', sub:'413 branches · 29,481 employees', meta:'Verified · Enterprise', icon:'🏗', badge:'Top'  },
@@ -198,9 +209,9 @@ export default function UniversalSearch() {
   const inputRef          = useRef(null);
 
   const [query,       setQuery]       = useState(params.get('q') || '');
-  const [activeType,  setActiveType]  = useState('all');
+  const [activeType,  setActiveType]  = useState(params.get('type') || 'all');
   const [results,     setResults]     = useState(null);
-  const [loading,     setLoading]     = useState(false);
+  const [loading,     setLoading]     = useState(!!params.get('q'));
   const [hasSearched, setHasSearched] = useState(!!params.get('q'));
   const [recent,      setRecent]      = useState(RECENT_DEFAULT);
 

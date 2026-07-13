@@ -1084,6 +1084,7 @@ export const ROLE_PROFESSIONS = Object.freeze({
   worker: [
     "construction", "plumber", "chef", "cleaning",
     "delivery", "taxi", "nurse", "videographer", "designer",
+    "assistant",
   ],
   tourism: [
     "guide", "resort", "activity", "transport",

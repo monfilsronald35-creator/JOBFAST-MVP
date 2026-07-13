@@ -312,10 +312,10 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
   const topJobs = jobs.slice(0, 3);
 
   const WORKER_NAV = [
-    { e:"🔍", l:"Jwenn Travay",   p:"/search"      },
-    { e:"📅", l:"Orè Jodi a",    p:"/booking"     },
-    { e:"🤝", l:"Asistans / Èd", p:"/help"        },
-    { e:"👥", l:"Ajoudante",     p:"/assistants"  },
+    { e:"🔍", l:"Jwenn Travay",   p:"/search"                         },
+    { e:"📅", l:"Orè Jodi a",    p:"/booking"                        },
+    { e:"🤝", l:"Asistans / Èd", p:"/search?type=user&q=asistan"    },
+    { e:"🏗️", l:"Konstriksyon",  p:"/search?type=user&q=construction"},
   ];
 
   const EMPLOYER_NAV = [
