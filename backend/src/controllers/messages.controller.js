@@ -1,6 +1,7 @@
 import Message from '../models/message.model.js';
 import User    from '../models/user.model.js';
 import mongoose from 'mongoose';
+import { getIO } from '../utils/io.js';
 
 /** Deterministic conversation ID: sorted pair of user IDs */
 function conversationId(a, b) {
@@ -152,6 +153,20 @@ export async function sendMessage(req, res) {
       clientId:       clientId || undefined,
       status:         'sent',
     });
+
+    // Notify receiver in real-time via their personal socket room
+    try {
+      getIO()?.to(`user:${receiverId}`).emit('message:receive', {
+        conversationId: convId,
+        senderId:       uid,
+        receiverId,
+        message:        msg.message,
+        type:           msg.type,
+        clientId:       msg.clientId,
+        _id:            String(msg._id),
+        createdAt:      msg.createdAt,
+      });
+    } catch (_) {}
 
     res.status(201).json({ success: true, message: msg });
   } catch (err) {

@@ -6,6 +6,7 @@ import { Server as SocketIO } from 'socket.io';
 import mongoose from 'mongoose';
 import app from './src/app.js';
 import { env } from './src/config/env.js';
+import { setIO } from './src/utils/io.js';
 
 const PORT = env.PORT || 5000;
 
@@ -69,6 +70,7 @@ io.on('connection', (socket) => {
 });
 
 // Export io so routes can push events (e.g. notifications, payment webhooks)
+setIO(io);
 export { io };
 
 async function start() {

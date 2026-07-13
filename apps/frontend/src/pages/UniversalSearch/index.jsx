@@ -135,28 +135,38 @@ function SearchInput({ value, onChange, inputRef }) {
 }
 
 // ── Result card inside a grouped section ──────────────────────
-function ResultItem({ item, isLast, onClick }) {
+function ResultItem({ item, isLast, onClick, onMessage }) {
   return (
     <>
-      <div onClick={onClick} className="flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors hover:bg-white/[0.015] active:bg-white/[0.025]">
-        <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-xl shrink-0"
-          style={{ background: BORDER }}>
-          {item.icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <p className="text-[13px] font-bold text-white truncate">{item.title}</p>
-            {item.badge && (
-              <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background:`${GOLD}20`, color: GOLD, border:`1px solid ${GOLD}35` }}>
-                {item.badge}
-              </span>
-            )}
+      <div className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.015] active:bg-white/[0.025]">
+        <div onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+          <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-xl shrink-0"
+            style={{ background: BORDER }}>
+            {item.icon}
           </div>
-          <p className="text-[11px] text-slate-400 truncate">{item.sub}</p>
-          <p className="text-[10px] text-slate-600 mt-0.5">{item.meta}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="text-[13px] font-bold text-white truncate">{item.title}</p>
+              {item.badge && (
+                <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                  style={{ background:`${GOLD}20`, color: GOLD, border:`1px solid ${GOLD}35` }}>
+                  {item.badge}
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-400 truncate">{item.sub}</p>
+            <p className="text-[10px] text-slate-600 mt-0.5">{item.meta}</p>
+          </div>
         </div>
-        <Chevron />
+        {onMessage ? (
+          <button type="button" onClick={onMessage}
+            className="shrink-0 text-[10px] font-bold px-2.5 py-1.5 rounded-full transition-all active:scale-95"
+            style={{ background:`${GOLD}20`, color: GOLD, border:`1px solid ${GOLD}35` }}>
+            💬 Mesaj
+          </button>
+        ) : (
+          <div onClick={onClick} className="cursor-pointer"><Chevron /></div>
+        )}
       </div>
       {!isLast && <div className="h-px mx-4" style={{ background: BORDER }} />}
     </>
@@ -176,6 +186,27 @@ function itemRoute(typeId, item) {
 function ResultSection({ typeId, items, navigate }) {
   const info = ENTITY_TYPES.find(e => e.id === typeId);
   if (!info || !items?.length) return null;
+
+  const handleMessage = async (item) => {
+    try {
+      const res = await API.post('/messages/start', { targetUserId: item.id });
+      const { conversationId, participant } = res.data;
+      navigate('/chat', {
+        state: {
+          chatInfo: {
+            id:      conversationId,
+            name:    participant.name,
+            role:    participant.role,
+            avatar:  participant.avatar,
+            otherId: participant.id,
+          },
+        },
+      });
+    } catch (_) {
+      navigate('/chat');
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2.5">
@@ -195,7 +226,8 @@ function ResultSection({ typeId, items, navigate }) {
         style={{ background: CARD, border:`1px solid ${BORDER}` }}>
         {items.map((item, idx) => (
           <ResultItem key={item.id} item={item} isLast={idx === items.length - 1}
-            onClick={() => navigate(itemRoute(typeId, item))} />
+            onClick={() => navigate(itemRoute(typeId, item))}
+            onMessage={typeId === 'user' ? () => handleMessage(item) : undefined} />
         ))}
       </div>
     </div>
@@ -256,8 +288,8 @@ export default function UniversalSearch() {
 
       // Try real users search
       try {
-        const res = await API.get('/users', { params: { q: query }, timeout: 5000 });
-        const apiUsers = Array.isArray(res?.data?.data) ? res.data.data : Array.isArray(res?.data) ? res.data : [];
+        const res = await API.get('/search', { params: { q: query }, timeout: 5000 });
+        const apiUsers = Array.isArray(res?.data?.data?.items) ? res.data.data.items : Array.isArray(res?.data?.data) ? res.data.data : Array.isArray(res?.data) ? res.data : [];
         if (apiUsers.length > 0) {
           const mapped = apiUsers.map(u => ({
             id: u._id || u.id,

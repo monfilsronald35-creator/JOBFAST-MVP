@@ -5,7 +5,9 @@
 
 import express from "express";
 import crypto from "crypto";
+import mongoose from "mongoose";
 
+import User from "../models/user.model.js";
 import { usersDatabase } from "../controllers/register.controller.js";
 import {
   normalizeLocation,
@@ -224,7 +226,7 @@ const SEARCHABLE_ROLES = new Set([
   'tourism', 'hospital', 'clinic', 'service_provider',
 ]);
 
-router.get("/nearby-roles", (req, res) => {
+router.get("/nearby-roles", async (req, res) => {
   const { lat, lng, radius = "10", roles = "" } = req.query;
 
   const userLat = parseFloat(lat);
@@ -250,25 +252,33 @@ router.get("/nearby-roles", (req, res) => {
 
   const roleSet = new Set(requestedRoles);
 
-  const results = [];
-  for (const user of usersDatabase.values()) {
-    if (!roleSet.has(user.role)) continue;
+  // Try MongoDB first (persistent), fall back to in-memory
+  let sourceUsers = [];
+  if (mongoose.connection.readyState === 1) {
+    const query = { role: { $in: requestedRoles } };
+    sourceUsers = await User.find(query)
+      .select('-password -notifications -__v')
+      .limit(500)
+      .lean();
+  } else {
+    sourceUsers = Array.from(usersDatabase.values())
+      .filter(u => roleSet.has(u.role))
+      .map(u => { const { password, notifications: _n, ...safe } = u; return safe; });
+  }
 
+  const results = [];
+  for (const user of sourceUsers) {
     const loc = user.location?.coordinates;
     if (!loc?.latitude || !loc?.longitude) continue;
-
     const dist = calculateDistanceKm(userLat, userLng, loc.latitude, loc.longitude);
     if (dist === null || dist > maxRadius) continue;
-
-    const { password, notifications: _n, ...safe } = user;
     results.push({
-      ...safe,
+      ...user,
       distanceKm: dist,
       availability: user.marketplaceData?.availability ?? user.availability ?? null,
     });
   }
 
-  // Sort by distance ascending
   results.sort((a, b) => a.distanceKm - b.distanceKm);
 
   return res.json({ success: true, total: results.length, data: results });

@@ -7,7 +7,7 @@
 import React, {
   useState, useRef, useEffect, useCallback, useMemo, memo,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   Mic, MicOff, Send, Phone, Video, ArrowLeft,
   Check, CheckCheck, Clock, AlertCircle, WifiOff, RefreshCcw,
@@ -47,7 +47,7 @@ const MSG_TYPE = Object.freeze({
 });
 
 const FEATURE_FLAGS = Object.freeze({
-  SOCKET_MESSAGING: false,
+  SOCKET_MESSAGING: true,
   SEND_VIA_API:     true,
   TYPING_INDICATOR: false,
   READ_RECEIPTS:    true,
@@ -1144,11 +1144,35 @@ export default function ChatScreen() {
   const { user, socket }  = useAuth();
   const navigate          = useNavigate();
   const { id: urlChatId } = useParams();
+  const location          = useLocation();
+  const inboundChat       = location.state?.chatInfo ?? null;
   const { t }             = useTranslation();
   const userId            = user?._id ?? user?.id;
 
   const { conversations, loading, error, retry } = useConversations(userId);
   const [selectedChat, setSelectedChat]          = useState(null);
+
+  // Auto-open conversation from navigation state (e.g. from UniversalSearch "Mesaj" button)
+  useEffect(() => {
+    if (!inboundChat) return;
+    const chat = {
+      id:          inboundChat.id,
+      name:        inboundChat.name,
+      role:        inboundChat.role || '',
+      city:        inboundChat.city || '',
+      avatar:      inboundChat.avatar ||
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inboundChat.name || 'u')}`,
+      lastMessage: '',
+      time:        '',
+      unread:      0,
+      online:      false,
+      otherId:     inboundChat.otherId,
+    };
+    setSelectedChat(chat);
+    // Clear the state so a back-navigation doesn't re-open it
+    navigate(location.pathname, { replace: true, state: {} });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!urlChatId || !conversations.length) return;
