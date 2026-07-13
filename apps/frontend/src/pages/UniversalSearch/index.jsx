@@ -227,12 +227,25 @@ function ResultSection({ typeId, items, navigate }) {
         {items.map((item, idx) => (
           <ResultItem key={item.id} item={item} isLast={idx === items.length - 1}
             onClick={() => navigate(itemRoute(typeId, item))}
-            onMessage={typeId === 'user' ? () => handleMessage(item) : undefined} />
+            onMessage={typeId === 'user' && isRealId(item.id) ? () => handleMessage(item) : undefined} />
         ))}
       </div>
     </div>
   );
 }
+
+// MongoDB ObjectId validator — mock IDs like 'u1' fail this
+const isRealId = (id) => /^[a-f0-9]{24}$/i.test(String(id ?? ''));
+
+// Map a raw API user object to a result card item
+const mapApiUser = (u) => ({
+  id:    u._id || u.id,
+  title: u.name || 'Itilizatè',
+  sub:   `${u.profession || u.role || 'Worker'} · ${u.location?.city || ''}`,
+  meta:  `★ ${u.stats?.rating ?? u.reputationData?.avgRating ?? '5.0'} · ${u.stats?.totalJobs ?? 0} djòb`,
+  icon:  '👤',
+  badge: u.availability === 'available' ? 'Disponib' : null,
+});
 
 // ── Main component ────────────────────────────────────────────
 export default function UniversalSearch() {
@@ -250,17 +263,37 @@ export default function UniversalSearch() {
   // Focus on mount
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
 
-  // Debounced search — tries real API then merges with mock fallback
+  // Auto-browse real users when "Users" tab is active with no search query
   useEffect(() => {
-    if (!query.trim()) { setResults(null); setHasSearched(false); return; }
+    if (activeType !== 'user' || query.trim()) return;
+    setLoading(true);
+    setHasSearched(true);
+    API.get('/search', { params: { limit: 30 }, timeout: 8000 })
+      .then(res => {
+        const items = Array.isArray(res?.data?.data?.items) ? res.data.data.items
+          : Array.isArray(res?.data?.data) ? res.data.data
+          : [];
+        setResults({ user: items.map(mapApiUser) });
+      })
+      .catch(() => { setResults({ user: MOCK.user }); })
+      .finally(() => setLoading(false));
+  }, [activeType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced search — real API first; mock is fallback only for non-user types
+  useEffect(() => {
+    if (!query.trim()) {
+      if (activeType !== 'user') { setResults(null); setHasSearched(false); }
+      return;
+    }
     setHasSearched(true);
     setLoading(true);
     const timer = setTimeout(async () => {
       const q = query.toLowerCase();
 
-      // Filter mock data
+      // Filter mock data for all types EXCEPT user (user comes from real API only)
       const filtered = {};
       Object.entries(MOCK).forEach(([type, items]) => {
+        if (type === 'user') return; // never show mock users
         const matched = items.filter(it =>
           it.title.toLowerCase().includes(q) ||
           it.sub.toLowerCase().includes(q)   ||
@@ -286,28 +319,32 @@ export default function UniversalSearch() {
         }
       } catch (_) { /* keep mock jobs */ }
 
-      // Try real users search
+      // Real users search — REPLACE mock users, never mix
+      let userApiOk = false;
       try {
         const res = await API.get('/search', { params: { q: query }, timeout: 5000 });
-        const apiUsers = Array.isArray(res?.data?.data?.items) ? res.data.data.items : Array.isArray(res?.data?.data) ? res.data.data : Array.isArray(res?.data) ? res.data : [];
-        if (apiUsers.length > 0) {
-          const mapped = apiUsers.map(u => ({
-            id: u._id || u.id,
-            title: u.name,
-            sub: `${u.profession || u.role || 'Worker'} · ${u.location?.city || ''}`,
-            meta: `★ ${u.stats?.rating || '5.0'} · ${u.stats?.totalJobs || 0} jobs`,
-            icon: '👤',
-            badge: u.availability === 'available' ? 'Available' : null,
-          }));
-          filtered.user = [...mapped, ...(filtered.user || [])];
+        const apiUsers = Array.isArray(res?.data?.data?.items) ? res.data.data.items
+          : Array.isArray(res?.data?.data) ? res.data.data
+          : Array.isArray(res?.data) ? res.data
+          : [];
+        userApiOk = true;
+        if (apiUsers.length > 0) filtered.user = apiUsers.map(mapApiUser);
+        // If API worked but returned 0 users, don't add any user section
+      } catch (_) {
+        // API failed entirely — show mock users as fallback only
+        if (!userApiOk) {
+          const mockMatched = MOCK.user.filter(it =>
+            it.title.toLowerCase().includes(q) || it.sub.toLowerCase().includes(q)
+          );
+          if (mockMatched.length) filtered.user = mockMatched;
         }
-      } catch (_) { /* keep mock users */ }
+      }
 
       setResults(Object.keys(filtered).length ? filtered : {});
       setLoading(false);
     }, 350);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Displayed results based on active type filter
   const displayed = results
