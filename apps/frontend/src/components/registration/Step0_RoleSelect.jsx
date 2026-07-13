@@ -1,58 +1,123 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
-const ROLES = [
+const BG   = '#050B18';
+const CARD = '#0d1526';
+
+const ACCOUNT_TYPES = [
   {
-    id:    'worker',
-    icon:  '👷',
-    color: 'amber',
-    ring:  'hover:border-amber-500/60 focus-visible:ring-amber-400/50 group-hover:text-amber-400',
-    bg:    'group-hover:bg-amber-500/5',
+    id:    'personal',
+    icon:  '👤',
+    label: 'Kont Pèsonèl',
+    desc:  'Mwen vle jwenn travay oswa ofri sèvis kòm yon moun.',
+    accent:      '#FACC15',
+    borderIdle:  '#1F2937',
+    borderHover: 'rgba(250,204,21,0.45)',
+    bgHover:     'rgba(250,204,21,0.05)',
+    glow:        'rgba(250,204,21,0.12)',
   },
   {
-    id:    'employer',
+    id:    'business',
     icon:  '🏢',
-    color: 'blue',
-    ring:  'hover:border-blue-500/60 focus-visible:ring-blue-400/50 group-hover:text-blue-400',
-    bg:    'group-hover:bg-blue-500/5',
-  },
-  {
-    id:    'service_provider',
-    icon:  '🤝',
-    color: 'green',
-    ring:  'hover:border-green-500/60 focus-visible:ring-green-400/50 group-hover:text-green-400',
-    bg:    'group-hover:bg-green-500/5',
+    label: 'Kont Biznis',
+    desc:  'Mwen gen yon konpayi, restoran, otèl, magazen, klinik, elatriye.',
+    accent:      '#60a5fa',
+    borderIdle:  '#1F2937',
+    borderHover: 'rgba(96,165,250,0.45)',
+    bgHover:     'rgba(96,165,250,0.05)',
+    glow:        'rgba(96,165,250,0.12)',
   },
 ];
 
-export default function Step0_RoleSelect({ onSelect }) {
-  const { t } = useTranslation();
+export default function Step0_AccountType({ onSelect }) {
+  const [hovered, setHovered] = React.useState(null);
 
   return (
-    <div className="w-full space-y-3 mt-4">
-      {ROLES.map((role) => (
-        <button
-          key={role.id}
-          type="button"
-          onClick={() => onSelect(role)}
-          className={`group flex items-center gap-4 w-full px-5 py-4 bg-[#0f172a] rounded-2xl border border-slate-800 ${role.ring} transition focus-visible:outline-none focus-visible:ring-2`}
-        >
-          <span className="text-3xl shrink-0 leading-none">{role.icon}</span>
+    <div className="w-full mt-6 space-y-4">
+      <p className="text-center text-xs text-slate-500 uppercase tracking-widest font-bold mb-6">
+        Chwazi kalite kont ki pi bon pou ou
+      </p>
 
-          <div className={`flex-1 text-left transition ${role.bg}`}>
-            <p className="text-base font-bold text-white leading-tight">
-              {t(`registration.roles.${role.id}`)}
-            </p>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {t(`registration.roles.${role.id}_desc`)}
-            </p>
-          </div>
+      {ACCOUNT_TYPES.map((type) => {
+        const isHovered = hovered === type.id;
+        return (
+          <button
+            key={type.id}
+            type="button"
+            onClick={() => onSelect(type.id)}
+            onMouseEnter={() => setHovered(type.id)}
+            onMouseLeave={() => setHovered(null)}
+            onTouchStart={() => setHovered(type.id)}
+            onTouchEnd={() => setHovered(null)}
+            style={{
+              display:       'flex',
+              alignItems:    'center',
+              gap:           '16px',
+              width:         '100%',
+              padding:       '20px 20px',
+              borderRadius:  '20px',
+              border:        `1.5px solid ${isHovered ? type.borderHover : type.borderIdle}`,
+              background:    isHovered ? type.bgHover : CARD,
+              boxShadow:     isHovered ? `0 0 0 4px ${type.glow}` : 'none',
+              transition:    'all 0.18s ease',
+              cursor:        'pointer',
+              textAlign:     'left',
+            }}
+          >
+            {/* Icon circle */}
+            <div style={{
+              width:          '56px',
+              height:         '56px',
+              borderRadius:   '16px',
+              display:        'flex',
+              alignItems:     'center',
+              justifyContent: 'center',
+              background:     isHovered ? `${type.accent}18` : '#0f172a',
+              border:         `1.5px solid ${isHovered ? type.accent + '40' : '#1F2937'}`,
+              fontSize:       '26px',
+              flexShrink:     0,
+              transition:     'all 0.18s ease',
+            }}>
+              {type.icon}
+            </div>
 
-          <span className="text-slate-500 text-sm shrink-0 transition group-hover:translate-x-0.5">
-            →
-          </span>
-        </button>
-      ))}
+            {/* Text */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{
+                fontSize:   '17px',
+                fontWeight: 800,
+                color:      isHovered ? type.accent : '#f8fafc',
+                lineHeight: 1.2,
+                transition: 'color 0.18s ease',
+                marginBottom: '4px',
+              }}>
+                {type.label}
+              </p>
+              <p style={{
+                fontSize:   '12px',
+                color:      '#64748b',
+                lineHeight: 1.5,
+              }}>
+                {type.desc}
+              </p>
+            </div>
+
+            {/* Arrow */}
+            <span style={{
+              fontSize:   '18px',
+              color:      isHovered ? type.accent : '#334155',
+              flexShrink: 0,
+              transition: 'all 0.18s ease',
+              transform:  isHovered ? 'translateX(3px)' : 'none',
+            }}>
+              →
+            </span>
+          </button>
+        );
+      })}
+
+      <p className="text-center text-xs text-slate-600 pt-2">
+        Ou ka toujou chanje kalite kont ou pita
+      </p>
     </div>
   );
 }

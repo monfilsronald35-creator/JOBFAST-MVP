@@ -7,6 +7,8 @@ import { getRoleDefaultPath } from '../../config/roleConfig';
 
 // ── Registration steps (selection) ───────────────────────────
 import Step0_RoleSelect     from '../../components/registration/Step0_RoleSelect';
+import Step0b_PersonalRole  from '../../components/registration/Step0b_PersonalRole';
+import Step1b_BusinessType  from '../../components/registration/Step1b_BusinessType';
 import Step1_CategorySelect from '../../components/registration/Step1_CategorySelect';
 import Step2_SubCategory    from '../../components/registration/Step2_SubCategory';
 import Step3_Profession     from '../../components/registration/Step3_Profession';
@@ -38,32 +40,48 @@ function resolveBackendRole(roleType, categoryId) {
 
 // ── Internal step IDs ─────────────────────────────────────────
 const STEPS = {
-  ROLE:         0,
-  CATEGORY:     1,
-  SUBCATEGORY:  2,
-  PROFESSION:   3,
-  BASIC_INFO:   4,
-  PROFESSIONAL: 5,
+  ACCOUNT_TYPE:  0,  // Kont Pèsonèl vs Kont Biznis
+  PERSONAL_ROLE: 1,  // Chèche travay / Ofri sèvis / Freelancer  (personal only)
+  BUSINESS_TYPE: 2,  // Hotel / Restoran / Konpayi...             (business only)
+  CATEGORY:      3,  // Professional categories                   (personal only)
+  SUBCATEGORY:   4,
+  PROFESSION:    5,
+  BASIC_INFO:    6,
+  PROFESSIONAL:  7,
 };
 
 // Maps internal steps to visual progress position (1–4)
-// Returns 0 on ROLE step → progress bar hidden
+// Returns 0 on ACCOUNT_TYPE step → progress bar hidden
 const toVisualStep = (step) => {
-  if (step <= STEPS.ROLE)        return 0;
-  if (step <= STEPS.SUBCATEGORY) return 1;
-  if (step === STEPS.PROFESSION) return 2;
-  if (step === STEPS.BASIC_INFO) return 3;
+  if (step <= STEPS.ACCOUNT_TYPE) return 0;
+  if (step <= STEPS.SUBCATEGORY)  return 1;
+  if (step === STEPS.PROFESSION)  return 2;
+  if (step === STEPS.BASIC_INFO)  return 3;
   return 4;
 };
 
-// Step title i18n key lookup
+// Step title lookup (Haitian Creole)
+const STEP_TITLES = {
+  [STEPS.ACCOUNT_TYPE]:  'Ki kalite kont?',
+  [STEPS.PERSONAL_ROLE]: 'Ki wòl ou?',
+  [STEPS.BUSINESS_TYPE]: 'Ki kalite biznis?',
+  [STEPS.CATEGORY]:      'Chwazi Kategori',
+  [STEPS.SUBCATEGORY]:   'Sous-Kategori',
+  [STEPS.PROFESSION]:    'Pwofesyon',
+  [STEPS.BASIC_INFO]:    'Enfòmasyon Ou',
+  [STEPS.PROFESSIONAL]:  'Pwofil Pwofesyonèl',
+};
+
+// Legacy i18n key lookup (kept for backward compat with translated steps)
 const STEP_KEY = {
-  [STEPS.ROLE]:         'stepRole',
-  [STEPS.CATEGORY]:     'stepCategory',
-  [STEPS.SUBCATEGORY]:  'stepSubcategory',
-  [STEPS.PROFESSION]:   'stepProfession',
-  [STEPS.BASIC_INFO]:   'stepBasicInfo',
-  [STEPS.PROFESSIONAL]: 'stepProfessional',
+  [STEPS.ACCOUNT_TYPE]:  null,
+  [STEPS.PERSONAL_ROLE]: null,
+  [STEPS.BUSINESS_TYPE]: null,
+  [STEPS.CATEGORY]:      'stepCategory',
+  [STEPS.SUBCATEGORY]:   'stepSubcategory',
+  [STEPS.PROFESSION]:    'stepProfession',
+  [STEPS.BASIC_INFO]:    'stepBasicInfo',
+  [STEPS.PROFESSIONAL]:  'stepProfessional',
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -79,7 +97,10 @@ function Register() {
   const [successMessage, setSuccessMessage] = useState('');
   const slowTimer = useRef(null);
 
-  // Role type selected in Step 0 ('worker' | 'employer' | 'service_provider')
+  // Account type: 'personal' | 'business'
+  const [accountType,         setAccountType]         = useState(null);
+
+  // Role type selected in Step 1 personal ('worker' | 'service_provider')
   const [selectedRoleType,    setSelectedRoleType]    = useState(null);
 
   // Selection state — objects from registrationCategories / professionData
@@ -154,14 +175,37 @@ function Register() {
     }));
   }, []);
 
-  // ── Step 0: Role type selected ──────────────────────────────
-  const handleRoleSelect = useCallback((roleObj) => {
-    setSelectedRoleType(roleObj.id);
-    setFormData(prev => ({ ...prev, roleType: roleObj.id }));
+  // ── Step 0: Account type selected (Personal vs Business) ────
+  const handleAccountTypeSelect = useCallback((type) => {
+    setAccountType(type);
+    if (type === 'personal') setCurrentStep(STEPS.PERSONAL_ROLE);
+    else                     setCurrentStep(STEPS.BUSINESS_TYPE);
+  }, []);
+
+  // ── Step 0b: Personal role selected ─────────────────────────
+  const handlePersonalRoleSelect = useCallback((roleObj) => {
+    // 'freelancer' maps to service_provider on backend
+    const backendRoleType = roleObj.id === 'freelancer' ? 'service_provider' : roleObj.id;
+    setSelectedRoleType(backendRoleType);
+    setFormData(prev => ({ ...prev, roleType: backendRoleType }));
     setCurrentStep(STEPS.CATEGORY);
   }, []);
 
-  // ── Step 1: Category selected ───────────────────────────────
+  // ── Step 1b: Business type selected ─────────────────────────
+  const handleBusinessTypeSelect = useCallback((biz) => {
+    setFormData(prev => ({
+      ...prev,
+      roleType:        'employer',
+      role:            biz.role,
+      category:        biz.id,
+      subcategory:     '',
+      profession:      biz.id,
+      professionLabel: biz.label,
+    }));
+    setCurrentStep(STEPS.BASIC_INFO);
+  }, []);
+
+  // ── Step 1: Category selected (personal only) ───────────────
   const handleCategorySelect = useCallback((cat) => {
     setSelectedCategory(cat);
     setSelectedSubcategory(null);
@@ -236,8 +280,13 @@ function Register() {
 
   // ── Step 5: Submit registration ─────────────────────────────
   const handleRegister = useCallback(async (professionalProfile = null) => {
-    if (!formData.role || !formData.profession || !formData.fullName || !formData.email || !formData.password) {
+    const isBusinessAcc = accountType === 'business';
+    if (!formData.role || !formData.fullName || !formData.email || !formData.password) {
       setErrorMessage('Tanpri ranpli tout jaden obligatwa yo');
+      return;
+    }
+    if (!isBusinessAcc && !formData.profession) {
+      setErrorMessage('Tanpri chwazi pwofesyon ou');
       return;
     }
 
@@ -265,7 +314,7 @@ function Register() {
         profession:      formData.profession,
         professionLabel: formData.professionLabel || formData.profession,
         profileMetadata: finalMetadata,
-        accountType:     'individual',
+        accountType:     accountType === 'business' ? 'business' : 'individual',
         city:            formData.city    || formData.location || '',
         state:           formData.zone    || '',
         country:         formData.country || 'ht',
@@ -318,9 +367,12 @@ function Register() {
 
   // ── Back navigation ─────────────────────────────────────────
   const handleBack = useCallback(() => {
-    if (currentStep === STEPS.CATEGORY) {
+    if (currentStep === STEPS.PERSONAL_ROLE || currentStep === STEPS.BUSINESS_TYPE) {
+      setAccountType(null);
+      setCurrentStep(STEPS.ACCOUNT_TYPE);
+    } else if (currentStep === STEPS.CATEGORY) {
       setSelectedRoleType(null);
-      setCurrentStep(STEPS.ROLE);
+      setCurrentStep(STEPS.PERSONAL_ROLE);
     } else if (currentStep === STEPS.SUBCATEGORY) {
       setSelectedCategory(null);
       setCurrentStep(STEPS.CATEGORY);
@@ -333,11 +385,12 @@ function Register() {
         setCurrentStep(STEPS.CATEGORY);
       }
     } else if (currentStep === STEPS.BASIC_INFO) {
-      setCurrentStep(STEPS.PROFESSION);
+      if (accountType === 'business') setCurrentStep(STEPS.BUSINESS_TYPE);
+      else                            setCurrentStep(STEPS.PROFESSION);
     } else if (currentStep === STEPS.PROFESSIONAL) {
       setCurrentStep(STEPS.BASIC_INFO);
     }
-  }, [currentStep, selectedCategory]);
+  }, [currentStep, selectedCategory, accountType]);
 
   const visualStep = toVisualStep(currentStep);
 
@@ -365,7 +418,7 @@ function Register() {
 
       {/* Header */}
       <div className="flex items-center justify-between max-w-2xl mx-auto w-full z-10 mb-2">
-        {currentStep > STEPS.ROLE ? (
+        {currentStep > STEPS.ACCOUNT_TYPE ? (
           <button
             onClick={handleBack}
             className="text-xl hover:opacity-70 transition"
@@ -377,7 +430,9 @@ function Register() {
           <div className="w-8" />
         )}
         <h1 className="font-bold text-lg flex-1 text-center">
-          {t(`registration.ui.${STEP_KEY[currentStep]}`)}
+          {STEP_KEY[currentStep]
+            ? t(`registration.ui.${STEP_KEY[currentStep]}`, { defaultValue: STEP_TITLES[currentStep] })
+            : STEP_TITLES[currentStep]}
         </h1>
         <div className="w-8" />
       </div>
@@ -415,10 +470,22 @@ function Register() {
       {/* Step content */}
       <div className="w-full max-w-2xl mx-auto flex-1 z-10 pb-4 overflow-y-auto">
 
-        {currentStep === STEPS.ROLE && (
-          <Step0_RoleSelect onSelect={handleRoleSelect} />
+        {/* Step 0 — Account Type: Personal vs Business */}
+        {currentStep === STEPS.ACCOUNT_TYPE && (
+          <Step0_RoleSelect onSelect={handleAccountTypeSelect} />
         )}
 
+        {/* Step 0b — Personal Role: Chèche travay / Ofri sèvis / Freelancer */}
+        {currentStep === STEPS.PERSONAL_ROLE && (
+          <Step0b_PersonalRole onSelect={handlePersonalRoleSelect} />
+        )}
+
+        {/* Step 1b — Business Type: Hotel / Restoran / Konpayi... */}
+        {currentStep === STEPS.BUSINESS_TYPE && (
+          <Step1b_BusinessType onSelect={handleBusinessTypeSelect} />
+        )}
+
+        {/* Step 1 — Category (personal accounts only) */}
         {currentStep === STEPS.CATEGORY && (
           <Step1_CategorySelect
             onSelect={handleCategorySelect}
