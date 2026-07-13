@@ -14,12 +14,12 @@ import Step2_SubCategory    from '../../components/registration/Step2_SubCategor
 import Step3_Profession     from '../../components/registration/Step3_Profession';
 
 // ── Registration steps (form) ─────────────────────────────────
-import Step3_BasicInfo            from './Step3_BasicInfo';
-import Step4_ProfessionalDetails  from './Step4_ProfessionalDetails';
-import RegistrationProgress       from './RegistrationProgress';
+import Step3_BasicInfo   from './Step3_BasicInfo';
+import Step4_Confirm     from './Step4_Confirm';
+import Step_BusinessInfo from './Step_BusinessInfo';
+import RegistrationProgress from './RegistrationProgress';
 
 // ── Role type → backend role resolution ──────────────────────
-// employer maps to category-specific backend role; worker/service_provider are flat
 const EMPLOYER_CATEGORY_ROLE = {
   hotel:               'hotel',
   restaurant:          'restaurant',
@@ -46,8 +46,9 @@ const STEPS = {
   CATEGORY:      3,  // Professional categories                   (personal only)
   SUBCATEGORY:   4,
   PROFESSION:    5,
-  BASIC_INFO:    6,
-  PROFESSIONAL:  7,
+  BASIC_INFO:    6,  // personal only — after this: confirm step
+  BUSINESS_INFO: 7,  // business only — has its own submit button
+  CONFIRM:       8,  // personal only — final confirm screen
 };
 
 // Maps internal steps to visual progress position (1–4)
@@ -56,8 +57,9 @@ const toVisualStep = (step) => {
   if (step <= STEPS.ACCOUNT_TYPE) return 0;
   if (step <= STEPS.SUBCATEGORY)  return 1;
   if (step === STEPS.PROFESSION)  return 2;
-  if (step === STEPS.BASIC_INFO)  return 3;
-  return 4;
+  if (step === STEPS.BASIC_INFO || step === STEPS.BUSINESS_INFO) return 3;
+  if (step === STEPS.CONFIRM)     return 4;
+  return 0;
 };
 
 // Step title lookup (Haitian Creole)
@@ -69,7 +71,8 @@ const STEP_TITLES = {
   [STEPS.SUBCATEGORY]:   'Sous-Kategori',
   [STEPS.PROFESSION]:    'Pwofesyon',
   [STEPS.BASIC_INFO]:    'Enfòmasyon Ou',
-  [STEPS.PROFESSIONAL]:  'Pwofil Pwofesyonèl',
+  [STEPS.BUSINESS_INFO]: 'Enfòmasyon Biznis',
+  [STEPS.CONFIRM]:       'Prèt pou Kreye Kont',
 };
 
 // Legacy i18n key lookup (kept for backward compat with translated steps)
@@ -81,7 +84,8 @@ const STEP_KEY = {
   [STEPS.SUBCATEGORY]:   'stepSubcategory',
   [STEPS.PROFESSION]:    'stepProfession',
   [STEPS.BASIC_INFO]:    'stepBasicInfo',
-  [STEPS.PROFESSIONAL]:  'stepProfessional',
+  [STEPS.BUSINESS_INFO]: null,
+  [STEPS.CONFIRM]:       null,
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -90,9 +94,9 @@ function Register() {
   const { t }                = useTranslation();
   const { login: authLogin } = useAuth();
 
-  const [currentStep,    setCurrentStep]    = useState(STEPS.ROLE);
+  const [currentStep,    setCurrentStep]    = useState(STEPS.ACCOUNT_TYPE);
   const [loading,        setLoading]        = useState(false);
-  const [slowLoad,       setSlowLoad]       = useState(false); // shown after 8s of loading
+  const [slowLoad,       setSlowLoad]       = useState(false);
   const [errorMessage,   setErrorMessage]   = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const slowTimer = useRef(null);
@@ -184,7 +188,6 @@ function Register() {
 
   // ── Step 0b: Personal role selected ─────────────────────────
   const handlePersonalRoleSelect = useCallback((roleObj) => {
-    // 'freelancer' maps to service_provider on backend
     const backendRoleType = roleObj.id === 'freelancer' ? 'service_provider' : roleObj.id;
     setSelectedRoleType(backendRoleType);
     setFormData(prev => ({ ...prev, roleType: backendRoleType }));
@@ -202,7 +205,7 @@ function Register() {
       profession:      biz.id,
       professionLabel: biz.label,
     }));
-    setCurrentStep(STEPS.BASIC_INFO);
+    setCurrentStep(STEPS.BUSINESS_INFO);
   }, []);
 
   // ── Step 1: Category selected (personal only) ───────────────
@@ -258,7 +261,7 @@ function Register() {
     setCurrentStep(STEPS.BASIC_INFO);
   }, []);
 
-  // ── Step 4: Basic info confirmed ────────────────────────────
+  // ── Step BASIC_INFO: personal — go to CONFIRM ───────────────
   const handleBasicInfoNext = useCallback((basicData) => {
     const profile  = basicData.profile  ?? {};
     const location = basicData.location ?? {};
@@ -275,10 +278,10 @@ function Register() {
       city:     location.city        ?? basicData.city    ?? '',
       location: location.city        ?? basicData.city    ?? basicData.location ?? '',
     }));
-    setCurrentStep(STEPS.PROFESSIONAL);
+    setCurrentStep(STEPS.CONFIRM);
   }, []);
 
-  // ── Step 5: Submit registration ─────────────────────────────
+  // ── Submit: personal account registration ────────────────────
   const handleRegister = useCallback(async (professionalProfile = null) => {
     const isBusinessAcc = accountType === 'business';
     if (!formData.role || !formData.fullName || !formData.email || !formData.password) {
@@ -363,7 +366,83 @@ function Register() {
       if (mountedRef.current) setLoading(false);
       abortRef.current = null;
     }
-  }, [formData, navigate, authLogin]);
+  }, [formData, accountType, navigate, authLogin]);
+
+  // ── Submit: business account registration ────────────────────
+  const handleBusinessInfoSubmit = useCallback(async (bizData) => {
+    setLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
+    try {
+      const registrationData = {
+        name:            bizData.name,
+        email:           bizData.email,
+        phone:           bizData.phone,
+        password:        bizData.password,
+        role:            formData.role,
+        roleType:        'employer',
+        category:        formData.category,
+        subcategory:     '',
+        profession:      formData.profession,
+        professionLabel: formData.professionLabel,
+        profileMetadata: {
+          ...formData.profileMetadata,
+          description:    bizData.description,
+          businessExtras: bizData.extras,
+        },
+        accountType: 'business',
+        city:        bizData.city,
+        state:       '',
+        country:     'ht',
+      };
+
+      const res = await API.post('/auth/register', registrationData, {
+        signal: abortRef.current.signal,
+      });
+
+      if (!mountedRef.current) return;
+
+      const responseBody = res?.data;
+      const userObj      = responseBody?.data?.user;
+      const regToken     = responseBody?.data?.token;
+
+      setSuccessMessage(responseBody?.data?.message || 'Kont biznis kreye avèk siksè!');
+
+      if (userObj) {
+        if (userObj.id && !userObj._id) userObj._id = userObj.id;
+        authLogin(regToken ? { ...userObj, token: regToken } : userObj);
+        setTimeout(() => {
+          if (mountedRef.current) navigate(getRoleDefaultPath(userObj.role));
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          if (mountedRef.current) navigate('/login');
+        }, 1500);
+      }
+    } catch (err) {
+      if (!mountedRef.current) return;
+      if (err?.code === 'ERR_CANCELED') return;
+
+      const isTimeout      = err?.code === 'ECONNABORTED' || err?.message?.includes('timeout');
+      const isNetworkError = err?.code === 'NETWORK_ERROR' || !err?.response;
+
+      setErrorMessage(
+        isTimeout || isNetworkError
+          ? 'Sèvè a ap reveye (Render free tier). Tanpri eseye ankò nan 30 segond.'
+          : err?.response?.data?.error?.message ||
+            err?.response?.data?.message        ||
+            err?.message                         ||
+            'Enskripsyon echwe — tanpri eseye ankò'
+      );
+    } finally {
+      if (mountedRef.current) setLoading(false);
+      abortRef.current = null;
+    }
+  }, [formData, authLogin, navigate]);
 
   // ── Back navigation ─────────────────────────────────────────
   const handleBack = useCallback(() => {
@@ -385,18 +464,19 @@ function Register() {
         setCurrentStep(STEPS.CATEGORY);
       }
     } else if (currentStep === STEPS.BASIC_INFO) {
-      if (accountType === 'business') setCurrentStep(STEPS.BUSINESS_TYPE);
-      else                            setCurrentStep(STEPS.PROFESSION);
-    } else if (currentStep === STEPS.PROFESSIONAL) {
+      setCurrentStep(STEPS.PROFESSION);
+    } else if (currentStep === STEPS.BUSINESS_INFO) {
+      setCurrentStep(STEPS.BUSINESS_TYPE);
+    } else if (currentStep === STEPS.CONFIRM) {
       setCurrentStep(STEPS.BASIC_INFO);
     }
-  }, [currentStep, selectedCategory, accountType]);
+  }, [currentStep, selectedCategory]);
 
   const visualStep = toVisualStep(currentStep);
 
   // ─────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-navy-900 text-white flex flex-col p-6 relative overflow-hidden">
+    <main className="min-h-screen text-white flex flex-col p-6 relative" style={{ background: '#050B18' }}>
 
       {/* ── Cold-start overlay — shows after 8s of loading ── */}
       {loading && slowLoad && (
@@ -437,7 +517,7 @@ function Register() {
         <div className="w-8" />
       </div>
 
-      {/* Progress indicator — hidden on ROLE step */}
+      {/* Progress indicator — hidden on ACCOUNT_TYPE step */}
       {visualStep > 0 && (
         <RegistrationProgress
           current={visualStep}
@@ -468,7 +548,7 @@ function Register() {
       </div>
 
       {/* Step content */}
-      <div className="w-full max-w-2xl mx-auto flex-1 z-10 pb-4 overflow-y-auto">
+      <div className="w-full max-w-2xl mx-auto z-10 pb-24">
 
         {/* Step 0 — Account Type: Personal vs Business */}
         {currentStep === STEPS.ACCOUNT_TYPE && (
@@ -518,15 +598,21 @@ function Register() {
           />
         )}
 
-        {currentStep === STEPS.PROFESSIONAL && (
-          <Step4_ProfessionalDetails
-            profession={formData.profession}
-            metadata={formData.profileMetadata}
-            onMetadataChange={updateMetadata}
-            requiredFields={[]}
-            optionalFields={[]}
-            onSubmit={handleRegister}
+        {/* Business: combined info + submit form */}
+        {currentStep === STEPS.BUSINESS_INFO && (
+          <Step_BusinessInfo
+            businessType={formData.category}
             loading={loading}
+            onSubmit={handleBusinessInfoSubmit}
+          />
+        )}
+
+        {/* Personal: confirmation screen before submit */}
+        {currentStep === STEPS.CONFIRM && (
+          <Step4_Confirm
+            formData={formData}
+            loading={loading}
+            onSubmit={handleRegister}
           />
         )}
       </div>
