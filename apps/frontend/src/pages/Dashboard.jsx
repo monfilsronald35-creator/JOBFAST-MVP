@@ -312,11 +312,10 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
   const topJobs = jobs.slice(0, 3);
 
   const WORKER_NAV = [
-    { e:"🔍", l:"Jwenn Travay",   p:"/search"   },
-    { e:"💼", l:"Aplikasyon",     p:"/my-jobs"  },
-    { e:"📅", l:"Orè Jodi a",    p:"/booking"  },
-    { e:"💰", l:"Bous",          p:"/wallet"   },
-    { e:"💬", l:"Mesaj",         p:"/chat"     },
+    { e:"🔍", l:"Jwenn Travay",   p:"/search"      },
+    { e:"📅", l:"Orè Jodi a",    p:"/booking"     },
+    { e:"🤝", l:"Asistans / Èd", p:"/help"        },
+    { e:"👥", l:"Ajoudante",     p:"/assistants"  },
   ];
 
   const EMPLOYER_NAV = [
@@ -447,50 +446,6 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
             </div>
             <ChevronRight className="w-4 h-4 text-slate-500" />
           </button>
-        </div>
-      )}
-
-      {/* ── RECENT PAYMENTS (workers only) ────────────────────────── */}
-      {!isEmployer && (
-        <div className="px-4 mb-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">💰 Pèman Resan</p>
-            <button type="button" onClick={() => navigate("/wallet")}
-              className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
-              Bous <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-          <div className="p-4 rounded-2xl border flex items-center justify-between"
-            style={{ background: CARD, borderColor: BORDER }}>
-            <div>
-              <p className="text-[13px] font-black text-white">Wè tout pèman ou yo</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Revni, salè, transfè</p>
-            </div>
-            <button type="button" onClick={() => navigate("/wallet")}
-              className="text-[11px] font-black px-3 py-1.5 rounded-xl active:scale-95 transition"
-              style={{ background: `${GOLD}22`, color: GOLD }}>
-              Ouvri →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── UPCOMING WORK (workers only) ──────────────────────────── */}
-      {!isEmployer && (
-        <div className="px-4 mb-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">📅 Travay Pwochèn</p>
-            <button type="button" onClick={() => navigate("/booking")}
-              className="text-[11px] font-bold text-amber-400 active:opacity-70 flex items-center gap-0.5">
-              Orè <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-          <div className="py-8 rounded-2xl border text-center"
-            style={{ background: CARD, borderColor: BORDER }}>
-            <p className="text-2xl mb-2">📅</p>
-            <p className="text-[12px] font-black text-slate-400">Pa gen travay pwograme</p>
-            <p className="text-[10px] text-slate-600 mt-0.5">Aksepte yon ofèt pou wè li isit la</p>
-          </div>
         </div>
       )}
 
