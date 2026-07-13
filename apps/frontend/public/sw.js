@@ -1,7 +1,7 @@
 // JOBFAST Service Worker v4 — Cross-Platform PWA (Android + iPhone + iPad)
 // Stratèji: Network-first pou navigasyon, Cache-first pou assets statik
 
-const CACHE_NAME    = 'jobfast-v4';
+const CACHE_NAME    = 'jobfast-v5';
 const OFFLINE_URL   = '/offline.html';
 
 // Fichye ki pre-cache pandan install (okenn pa dwe manke)

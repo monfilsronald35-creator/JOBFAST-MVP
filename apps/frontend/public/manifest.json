@@ -10,6 +10,7 @@
   "scope": "/",
 
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
 
   "orientation": "portrait-primary",
 
@@ -24,14 +25,14 @@
     {
       "name": "Chèche Travay",
       "short_name": "Djòb",
-      "url": "/search?type=jobs",
+      "url": "/search?type=job",
       "description": "Jwenn djòb pre ou",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Chèche Travayè",
       "short_name": "Travayè",
-      "url": "/search?type=workers",
+      "url": "/search?type=user",
       "description": "Rekrite travayè eksperyanse",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
     },
@@ -59,11 +60,18 @@
 
   "screenshots": [
     {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
+      "src": "/splash/splash-750x1334.png",
+      "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "JOBFAST — Jwenn Djòb ak Sèvis"
+    },
+    {
+      "src": "/splash/splash-1080x1920.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "JOBFAST — Platfòm Biznis ak Sèvis"
     }
   ]
 }
