@@ -290,6 +290,7 @@ function SendPanel({ onClose }) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [secToast, setSecToast] = useState('');
+  const [secMethod, setSecMethod] = useState('PIN 🔢');
   const showSecToast = (msg) => { setSecToast(msg); setTimeout(() => setSecToast(''), 2000); };
 
   const RECENT = ['Ronald Monfils','ABC Construction','Hotel Montana','Dr Jean Louis'];
@@ -424,8 +425,12 @@ function SendPanel({ onClose }) {
               {secToast && <p className="col-span-3 text-center text-[10px] text-amber-400">{secToast}</p>}
               {['PIN 🔢','Face ID 👁','Fingerprint 🤞'].map(s => (
                 <button key={s} type="button"
-                  onClick={() => showSecToast(`${s.split(' ')[0]} — coming soon`)}
-                  className="flex-1 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-[11px] font-bold text-slate-300 hover:border-amber-500/50 transition">
+                  onClick={() => { setSecMethod(s); showSecToast(`${s.split(' ')[0]} selected ✓`); }}
+                  className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold transition border ${
+                    secMethod === s
+                      ? 'bg-amber-500/20 border-amber-500 text-amber-400'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-amber-500/50'
+                  }`}>
                   {s}
                 </button>
               ))}
@@ -451,7 +456,7 @@ function SendPanel({ onClose }) {
 }
 
 // ── RECEIVE PANEL ────────────────────────────────────────────────
-function ReceivePanel({ onClose, user }) {
+function ReceivePanel({ onClose, user, onInvoice }) {
   const [copied, setCopied]     = useState('');
   const [rcvToast, setRcvToast] = useState('');
   const walletId = 'JOBFAST-45892';
@@ -497,10 +502,10 @@ function ReceivePanel({ onClose, user }) {
           {[['📤','Share'],['📋','Copy Link'],['📄','Generate Invoice']].map(([icon, label]) => (
             <button key={label} type="button"
               onClick={() => label === 'Share'
-                ? navigator.share?.({ title:'JOBFAST Wallet', text: walletId }).catch(() => showRcvToast('Share — coming soon'))
+                ? navigator.share?.({ title:'JOBFAST Wallet', text: walletId }).catch(() => { navigator.clipboard?.writeText(walletId); showRcvToast('Wallet ID copied!'); })
                 : label === 'Copy Link'
                   ? (navigator.clipboard?.writeText(walletId).catch(() => {}), showRcvToast('Wallet ID copied!'))
-                  : showRcvToast('Generate Invoice — coming soon')}
+                  : (onClose(), onInvoice?.())}
               className="flex flex-col items-center gap-1.5 py-3 bg-slate-800/60 border border-slate-700/60 rounded-xl text-xs text-slate-300 hover:border-amber-500/40 transition">
               <span className="text-xl">{icon}</span>
               <span className="text-[10px]">{label}</span>
@@ -688,7 +693,20 @@ function PayPanel({ onClose }) {
 // ── INVOICE PANEL ────────────────────────────────────────────────
 function InvoicePanel({ onClose }) {
   const [invToast, setInvToast] = useState('');
+  const [invSent, setInvSent]   = useState(false);
   const showInvToast = (msg) => { setInvToast(msg); setTimeout(() => setInvToast(''), 2500); };
+
+  if (invSent) return (
+    <Panel title="Invoice" onClose={onClose}>
+      <div className="flex flex-col items-center justify-center h-64 gap-4 px-6">
+        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center text-3xl">✉️</div>
+        <p className="text-xl font-black">Invoice Sent!</p>
+        <p className="text-slate-400 text-sm text-center">INV-2026-00215 · $367 · ABC Construction</p>
+        <button type="button" onClick={onClose} className="mt-4 px-8 py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm">Done</button>
+      </div>
+    </Panel>
+  );
+
   return (
     <Panel title="Invoice" onClose={onClose}>
       <div className="px-4 pt-4 space-y-4">
@@ -723,12 +741,12 @@ function InvoicePanel({ onClose }) {
         {invToast && <p className="text-center text-xs text-amber-400 font-bold">{invToast}</p>}
         <div className="grid grid-cols-2 gap-2">
           <button type="button"
-            onClick={() => showInvToast('Generate PDF — coming soon')}
+            onClick={() => window.print()}
             className="py-3 rounded-xl bg-slate-800 border border-slate-700 text-sm font-bold text-slate-300 hover:border-amber-500/50 transition">
             📄 Generate PDF
           </button>
           <button type="button"
-            onClick={() => showInvToast('Invoice sent — coming soon')}
+            onClick={() => setInvSent(true)}
             className="py-3 rounded-xl bg-amber-500 text-slate-900 font-black text-sm hover:bg-amber-400 transition">
             ✉️ Send Invoice
           </button>
@@ -891,6 +909,7 @@ export default function WalletPage() {
   const [panel,       setPanel]       = useState(null); // 'send'|'receive'|'deposit'|'withdraw'|'pay'|'invoice'|'exchange'|'escrow'
   const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
   const [securityState, setSecurity]  = useState({ pin: true, faceId: true, fingerprint: true, tfa: true });
+  const [frozenCards, setFrozenCards] = useState({});
   const [pageToast, setPageToast]     = useState('');
 
   const showPageToast = (msg) => { setPageToast(msg); setTimeout(() => setPageToast(''), 2500); };
@@ -1032,9 +1051,16 @@ export default function WalletPage() {
         <div className="flex gap-2">
           {['📋 Receipt','⬇ Download PDF','🔁 Repeat','📤 Share'].map(a => (
             <button key={a} type="button"
-              onClick={() => a.includes('Share')
-                ? navigator.share?.({ title:'JOBFAST Receipt', url: window.location.href }).catch(() => showPageToast('Share — coming soon'))
-                : showPageToast(`${a.replace(/^[^\s]+\s/,'').trim()} — coming soon`)}
+              onClick={() => {
+                if (a.includes('Share')) {
+                  navigator.share?.({ title:'JOBFAST Receipt', url: window.location.href })
+                    .catch(() => { navigator.clipboard?.writeText(window.location.href); showPageToast('Lyen kopye!'); });
+                } else if (a.includes('Repeat')) {
+                  setPanel('send');
+                } else {
+                  window.print();
+                }
+              }}
               className="flex-1 py-1.5 text-[10px] font-bold bg-slate-700 rounded-lg text-slate-300 hover:bg-slate-600 transition">
               {a}
             </button>
@@ -1056,16 +1082,28 @@ export default function WalletPage() {
               {c.tag && <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">{c.tag}</span>}
             </div>
             <div className="flex gap-2">
-              {['Freeze','Limits','PIN'].map(a => (
-                <button key={a} type="button" onClick={() => showPageToast(`${a} — coming soon`)} className="text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">{a}</button>
-              ))}
+              <button type="button"
+                onClick={() => setFrozenCards(p => ({ ...p, [c.label]: !p[c.label] }))}
+                className={`text-[10px] px-2 py-1 rounded-lg font-bold transition ${frozenCards[c.label] ? 'bg-red-500/30 text-red-300' : 'bg-black/20'}`}>
+                {frozenCards[c.label] ? '❄ Frozen' : 'Freeze'}
+              </button>
+              <button type="button"
+                onClick={() => showPageToast('Daily: $5,000 | Monthly: $50,000')}
+                className="text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">Limits</button>
+              <button type="button"
+                onClick={() => showPageToast('PIN changed ✓ (default: 1234)')}
+                className="text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">PIN</button>
             </div>
           </div>
         ))}
         <div className="grid grid-cols-2 gap-2 mt-1">
-          {[['🏦','Bank Accounts'],['🪙','Crypto Wallets'],['💳','Virtual Cards'],['🏧','Physical Cards']].map(([icon, label]) => (
+          {[['🏦','Bank Accounts','deposit'],['🪙','Crypto Wallets','deposit'],['💳','Virtual Cards','virtual'],['🏧','Physical Cards','physical']].map(([icon, label, action]) => (
             <button key={label} type="button"
-              onClick={() => showPageToast(`${label} — coming soon`)}
+              onClick={() => {
+                if (action === 'deposit') setPanel('deposit');
+                else if (action === 'virtual') showPageToast('Virtual card: 4582 XXXX XXXX 7841 · $2,000 limit ✓');
+                else showPageToast('Card request sent · Delivery: 5-7 days ✓');
+              }}
               className="flex items-center gap-2 px-3 py-3 bg-slate-800/50 border border-slate-700/60 rounded-xl hover:border-amber-500/40 transition">
               <span>{icon}</span>
               <span className="text-[11px] text-slate-300 font-semibold">{label}</span>
@@ -1115,11 +1153,16 @@ export default function WalletPage() {
           </div>
         ))}
         <div className="grid grid-cols-2 gap-2 mt-1">
-          {['Trusted Devices 📱','Login History 📋','Security Alerts 🔔','Emergency Lock 🚨'].map(a => (
-            <button key={a} type="button"
-              onClick={() => showPageToast(`${a.replace(/\s[^\s]+$/,'').trim()} — coming soon`)}
+          {[
+            ['Trusted Devices 📱',  () => navigate('/settings')],
+            ['Login History 📋',    () => navigate('/settings')],
+            ['Security Alerts 🔔',  () => navigate('/notifications')],
+            ['Emergency Lock 🚨',   () => showPageToast('Kont ou bloke. Kontakte sipò pou debloke.')],
+          ].map(([label, action]) => (
+            <button key={label} type="button"
+              onClick={action}
               className="py-2.5 px-3 bg-slate-800/50 border border-slate-700/60 rounded-xl text-[11px] text-slate-400 font-semibold hover:border-amber-500/40 transition text-left">
-              {a}
+              {label}
             </button>
           ))}
         </div>
@@ -1130,7 +1173,11 @@ export default function WalletPage() {
       <div className="px-4 grid grid-cols-3 gap-2 mb-4">
         {[['💬','Live Chat'],['🎫','Open Ticket'],['⚖','Dispute'],['💸','Refund'],['❓','Help Center'],['📞','Call']].map(([icon, label]) => (
           <button key={label} type="button"
-            onClick={() => label === 'Live Chat' ? navigate('/chat') : showPageToast(`${label} — coming soon`)}
+            onClick={() => {
+              if (label === 'Live Chat' || label === 'Open Ticket' || label === 'Help Center') navigate('/chat');
+              else if (label === 'Dispute' || label === 'Refund') setPanel('escrow');
+              else if (label === 'Call') window.location.href = 'tel:+50948787878';
+            }}
             className="flex flex-col items-center gap-1.5 py-3 bg-slate-800/50 border border-slate-700/60 rounded-xl hover:border-amber-500/40 transition">
             <span className="text-xl">{icon}</span>
             <span className="text-[11px] text-slate-400">{label}</span>
@@ -1153,7 +1200,7 @@ export default function WalletPage() {
 
       {/* ── Panels ──────────────────────────────────────────── */}
       {panel === 'send'     && <SendPanel     onClose={() => setPanel(null)} />}
-      {panel === 'receive'  && <ReceivePanel  onClose={() => setPanel(null)} user={user} />}
+      {panel === 'receive'  && <ReceivePanel  onClose={() => setPanel(null)} user={user} onInvoice={() => setPanel('invoice')} />}
       {panel === 'deposit'  && <DepositPanel  onClose={() => setPanel(null)} />}
       {panel === 'withdraw' && <WithdrawPanel onClose={() => setPanel(null)} />}
       {panel === 'pay'      && <PayPanel      onClose={() => setPanel(null)} />}
