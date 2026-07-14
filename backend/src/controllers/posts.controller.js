@@ -14,9 +14,15 @@ export async function getFeed(req, res) {
     const User = (await import('../models/user.model.js')).default;
     const me_doc = await User.findById(me).select('following').lean();
     const followingIds = me_doc?.following || [];
-    const authorIds = [...followingIds.map(id => new mongoose.Types.ObjectId(id)), new mongoose.Types.ObjectId(me)];
 
-    const query = { userId: { $in: authorIds }, audience: { $in: ['public', 'followers'] } };
+    let query;
+    if (followingIds.length === 0) {
+      // No follows yet — show all public posts (explore mode)
+      query = { audience: 'public' };
+    } else {
+      const authorIds = [...followingIds.map(id => new mongoose.Types.ObjectId(id)), new mongoose.Types.ObjectId(me)];
+      query = { userId: { $in: authorIds }, audience: { $in: ['public', 'followers'] } };
+    }
     if (cursor) query.createdAt = { $lt: cursor };
 
     const posts = await Post.find(query)

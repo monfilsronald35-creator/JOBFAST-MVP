@@ -230,6 +230,78 @@ function StoriesModal({ onClose }) {
   );
 }
 
+// ════════════════════════════════════════════════════════════════
+// FEED CARD
+// ════════════════════════════════════════════════════════════════
+const FeedCard = memo(function FeedCard({ post, onLike, navigate }) {
+  const avatar = post.userAvatar
+    || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.userName || 'u')}`;
+
+  const timeAgo = (iso) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const min  = Math.floor(diff / 60000);
+    if (min < 60)  return `${min}m`;
+    const h = Math.floor(min / 60);
+    if (h  < 24)   return `${h}h`;
+    return `${Math.floor(h / 24)}j`;
+  };
+
+  return (
+    <div className="mb-1 border-b" style={{ borderColor: BORDER }}>
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button onClick={() => navigate(`/u/${post.userId}`)}>
+          <img src={avatar} alt={post.userName}
+            className="w-9 h-9 rounded-full object-cover border-2"
+            style={{ borderColor: `${GOLD}60` }}
+            onError={e => { e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(post.userName || 'u')}`; }} />
+        </button>
+        <div className="flex-1 min-w-0">
+          <p className="text-[12px] font-black text-white truncate">{post.userName}</p>
+          <p className="text-[10px] text-slate-500">{post.userProfession}{post.userCity ? ` · ${post.userCity}` : ''}</p>
+        </div>
+        <span className="text-[10px] text-slate-600">{timeAgo(post.createdAt)}</span>
+      </div>
+
+      {/* Media */}
+      {post.mediaUrl && post.type !== 'text' && (
+        <div style={{ width: '100%', maxHeight: 400, overflow: 'hidden', background: '#0a0f1a' }}>
+          {post.type === 'video'
+            ? <video src={post.mediaUrl} controls playsInline
+                style={{ width: '100%', maxHeight: 400, objectFit: 'cover' }} />
+            : <img src={post.mediaUrl} alt=""
+                style={{ width: '100%', maxHeight: 400, objectFit: 'cover' }}
+                onError={e => { e.currentTarget.style.display = 'none'; }} />
+          }
+        </div>
+      )}
+
+      {/* Caption */}
+      {post.caption && (
+        <div className="px-4 py-2">
+          <p className="text-[13px] text-slate-200 leading-relaxed">
+            <span className="font-black text-white mr-1">{post.userName}</span>
+            {post.caption}
+          </p>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-4 px-4 py-2.5">
+        <button type="button" onClick={() => onLike(post.id)}
+          className="flex items-center gap-1.5 active:scale-90 transition">
+          <span style={{ fontSize: 18 }}>{post.liked ? '❤️' : '🤍'}</span>
+          <span className="text-[11px] font-bold text-slate-400">{post.likesCount || ''}</span>
+        </button>
+        <button type="button" className="flex items-center gap-1.5">
+          <span style={{ fontSize: 16 }}>💬</span>
+          <span className="text-[11px] font-bold text-slate-400">{post.commentsCount || ''}</span>
+        </button>
+      </div>
+    </div>
+  );
+});
+
 // ── Vertical job list item ─────────────────────────────────────────
 const JobListCard = memo(function JobListCard({ job, navigate, city: userCity }) {
   const photo   = job.companyLogo || job.profileMetadata?.profilePhoto
@@ -313,6 +385,26 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
 
   const [storiesOpen, setStoriesOpen] = useState(false);
   const [available,   setAvailable]   = useState(true);
+
+  const [feed,        setFeed]        = useState([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+
+  useEffect(() => {
+    API.get('/posts/feed', { params: { limit: 20 }, timeout: 8000 })
+      .then(res => {
+        if (res?.data?.success) setFeed(res.data.posts || []);
+      })
+      .catch(() => {})
+      .finally(() => setFeedLoading(false));
+  }, []);
+
+  const handleLike = async (postId) => {
+    setFeed(prev => prev.map(p => p.id === postId
+      ? { ...p, liked: !p.liked, likesCount: p.liked ? p.likesCount - 1 : p.likesCount + 1 }
+      : p
+    ));
+    try { await API.post(`/posts/${postId}/like`); } catch (_) {}
+  };
 
   const workerMembers = useMemo(() =>
     members
@@ -400,6 +492,21 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
           </span>
         </button>
       </div>
+
+      {/* ── POSTS FEED ─────────────────────────────────────────────── */}
+      {feedLoading ? (
+        <div className="px-4 mb-5 space-y-3">
+          {[1,2].map(i => (
+            <div key={i} className="rounded-2xl overflow-hidden animate-pulse" style={{ background: CARD, height: 280 }} />
+          ))}
+        </div>
+      ) : feed.length > 0 && (
+        <div className="mb-5">
+          {feed.map(post => (
+            <FeedCard key={post.id} post={post} onLike={handleLike} navigate={navigate} />
+          ))}
+        </div>
+      )}
 
       {/* ── STORIES ───────────────────────────────────────────────── */}
       <div className="px-4 mb-5">
