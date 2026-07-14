@@ -19,7 +19,7 @@ export const REGISTRATION_CATEGORIES = [
     hasSubcategories: true,
   },
 
-  // ── Part 2: Healthcare + Company + Hotel + Restaurant ─────────
+  // ── Part 2: Healthcare (individual professionals only) ────────
   {
     id: 'healthcare',
     label: 'Healthcare',
@@ -27,66 +27,8 @@ export const REGISTRATION_CATEGORIES = [
     color: 'red',
     hasSubcategories: false,
   },
-  {
-    id: 'company',
-    label: 'Company',
-    icon: '🏢',
-    color: 'slate',
-    hasSubcategories: false,
-  },
-  {
-    id: 'hotel',
-    label: 'Hotel',
-    icon: '🏨',
-    color: 'purple',
-    hasSubcategories: false,
-  },
-  {
-    id: 'restaurant',
-    label: 'Restaurant',
-    icon: '🍽',
-    color: 'orange',
-    hasSubcategories: false,
-  },
 
-  // ── Part 3: Hospital + Clinic + Tourism + Supplier + Enterprise
-  {
-    id: 'hospital',
-    label: 'Hospital',
-    icon: '🏥',
-    color: 'rose',
-    hasSubcategories: false,
-  },
-  {
-    id: 'clinic',
-    label: 'Clinic',
-    icon: '🩺',
-    color: 'teal',
-    hasSubcategories: false,
-  },
-  {
-    id: 'tourism',
-    label: 'Tourism',
-    icon: '✈️',
-    color: 'sky',
-    hasSubcategories: false,
-  },
-  {
-    id: 'supplier',
-    label: 'Supplier',
-    icon: '🚚',
-    color: 'yellow',
-    hasSubcategories: false,
-  },
-  {
-    id: 'enterprise',
-    label: 'Enterprise',
-    icon: '🏭',
-    color: 'indigo',
-    hasSubcategories: false,
-  },
-
-  // ── Part 4: IT, Finance, Legal, Agriculture + more ───────────
+  // ── Part 3: IT, Finance, Legal, Agriculture + more ───────────
   {
     id: 'it_software',
     label: 'IT & Software',
@@ -151,13 +93,6 @@ export const REGISTRATION_CATEGORIES = [
     hasSubcategories: false,
   },
   {
-    id: 'real_estate',
-    label: 'Real Estate',
-    icon: '🏠',
-    color: 'orange',
-    hasSubcategories: false,
-  },
-  {
     id: 'automotive',
     label: 'Automotive',
     icon: '🚗',
@@ -204,27 +139,6 @@ export const REGISTRATION_CATEGORIES = [
     label: 'Video Production',
     icon: '🎥',
     color: 'red',
-    hasSubcategories: false,
-  },
-  {
-    id: 'marketplace_sellers',
-    label: 'Marketplace Sellers',
-    icon: '🛍',
-    color: 'amber',
-    hasSubcategories: false,
-  },
-  {
-    id: 'government',
-    label: 'Government',
-    icon: '🏛',
-    color: 'blue',
-    hasSubcategories: false,
-  },
-  {
-    id: 'ngo',
-    label: 'NGO & Organizations',
-    icon: '🌍',
-    color: 'green',
     hasSubcategories: false,
   },
 ];
