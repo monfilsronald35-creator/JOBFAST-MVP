@@ -16,6 +16,7 @@ export default function Login() {
   const mounted = useRef(false);
   const lastSubmit = useRef(0);
   const slowTimer = useRef(null);
+  const retryTimer = useRef(null);
 
   const [formData, setFormData] = useState({
     identifier: "",
@@ -35,6 +36,7 @@ export default function Login() {
     return () => {
       mounted.current = false;
       clearTimeout(slowTimer.current);
+      clearTimeout(retryTimer.current);
     };
   }, []);
 
@@ -114,12 +116,45 @@ export default function Login() {
         const status = res?.status;
         sounds.error();
         if (status === 503 || status === 0 || !status) {
-          setError(t("errors.serverWaking"));
+          // Server sleeping — stay in loading mode, auto-retry in 20s
+          setSlowLoad(true);
+          clearTimeout(retryTimer.current);
+          retryTimer.current = setTimeout(async () => {
+            if (!mounted.current) return;
+            // Auto-retry the same credentials
+            try {
+              const retry = await login({
+                email: isEmail ? identifier : undefined,
+                phone: !isEmail ? identifier : undefined,
+                password,
+                lang: t("common.lang") || "ht"
+              });
+              if (!mounted.current) return;
+              if (retry?.success) {
+                const token = retry?.data?.data?.token || retry?.data?.token || retry?.token;
+                const u     = retry?.data?.data?.user  || retry?.data?.user  || retry?.user;
+                if (token && u) {
+                  if (u?.id && !u?._id) u._id = u.id;
+                  authLogin({ ...u, token });
+                  try { sounds.login(); } catch (_) {}
+                  navigate(getRoleDefaultPath(u?.role));
+                  return;
+                }
+              }
+            } catch (_) {}
+            if (mounted.current) {
+              setLoading(false);
+              setSlowLoad(false);
+              setError("Sèvè a poko leve. Eseye ankò nan 30 sègonn.");
+            }
+          }, 20000);
+          return; // Stay in loading state while retrying — don't fall through to finally
         } else if (status === 401) {
           setError(t("auth.invalidCredentials"));
         } else {
           setError(res?.message || t("auth.invalidCredentials"));
         }
+        if (mounted.current) setLoading(false);
         return;
       }
 
@@ -142,14 +177,13 @@ export default function Login() {
 
     } catch (err) {
       if (mounted.current) {
+        setLoading(false);
         setError(
           err?.response?.data?.message ||
           err?.message ||
           t("auth.invalidCredentials")
         );
       }
-    } finally {
-      if (mounted.current) setLoading(false);
     }
   };
 

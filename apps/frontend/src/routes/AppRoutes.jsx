@@ -133,6 +133,14 @@ const AdminGate = ({ children }) => {
   return <AdminLayout>{children}</AdminLayout>;
 };
 
+// SmartRoot: authenticated users go straight to their dashboard; others see Splash
+const SmartRoot = () => {
+  const { isAuthenticated, loading, user } = useAuth();
+  if (loading) return <div style={{ background: '#050B18', minHeight: '100vh' }} />;
+  if (isAuthenticated) return <Navigate to={getRoleDefaultPath(user?.role)} replace />;
+  return <SplashScreen />;
+};
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -140,7 +148,7 @@ function AppRoutes() {
         <Suspense fallback={<Loader text="Loading application..." />}>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<SplashScreen />} />
+            <Route path="/" element={<SmartRoot />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/home" element={<PublicLayout><HomeMarketplace /></PublicLayout>} />
 

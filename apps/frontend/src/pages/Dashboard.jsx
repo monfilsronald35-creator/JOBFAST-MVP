@@ -488,38 +488,6 @@ function JobFastHome({ user, geo, jobs, loading, members, navigate, isEmployer }
         </div>
       )}
 
-      {/* ── TRAVAYÈ LACAS BANNER ──────────────────────────────────── */}
-      <div className="px-4 mb-4">
-        <button
-          type="button"
-          onClick={() => navigate("/search?type=user&q=lacas")}
-          className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl border active:scale-[0.98] transition-all"
-          style={{
-            background:   "linear-gradient(135deg, #1a0d2e 0%, #0d1526 100%)",
-            borderColor:  "#7c3aed60",
-            boxShadow:    "0 0 24px rgba(124,58,237,0.12)",
-          }}
-        >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: "rgba(124,58,237,0.18)", border: "1.5px solid #7c3aed50" }}>
-            <span className="text-2xl">🏠</span>
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-[13px] font-black text-white leading-tight">Travayè Lacas</p>
-            <p className="text-[10px] text-purple-300 mt-0.5">
-              Bòn · Kuyinye · Gadyen · Jardinier · Gadò · Chofè
-            </p>
-          </div>
-          <div className="shrink-0 flex flex-col items-end gap-1">
-            <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
-              style={{ background: "#7c3aed30", color: "#a78bfa" }}>
-              DISPONIB
-            </span>
-            <span className="text-slate-600 text-xs">→</span>
-          </div>
-        </button>
-      </div>
-
       {/* ── SERVICES GRID (workers only) ──────────────────────────── */}
       {!isEmployer && (
         <div className="px-4 mb-6">
