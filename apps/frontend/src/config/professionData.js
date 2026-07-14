@@ -25,6 +25,7 @@ export const SUBCATEGORIES = {
     { id: 'engineering',     label: 'Engineering'      },
     { id: 'cleaning',        label: 'Cleaning'         },
     { id: 'landscaping',     label: 'Landscaping'      },
+    { id: 'lacas',           label: 'Lacas'            },
   ],
   services: [
     { id: 'hospitality',    label: 'Hospitality'    },
@@ -103,6 +104,16 @@ export const PROFESSIONS = {
     landscaping: [
       { id: 'gardener',     label: 'Gardener'     },
       { id: 'pool_cleaner', label: 'Pool Cleaner' },
+    ],
+    lacas: [
+      { id: 'bòn',             label: 'Bòn / Travayè Lacas'   },
+      { id: 'kuyinye_lacas',   label: 'Kuyinye (Cook)'         },
+      { id: 'gadyen',          label: 'Gadyen / Watchman'      },
+      { id: 'jardinier',       label: 'Jardinier'              },
+      { id: 'gadò',            label: 'Gadò / Nanny'           },
+      { id: 'chofè_prive',     label: 'Chofè Prive'            },
+      { id: 'netwayaj_lacas',  label: 'Netwayaj Kay'           },
+      { id: 'blanchisè',       label: 'Blanchisè (Laundry)'    },
     ],
   },
 
