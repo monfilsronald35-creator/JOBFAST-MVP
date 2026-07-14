@@ -781,16 +781,8 @@ function EmployeesTab({ branches }) {
   );
 }
 
-function JobsTab({ jobSlots, setJobSlots }) {
+function JobsTab({ jobSlots, setJobSlots, onPublish }) {
   const [showHire, setShowHire] = useState(false);
-
-  const handlePublish = (form) => {
-    setJobSlots(p => [{
-      id:`js${Date.now()}`, profession:form.profession,
-      total:Number(form.needed), filled:0, icon:'💼',
-      salary:form.salary, city:form.city, urgent:false,
-    }, ...p]);
-  };
 
   const simulateFill = (jobId) => {
     setJobSlots(p => p.map(j => {
@@ -863,17 +855,29 @@ function JobsTab({ jobSlots, setJobSlots }) {
         );
       })}
 
-      {showHire && <HireWorkersModal onClose={() => setShowHire(false)} onPublish={handlePublish} />}
+      {showHire && <HireWorkersModal onClose={() => setShowHire(false)} onPublish={onPublish} />}
     </div>
   );
 }
 
-function FinanceTab() {
+function FinanceTab({ walletData, walletLoading }) {
   const [activeCurrency, setActiveCurrency] = useState('HTG');
   const [showSend, setShowSend] = useState(false);
 
   const cur = CURRENCIES.find(c => c.code === activeCurrency) || CURRENCIES[2];
-  const bal = MOCK_WALLET_BALANCES.find(b => b.code === activeCurrency)?.balance || 0;
+
+  const getBalance = (code) => {
+    if (walletData?.balances) {
+      const b = walletData.balances.find(b => b.currency === code);
+      return b ? (b.available || 0) / 100 : 0;
+    }
+    return MOCK_WALLET_BALANCES.find(b => b.code === code)?.balance || 0;
+  };
+
+  const bal = getBalance(activeCurrency);
+  const displayTransactions = (walletData?.transactions && walletData.transactions.length > 0)
+    ? walletData.transactions
+    : MOCK_TRANSACTIONS;
 
   return (
     <div className="space-y-4">
@@ -881,14 +885,17 @@ function FinanceTab() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-700 via-indigo-700 to-blue-800 p-5 shadow-2xl shadow-indigo-900/50">
         <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/5" />
         <p className="text-indigo-200 text-xs uppercase tracking-widest mb-1">{cur.flag} {cur.code} — Balans Kounye a</p>
-        <p className="text-3xl font-black text-white">{cur.symbol}{bal.toLocaleString()}</p>
+        {walletLoading
+          ? <p className="text-3xl font-black text-white/40 animate-pulse">···</p>
+          : <p className="text-3xl font-black text-white">{cur.symbol}{bal.toLocaleString()}</p>
+        }
         <p className="text-indigo-200 text-xs mt-1">Wallet Entènasyonal JOBFAST</p>
       </div>
 
       {/* Currency selector */}
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth:'none' }}>
         {CURRENCIES.map(c => {
-          const b = MOCK_WALLET_BALANCES.find(x => x.code === c.code);
+          const b = getBalance(c.code);
           return (
             <button key={c.code} type="button" onClick={() => setActiveCurrency(c.code)}
               className={`shrink-0 flex flex-col items-center p-2.5 rounded-2xl border text-center min-w-[64px] transition ${
@@ -896,7 +903,7 @@ function FinanceTab() {
               }`}>
               <span className="text-xl leading-none">{c.flag}</span>
               <span className="text-[10px] font-black text-white mt-1">{c.code}</span>
-              <span className={`text-[8px] ${b?.balance ? 'text-green-400' : 'text-slate-500'}`}>{b?.balance ? c.symbol + (b.balance >= 1000 ? (b.balance / 1000).toFixed(1) + 'k' : b.balance) : '—'}</span>
+              <span className={`text-[8px] ${b ? 'text-green-400' : 'text-slate-500'}`}>{b ? c.symbol + (b >= 1000 ? (b / 1000).toFixed(1) + 'k' : b) : '—'}</span>
             </button>
           );
         })}
@@ -921,7 +928,7 @@ function FinanceTab() {
       {/* Transactions */}
       <div className="p-4 bg-[#0d1526] border border-slate-700 rounded-2xl">
         <p className="text-xs text-slate-400 uppercase tracking-wide font-bold mb-3">Dènye Tranzaksyon</p>
-        {MOCK_TRANSACTIONS.map(tx => (
+        {displayTransactions.map(tx => (
           <div key={tx.id} className="flex items-center gap-3 py-2.5 border-b border-slate-800 last:border-0">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
               tx.type === 'received' ? 'bg-green-500/10' : tx.type === 'salary' ? 'bg-amber-500/10' : 'bg-red-500/10'
@@ -972,17 +979,90 @@ function FinanceTab() {
   );
 }
 
-function ReservationsTab() {
+function ReservationsTab({ reservations, setReservations, user }) {
   const [statusTab, setStatusTab] = useState('upcoming');
-  const [reservations, setReservations] = useState(MOCK_RESERVATIONS);
-  const confirmRes  = (id) => setReservations(p => p.map(r => r.id === id ? { ...r, status:'thisweek' } : r));
-  const cancelRes   = (id) => setReservations(p => p.map(r => r.id === id ? { ...r, status:'cancelled' } : r));
+  const [showNew, setShowNew] = useState(false);
+  const [newRes, setNewRes] = useState({ client:'', service:'', date:'', time:'', amount:0, guests:1 });
+
+  const confirmRes = async (id) => {
+    setReservations(p => p.map(r => r.id === id ? { ...r, status:'thisweek' } : r));
+    try { await API.patch(`/bookings/${id}/status`, { status: 'confirmed' }); } catch {}
+  };
+  const cancelRes = async (id) => {
+    setReservations(p => p.map(r => r.id === id ? { ...r, status:'cancelled' } : r));
+    try { await API.patch(`/bookings/${id}/status`, { status: 'cancelled' }); } catch {}
+  };
+
+  const handleCreate = async () => {
+    if (!newRes.client || !newRes.date) return;
+    const uid = user?._id || user?.id;
+    const optimistic = { id: `r${Date.now()}`, ...newRes, status:'upcoming' };
+    setReservations(p => [optimistic, ...p]);
+    setShowNew(false);
+    try {
+      const res = await API.post('/bookings', {
+        title: newRes.service || 'Rezèvas',
+        serviceType: 'enterprise',
+        providerId: uid,
+        clientId: newRes.client,
+        date: newRes.date,
+        time: newRes.time,
+        price: Number(newRes.amount),
+      });
+      if (res?.data?.success) {
+        setReservations(p => p.map(r => r.id === optimistic.id ? { ...optimistic, id: res.data.data.id } : r));
+      }
+    } catch {}
+  };
 
   const filtered = reservations.filter(r => r.status === statusTab);
   const cfg = RESERVATION_STATUSES.find(s => s.id === statusTab) || RESERVATION_STATUSES[0];
 
   return (
     <div className="space-y-4">
+      <button type="button" onClick={() => setShowNew(v => !v)}
+        className="w-full py-3 rounded-2xl border border-dashed border-amber-500/40 text-amber-400 font-bold text-sm flex items-center justify-center gap-2 hover:bg-amber-500/5 transition">
+        + Nouvo Rezèvas
+      </button>
+
+      {showNew && (
+        <div className="p-4 bg-[#0d1526] border border-slate-700 rounded-2xl space-y-3">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-xs text-slate-400 block mb-1">Kliyan</label>
+              <input value={newRes.client} onChange={e => setNewRes(p => ({ ...p, client:e.target.value }))} placeholder="Non kliyan"
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-amber-500/50" />
+            </div>
+            <div className="flex-1">
+              <label className="text-xs text-slate-400 block mb-1">Sèvis</label>
+              <input value={newRes.service} onChange={e => setNewRes(p => ({ ...p, service:e.target.value }))} placeholder="Chambre, Table…"
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-amber-500/50" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-xs text-slate-400 block mb-1">Dat</label>
+              <input type="date" value={newRes.date} onChange={e => setNewRes(p => ({ ...p, date:e.target.value }))}
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none" />
+            </div>
+            <div className="flex-1">
+              <label className="text-xs text-slate-400 block mb-1">Lè</label>
+              <input type="time" value={newRes.time} onChange={e => setNewRes(p => ({ ...p, time:e.target.value }))}
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none" />
+            </div>
+            <div className="w-24">
+              <label className="text-xs text-slate-400 block mb-1">Montan</label>
+              <input type="number" value={newRes.amount} onChange={e => setNewRes(p => ({ ...p, amount:e.target.value }))} placeholder="0"
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button type="button" onClick={handleCreate} className="flex-1 py-3 rounded-xl bg-amber-500 text-slate-950 font-black text-sm">✅ Kreye</button>
+            <button type="button" onClick={() => setShowNew(false)} className="px-4 py-3 rounded-xl border border-slate-700 text-slate-400 text-sm">Anile</button>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth:'none' }}>
         {RESERVATION_STATUSES.map(s => (
           <button key={s.id} type="button" onClick={() => setStatusTab(s.id)}
@@ -1023,9 +1103,8 @@ function ReservationsTab() {
   );
 }
 
-function InventoryTab() {
+function InventoryTab({ inventory, setInventory }) {
   const [catFilter, setCatFilter] = useState('all');
-  const [inventory, setInventory] = useState(MOCK_INVENTORY);
 
   const filtered = catFilter === 'all' ? inventory : inventory.filter(i => i.cat === catFilter);
   const lowStock = inventory.filter(i => i.qty <= i.min);
@@ -1070,6 +1149,13 @@ function InventoryTab() {
                 <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all ${isLow ? 'bg-red-500' : 'bg-green-500'}`} style={{ width:`${Math.min(item.qty / (item.min * 3) * 100, 100)}%` }} />
                 </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <button onClick={() => setInventory(p => p.map(i => i.id === item.id ? {...i, qty: Math.max(0, i.qty-1)} : i))}
+                  className="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-black flex items-center justify-center">−</button>
+                <span className="text-sm font-black text-white w-8 text-center">{item.qty}</span>
+                <button onClick={() => setInventory(p => p.map(i => i.id === item.id ? {...i, qty: i.qty+1} : i))}
+                  className="w-7 h-7 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm font-black flex items-center justify-center">+</button>
               </div>
             </div>
           );
@@ -1147,10 +1233,85 @@ export default function EnterpriseDashboard() {
 
   const [tab, setTab]               = useState('dashboard');
   const [businessType, setBusinessType] = useState(user?.companyData?.businessType || 'enterprise');
-  const [branches, setBranches]     = useState(MOCK_BRANCHES);
-  const [jobSlots, setJobSlots]     = useState(MOCK_JOB_SLOTS);
+  const [branches, setBranches]     = useState(() => {
+    try { return JSON.parse(localStorage.getItem('jf_ent_branches') || 'null') || MOCK_BRANCHES; } catch { return MOCK_BRANCHES; }
+  });
+  const [jobSlots, setJobSlots]     = useState(() => {
+    try { return JSON.parse(localStorage.getItem('jf_ent_jobs') || 'null') || MOCK_JOB_SLOTS; } catch { return MOCK_JOB_SLOTS; }
+  });
+  const [walletData,    setWalletData]    = useState(null);
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [reservations,  setReservations]  = useState(MOCK_RESERVATIONS);
+  const [inventory,     setInventory]     = useState(() => {
+    try { return JSON.parse(localStorage.getItem('jf_ent_inventory') || 'null') || MOCK_INVENTORY; } catch { return MOCK_INVENTORY; }
+  });
   const [countryFilter, setCountryFilter] = useState('all');
   const [showTypeSelect, setShowTypeSelect] = useState(false);
+
+  // Persist branches to localStorage
+  useEffect(() => { try { localStorage.setItem('jf_ent_branches', JSON.stringify(branches)); } catch {} }, [branches]);
+  // Persist jobSlots to localStorage
+  useEffect(() => { try { localStorage.setItem('jf_ent_jobs', JSON.stringify(jobSlots)); } catch {} }, [jobSlots]);
+  // Persist inventory to localStorage
+  useEffect(() => { try { localStorage.setItem('jf_ent_inventory', JSON.stringify(inventory)); } catch {} }, [inventory]);
+
+  // Fetch wallet + reservations on mount
+  useEffect(() => {
+    API.get('/wallet')
+      .then(res => { if (res?.data?.success) setWalletData(res.data.data?.wallet); })
+      .catch(() => {})
+      .finally(() => setWalletLoading(false));
+
+    const uid = user?._id || user?.id;
+    if (uid) {
+      API.get('/bookings', { params: { userId: uid } })
+        .then(res => {
+          if (res?.data?.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
+            const statusMap = { pending:'upcoming', confirmed:'upcoming', in_progress:'thisweek', completed:'completed', cancelled:'cancelled' };
+            setReservations(res.data.data.map(b => ({
+              id: b.id,
+              client: b.clientId || 'Kliyan',
+              service: b.title || b.serviceType || 'Sèvis',
+              date: b.date ? b.date.slice(0,10) : '',
+              time: b.time || '09:00',
+              guests: 1,
+              amount: b.price || 0,
+              status: statusMap[b.status] || 'upcoming',
+            })));
+          }
+        })
+        .catch(() => {});
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handlePublishJob = (form) => {
+    setJobSlots(p => [{
+      id: `js${Date.now()}`, profession: form.profession,
+      total: Number(form.needed), filled: 0, icon: '💼',
+      salary: form.salary, city: form.city, urgent: false,
+    }, ...p]);
+
+    const uid = user?._id || user?.id;
+    API.post('/jobs/create', {
+      title: `${form.profession} — ${form.city || 'Haiti'}`,
+      description: [form.requirements, form.languages ? 'Lang: ' + form.languages : '', form.contract ? 'Kontra: ' + form.contract : ''].filter(Boolean).join('\n'),
+      type: 'recruitment',
+      category: 'enterprise',
+      location: { city: form.city, country: form.country || 'Haiti' },
+      budget: parseInt((form.salary || '0').replace(/\D/g, '')) || 0,
+      createdBy: uid,
+    }).catch(() => {});
+
+    if (uid) {
+      API.post('/enterprise/alert', {
+        enterpriseId: uid,
+        enterpriseName: user?.name || 'Enterprise',
+        skills: form.profession,
+        city: form.city,
+        country: form.country || 'Haiti',
+      }).catch(() => {});
+    }
+  };
 
   const bt = BUSINESS_TYPES.find(b => b.id === businessType) || BUSINESS_TYPES[6];
 
@@ -1209,10 +1370,10 @@ export default function EnterpriseDashboard() {
         {tab === 'dashboard'    && <DashboardTab company={user} branches={branches} jobSlots={jobSlots} businessType={businessType} />}
         {tab === 'branches'     && <BranchesTab branches={branches} setBranches={setBranches} countryFilter={countryFilter} setCountryFilter={setCountryFilter} />}
         {tab === 'employees'    && <EmployeesTab branches={branches} />}
-        {tab === 'jobs'         && <JobsTab jobSlots={jobSlots} setJobSlots={setJobSlots} />}
-        {tab === 'finance'      && <FinanceTab />}
-        {tab === 'reservations' && <ReservationsTab />}
-        {tab === 'inventory'    && <InventoryTab />}
+        {tab === 'jobs'         && <JobsTab jobSlots={jobSlots} setJobSlots={setJobSlots} onPublish={handlePublishJob} />}
+        {tab === 'finance'      && <FinanceTab walletData={walletData} walletLoading={walletLoading} />}
+        {tab === 'reservations' && <ReservationsTab reservations={reservations} setReservations={setReservations} user={user} />}
+        {tab === 'inventory'    && <InventoryTab inventory={inventory} setInventory={setInventory} />}
         {tab === 'reports'      && <ReportsTab />}
       </div>
     </div>
