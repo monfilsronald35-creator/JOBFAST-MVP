@@ -24,7 +24,7 @@ const getRoleMeta = (role) =>
   ROLE_META[role] || { label: role || 'Pwofesyonèl', color: '#FACC15' };
 
 // ── Image compression ─────────────────────────────────────────────────
-async function compressImage(file, maxPx = 800, quality = 0.72) {
+async function compressImage(file, maxPx = 700, quality = 0.68) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -128,6 +128,7 @@ function PostModal({ user, onClose, onCreated }) {
   const [mediaB64,  setMediaB64]  = useState(null);
   const [mediaType, setMediaType] = useState(null); // 'photo' | 'video'
   const [warning,   setWarning]   = useState('');
+  const [error,     setError]     = useState('');
   const [posting,   setPosting]   = useState(false);
   const photoRef = useRef(null);
   const videoRef = useRef(null);
@@ -136,30 +137,38 @@ function PostModal({ user, onClose, onCreated }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setWarning('');
-    const b64 = await compressImage(file);
-    setMediaB64(b64);
-    setMediaType('photo');
+    setError('');
+    try {
+      const b64 = await compressImage(file);
+      setMediaB64(b64);
+      setMediaType('photo');
+    } catch {
+      setWarning('Foto a pa ka chaje. Eseye yon lòt.');
+    }
   };
 
   const handleVideo = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setWarning('Videyo a twò gwo (max 5 MB). Tanpri chwazi yon videyo pi kout.');
+    if (file.size > 3 * 1024 * 1024) {
+      setWarning('Videyo a twò gwo (max 3 MB). Tanpri chwazi yon videyo pi kout.');
       return;
     }
     setWarning('');
+    setError('');
     const reader = new FileReader();
     reader.onload = (ev) => {
       setMediaB64(ev.target.result);
       setMediaType('video');
     };
+    reader.onerror = () => setWarning('Videyo a pa ka chaje. Eseye yon lòt.');
     reader.readAsDataURL(file);
   };
 
   const handlePublish = async () => {
     if (!caption.trim() && !mediaB64) return;
     setPosting(true);
+    setError('');
     try {
       const res = await API.post('/posts', {
         type:      mediaType || 'text',
@@ -169,9 +178,22 @@ function PostModal({ user, onClose, onCreated }) {
       });
       if (res?.data?.success && res.data.post) {
         onCreated(res.data.post);
+        onClose();
+      } else {
+        setError('Repons sèvè a pa bon. Eseye ankò.');
+        setPosting(false);
       }
-      onClose();
-    } catch {
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 401) {
+        setError('Sesyon ou a ekspire. Dekonekte epi rekonekte.');
+      } else if (status === 413) {
+        setError('Foto/videyo a twò gwo. Chwazi yon imaj pi piti.');
+      } else if (!navigator.onLine) {
+        setError('Pa gen entènèt. Tcheke koneksyon ou epi eseye ankò.');
+      } else {
+        setError('Erè pandan piblikasyon. Eseye ankò.');
+      }
       setPosting(false);
     }
   };
@@ -206,6 +228,14 @@ function PostModal({ user, onClose, onCreated }) {
         </div>
 
         <div className="px-5 pt-4 space-y-4">
+
+          {/* Error banner */}
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-[12px] font-bold text-red-400"
+              style={{ background: '#1a0a0a', border: '1px solid #7f1d1d' }}>
+              {error}
+            </div>
+          )}
 
           {/* Media picker / preview */}
           {mediaB64 ? (
