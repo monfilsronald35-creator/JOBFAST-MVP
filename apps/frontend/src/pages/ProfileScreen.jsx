@@ -185,14 +185,17 @@ function PostModal({ user, onClose, onCreated }) {
       }
     } catch (err) {
       const status = err?.response?.status;
+      const msg    = err?.response?.data?.message || err?.message || err?.code || 'unknown';
       if (status === 401) {
         setError('Sesyon ou a ekspire. Dekonekte epi rekonekte.');
       } else if (status === 413) {
         setError('Foto/videyo a twò gwo. Chwazi yon imaj pi piti.');
+      } else if (status === 503 || status === 504) {
+        setError('Sèvè a ap dòmi. Tann 30 sèk epi eseye ankò.');
       } else if (!navigator.onLine) {
         setError('Pa gen entènèt. Tcheke koneksyon ou epi eseye ankò.');
       } else {
-        setError('Erè pandan piblikasyon. Eseye ankò.');
+        setError(`Erè ${status || 'rezò'}: ${msg}`);
       }
       setPosting(false);
     }
