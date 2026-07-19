@@ -53,7 +53,7 @@ export const env = Object.freeze({
 
   JWT_SECRET: required('JWT_SECRET', 'jobfast-secret-key-development-only'),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  ENCRYPTION_KEY: required('ENCRYPTION_KEY', ''),
+  ENCRYPTION_KEY: process.env.ENCRYPTION_KEY || '',
   BCRYPT_SALT_ROUNDS: number('BCRYPT_SALT_ROUNDS', 12),
 
   CORS_ORIGIN: list('CORS_ORIGIN', ['*']),
@@ -67,10 +67,10 @@ export const env = Object.freeze({
   RATE_LIMIT_MAX: number('RATE_LIMIT_MAX', 100),
   MAX_RADIUS_KM: number('MAX_RADIUS_KM', 50),
 
-  // ── Stripe (required before financial features go live) ───────────────────
-  STRIPE_SECRET_KEY:      required('STRIPE_SECRET_KEY', ''),
-  STRIPE_PUBLISHABLE_KEY: required('STRIPE_PUBLISHABLE_KEY', ''),
-  STRIPE_WEBHOOK_SECRET:  required('STRIPE_WEBHOOK_SECRET', ''),
+  // ── Stripe (optional until payments go live — won't crash when absent) ───
+  STRIPE_SECRET_KEY:      process.env.STRIPE_SECRET_KEY      || '',
+  STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY || '',
+  STRIPE_WEBHOOK_SECRET:  process.env.STRIPE_WEBHOOK_SECRET  || '',
 
   // ── Supabase ──────────────────────────────────────────────────────────────
   // SUPABASE_URL: your project URL  (e.g. https://xyz.supabase.co)
