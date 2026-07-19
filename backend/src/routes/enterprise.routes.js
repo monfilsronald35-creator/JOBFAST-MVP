@@ -1,37 +1,19 @@
 /**
- * enterprise.routes.js
- *
- * Enterprise-specific REST endpoints.  All user data is read and
- * written through the shared in-memory usersDatabase from
- * register.controller.js.  Enterprise-specific structured data is
- * stored on the user object under user.enterpriseData.
- *
- * NOTE (MVP): userId is accepted from the request body / query
- * rather than relying on JWT middleware (known decoded.id vs
- * decoded.userId mismatch — fix before production).
- *
+ * enterprise.routes.js — Supabase (migrated from in-memory usersDatabase)
  * Mounted at: /api/v1/enterprise
  */
 
 import express from 'express';
-import crypto  from 'crypto';
-import { usersDatabase }       from '../controllers/register.controller.js';
+import userRepo from '../repositories/user.repository.js';
+import notificationRepo from '../repositories/notification.repository.js';
+import supabase from '../config/supabaseClient.js';
 import { calculateDistanceKm } from '../utils/location.js';
 
 const router = express.Router();
 
-// ── Helpers ──────────────────────────────────────────────────
-
-function safeUser(u) {
-  // eslint-disable-next-line no-unused-vars
-  const { password, ...safe } = u;
-  return safe;
-}
-
-/** Return (initialising if absent) the enterprise-specific data block. */
 function getED(user) {
-  if (!user.enterpriseData) {
-    user.enterpriseData = {
+  if (!user.enterpriseData || !user.enterpriseData.jobs) {
+    return {
       profile:              {},
       countries:            [],
       regions:              [],
@@ -46,94 +28,75 @@ function getED(user) {
 }
 
 // ── GET /api/v1/enterprise/stats?userId= ─────────────────────
-// Returns the enterprise's full profile + derived global stats.
 
-router.get('/stats', (req, res) => {
+router.get('/stats', async (req, res) => {
   const { userId } = req.query;
   if (!userId) {
     return res.status(400).json({ success: false, error: { message: 'userId requis' } });
   }
 
-  const user = usersDatabase.get(userId);
-  if (!user) {
-    return res.status(404).json({ success: false, error: { message: 'Antrepriz pa jwenn' } });
-  }
+  try {
+    const user = await userRepo.getById(userId);
+    const ed   = getED(user);
 
-  const ed = getED(user);
-
-  const completedJobs   = (ed.jobs      || []).filter(j =>
-    ['completed', 'confirmed', 'paid', 'closed'].includes(j.status)
-  ).length;
-  const openJobs        = (ed.jobs      || []).filter(j =>
-    ['posted', 'applied', 'hired', 'active'].includes(j.status)
-  ).length;
-  const activeBranches  = (ed.branches  || []).filter(b => b.status === 'active').length;
-  const activeCountries = (ed.countries || []).length;
-  const activeEmployees = (ed.employees || []).filter(e => e.status === 'active').length;
-
-  return res.json({
-    success: true,
-    data: {
-      ...safeUser(user),
-      derived: {
-        completedJobs,
-        openJobs,
-        activeBranches,
-        totalBranches:   (ed.branches  || []).length,
-        activeCountries,
-        activeEmployees,
-        totalEmployees:  (ed.employees || []).length,
-        globalRevEst:    completedJobs * 2000,
+    const { passwordHash: _pw, ...safeUser } = user;
+    return res.json({
+      success: true,
+      data: {
+        ...safeUser,
+        derived: {
+          completedJobs:   (ed.jobs      || []).filter(j => ['completed','confirmed','paid','closed'].includes(j.status)).length,
+          openJobs:        (ed.jobs      || []).filter(j => ['posted','applied','hired','active'].includes(j.status)).length,
+          activeBranches:  (ed.branches  || []).filter(b => b.status === 'active').length,
+          totalBranches:   (ed.branches  || []).length,
+          activeCountries: (ed.countries || []).length,
+          activeEmployees: (ed.employees || []).filter(e => e.status === 'active').length,
+          totalEmployees:  (ed.employees || []).length,
+          globalRevEst:    (ed.jobs || []).filter(j => ['completed','confirmed','paid','closed'].includes(j.status)).length * 2000,
+        },
       },
-    },
-  });
+    });
+  } catch (err) {
+    if (err.statusCode === 404) {
+      return res.status(404).json({ success: false, error: { message: 'Antrepriz pa jwenn' } });
+    }
+    return res.status(500).json({ success: false, error: { message: err.message } });
+  }
 });
 
 // ── PATCH /api/v1/enterprise/profile ─────────────────────────
-// Additive merge of profileMetadata and enterpriseData.
-// Body: { userId, profileMetadata?, enterpriseData? }
 
-router.patch('/profile', (req, res) => {
+router.patch('/profile', async (req, res) => {
   const { userId, profileMetadata, enterpriseData } = req.body;
-
   if (!userId) {
     return res.status(400).json({ success: false, error: { message: 'userId requis' } });
   }
 
-  const user = usersDatabase.get(userId);
-  if (!user) {
-    return res.status(404).json({ success: false, error: { message: 'Antrepriz pa jwenn' } });
-  }
+  try {
+    const user    = await userRepo.getById(userId);
+    const updates = {};
 
-  if (profileMetadata && typeof profileMetadata === 'object') {
-    user.profileMetadata = { ...(user.profileMetadata || {}), ...profileMetadata };
-  }
+    if (profileMetadata && typeof profileMetadata === 'object') {
+      updates.profileMetadata = { ...(user.profileMetadata || {}), ...profileMetadata };
+    }
+    if (enterpriseData && typeof enterpriseData === 'object') {
+      updates.enterpriseData = { ...getED(user), ...enterpriseData };
+    }
 
-  if (enterpriseData && typeof enterpriseData === 'object') {
-    const existing = getED(user);
-    user.enterpriseData = { ...existing, ...enterpriseData };
+    const updated = await userRepo.update(userId, updates);
+    const { passwordHash: _pw, ...safeUser } = updated;
+    return res.json({ success: true, data: safeUser });
+  } catch (err) {
+    if (err.statusCode === 404) {
+      return res.status(404).json({ success: false, error: { message: 'Antrepriz pa jwenn' } });
+    }
+    return res.status(500).json({ success: false, error: { message: err.message } });
   }
-
-  usersDatabase.set(userId, user);
-  return res.json({ success: true, data: safeUser(user) });
 });
 
 // ── POST /api/v1/enterprise/alert ────────────────────────────
-// Multi-country worker search.  Supports GPS radius and country-
-// code-based fallback for enterprises operating across borders.
-//
-// Body: {
-//   enterpriseId,   — required
-//   enterpriseName, — optional, used in notification text
-//   skills,         — optional comma-separated filter
-//   countryCodes,   — optional array of country codes (multi-country)
-//   city,           — optional city fallback
-//   country,        — optional country fallback (single)
-//   lat, lng,       — optional GPS coords
-//   radius,         — km radius (default 50 — larger than company)
-// }
 
-router.post('/alert', (req, res) => {
+router.post('/alert', async (req, res) => {
   const {
     enterpriseId, enterpriseName, skills,
     countryCodes,
@@ -146,105 +109,97 @@ router.post('/alert', (req, res) => {
     return res.status(400).json({ success: false, error: { message: 'enterpriseId requis' } });
   }
 
-  const parsedLat  = lat != null ? parseFloat(lat) : null;
-  const parsedLng  = lng != null ? parseFloat(lng) : null;
-  const hasGPS     = Number.isFinite(parsedLat) && Number.isFinite(parsedLng);
-
-  const skillList  = skills
+  const parsedLat       = lat != null ? parseFloat(lat) : null;
+  const parsedLng       = lng != null ? parseFloat(lng) : null;
+  const hasGPS          = Number.isFinite(parsedLat) && Number.isFinite(parsedLng);
+  const skillList       = skills
     ? String(skills).split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
     : [];
-
   const countryCodeList = Array.isArray(countryCodes)
     ? countryCodes.map(c => String(c).toLowerCase())
     : [];
 
-  // ── Candidate workers ────────────────────────────────────
-  let candidates = Array.from(usersDatabase.values()).filter(u => {
-    const uid = u._id || u.id;
-    if (uid === enterpriseId) return false;
-    if (!['worker', 'service_provider', 'user'].includes(u.role)) return false;
-    const avail = u.availability ?? 'available';
-    return ['available', 'looking', 'online'].includes(avail);
-  });
+  try {
+    const { data: rows, error } = await supabase
+      .from('profiles')
+      .select('id, name, role, category, profession, profile_metadata, location_city, location_country, location_lat, location_lng, availability, is_available, stats')
+      .in('role', ['worker', 'service_provider', 'user'])
+      .eq('is_available', true)
+      .neq('id', enterpriseId)
+      .limit(500);
 
-  // ── Skill filter ─────────────────────────────────────────
-  if (skillList.length > 0) {
-    candidates = candidates.filter(u => {
-      const userSkills = [
-        u.profession,
-        u.category,
-        ...(u.profileMetadata?.skills || []),
-      ].map(s => String(s || '').toLowerCase());
-      return skillList.some(sk => userSkills.some(us => us.includes(sk)));
-    });
+    if (error) throw error;
+
+    let candidates = (rows || []).filter(u =>
+      ['available', 'looking', 'online'].includes(u.availability || 'available')
+    );
+
+    if (skillList.length > 0) {
+      candidates = candidates.filter(u => {
+        const userSkills = [
+          u.profession,
+          u.category,
+          ...(u.profile_metadata?.skills || []),
+        ].map(s => String(s || '').toLowerCase());
+        return skillList.some(sk => userSkills.some(us => us.includes(sk)));
+      });
+    }
+
+    if (hasGPS) {
+      candidates = candidates
+        .map(u => ({
+          ...u,
+          distanceKm: (u.location_lat != null && u.location_lng != null)
+            ? calculateDistanceKm(parsedLat, parsedLng, u.location_lat, u.location_lng)
+            : null,
+        }))
+        .filter(u => u.distanceKm == null || u.distanceKm <= parseFloat(radius));
+    } else if (countryCodeList.length > 0) {
+      candidates = candidates.filter(u => {
+        const uCountry = (u.location_country || '').toLowerCase();
+        return countryCodeList.some(cc => uCountry.includes(cc));
+      });
+    } else if (city || country) {
+      candidates = candidates.filter(u => {
+        const uCity    = (u.location_city    || '').toLowerCase();
+        const uCountry = (u.location_country || '').toLowerCase();
+        const matchCity    = city    ? uCity.includes(city.toLowerCase())       : true;
+        const matchCountry = country ? uCountry.includes(country.toLowerCase()) : true;
+        return matchCity || matchCountry;
+      });
+    }
+
+    const matched = candidates.slice(0, 30);
+
+    if (matched.length > 0) {
+      const notifs = matched.map(w => ({
+        userId:      w.id,
+        type:        'job_match',
+        title:       `${enterpriseName || 'Yon Gwo Antrepriz'} ap rekrite`,
+        message:     `Antrepriz sa a ap chèche${skillList.length > 0 ? ` ${skillList.join(', ')}` : ' travayè disponib'} nan zòn ou a.`,
+        actionUrl:   `/profile/${enterpriseId}`,
+        sourceUserId: enterpriseId,
+        expiresAt:   new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }));
+      await notificationRepo.broadcast(notifs).catch(e =>
+        console.error('[enterprise/alert] broadcast error:', e.message)
+      );
+    }
+
+    const safeMatched = matched.map(({ profile_metadata: _m, ...w }) => ({
+      ...w,
+      location: { city: w.location_city, country: w.location_country },
+    }));
+
+    return res.json({ success: true, data: { workers: safeMatched, total: safeMatched.length } });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: { message: err.message } });
   }
-
-  // ── Location filter — GPS → country codes → city/country text ──
-  if (hasGPS) {
-    candidates = candidates
-      .map(u => {
-        const coordLat = u.location?.coordinates?.latitude;
-        const coordLng = u.location?.coordinates?.longitude;
-        const distanceKm = (coordLat != null && coordLng != null)
-          ? calculateDistanceKm(parsedLat, parsedLng, coordLat, coordLng)
-          : null;
-        return { ...u, distanceKm };
-      })
-      .filter(u => u.distanceKm == null || u.distanceKm <= parseFloat(radius));
-  } else if (countryCodeList.length > 0) {
-    candidates = candidates.filter(u => {
-      const uCountry = (u.location?.country || '').toLowerCase();
-      return countryCodeList.some(cc => uCountry.includes(cc));
-    });
-  } else if (city || country) {
-    candidates = candidates.filter(u => {
-      const uCity    = (u.location?.city    || '').toLowerCase();
-      const uCountry = (u.location?.country || '').toLowerCase();
-      const matchCity    = city    ? uCity.includes(city.toLowerCase())       : true;
-      const matchCountry = country ? uCountry.includes(country.toLowerCase()) : true;
-      return matchCity || matchCountry;
-    });
-  }
-
-  // Cap results and strip passwords
-  const matched = candidates.slice(0, 30).map(u => {
-    // eslint-disable-next-line no-unused-vars
-    const { password, notifications: _n, ...safe } = u;
-    return safe;
-  });
-
-  // ── In-memory notifications on matched workers ───────────
-  for (const w of matched) {
-    const wId = w._id || w.id;
-    if (!wId) continue;
-    const worker = usersDatabase.get(wId);
-    if (!worker) continue;
-    if (!worker.notifications) worker.notifications = [];
-    worker.notifications.unshift({
-      id:        crypto.randomUUID(),
-      type:      'job_match',
-      title:     `${enterpriseName || 'Yon Gwo Antrepriz'} ap rekrite`,
-      message:   `Antrepriz sa a ap chèche${skillList.length > 0 ? ` ${skillList.join(', ')}` : ' travayè disponib'} nan zòn ou a.`,
-      actionUrl: `/profile/${enterpriseId}`,
-      createdAt: new Date().toISOString(),
-      isRead:    false,
-    });
-    usersDatabase.set(wId, worker);
-  }
-
-  return res.json({
-    success: true,
-    data: { workers: matched, total: matched.length },
-  });
 });
 
 // ── POST /api/v1/enterprise/confirm ──────────────────────────
-// Enterprise confirms a job; notifies assigned workers with a
-// payment confirmation request.
-//
-// Body: { enterpriseId, jobId, jobTitle? }
 
-router.post('/confirm', (req, res) => {
+router.post('/confirm', async (req, res) => {
   const { enterpriseId, jobId, jobTitle } = req.body;
 
   if (!enterpriseId || !jobId) {
@@ -254,53 +209,49 @@ router.post('/confirm', (req, res) => {
     });
   }
 
-  const enterprise = usersDatabase.get(enterpriseId);
-  if (!enterprise) {
-    return res.status(404).json({ success: false, error: { message: 'Antrepriz pa jwenn' } });
-  }
+  try {
+    const enterprise = await userRepo.getById(enterpriseId);
+    const ed         = getED(enterprise);
+    const job        = (ed.jobs || []).find(j => j.id === jobId);
+    const title      = jobTitle || job?.title || 'Travay';
 
-  const ed    = getED(enterprise);
-  const job   = (ed.jobs || []).find(j => j.id === jobId);
-  const title = jobTitle || job?.title || 'Travay';
+    if (job) {
+      job.status = 'confirmed';
+      await userRepo.update(enterpriseId, { enterpriseData: ed });
+    }
 
-  if (job) {
-    job.status = 'confirmed';
-    usersDatabase.set(enterpriseId, enterprise);
-  }
+    const assignedIds  = (job?.applicants || []).filter(a => a.hireStatus === 'accepted').map(a => a.workerId);
+    const employeeIds  = (ed.employees   || []).filter(e => e.status === 'active').map(e => e.workerId);
+    const recipientIds = [...new Set([...assignedIds, ...employeeIds])];
 
-  const assignedIds = (job?.applicants || [])
-    .filter(a => a.hireStatus === 'accepted')
-    .map(a => a.workerId);
+    const PAYMENT_RESPONSES = ['paid_full', 'partial', 'not_paid', 'did_not_work'];
 
-  const employeeIds = (ed.employees || [])
-    .filter(e => e.status === 'active')
-    .map(e => e.workerId);
+    if (recipientIds.length > 0) {
+      const notifs = recipientIds.map(wId => ({
+        userId:      wId,
+        type:        'payment_confirm',
+        title:       'Ou te peye pou travay sa a?',
+        message:     `"${title}" — Konfime pèman ou jwenn nan men antrepriz lan.`,
+        data:        { jobId, enterpriseId, responses: PAYMENT_RESPONSES },
+        actionUrl:   '/notifications',
+        sourceUserId: enterpriseId,
+        expiresAt:   new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      }));
+      await notificationRepo.broadcast(notifs).catch(e =>
+        console.error('[enterprise/confirm] broadcast error:', e.message)
+      );
+    }
 
-  const recipientIds = [...new Set([...assignedIds, ...employeeIds])];
-
-  const PAYMENT_RESPONSES = ['paid_full', 'partial', 'not_paid', 'did_not_work'];
-
-  for (const wId of recipientIds) {
-    const worker = usersDatabase.get(wId);
-    if (!worker) continue;
-    if (!worker.notifications) worker.notifications = [];
-    worker.notifications.unshift({
-      id:        crypto.randomUUID(),
-      type:      'payment_confirm',
-      title:     'Ou te peye pou travay sa a?',
-      message:   `"${title}" — Konfime pèman ou jwenn nan men antrepriz lan.`,
-      data:      { jobId, enterpriseId, responses: PAYMENT_RESPONSES },
-      actionUrl: '/notifications',
-      createdAt: new Date().toISOString(),
-      isRead:    false,
+    return res.json({
+      success: true,
+      data: { notified: recipientIds.length, jobId, status: 'confirmed' },
     });
-    usersDatabase.set(wId, worker);
+  } catch (err) {
+    if (err.statusCode === 404) {
+      return res.status(404).json({ success: false, error: { message: 'Antrepriz pa jwenn' } });
+    }
+    return res.status(500).json({ success: false, error: { message: err.message } });
   }
-
-  return res.json({
-    success: true,
-    data: { notified: recipientIds.length, jobId, status: 'confirmed' },
-  });
 });
 
 export default router;

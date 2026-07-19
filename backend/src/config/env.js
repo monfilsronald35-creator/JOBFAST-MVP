@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+﻿import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -56,8 +56,6 @@ export const env = Object.freeze({
   ENCRYPTION_KEY: required('ENCRYPTION_KEY', ''),
   BCRYPT_SALT_ROUNDS: number('BCRYPT_SALT_ROUNDS', 12),
 
-  DB_URL: required('DB_URL', 'mongodb://localhost:27017/jobfast'),
-
   CORS_ORIGIN: list('CORS_ORIGIN', ['*']),
 
   // Admin emails — comma-separated list of emails that receive admin role
@@ -73,4 +71,15 @@ export const env = Object.freeze({
   STRIPE_SECRET_KEY:      required('STRIPE_SECRET_KEY', ''),
   STRIPE_PUBLISHABLE_KEY: required('STRIPE_PUBLISHABLE_KEY', ''),
   STRIPE_WEBHOOK_SECRET:  required('STRIPE_WEBHOOK_SECRET', ''),
+
+  // ── Supabase ──────────────────────────────────────────────────────────────
+  // SUPABASE_URL: your project URL  (e.g. https://xyz.supabase.co)
+  // SUPABASE_SERVICE_ROLE_KEY: secret key — NEVER expose to frontend
+  // SUPABASE_ANON_KEY: public key safe for browser
+  // SUPABASE_JWT_SECRET: found in Supabase → Settings → API → JWT Secret
+  SUPABASE_URL:              required('SUPABASE_URL', ''),
+  SUPABASE_SERVICE_ROLE_KEY: required('SUPABASE_SERVICE_ROLE_KEY', ''),
+  SUPABASE_ANON_KEY:         required('SUPABASE_ANON_KEY', ''),
+  SUPABASE_JWT_SECRET:       required('SUPABASE_JWT_SECRET', ''),
+
 });

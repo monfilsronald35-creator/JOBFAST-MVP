@@ -1,6 +1,8 @@
 import userService from "../services/userService.js";
 import { HTTP_STATUS, ACCOUNT_STATUS } from "../config/constants.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import notificationRepo from "../repositories/notification.repository.js";
+import { getIO } from "../utils/io.js";
 
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await userService.getById(req.user.id);
@@ -32,6 +34,22 @@ export const getUsers = asyncHandler(async (req, res) => {
 
 export const getUserById = asyncHandler(async (req, res) => {
   const user = await userService.getById(req.params.id);
+
+  // Fire profile-view notification (non-blocking — never delays the response)
+  const viewerId = String(req.user?._id || req.user?.id || '');
+  const ownerId  = String(req.params.id);
+  if (viewerId && ownerId && viewerId !== ownerId) {
+    notificationRepo.insert({
+      userId:       ownerId,
+      type:         'profile_view',
+      title:        'Yon moun vizite pwofil ou',
+      message:      `${req.user?.name || 'Yon itilizatè'} te vizite pwofil ou`,
+      sourceUserId: viewerId,
+      expiresAt:    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    }).then(notif => {
+      getIO()?.to(`user:${ownerId}`).emit('notification:new', notif);
+    }).catch(() => {});
+  }
 
   return res.status(HTTP_STATUS.OK).json({
     success: true,

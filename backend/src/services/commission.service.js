@@ -1,14 +1,14 @@
 /**
- * Commission Service — 5-tier hierarchy.
+ * Commission Service — 5-tier hierarchy (Supabase)
  *
  * Resolution order (highest priority wins):
  *   T5 promo_code → T4 amount_bracket → T3 job_type → T2 profession → T1 role (default)
  *
- * All amounts are integer minor units.
- * The effective rate is stored on the Commission document for full auditability.
+ * Only the persistence layer changed (Commission Mongoose model → commissionRepo).
+ * Business logic and rate resolution are unchanged.
  */
 
-import Commission from '../models/commission.model.js';
+import commissionRepo from '../repositories/commission.repository.js';
 import {
   DEFAULT_COMMISSION_RATES,
   COMMISSION_TIER,
@@ -16,15 +16,14 @@ import {
 } from '../config/financial.js';
 import { assertPositive, multiply, FinancialError } from '../utils/money.js';
 
-// ── Amount brackets (T4) ──────────────────────────────────────────────────────
-// Brackets in minor units (HTG). Lower rate for higher volume.
+// ── Amount brackets (T4) ─────────────────────────────────────────────────────
 const AMOUNT_BRACKETS = [
   { minAmount: 10_000_000, rate: 0.06 }, // 100,000.00 HTG+
   { minAmount:  5_000_000, rate: 0.07 }, //  50,000.00 HTG+
   { minAmount:  1_000_000, rate: 0.08 }, //  10,000.00 HTG+
 ];
 
-// ── Profession overrides (T2) — sample overrides, extend as needed ────────────
+// ── Profession overrides (T2) ─────────────────────────────────────────────────
 const PROFESSION_RATES = Object.freeze({
   plumber:       0.08,
   electrician:   0.08,
@@ -32,49 +31,32 @@ const PROFESSION_RATES = Object.freeze({
   hotel_manager: 0.05,
 });
 
-// ── Job type overrides (T3) ────────────────────────────────────────────────────
+// ── Job type overrides (T3) ───────────────────────────────────────────────────
 const JOB_TYPE_RATES = Object.freeze({
-  emergency:   0.05,  // Emergency jobs discounted
-  premium:     0.12,  // Premium listings charged more
+  emergency:   0.05,
+  premium:     0.12,
 });
 
-/**
- * Resolve the effective commission rate for a given context.
- * Returns { rate, tier, tierContext }.
- */
-function resolveRate({
-  userRole,
-  profession = null,
-  jobType    = null,
-  amount,
-  promoCode  = null,
-  promoRate  = null,
-}) {
+function resolveRate({ userRole, profession = null, jobType = null, amount, promoCode = null, promoRate = null }) {
   // T5: promo code (highest priority)
   if (promoCode && promoRate != null) {
-    if (promoRate < 0 || promoRate > 1) {
-      throw new FinancialError('Invalid promo rate', 'INVALID_PROMO_RATE');
-    }
+    if (promoRate < 0 || promoRate > 1) throw new FinancialError('Invalid promo rate', 'INVALID_PROMO_RATE');
     return { rate: promoRate, tier: COMMISSION_TIER.PROMO, tierContext: { promoCode } };
   }
-
   // T4: amount bracket
   for (const bracket of AMOUNT_BRACKETS) {
     if (amount >= bracket.minAmount) {
       return { rate: bracket.rate, tier: COMMISSION_TIER.AMOUNT, tierContext: { minAmount: bracket.minAmount } };
     }
   }
-
   // T3: job type
   if (jobType && JOB_TYPE_RATES[jobType] != null) {
     return { rate: JOB_TYPE_RATES[jobType], tier: COMMISSION_TIER.JOB_TYPE, tierContext: { jobType } };
   }
-
   // T2: profession
   if (profession && PROFESSION_RATES[profession] != null) {
     return { rate: PROFESSION_RATES[profession], tier: COMMISSION_TIER.PROFESSION, tierContext: { profession } };
   }
-
   // T1: role default
   const defaultRate = DEFAULT_COMMISSION_RATES[userRole] ?? DEFAULT_COMMISSION_RATES.default;
   return { rate: defaultRate, tier: COMMISSION_TIER.ROLE, tierContext: { userRole } };
@@ -82,20 +64,7 @@ function resolveRate({
 
 /**
  * Calculate and persist a commission record.
- *
- * @param {object} opts
- * @param {string}   opts.payerId         — user paying the commission
- * @param {string}   opts.userRole        — payer's role (from USER_ROLES)
- * @param {number}   opts.baseAmount      — integer minor units
- * @param {string}   opts.currency
- * @param {string}   opts.referenceType   — 'escrow' | 'payment'
- * @param {string}   opts.referenceId
- * @param {string}   [opts.profession]
- * @param {string}   [opts.jobType]
- * @param {string}   [opts.promoCode]
- * @param {number}   [opts.promoRate]     — override rate from 0 to 1
- * @param {object}   [opts.session]       — Mongoose session
- * @returns {Commission}
+ * `session` is ignored — kept for API compatibility with callers.
  */
 export async function calculate({
   payerId,
@@ -104,11 +73,11 @@ export async function calculate({
   currency,
   referenceType,
   referenceId,
-  profession = null,
-  jobType    = null,
-  promoCode  = null,
-  promoRate  = null,
-  session    = null,
+  profession  = null,
+  jobType     = null,
+  promoCode   = null,
+  promoRate   = null,
+  session     = null, // ignored
 }) {
   assertPositive(baseAmount, 'base amount');
 
@@ -119,49 +88,33 @@ export async function calculate({
     );
   }
 
-  const { rate, tier, tierContext } = resolveRate({
-    userRole,
-    profession,
-    jobType,
-    amount: baseAmount,
-    promoCode,
-    promoRate,
-  });
-
+  const { rate, tier, tierContext } = resolveRate({ userRole, profession, jobType, amount: baseAmount, promoCode, promoRate });
   const commissionAmount = multiply(baseAmount, rate);
 
-  const saveOpts = session ? { session } : {};
-  const [commission] = await Commission.create(
-    [
-      {
-        referenceType,
-        referenceId,
-        payerId,
-        baseAmount,
-        commissionAmount,
-        rate,
-        currency,
-        tier,
-        promoCode: promoCode ?? null,
-        tierContext,
-      },
-    ],
-    saveOpts
-  );
+  const commission = await commissionRepo.record({
+    fromUserId:    String(payerId),
+    escrowId:      referenceType === 'escrow'   ? String(referenceId) : null,
+    paymentId:     referenceType === 'payment'  ? String(referenceId) : null,
+    tier,
+    tierContext,
+    rate,
+    baseAmount,
+    amount:        commissionAmount,
+    currency,
+  });
+
+  // Expose commissionAmount alias for backward compatibility with escrow.service.js
+  commission.commissionAmount = commissionAmount;
 
   return commission;
 }
 
 /**
- * Mark a commission as settled (platform has received the funds).
+ * Mark a commission as settled.
+ * `session` is ignored — kept for API compatibility.
  */
 export async function settleCommission(commissionId, journalId, session = null) {
-  const opts = session ? { session } : {};
-  const commission = await Commission.findByIdAndUpdate(
-    commissionId,
-    { settled: true, settledAt: new Date(), journalId },
-    { new: true, ...opts }
-  );
+  const commission = await commissionRepo.settle(commissionId, journalId);
   if (!commission) throw new FinancialError('Commission not found', 'NOT_FOUND');
   return commission;
 }
@@ -170,10 +123,12 @@ export async function settleCommission(commissionId, journalId, session = null) 
  * Get commissions for a user.
  */
 export async function getUserCommissions(payerId, { page = 1, limit = 20 } = {}) {
-  const skip = (page - 1) * limit;
-  const [items, total] = await Promise.all([
-    Commission.find({ payerId }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-    Commission.countDocuments({ payerId }),
-  ]);
-  return { items, total, page, limit, pages: Math.ceil(total / limit) };
+  const result = await commissionRepo.getUserCommissions(String(payerId), { page, limit });
+  return {
+    items:  result.commissions,
+    total:  result.total,
+    page:   result.page,
+    limit:  result.limit,
+    pages:  Math.ceil(result.total / limit),
+  };
 }

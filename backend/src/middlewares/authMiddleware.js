@@ -28,15 +28,41 @@ const getTokenFromHeader = (req) => {
 
 // ======================================================
 // 🔐 VERIFY TOKEN (SAFE WRAPPER)
+// Supports both legacy JWT (signed with JWT_SECRET, uses decoded.id)
+// and Supabase JWT (signed with SUPABASE_JWT_SECRET, uses decoded.sub).
 // ======================================================
 
 const verifyToken = (token) => {
+  // Try legacy secret first (fastest path for current tokens)
   try {
     return jwt.verify(token, env.JWT_SECRET);
-  } catch (error) {
-    return null;
+  } catch (_) { /* try next */ }
+
+  // Fall back to Supabase JWT secret
+  if (env.SUPABASE_JWT_SECRET) {
+    try {
+      return jwt.verify(token, env.SUPABASE_JWT_SECRET);
+    } catch (_) { /* fall through to null */ }
   }
+
+  return null;
 };
+
+/**
+ * Resolve user ID from either token style.
+ * Legacy: decoded.id   Supabase: decoded.sub
+ */
+const resolveUserId = (decoded) => decoded?.id ?? decoded?.sub ?? null;
+
+/**
+ * Resolve app role from either token style.
+ * Legacy: decoded.role  Supabase: app_metadata.role or user_metadata.role
+ */
+const resolveRole = (decoded) =>
+  decoded?.role ||
+  decoded?.app_metadata?.role ||
+  decoded?.user_metadata?.role ||
+  'user';
 
 // ======================================================
 // 🧼 NORMALIZE ROLE
@@ -62,8 +88,9 @@ export const authMiddleware = (req, res, next) => {
   }
 
   const decoded = verifyToken(token);
+  const userId  = resolveUserId(decoded);
 
-  if (!decoded || !decoded.id) {
+  if (!decoded || !userId) {
     return res.status(HTTP_STATUS.UNAUTHORIZED).json({
       success: false,
       message: "Invalid or expired token.",
@@ -71,11 +98,12 @@ export const authMiddleware = (req, res, next) => {
   }
 
   req.user = {
-    id: decoded.id,
+    _id:   userId,
+    id:    userId,
     email: decoded.email ?? null,
-    role: normalizeRole(decoded.role),
-    iat: decoded.iat ?? null,
-    exp: decoded.exp ?? null,
+    role:  normalizeRole(resolveRole(decoded)),
+    iat:   decoded.iat ?? null,
+    exp:   decoded.exp ?? null,
   };
 
   return next();
@@ -129,11 +157,13 @@ export const optionalAuth = (req, res, next) => {
 
   const decoded = verifyToken(token);
 
-  if (decoded?.id) {
+  const optUserId = resolveUserId(decoded);
+  if (optUserId) {
     req.user = {
-      id: decoded.id,
+      _id:   optUserId,
+      id:    optUserId,
       email: decoded.email ?? null,
-      role: normalizeRole(decoded.role),
+      role:  normalizeRole(resolveRole(decoded)),
     };
   }
 

@@ -1,80 +1,14 @@
-import Message from '../models/message.model.js';
-import User    from '../models/user.model.js';
-import mongoose from 'mongoose';
-import { getIO } from '../utils/io.js';
-
-/** Deterministic conversation ID: sorted pair of user IDs */
-function conversationId(a, b) {
-  return [String(a), String(b)].sort().join('_');
-}
+import messageRepo from '../repositories/message.repository.js';
+import userRepo    from '../repositories/user.repository.js';
+import { getIO }   from '../utils/io.js';
 
 /**
  * GET /messages/conversations
- * Returns the latest message from each conversation this user is part of,
- * enriched with the other participant's profile.
  */
 export async function getConversations(req, res) {
   try {
-    const uid = req.user._id || req.user.id;
-
-    // Latest message per conversation where this user is sender or receiver
-    const latest = await Message.aggregate([
-      { $match: {
-          $or: [
-            { senderId:   new mongoose.Types.ObjectId(uid) },
-            { receiverId: new mongoose.Types.ObjectId(uid) },
-          ],
-        },
-      },
-      { $sort: { createdAt: -1 } },
-      { $group: {
-          _id:         '$conversationId',
-          lastMessage: { $first: '$message' },
-          lastType:    { $first: '$type' },
-          lastTime:    { $first: '$createdAt' },
-          senderId:    { $first: '$senderId' },
-          receiverId:  { $first: '$receiverId' },
-          status:      { $first: '$status' },
-        },
-      },
-      { $sort: { lastTime: -1 } },
-      { $limit: 50 },
-    ]);
-
-    // Enrich with other participant's info
-    const conversations = await Promise.all(
-      latest.map(async (conv) => {
-        const otherId = String(conv.senderId) === String(uid)
-          ? conv.receiverId
-          : conv.senderId;
-
-        const other = await User.findById(otherId)
-          .select('name profession role location.city profileMetadata.profilePhoto')
-          .lean();
-
-        // Count unread messages sent TO this user in this conversation
-        const unread = await Message.countDocuments({
-          conversationId: conv._id,
-          receiverId: uid,
-          status: { $ne: 'read' },
-        });
-
-        return {
-          id:          conv._id,
-          name:        other?.name        || 'Itilizatè',
-          role:        other?.profession  || other?.role || '',
-          city:        other?.location?.city || '',
-          avatar:      other?.profileMetadata?.profilePhoto
-            || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(other?.name || 'u')}`,
-          lastMessage: conv.lastType === 'text' ? conv.lastMessage : '🎤 Voice message',
-          time:        conv.lastTime,
-          unread,
-          online:      false,
-          otherId:     String(otherId),
-        };
-      })
-    );
-
+    const me = String(req.user._id || req.user.id);
+    const conversations = await messageRepo.getConversations(me);
     res.json({ success: true, conversations });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -83,40 +17,26 @@ export async function getConversations(req, res) {
 
 /**
  * GET /messages/:conversationId
- * Returns messages in a conversation (cursor-based pagination).
  */
 export async function getMessages(req, res) {
   try {
-    const { conversationId: convId } = req.params;
-    const uid    = req.user._id || req.user.id;
+    const me     = String(req.user._id || req.user.id);
+    const convId = req.params.conversationId;
     const limit  = Math.min(Number(req.query.limit) || 30, 100);
-    const cursor = req.query.cursor ? new Date(req.query.cursor) : null;
+    const cursor = req.query.cursor || null;
 
     // Verify the requesting user is part of this conversation
     const parts = convId.split('_');
-    if (!parts.includes(String(uid))) {
+    if (!parts.includes(me)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
-    const query = { conversationId: convId };
-    if (cursor) query.createdAt = { $lt: cursor };
+    const result = await messageRepo.getMessages(convId, { limit, cursor });
 
-    const messages = await Message.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit + 1)
-      .lean();
+    // Mark messages sent TO this user as delivered
+    await messageRepo.markDelivered(convId, me);
 
-    const hasMore     = messages.length > limit;
-    const paginated   = hasMore ? messages.slice(0, limit) : messages;
-    const nextCursor  = hasMore ? paginated[paginated.length - 1].createdAt : null;
-
-    // Mark delivered for messages received by this user
-    await Message.updateMany(
-      { conversationId: convId, receiverId: uid, status: 'sent' },
-      { $set: { status: 'delivered' } }
-    );
-
-    res.json({ success: true, messages: paginated.reverse(), nextCursor });
+    res.json({ success: true, messages: result.messages, nextCursor: result.nextCursor });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -124,11 +44,11 @@ export async function getMessages(req, res) {
 
 /**
  * POST /messages
- * Send (persist) a message. Idempotent via clientId.
+ * Send a message. Idempotent via clientId.
  */
 export async function sendMessage(req, res) {
   try {
-    const uid = String(req.user._id || req.user.id);
+    const me = String(req.user._id || req.user.id);
     const { receiverId, message, type = 'text', clientId } = req.body;
 
     if (!receiverId) return res.status(400).json({ success: false, message: 'receiverId required' });
@@ -136,43 +56,43 @@ export async function sendMessage(req, res) {
       return res.status(400).json({ success: false, message: 'message required for text type' });
     }
 
-    const convId = conversationId(uid, receiverId);
+    const convId = messageRepo.constructor.conversationId(me, receiverId);
 
-    // Idempotency: return existing if same clientId
+    // Idempotency check
     if (clientId) {
-      const existing = await Message.findOne({ clientId }).lean();
+      const existing = await messageRepo.findByClientId(clientId);
       if (existing) return res.json({ success: true, message: existing, duplicate: true });
     }
 
-    const msg = await Message.create({
+    const msg = await messageRepo.send({
       conversationId: convId,
-      senderId:       uid,
+      senderId:       me,
       receiverId,
       message:        message?.trim() || '',
       type,
       clientId:       clientId || undefined,
-      status:         'sent',
     });
 
-    // Notify receiver in real-time via their personal socket room
+    // Notify receiver via Socket.io
     try {
       getIO()?.to(`user:${receiverId}`).emit('message:receive', {
         conversationId: convId,
-        senderId:       uid,
+        senderId:       me,
         receiverId,
         message:        msg.message,
         type:           msg.type,
         clientId:       msg.clientId,
-        _id:            String(msg._id),
+        _id:            String(msg.id),
         createdAt:      msg.createdAt,
       });
     } catch (_) {}
 
     res.status(201).json({ success: true, message: msg });
   } catch (err) {
-    if (err.code === 11000) {
-      const dup = await Message.findOne({ clientId: req.body.clientId }).lean();
-      return res.json({ success: true, message: dup, duplicate: true });
+    if (err?.code === '23505') {
+      // Unique constraint violation — duplicate clientId
+      const dup = await messageRepo.findByClientId(req.body.clientId).catch(() => null);
+      if (dup) return res.json({ success: true, message: dup, duplicate: true });
     }
     res.status(500).json({ success: false, message: err.message });
   }
@@ -180,18 +100,13 @@ export async function sendMessage(req, res) {
 
 /**
  * PATCH /messages/:conversationId/read
- * Mark all messages in a conversation as read for the current user.
  */
 export async function markRead(req, res) {
   try {
-    const uid    = req.user._id || req.user.id;
+    const me     = String(req.user._id || req.user.id);
     const convId = req.params.conversationId;
 
-    await Message.updateMany(
-      { conversationId: convId, receiverId: uid, status: { $ne: 'read' } },
-      { $set: { status: 'read', readAt: new Date() } }
-    );
-
+    await messageRepo.markRead(convId, me);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -200,33 +115,28 @@ export async function markRead(req, res) {
 
 /**
  * POST /messages/start
- * Start or get a conversation with another user (returns conversationId).
- * Used when clicking "Message" on a profile page.
+ * Start or get a conversation with another user.
  */
 export async function startConversation(req, res) {
   try {
-    const uid        = String(req.user._id || req.user.id);
+    const me = String(req.user._id || req.user.id);
     const { targetUserId } = req.body;
     if (!targetUserId) return res.status(400).json({ success: false, message: 'targetUserId required' });
 
-    const convId = conversationId(uid, targetUserId);
+    const convId = messageRepo.constructor.conversationId(me, targetUserId);
 
-    // Get the other user's basic info
-    const other = await User.findById(targetUserId)
-      .select('name profession role location.city profileMetadata.profilePhoto')
-      .lean();
-
+    const other = await userRepo.findById(targetUserId);
     if (!other) return res.status(404).json({ success: false, message: 'User not found' });
 
     res.json({
       success: true,
       conversationId: convId,
       participant: {
-        id:     String(other._id),
-        name:   other.name || 'Itilizatè',
+        id:     String(other.id),
+        name:   other.name    || 'Itilizatè',
         role:   other.profession || other.role || '',
         city:   other.location?.city || '',
-        avatar: other.profileMetadata?.profilePhoto
+        avatar: other.profilePhoto
           || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(other.name || 'u')}`,
       },
     });

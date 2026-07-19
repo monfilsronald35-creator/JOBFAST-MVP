@@ -1,47 +1,33 @@
 /**
- * Ledger Service — double-entry bookkeeping.
+ * Ledger Service — double-entry bookkeeping (Supabase)
  *
- * Every financial event MUST produce exactly two LedgerEntry documents:
- *   one DEBIT on the source account + one CREDIT on the destination account.
- *
- * Never call mongoose save() directly here — always use sessions for ACID.
- * The journalId ties the pair together for audit queries.
+ * NOTE: wallet credit/debit operations automatically create ledger entries
+ * via the PostgreSQL RPCs (jobfast_credit_wallet / jobfast_debit_wallet).
+ * Call recordDoubleEntry() only when you need additional ledger records
+ * that are NOT covered by a wallet credit/debit (e.g., cross-account entries).
  */
 
-import { randomUUID } from 'crypto';
-import LedgerEntry, { ENTRY_TYPE } from '../models/ledger_entry.model.js';
-import { assertPositive } from '../utils/money.js';
-import { FinancialError } from '../utils/money.js';
+import ledgerRepo from '../repositories/ledger.repository.js';
+import { assertPositive, FinancialError } from '../utils/money.js';
 
 /**
- * Record a double-entry pair.
+ * Record a double-entry pair (debit + credit).
+ * The `session` parameter is ignored — no longer needed.
  *
- * @param {object} opts
- * @param {string}   opts.debitUserId    — account being debited
- * @param {string}   opts.creditUserId   — account being credited
- * @param {number}   opts.amount         — integer minor units (positive)
- * @param {string}   opts.currency
- * @param {number}   opts.debitBalanceAfter  — balance of debit account after entry
- * @param {number}   opts.creditBalanceAfter — balance of credit account after entry
- * @param {string}   opts.referenceType  — 'payment' | 'escrow' | 'payout' | 'commission' | 'adjustment'
- * @param {string}   opts.referenceId    — ObjectId of the source document
- * @param {string}   [opts.description]
- * @param {string}   [opts.journalId]    — reuse an existing journal (default: new UUID)
- * @param {object}   [opts.session]      — Mongoose session for ACID
- * @returns {{ journalId: string, debitEntry: LedgerEntry, creditEntry: LedgerEntry }}
+ * @returns {{ journalId, debitEntry, creditEntry }}
  */
 export async function recordDoubleEntry({
   debitUserId,
   creditUserId,
   amount,
   currency,
-  debitBalanceAfter,
-  creditBalanceAfter,
+  debitBalanceAfter  = 0,
+  creditBalanceAfter = 0,
   referenceType,
   referenceId,
   description = '',
-  journalId = null,
-  session = null,
+  journalId   = null,
+  session     = null, // ignored — kept for API compatibility
 }) {
   assertPositive(amount, 'ledger amount');
 
@@ -49,70 +35,38 @@ export async function recordDoubleEntry({
     throw new FinancialError('Debit balance after entry cannot be negative', 'INSUFFICIENT_FUNDS');
   }
 
-  const jid = journalId ?? randomUUID();
-  const saveOpts = session ? { session } : {};
+  const result = await ledgerRepo.recordDoubleEntry({
+    debitUserId,
+    creditUserId,
+    amount,
+    currency,
+    debitBalanceAfter,
+    creditBalanceAfter,
+    referenceType,
+    referenceId: String(referenceId),
+    description,
+  });
 
-  const [debitEntry, creditEntry] = await Promise.all([
-    LedgerEntry.create(
-      [
-        {
-          journalId:    jid,
-          userId:       debitUserId,
-          type:         ENTRY_TYPE.DEBIT,
-          amount,
-          currency,
-          balanceAfter: debitBalanceAfter,
-          referenceType,
-          referenceId,
-          description,
-        },
-      ],
-      saveOpts
-    ),
-    LedgerEntry.create(
-      [
-        {
-          journalId:    jid,
-          userId:       creditUserId,
-          type:         ENTRY_TYPE.CREDIT,
-          amount,
-          currency,
-          balanceAfter: creditBalanceAfter,
-          referenceType,
-          referenceId,
-          description,
-        },
-      ],
-      saveOpts
-    ),
-  ]);
-
-  // create() with an array returns an array; unwrap.
+  // If a specific journalId was requested (for linking existing records),
+  // we can't enforce it here since ledgerRepo generates its own UUID.
+  // The returned journalId is what was actually stored.
   return {
-    journalId: jid,
-    debitEntry:  Array.isArray(debitEntry)  ? debitEntry[0]  : debitEntry,
-    creditEntry: Array.isArray(creditEntry) ? creditEntry[0] : creditEntry,
+    journalId:   result.journalId,
+    debitEntry:  result.debit,
+    creditEntry: result.credit,
   };
 }
 
 /**
- * Retrieve all entries for a journal (should always return exactly 2).
+ * Retrieve all entries for a journal (should return exactly 2).
  */
 export async function getJournalEntries(journalId) {
-  return LedgerEntry.find({ journalId }).sort({ createdAt: 1 }).lean();
+  return ledgerRepo.getJournalEntries(journalId);
 }
 
 /**
  * Paginated ledger history for a user.
  */
 export async function getUserLedger(userId, { page = 1, limit = 20 } = {}) {
-  const skip  = (page - 1) * limit;
-  const query = { userId };
-
-  const [entries, total] = await Promise.all([
-    LedgerEntry.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-    LedgerEntry.countDocuments(query),
-  ]);
-
-  return { entries, total, page, limit, pages: Math.ceil(total / limit) };
+  return ledgerRepo.getUserLedger(userId, { page, limit });
 }

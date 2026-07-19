@@ -1,21 +1,18 @@
 /**
- * Payment Service — JOBFAST Financial Foundation
+ * Payment Service — JOBFAST Financial Foundation (Supabase)
+ *
+ * Replaces Mongoose session-based transactions with:
+ *   - walletRepo.atomicCredit/Debit RPC calls (ACID via PostgreSQL)
+ *   - paymentRepo for record persistence
  *
  * Flow (FinOps §2 deterministic order):
  *   initiatePayment → [Stripe PaymentIntent] → capturePayment
  *                                             → cancelPayment
  *                                             → refundPayment
- *
- * All operations:
- * - Idempotent (MemoryStore + DB unique constraint on idempotencyKey)
- * - ACID via Mongoose session where multi-document writes occur
- * - Append-only status history on Payment document
- * - Audit log entry on every state change
  */
 
-import mongoose from 'mongoose';
-import Payment from '../models/payment.model.js';
-import * as walletService from './wallet.service.js';
+import paymentRepo  from '../repositories/payment.repository.js';
+import walletRepo   from '../repositories/wallet.repository.js';
 import * as stripeAdapter from '../adapters/stripe.adapter.js';
 import memory from '../models/memory.js';
 import { assertPositive, FinancialError } from '../utils/money.js';
@@ -26,28 +23,22 @@ import {
   canTransitionPayment,
 } from '../config/financial.js';
 import { appendAuditLog, AUDIT_TYPES } from '../utils/auditLog.js';
+import { randomUUID } from 'crypto';
 
 const IDEM_TTL = FINANCIAL_LIMITS.IDEMPOTENCY_TTL_MS;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function idemCacheKey(key) {
-  return `pay:idem:${key}`;
-}
+function idemCacheKey(key) { return `pay:idem:${key}`; }
 
 function validateAmount(amount, currency) {
   assertPositive(amount, 'payment amount');
   if (currency === 'HTG' && amount < FINANCIAL_LIMITS.MIN_PAYMENT_HTG) {
     throw new FinancialError(
-      `Minimum payment is ${FINANCIAL_LIMITS.MIN_PAYMENT_HTG} minor units (${FINANCIAL_LIMITS.MIN_PAYMENT_HTG / 100} HTG)`,
+      `Minimum payment is ${FINANCIAL_LIMITS.MIN_PAYMENT_HTG} minor units`,
       'AMOUNT_TOO_SMALL'
     );
   }
   if (currency === 'HTG' && amount > FINANCIAL_LIMITS.MAX_PAYMENT_HTG) {
-    throw new FinancialError(
-      `Maximum payment is ${FINANCIAL_LIMITS.MAX_PAYMENT_HTG} minor units`,
-      'AMOUNT_TOO_LARGE'
-    );
+    throw new FinancialError(`Maximum payment is ${FINANCIAL_LIMITS.MAX_PAYMENT_HTG} minor units`, 'AMOUNT_TOO_LARGE');
   }
 }
 
@@ -55,33 +46,11 @@ function validateAmount(amount, currency) {
 
 /**
  * Initiate a payment.
- *
- * For card payments: creates a Stripe PaymentIntent and returns the clientSecret
- *   for the frontend to confirm the payment.
- * For wallet payments: debits the payer's wallet immediately.
- * For cash: records the payment in PENDING state for manual confirmation.
- *
- * @param {object} params
- * @param {string} params.payerId
- * @param {string} params.payeeId
- * @param {string} [params.jobId]
- * @param {number} params.amount          Integer minor units
- * @param {string} params.currency        'HTG' | 'USD' | 'EUR'
- * @param {string} params.method          PAYMENT_METHOD value
- * @param {string} params.idempotencyKey  UUID or equivalent unique string
- * @param {object} [params.metadata]
+ * For card: creates Stripe PaymentIntent and returns clientSecret.
+ * For wallet: debits payer immediately.
+ * For cash: records as PENDING for manual confirmation.
  */
-export async function initiatePayment({
-  payerId,
-  payeeId,
-  jobId = null,
-  amount,
-  currency = 'HTG',
-  method,
-  idempotencyKey,
-  metadata = {},
-}) {
-  // Idempotency check — return cached result if same key was already processed
+export async function initiatePayment({ payerId, payeeId, jobId = null, amount, currency = 'HTG', method, idempotencyKey, metadata = {} }) {
   const cached = memory.get(idemCacheKey(idempotencyKey));
   if (cached) return cached;
 
@@ -91,71 +60,48 @@ export async function initiatePayment({
   let stripeClientSecret = null;
 
   if (method === PAYMENT_METHOD.CARD) {
-    // Card: create Stripe PaymentIntent first, then record
     const intent = await stripeAdapter.createPaymentIntent({
-      amount,
-      currency,
-      idempotencyKey,
+      amount, currency, idempotencyKey,
       metadata: { payerId: String(payerId), payeeId: String(payeeId), jobId: String(jobId) },
     });
 
-    payment = await Payment.create({
-      payerId,
-      payeeId,
-      jobId,
-      amount,
-      currency,
-      method,
-      idempotencyKey,
+    payment = await paymentRepo.create({
+      payerId, payeeId, amount, currency, paymentMethod: method,
+      referenceType: 'job', referenceId: jobId,
+      gatewayTxnId: intent.id,
+      gatewayData: { clientSecret: intent.client_secret },
       status: PAYMENT_STATUS.PROCESSING,
-      stripePaymentIntentId: intent.id,
-      stripeClientSecret: intent.client_secret,
-      metadata,
     });
 
     stripeClientSecret = intent.client_secret;
+
   } else if (method === PAYMENT_METHOD.WALLET) {
-    // Wallet-to-wallet: debit payer immediately, record as captured
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        payment = await Payment.create(
-          [{ payerId, payeeId, jobId, amount, currency, method, idempotencyKey, status: PAYMENT_STATUS.PENDING, metadata }],
-          { session }
-        );
-        payment = payment[0];
+    const journalId = randomUUID();
 
-        await walletService.debit(payerId, amount, currency, String(payment._id), session);
+    await walletRepo.atomicDebit({
+      userId: String(payerId), amount, currency, journalId,
+      referenceType: 'payment', referenceId: journalId,
+      description: `Wallet payment to ${payeeId}`,
+    });
 
-        payment.status = PAYMENT_STATUS.CAPTURED;
-        payment.capturedAt = new Date();
-        await payment.save({ session });
-      });
-    } finally {
-      await session.endSession();
-    }
+    payment = await paymentRepo.create({
+      payerId, payeeId, amount, currency, paymentMethod: method,
+      referenceType: 'job', referenceId: jobId, status: PAYMENT_STATUS.CAPTURED,
+      gatewayData: metadata,
+    });
+
   } else {
-    // Cash / bank transfer / mobile money: record as PENDING for manual confirmation
-    payment = await Payment.create({
-      payerId,
-      payeeId,
-      jobId,
-      amount,
-      currency,
-      method,
-      idempotencyKey,
-      status: PAYMENT_STATUS.PENDING,
-      metadata,
+    payment = await paymentRepo.create({
+      payerId, payeeId, amount, currency, paymentMethod: method,
+      referenceType: 'job', referenceId: jobId, status: PAYMENT_STATUS.PENDING,
+      gatewayData: metadata,
     });
   }
 
   appendAuditLog({
-    type: AUDIT_TYPES.ADMIN_ACTION,
-    actorId: String(payerId),
-    targetId: String(payment._id),
-    targetType: 'payment',
-    action: 'initiate',
-    meta: { amount, currency, method, status: payment.status },
+    type: AUDIT_TYPES.ADMIN_ACTION, actorId: String(payerId),
+    targetId: String(payment.id), targetType: 'payment',
+    action: 'initiate', meta: { amount, currency, method, status: payment.status },
   });
 
   const result = { payment, stripeClientSecret };
@@ -165,222 +111,139 @@ export async function initiatePayment({
 
 /**
  * Confirm a payment as CAPTURED.
- * Called after Stripe webhook confirms payment_intent.succeeded,
- * or by admin for cash/bank payments.
- *
- * Credits the payee's wallet after capture.
+ * Credits the payee's wallet.
  */
 export async function capturePayment(paymentId, actorId) {
-  const payment = await Payment.findById(paymentId);
+  const payment = await paymentRepo.findById(paymentId);
   if (!payment) throw new FinancialError('Payment not found', 'PAYMENT_NOT_FOUND');
 
   if (!canTransitionPayment(payment.status, PAYMENT_STATUS.CAPTURED)) {
-    throw new FinancialError(
-      `Cannot capture payment in status: ${payment.status}`,
-      'INVALID_TRANSITION'
-    );
+    throw new FinancialError(`Cannot capture payment in status: ${payment.status}`, 'INVALID_TRANSITION');
   }
 
-  const session = await mongoose.startSession();
-  try {
-    await session.withTransaction(async () => {
-      payment.status = PAYMENT_STATUS.CAPTURED;
-      payment.capturedAt = new Date();
-      await payment.save({ session });
-
-      // Credit payee wallet
-      await walletService.credit(
-        payment.payeeId,
-        payment.amount,
-        payment.currency,
-        String(payment._id),
-        session
-      );
-    });
-  } finally {
-    await session.endSession();
-  }
-
-  appendAuditLog({
-    type: AUDIT_TYPES.ADMIN_ACTION,
-    actorId: String(actorId),
-    targetId: String(payment._id),
-    targetType: 'payment',
-    action: 'capture',
-    meta: { amount: payment.amount, currency: payment.currency },
+  await walletRepo.atomicCredit({
+    userId: String(payment.payeeId), amount: payment.amount, currency: payment.currency,
+    journalId: randomUUID(),
+    referenceType: 'payment', referenceId: String(paymentId),
+    description: `Payment capture from ${payment.payerId}`,
   });
 
-  return payment;
+  const updated = await paymentRepo.complete(paymentId);
+
+  appendAuditLog({
+    type: AUDIT_TYPES.ADMIN_ACTION, actorId: String(actorId),
+    targetId: String(paymentId), targetType: 'payment',
+    action: 'capture', meta: { amount: payment.amount, currency: payment.currency },
+  });
+
+  return updated;
 }
 
 /**
- * Cancel a payment. Only valid for PENDING or PROCESSING payments.
- * If Stripe PaymentIntent exists, it is also cancelled.
+ * Cancel a payment. Cancels Stripe intent if card.
  */
 export async function cancelPayment(paymentId, actorId, reason = '') {
-  const payment = await Payment.findById(paymentId);
+  const payment = await paymentRepo.findById(paymentId);
   if (!payment) throw new FinancialError('Payment not found', 'PAYMENT_NOT_FOUND');
 
   if (!canTransitionPayment(payment.status, PAYMENT_STATUS.CANCELLED)) {
-    throw new FinancialError(
-      `Cannot cancel payment in status: ${payment.status}`,
-      'INVALID_TRANSITION'
-    );
+    throw new FinancialError(`Cannot cancel payment in status: ${payment.status}`, 'INVALID_TRANSITION');
   }
 
-  if (payment.stripePaymentIntentId) {
+  if (payment.gatewayTxnId && payment.paymentMethod === 'card') {
     try {
-      await stripeAdapter.cancelPaymentIntent(payment.stripePaymentIntentId);
+      await stripeAdapter.cancelPaymentIntent(payment.gatewayTxnId);
     } catch {
-      // Stripe cancel may fail if already consumed — log and continue
-      appendAuditLog({
-        type: AUDIT_TYPES.ADMIN_ACTION,
-        actorId: String(actorId),
-        targetId: String(payment._id),
-        targetType: 'payment',
-        action: 'stripe_cancel_failed',
-        meta: { stripeId: payment.stripePaymentIntentId },
-      });
+      // Stripe cancel may fail if already consumed
     }
   }
 
-  payment.status = PAYMENT_STATUS.CANCELLED;
-  payment.cancelledAt = new Date();
-  if (reason) payment.metadata = { ...payment.metadata, cancelReason: reason };
-  await payment.save();
-
-  appendAuditLog({
-    type: AUDIT_TYPES.ADMIN_ACTION,
-    actorId: String(actorId),
-    targetId: String(payment._id),
-    targetType: 'payment',
-    action: 'cancel',
-    meta: { reason },
+  const updated = await paymentRepo.update(paymentId, {
+    status: PAYMENT_STATUS.CANCELLED,
+    gatewayData: { ...(payment.gatewayData || {}), cancelReason: reason },
   });
 
-  return payment;
+  appendAuditLog({
+    type: AUDIT_TYPES.ADMIN_ACTION, actorId: String(actorId),
+    targetId: String(paymentId), targetType: 'payment',
+    action: 'cancel', meta: { reason },
+  });
+
+  return updated;
 }
 
 /**
  * Refund a captured payment (full or partial).
- *
- * Flow: Stripe refund (if card) → debit payee wallet → update payment status.
  */
 export async function refundPayment(paymentId, refundAmount, actorId, reason = '') {
-  const payment = await Payment.findById(paymentId);
+  const payment = await paymentRepo.findById(paymentId);
   if (!payment) throw new FinancialError('Payment not found', 'PAYMENT_NOT_FOUND');
 
   if (!canTransitionPayment(payment.status, PAYMENT_STATUS.REFUNDED) &&
       !canTransitionPayment(payment.status, PAYMENT_STATUS.PARTIALLY_REFUNDED)) {
-    throw new FinancialError(
-      `Cannot refund payment in status: ${payment.status}`,
-      'INVALID_TRANSITION'
-    );
+    throw new FinancialError(`Cannot refund payment in status: ${payment.status}`, 'INVALID_TRANSITION');
   }
 
   const amount = refundAmount ?? payment.amount;
   assertPositive(amount, 'refund amount');
 
-  const remaining = payment.amount - payment.amountRefunded;
-  if (amount > remaining) {
-    throw new FinancialError(
-      `Refund amount (${amount}) exceeds refundable amount (${remaining})`,
-      'REFUND_EXCEEDS_AMOUNT'
-    );
+  if (amount > payment.amount) {
+    throw new FinancialError(`Refund amount (${amount}) exceeds payment amount (${payment.amount})`, 'REFUND_EXCEEDS_AMOUNT');
   }
 
-  const isPartial = amount < remaining;
-
-  const session = await mongoose.startSession();
-  try {
-    await session.withTransaction(async () => {
-      // Stripe refund for card payments
-      if (payment.stripePaymentIntentId) {
-        await stripeAdapter.createRefund({
-          stripePaymentIntentId: payment.stripePaymentIntentId,
-          amount,
-          reason: 'requested_by_customer',
-        });
-      }
-
-      // Debit payee wallet (reverse the credit)
-      await walletService.debit(
-        payment.payeeId,
-        amount,
-        payment.currency,
-        `refund:${String(payment._id)}`,
-        session
-      );
-
-      payment.amountRefunded += amount;
-      payment.status = isPartial ? PAYMENT_STATUS.PARTIALLY_REFUNDED : PAYMENT_STATUS.REFUNDED;
-      payment.refundedAt = new Date();
-      if (reason) payment.metadata = { ...payment.metadata, refundReason: reason };
-      await payment.save({ session });
-    });
-  } finally {
-    await session.endSession();
+  // Stripe refund for card payments
+  if (payment.gatewayTxnId && payment.paymentMethod === 'card') {
+    await stripeAdapter.createRefund({ stripePaymentIntentId: payment.gatewayTxnId, amount, reason: 'requested_by_customer' });
   }
 
-  appendAuditLog({
-    type: AUDIT_TYPES.ADMIN_ACTION,
-    actorId: String(actorId),
-    targetId: String(payment._id),
-    targetType: 'payment',
-    action: 'refund',
-    meta: { amount, currency: payment.currency, isPartial, reason },
+  // Debit payee wallet (reverse the credit)
+  await walletRepo.atomicDebit({
+    userId: String(payment.payeeId), amount, currency: payment.currency,
+    journalId: randomUUID(),
+    referenceType: 'payment', referenceId: String(paymentId),
+    description: `Refund: ${reason}`,
   });
 
-  return payment;
+  const updated = await paymentRepo.refund(paymentId, { reason, refundAmount: amount });
+
+  appendAuditLog({
+    type: AUDIT_TYPES.ADMIN_ACTION, actorId: String(actorId),
+    targetId: String(paymentId), targetType: 'payment',
+    action: 'refund', meta: { amount, currency: payment.currency, reason },
+  });
+
+  return updated;
 }
 
-/**
- * Get a single payment by ID.
- */
 export async function getPayment(paymentId) {
-  const payment = await Payment.findById(paymentId);
+  const payment = await paymentRepo.findById(paymentId);
   if (!payment) throw new FinancialError('Payment not found', 'PAYMENT_NOT_FOUND');
   return payment;
 }
 
-/**
- * Get paginated payments for a user (as payer or payee).
- */
 export async function getUserPayments(userId, { page = 1, limit = 20, status } = {}) {
-  const query = { $or: [{ payerId: userId }, { payeeId: userId }] };
-  if (status) query.status = status;
-
-  const skip = (page - 1) * Math.min(limit, 100);
-  const [payments, total] = await Promise.all([
-    Payment.find(query).sort({ createdAt: -1 }).skip(skip).limit(Math.min(limit, 100)),
-    Payment.countDocuments(query),
-  ]);
-
-  return { payments, total, page, limit: Math.min(limit, 100) };
+  return paymentRepo.getUserPayments(String(userId), { page, limit: Math.min(limit, 100), status });
 }
 
 /**
- * Process Stripe webhook event (called from payment routes).
- * Handles payment_intent.succeeded and payment_intent.payment_failed.
+ * Process Stripe webhook event.
  */
 export async function handleStripeWebhook(rawBody, signature) {
   const event = stripeAdapter.constructWebhookEvent(rawBody, signature);
 
   if (event.type === 'payment_intent.succeeded') {
     const intent = event.data.object;
-    const payment = await Payment.findOne({ stripePaymentIntentId: intent.id });
+    const payment = await paymentRepo.findByGatewayTxnId(intent.id);
     if (payment && payment.status === PAYMENT_STATUS.PROCESSING) {
-      await capturePayment(String(payment._id), 'stripe_webhook');
+      await capturePayment(String(payment.id), 'stripe_webhook');
     }
   }
 
   if (event.type === 'payment_intent.payment_failed') {
     const intent = event.data.object;
-    const payment = await Payment.findOne({ stripePaymentIntentId: intent.id });
+    const payment = await paymentRepo.findByGatewayTxnId(intent.id);
     if (payment && canTransitionPayment(payment.status, PAYMENT_STATUS.FAILED)) {
-      payment.status = PAYMENT_STATUS.FAILED;
-      payment.failedAt = new Date();
-      await payment.save();
+      await paymentRepo.fail(String(payment.id), intent.last_payment_error?.message || 'Stripe payment failed');
     }
   }
 

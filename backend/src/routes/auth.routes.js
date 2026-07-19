@@ -1,108 +1,66 @@
-// ======================================================
-// 🔐 JOBFAST — AUTHENTICATION ROUTES (PRODUCTION SAFE)
-// ======================================================
-
+// =========================================================================
+// JOBFAST — AUTH ROUTES (Supabase)
+// =========================================================================
 import express from 'express';
-import mongoose from 'mongoose';
-
-import { loginController } from '../controllers/login.controller.js';
+import { loginController }    from '../controllers/login.controller.js';
 import { registerController } from '../controllers/register.controller.js';
-import { authMiddleware } from '../middlewares/authMiddleware.js';
-import { usersDatabase } from '../controllers/register.controller.js';
-import User from '../models/user.model.js';
+import { authMiddleware }     from '../middlewares/authMiddleware.js';
+import userRepo from '../repositories/user.repository.js';
 
 const router = express.Router();
 
-// ======================================================
-// 🛡️ LIGHTWEIGHT MEMORY RATE LIMITER (ANTI-BRUTE FORCE)
-// ======================================================
+// ── In-process rate limiter (anti-brute-force) ────────────────────────────
 const requestMap = new Map();
 
 function rateLimit(req, res, next) {
   const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
-  const ip = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : rawIp;
+  const ip    = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : rawIp;
+  const now   = Date.now();
+  const WINDOW_MS   = 15 * 60 * 1000;
+  const MAX_REQUESTS = 50;
 
-  const now = Date.now();
-  const windowMs = 15 * 60 * 1000;
-  const maxRequests = 50;
-
-  if (requestMap.size > 5000) {
-    requestMap.clear();
-  }
+  if (requestMap.size > 5000) requestMap.clear();
 
   const data = requestMap.get(ip);
-
-  if (!data) {
-    requestMap.set(ip, { count: 1, start: now });
-    return next();
-  }
-
-  if (now - data.start > windowMs) {
-    requestMap.set(ip, { count: 1, start: now });
-    return next();
-  }
-
-  if (data.count >= maxRequests) {
+  if (!data) { requestMap.set(ip, { count: 1, start: now }); return next(); }
+  if (now - data.start > WINDOW_MS) { requestMap.set(ip, { count: 1, start: now }); return next(); }
+  if (data.count >= MAX_REQUESTS) {
     return res.status(429).json({
       success: false,
       message: 'Too many authentication attempts. Please try again after 15 minutes.',
-      code: 'TOO_MANY_REQUESTS'
+      code: 'TOO_MANY_REQUESTS',
     });
   }
-
   data.count++;
-  next();
+  return next();
 }
 
-// ======================================================
-// 🔓 PUBLIC ENDPOINTS
-// ======================================================
+// ── Public endpoints ──────────────────────────────────────────────────────
 router.post('/register', rateLimit, registerController);
-router.post('/login', rateLimit, loginController);
+router.post('/login',    rateLimit, loginController);
 
-// ── Authenticated endpoints ───────────────────────────────────────────────────
+// ── /me ───────────────────────────────────────────────────────────────────
 router.get('/me', authMiddleware, async (req, res) => {
-  const userId = req.user.id;
-
-  // 1. Try in-memory first (fast path, same Render instance)
-  let user = Array.from(usersDatabase.values()).find(
-    (u) => u.id === userId || u.userId === userId || String(u._id) === userId
-  );
-
-  // 2. Fallback to MongoDB (survives restarts)
-  if (!user && mongoose.connection.readyState === 1) {
-    try {
-      const mongoUser = await User.findById(userId).lean();
-      if (mongoUser) {
-        user = { ...mongoUser, id: mongoUser._id.toString(), _id: mongoUser._id.toString() };
-      }
-    } catch (_) {}
+  try {
+    const userId = req.user.id || req.user._id;
+    const user   = await userRepo.getById(String(userId));
+    const { passwordHash: _pw, ...safeUser } = user;
+    return res.status(200).json({
+      success: true,
+      data: { user: { ...safeUser, _id: safeUser.id } },
+    });
+  } catch (err) {
+    const status = err.statusCode === 404 ? 404 : 500;
+    return res.status(status).json({ success: false, message: err.message });
   }
-
-  if (!user) {
-    return res.status(404).json({ success: false, message: 'User not found' });
-  }
-
-  const { password: _pw, ...safeUser } = user;
-
-  return res.status(200).json({
-    success: true,
-    data: { user: { ...safeUser, _id: safeUser.id || safeUser._id } },
-  });
 });
 
-router.post('/logout', authMiddleware, (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: 'Session closed successfully.',
-  });
-});
+// ── /logout (stateless JWT — just confirm client-side disposal) ───────────
+router.post('/logout', authMiddleware, (_req, res) =>
+  res.status(200).json({ success: true, message: 'Session closed successfully.' })
+);
 
-// ======================================================
-// 🔑 ONE-TIME BOOTSTRAP ADMIN (delete after first use)
-// POST /api/v1/auth/bootstrap-admin
-// Body: { "email": "you@email.com", "secret": "JOBFAST_ADMIN_2026" }
-// ======================================================
+// ── /bootstrap-admin (one-time; delete after first use) ──────────────────
 router.post('/bootstrap-admin', async (req, res) => {
   const BOOTSTRAP_SECRET = 'JOBFAST_ADMIN_2026';
   const { email, secret } = req.body || {};
@@ -115,31 +73,16 @@ router.post('/bootstrap-admin', async (req, res) => {
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  let promoted = false;
+  const user = await userRepo.findByEmail(cleanEmail).catch(() => null);
 
-  // 1. Update MongoDB (persistent)
-  if (mongoose.connection.readyState === 1) {
-    try {
-      const result = await User.findOneAndUpdate(
-        { email: cleanEmail },
-        { role: 'super_admin' },
-        { new: true }
-      );
-      if (result) promoted = true;
-    } catch (_) {}
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: `User "${cleanEmail}" not found. Register first, then call this endpoint.`,
+    });
   }
 
-  // 2. Update in-memory store
-  for (const [key, u] of usersDatabase.entries()) {
-    if (u.email === cleanEmail || u.email?.toLowerCase() === cleanEmail) {
-      usersDatabase.set(key, { ...u, role: 'super_admin' });
-      promoted = true;
-    }
-  }
-
-  if (!promoted) {
-    return res.status(404).json({ success: false, message: `User "${cleanEmail}" not found. Register first, then call this endpoint.` });
-  }
+  await userRepo.update(user.id, { role: 'super_admin' });
 
   return res.json({
     success: true,

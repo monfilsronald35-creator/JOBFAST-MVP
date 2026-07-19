@@ -1,25 +1,18 @@
 /**
- * userService.js — MongoDB-backed user management.
+ * userService.js — Supabase-backed user management.
  *
- * Supports the userController and admin operations.
- * All queries hit the User mongoose model.
- * Passwords are never returned (select: false in schema).
+ * Replaces the Mongoose User model with UserRepository (profiles table).
+ * All exported function names and signatures are unchanged.
  */
 
-import User from '../models/user.model.js';
+import userRepo from '../repositories/user.repository.js';
 import { ACCOUNT_STATUS } from '../config/constants.js';
 
 /**
- * Find a user by ID. Throws if not found.
+ * Find a user by ID. Throws 404 if not found.
  */
 async function getById(userId) {
-  const user = await User.findById(userId).lean();
-  if (!user) {
-    const err = new Error('User not found');
-    err.statusCode = 404;
-    throw err;
-  }
-  return user;
+  return userRepo.getById(String(userId));
 }
 
 /**
@@ -39,12 +32,7 @@ async function updateProfile(userId, body) {
     if (body[key] !== undefined) update[key] = body[key];
   }
 
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { $set: update },
-    { new: true, runValidators: true }
-  ).lean();
-
+  const user = await userRepo.update(String(userId), update);
   if (!user) {
     const err = new Error('User not found');
     err.statusCode = 404;
@@ -58,22 +46,7 @@ async function updateProfile(userId, body) {
  * Admin: paginated list of users with optional filters.
  */
 async function getUsers({ page = 1, limit = 20, search = '', role = null, status = null } = {}) {
-  const skip = (page - 1) * limit;
-
-  const filter = {};
-  if (role)   filter.role = role;
-  if (status) filter.status = status;
-  if (search) {
-    const re = new RegExp(search.trim(), 'i');
-    filter.$or = [{ name: re }, { email: re }, { phone: re }];
-  }
-
-  const [users, total] = await Promise.all([
-    User.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-    User.countDocuments(filter),
-  ]);
-
-  return { users, total, page, limit, pages: Math.ceil(total / limit) };
+  return userRepo.getUsers({ page, limit, search, role, status });
 }
 
 /**
@@ -86,12 +59,7 @@ async function updateStatus(userId, status) {
     throw err;
   }
 
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { $set: { accountStatus: status } },
-    { new: true }
-  ).lean();
-
+  const user = await userRepo.update(String(userId), { accountStatus: status });
   if (!user) {
     const err = new Error('User not found');
     err.statusCode = 404;
@@ -102,21 +70,15 @@ async function updateStatus(userId, status) {
 }
 
 /**
- * Admin: soft-delete a user (mark as deleted, don't destroy the document).
+ * Admin: soft-delete a user.
  */
 async function deleteUser(userId) {
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { $set: { accountStatus: ACCOUNT_STATUS.DELETED } },
-    { new: true }
-  ).lean();
-
+  const user = await userRepo.update(String(userId), { accountStatus: ACCOUNT_STATUS.DELETED });
   if (!user) {
     const err = new Error('User not found');
     err.statusCode = 404;
     throw err;
   }
-
   return user;
 }
 
@@ -124,17 +86,7 @@ async function deleteUser(userId) {
  * Admin: aggregate user statistics.
  */
 async function getStats() {
-  const [total, byRole, byStatus] = await Promise.all([
-    User.countDocuments(),
-    User.aggregate([{ $group: { _id: '$role', count: { $sum: 1 } } }]),
-    User.aggregate([{ $group: { _id: '$accountStatus', count: { $sum: 1 } } }]),
-  ]);
-
-  return {
-    total,
-    byRole:   Object.fromEntries(byRole.map(r => [r._id ?? 'unknown', r.count])),
-    byStatus: Object.fromEntries(byStatus.map(s => [s._id ?? 'unknown', s.count])),
-  };
+  return userRepo.getStats();
 }
 
 export default { getById, updateProfile, getUsers, updateStatus, deleteUser, getStats };

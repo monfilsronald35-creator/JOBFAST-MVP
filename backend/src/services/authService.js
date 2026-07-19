@@ -1,293 +1,147 @@
-// ======================================================
-// 🚀 AUTH SERVICE
-// src/services/authService.js
-// ======================================================
+// =========================================================================
+// JOBFAST — AUTH SERVICE (Supabase)
+// =========================================================================
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import userRepo from '../repositories/user.repository.js';
+import { env } from '../config/env.js';
 
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import mongoose from "mongoose";
-import { usersDatabase } from "../controllers/register.controller.js";
-import { HTTP_STATUS } from "../config/constants.js";
-import { env } from "../config/env.js";
+const JWT_SECRET       = env.JWT_SECRET;
+const JWT_EXPIRES_IN   = '7d';
+const REFRESH_EXPIRES  = '30d';
 
-const JWT_SECRET = env.JWT_SECRET;
-const JWT_EXPIRES_IN = "7d";
-const REFRESH_TOKEN_EXPIRES_IN = "30d";
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-// ======================================================
-// 🔐 HELPER FUNCTIONS
-// ======================================================
+const generateToken = (userId, email = null, role = 'user') =>
+  jwt.sign({ id: userId, email, role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-// Payload uses `id` so authMiddleware.js (which checks decoded.id) can verify tokens
-const generateToken = (userId, email = null, role = 'worker') => {
-  return jwt.sign({ id: userId, email, role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+const generateRefreshToken = (userId, email = null, role = 'user') =>
+  jwt.sign({ id: userId, email, role }, JWT_SECRET, { expiresIn: REFRESH_EXPIRES });
+
+// ── Login ──────────────────────────────────────────────────────────────────
+
+const login = async ({ emailOrPhone, password }) => {
+  const user = await userRepo.findByIdentifierWithPassword(emailOrPhone);
+  if (!user) throw new Error('Invalid credentials');
+
+  const valid = user.passwordHash
+    ? await bcrypt.compare(password, user.passwordHash)
+    : false;
+  if (!valid) throw new Error('Invalid credentials');
+
+  const token        = generateToken(user.id, user.email, user.role);
+  const refreshToken = generateRefreshToken(user.id, user.email, user.role);
+  const { passwordHash: _, ...safeUser } = user;
+  return { user: safeUser, token, refreshToken };
 };
 
-const generateRefreshToken = (userId, email = null, role = 'worker') => {
-  return jwt.sign({ id: userId, email, role }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
+// ── Register ───────────────────────────────────────────────────────────────
+
+const register = async ({ fullName, emailOrPhone, password, accountType }) => {
+  const isEmail = emailOrPhone.includes('@');
+  const existing = isEmail
+    ? await userRepo.findByEmail(emailOrPhone)
+    : await userRepo.findOne({ phone: emailOrPhone });
+
+  if (existing) throw new Error('User already exists');
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const newUser = await userRepo.insert({
+    name:          fullName,
+    email:         isEmail ? emailOrPhone.toLowerCase().trim() : null,
+    phone:         isEmail ? null : emailOrPhone,
+    passwordHash,
+    role:          (accountType || 'user').toLowerCase(),
+    accountStatus: 'active',
+    isAvailable:   true,
+  });
+
+  const token        = generateToken(newUser.id, newUser.email, newUser.role);
+  const refreshToken = generateRefreshToken(newUser.id, newUser.email, newUser.role);
+  const { passwordHash: _, ...safeUser } = newUser;
+  return { user: safeUser, token, refreshToken };
 };
 
-const hashPassword = async (password) => {
-  return await bcrypt.hash(password, 12);
+// ── Refresh token ──────────────────────────────────────────────────────────
+
+const refreshToken = async ({ refreshToken: rt }) => {
+  let decoded;
+  try { decoded = jwt.verify(rt, JWT_SECRET); }
+  catch { throw new Error('Invalid refresh token'); }
+
+  const userId = decoded.id ?? decoded.sub;
+  const user   = await userRepo.getById(userId);
+  const token        = generateToken(user.id, user.email, user.role);
+  const newRefresh   = generateRefreshToken(user.id, user.email, user.role);
+  const { passwordHash: _, ...safeUser } = user;
+  return { user: safeUser, token, refreshToken: newRefresh };
 };
 
-const comparePassword = async (password, hashedPassword) => {
-  return await bcrypt.compare(password, hashedPassword);
-};
+// ── Logout (stateless JWT — no-op) ─────────────────────────────────────────
 
-// ======================================================
-// 🔐 LOGIN
-// ======================================================
+const logout = async () => ({ success: true, message: 'Logged out successfully' });
 
-const login = async ({ emailOrPhone, password, ipAddress, userAgent }) => {
-  // Find user by email or phone
-  const user = Array.from(usersDatabase.values()).find(
-    (u) => u.email === emailOrPhone || u.phone === emailOrPhone
-  );
+const logoutAllDevices = async () => ({ success: true, message: 'Logged out from all devices' });
 
-  if (!user) {
-    throw new Error("Invalid credentials");
-  }
-
-  // Verify password
-  const isPasswordValid = await comparePassword(password, user.password);
-  if (!isPasswordValid) {
-    throw new Error("Invalid credentials");
-  }
-
-  // Generate tokens
-  const token = generateToken(user.id, user.email, user.accountType || 'worker');
-  const refreshToken = generateRefreshToken(user.id, user.email, user.accountType || 'worker');
-
-  // Return user data without password
-  const { password: _, ...userWithoutPassword } = user;
-
-  return {
-    user: userWithoutPassword,
-    token,
-    refreshToken,
-  };
-};
-
-// ======================================================
-// 📝 REGISTER
-// ======================================================
-
-const register = async ({ fullName, emailOrPhone, password, accountType, ipAddress, userAgent }) => {
-  // Check if user already exists
-  const existingUser = Array.from(usersDatabase.values()).find(
-    (u) => u.email === emailOrPhone || u.phone === emailOrPhone
-  );
-
-  if (existingUser) {
-    throw new Error("User already exists");
-  }
-
-  // Hash password
-  const hashedPassword = await hashPassword(password);
-
-  // Create new user
-  const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const newUser = {
-    id: userId,
-    fullName,
-    email: emailOrPhone.includes("@") ? emailOrPhone : null,
-    phone: emailOrPhone.includes("@") ? null : emailOrPhone,
-    password: hashedPassword,
-    accountType: accountType || "worker",
-    tier: "free",
-    availability: "disponib",
-    stats: { jobsCompleted: 0, rating: 0 },
-    createdAt: new Date().toISOString(),
-    ipAddress,
-    userAgent,
-  };
-
-  // Store user in database
-  usersDatabase.set(userId, newUser);
-
-  // Generate tokens
-  const token = generateToken(userId, newUser.email, newUser.accountType || 'worker');
-  const refreshToken = generateRefreshToken(userId, newUser.email, newUser.accountType || 'worker');
-
-  // Return user data without password
-  const { password: _, ...userWithoutPassword } = newUser;
-
-  return {
-    user: userWithoutPassword,
-    token,
-    refreshToken,
-  };
-};
-
-// ======================================================
-// 🔄 REFRESH TOKEN
-// ======================================================
-
-const refreshToken = async ({ refreshToken }) => {
-  try {
-    const decoded = jwt.verify(refreshToken, JWT_SECRET);
-    const user = usersDatabase.get(decoded.userId);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const newToken = generateToken(user.id);
-    const newRefreshToken = generateRefreshToken(user.id);
-
-    const { password: _, ...userWithoutPassword } = user;
-
-    return {
-      user: userWithoutPassword,
-      token: newToken,
-      refreshToken: newRefreshToken,
-    };
-  } catch (error) {
-    throw new Error("Invalid refresh token");
-  }
-};
-
-// ======================================================
-// 🚪 LOGOUT
-// ======================================================
-
-const logout = async ({ userId }) => {
-  // In a real implementation, you would invalidate the token
-  // For MVP with in-memory storage, we just return success
-  return { success: true, message: "Logged out successfully" };
-};
-
-// ======================================================
-// 👤 GET ME
-// ======================================================
+// ── Get me ─────────────────────────────────────────────────────────────────
 
 const getMe = async ({ userId }) => {
-  // In-memory first
-  let user = usersDatabase.get(userId);
-
-  // MongoDB fallback (survives restarts)
-  if (!user && mongoose.connection.readyState === 1) {
-    try {
-      const { default: User } = await import('../models/user.model.js');
-      const mongoUser = await User.findById(userId).lean();
-      if (mongoUser) {
-        user = { ...mongoUser, id: mongoUser._id.toString(), _id: mongoUser._id.toString() };
-      }
-    } catch (_) {}
-  }
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const { password: _, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  const user = await userRepo.getById(userId);
+  const { passwordHash: _, ...safeUser } = user;
+  return safeUser;
 };
 
-// ======================================================
-// ✅ VERIFY EMAIL
-// ======================================================
+// ── Email verification (MVP stub) ──────────────────────────────────────────
 
-const verifyEmail = async ({ token }) => {
-  // MVP implementation - always return success
-  return { success: true, message: "Email verified successfully" };
-};
+const verifyEmail = async () => ({ success: true, message: 'Email verified successfully' });
 
-// ======================================================
-// 🔑 FORGOT PASSWORD
-// ======================================================
+// ── Forgot / reset password (MVP stub) ────────────────────────────────────
 
 const forgotPassword = async ({ emailOrPhone }) => {
-  // MVP implementation - check if user exists
-  const user = Array.from(usersDatabase.values()).find(
-    (u) => u.email === emailOrPhone || u.phone === emailOrPhone
-  );
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  // In a real implementation, send email/SMS with reset token
-  return { success: true, message: "Password reset link sent" };
+  const user = await userRepo.findByIdentifierWithPassword(emailOrPhone);
+  if (!user) throw new Error('User not found');
+  return { success: true, message: 'Password reset link sent' };
 };
 
-// ======================================================
-// 🔧 RESET PASSWORD
-// ======================================================
+const resetPassword = async () => ({ success: true, message: 'Password reset successfully' });
 
-const resetPassword = async ({ token, newPassword }) => {
-  // MVP implementation - return success
-  return { success: true, message: "Password reset successfully" };
-};
-
-// ======================================================
-// 🚪 LOGOUT ALL DEVICES
-// ======================================================
-
-const logoutAllDevices = async ({ userId }) => {
-  // MVP implementation - return success
-  return { success: true, message: "Logged out from all devices" };
-};
-
-// ======================================================
-// 🔒 CHANGE PASSWORD
-// ======================================================
+// ── Change password ────────────────────────────────────────────────────────
 
 const changePassword = async ({ userId, currentPassword, newPassword }) => {
-  const user = usersDatabase.get(userId);
+  const user = await userRepo.findById(userId);
+  if (!user) throw new Error('User not found');
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+  // Re-fetch with password for comparison
+  const userWithPw = await userRepo.findByEmailWithPassword(user.email);
+  const valid = userWithPw?.passwordHash
+    ? await bcrypt.compare(currentPassword, userWithPw.passwordHash)
+    : false;
+  if (!valid) throw new Error('Current password is incorrect');
 
-  const isPasswordValid = await comparePassword(currentPassword, user.password);
-  if (!isPasswordValid) {
-    throw new Error("Current password is incorrect");
-  }
-
-  const hashedPassword = await hashPassword(newPassword);
-  user.password = hashedPassword;
-  usersDatabase.set(userId, user);
-
-  return { success: true, message: "Password changed successfully" };
+  const newHash = await bcrypt.hash(newPassword, 12);
+  await userRepo.update(userId, { passwordHash: newHash });
+  return { success: true, message: 'Password changed successfully' };
 };
 
-// ======================================================
-// ✅ VERIFY ACCESS TOKEN
-// ======================================================
+// ── Verify access token ────────────────────────────────────────────────────
 
 const verifyAccessToken = async ({ token }) => {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = usersDatabase.get(decoded.userId);
+  let decoded;
+  try { decoded = jwt.verify(token, JWT_SECRET); }
+  catch { throw new Error('Invalid token'); }
 
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  } catch (error) {
-    throw new Error("Invalid token");
-  }
+  const userId = decoded.id ?? decoded.sub;
+  return getMe({ userId });
 };
 
-// ======================================================
-// ❤️ AUTH HEALTH CHECK
-// ======================================================
+// ── Health check ───────────────────────────────────────────────────────────
 
 const authHealthCheck = async () => {
-  return {
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    usersCount: usersDatabase.size,
-  };
+  const { total } = await userRepo.getStats().catch(() => ({ total: 0 }));
+  return { status: 'healthy', timestamp: new Date().toISOString(), usersCount: total };
 };
 
-// ======================================================
-// 📤 EXPORT
-// ======================================================
+// ── Exports ────────────────────────────────────────────────────────────────
 
 export default {
   login,

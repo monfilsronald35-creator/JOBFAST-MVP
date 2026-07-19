@@ -1,14 +1,12 @@
 /* ==================================================
-   🌍 JOBFAST LOCATION ROUTES (MVP STABLE)
+   JOBFAST LOCATION ROUTES (Supabase)
    FILE: backend/src/routes/location.routes.js
    ================================================== */
 
-import express from "express";
-import crypto from "crypto";
-import mongoose from "mongoose";
-
-import User from "../models/user.model.js";
-import { usersDatabase } from "../controllers/register.controller.js";
+import express from 'express';
+import crypto from 'crypto';
+import supabase from '../config/supabaseClient.js';
+import notificationRepo from '../repositories/notification.repository.js';
 import {
   normalizeLocation,
   formatLocation,
@@ -20,205 +18,60 @@ import {
   groupByCity,
   hasValidCoordinates,
   clusterMarkers,
-} from "../utils/location.js";
+} from '../utils/location.js';
 
 const router = express.Router();
 
-/* ==================================================
-   📍 HEALTH CHECK
-   ================================================== */
+/* ── Health ─────────────────────────────────────────────────────────────── */
 
-router.get("/", (req, res) => {
-  return res.json({
-    success: true,
-    module: "location",
-    status: "running"
-  });
+router.get('/', (req, res) => res.json({ success: true, module: 'location', status: 'running' }));
+
+/* ── Pure utility routes (no DB) ───────────────────────────────────────── */
+
+router.post('/normalize', (req, res) =>
+  res.json({ success: true, data: normalizeLocation(req.body || {}) }));
+
+router.post('/format', (req, res) =>
+  res.json({ success: true, data: formatLocation(req.body || {}) }));
+
+router.post('/distance', (req, res) => {
+  const { lat1, lng1, lat2, lng2 } = req.body || {};
+  res.json({ success: true, distanceKm: calculateDistanceKm(lat1, lng1, lat2, lng2) });
 });
 
-/* ==================================================
-   📍 NORMALIZE LOCATION
-   ================================================== */
-
-router.post("/normalize", (req, res) => {
-  const location =
-    normalizeLocation(req.body || {});
-
-  return res.json({
-    success: true,
-    data: location
-  });
+router.post('/attach-distance', (req, res) => {
+  const { items, currentLocation } = req.body || {};
+  const result = attachDistance(Array.isArray(items) ? items : [], currentLocation || {});
+  res.json({ success: true, total: result.length, data: result });
 });
 
-/* ==================================================
-   📍 FORMAT LOCATION
-   ================================================== */
-
-router.post("/format", (req, res) => {
-  const formatted =
-    formatLocation(req.body || {});
-
-  return res.json({
-    success: true,
-    data: formatted
-  });
+router.post('/sort-distance', (req, res) => {
+  const result = sortByDistance(Array.isArray(req.body?.items) ? req.body.items : []);
+  res.json({ success: true, total: result.length, data: result });
 });
 
-/* ==================================================
-   📍 DISTANCE CALCULATOR
-   ================================================== */
-
-router.post("/distance", (req, res) => {
-  const {
-    lat1,
-    lng1,
-    lat2,
-    lng2
-  } = req.body || {};
-
-  const distanceKm =
-    calculateDistanceKm(
-      lat1,
-      lng1,
-      lat2,
-      lng2
-    );
-
-  return res.json({
-    success: true,
-    distanceKm
-  });
+router.post('/nearby', (req, res) => {
+  const result = filterNearby(
+    Array.isArray(req.body?.items) ? req.body.items : [],
+    req.body?.maxDistanceKm || 10,
+  );
+  res.json({ success: true, total: result.length, data: result });
 });
 
-/* ==================================================
-   📍 ATTACH DISTANCE
-   USERS / JOBS / BUSINESSES
-   ================================================== */
-
-router.post("/attach-distance", (req, res) => {
-  const {
-    items,
-    currentLocation
-  } = req.body || {};
-
-  const result =
-    attachDistance(
-      Array.isArray(items)
-        ? items
-        : [],
-      currentLocation || {}
-    );
-
-  return res.json({
-    success: true,
-    total: result.length,
-    data: result
-  });
+router.post('/clusters', (req, res) => {
+  const clusters = createMapClusterPayload(Array.isArray(req.body?.items) ? req.body.items : []);
+  res.json({ success: true, total: clusters.length, data: clusters });
 });
 
-/* ==================================================
-   📍 SORT BY DISTANCE
-   ================================================== */
-
-router.post("/sort-distance", (req, res) => {
-  const items = Array.isArray(req.body?.items)
-    ? req.body.items
-    : [];
-
-  const result =
-    sortByDistance(items);
-
-  return res.json({
-    success: true,
-    total: result.length,
-    data: result
-  });
+router.post('/group-city', (req, res) => {
+  const grouped = groupByCity(Array.isArray(req.body?.items) ? req.body.items : []);
+  res.json({ success: true, data: grouped });
 });
 
-/* ==================================================
-   📍 FILTER NEARBY
-   ================================================== */
+router.post('/validate-gps', (req, res) =>
+  res.json({ success: true, valid: hasValidCoordinates(req.body || {}) }));
 
-router.post("/nearby", (req, res) => {
-  const items = Array.isArray(req.body?.items)
-    ? req.body.items
-    : [];
-
-  const maxDistanceKm =
-    req.body?.maxDistanceKm || 10;
-
-  const result =
-    filterNearby(
-      items,
-      maxDistanceKm
-    );
-
-  return res.json({
-    success: true,
-    total: result.length,
-    data: result
-  });
-});
-
-/* ==================================================
-   📍 MAP CLUSTER PAYLOAD
-   ================================================== */
-
-router.post("/clusters", (req, res) => {
-  const items = Array.isArray(req.body?.items)
-    ? req.body.items
-    : [];
-
-  const clusters =
-    createMapClusterPayload(items);
-
-  return res.json({
-    success: true,
-    total: clusters.length,
-    data: clusters
-  });
-});
-
-/* ==================================================
-   📍 GROUP BY CITY
-   ================================================== */
-
-router.post("/group-city", (req, res) => {
-  const items = Array.isArray(req.body?.items)
-    ? req.body.items
-    : [];
-
-  const grouped =
-    groupByCity(items);
-
-  return res.json({
-    success: true,
-    data: grouped
-  });
-});
-
-/* ==================================================
-   📍 GPS VALIDATION
-   ================================================== */
-
-router.post("/validate-gps", (req, res) => {
-  const valid =
-    hasValidCoordinates(
-      req.body || {}
-    );
-
-  return res.json({
-    success: true,
-    valid
-  });
-});
-
-/* ==================================================
-   📍 NEARBY ROLES (multi-role nearby search)
-   GET /nearby-roles?lat=&lng=&radius=&roles=
-   roles = comma-separated list, e.g. worker,restaurant,hotel
-   Returns users within radius sorted by distance, with role filter.
-   ================================================== */
+/* ── Nearby roles ────────────────────────────────────────────────────────── */
 
 const SEARCHABLE_ROLES = new Set([
   'worker', 'company', 'enterprise',
@@ -226,186 +79,159 @@ const SEARCHABLE_ROLES = new Set([
   'tourism', 'hospital', 'clinic', 'service_provider',
 ]);
 
-router.get("/nearby-roles", async (req, res) => {
-  const { lat, lng, radius = "10", roles = "" } = req.query;
+router.get('/nearby-roles', async (req, res) => {
+  const { lat, lng, radius = '10', roles = '' } = req.query;
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
-
   if (!Number.isFinite(userLat) || !Number.isFinite(userLng)) {
-    return res.status(400).json({
-      success: false,
-      error: { message: 'lat ak lng requis (numewik)' },
-    });
+    return res.status(400).json({ success: false, error: { message: 'lat ak lng requis (numewik)' } });
   }
 
   const maxRadius = Math.min(200, Math.max(1, parseFloat(radius) || 10));
-
-  // Parse requested roles; default to all searchable roles
   const requestedRoles = roles
-    ? roles.split(",").map(r => r.trim()).filter(r => SEARCHABLE_ROLES.has(r))
+    ? roles.split(',').map(r => r.trim()).filter(r => SEARCHABLE_ROLES.has(r))
     : [...SEARCHABLE_ROLES];
 
-  if (requestedRoles.length === 0) {
-    return res.json({ success: true, data: [], total: 0 });
+  if (requestedRoles.length === 0) return res.json({ success: true, data: [], total: 0 });
+
+  try {
+    const { data: sourceUsers = [] } = await supabase
+      .from('profiles')
+      .select('id, name, role, profession, category, profile_photo, is_available, location_city, location_country')
+      .in('role', requestedRoles)
+      .limit(500);
+
+    const results = [];
+    for (const user of sourceUsers) {
+      // Coordinates stored as PostGIS POINT — parse if available via lat/lng columns
+      const loc = user.location_lat != null && user.location_lng != null
+        ? { latitude: user.location_lat, longitude: user.location_lng }
+        : null;
+      if (!loc) continue;
+
+      const dist = calculateDistanceKm(userLat, userLng, loc.latitude, loc.longitude);
+      if (dist === null || dist > maxRadius) continue;
+      results.push({
+        id:           user.id,
+        name:         user.name,
+        role:         user.role,
+        profession:   user.profession,
+        category:     user.category,
+        profilePhoto: user.profile_photo,
+        availability: user.is_available ? 'available' : 'unavailable',
+        location:     { city: user.location_city, country: user.location_country },
+        distanceKm:   dist,
+      });
+    }
+
+    results.sort((a, b) => a.distanceKm - b.distanceKm);
+    return res.json({ success: true, total: results.length, data: results });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
-
-  const roleSet = new Set(requestedRoles);
-
-  // Try MongoDB first (persistent), fall back to in-memory
-  let sourceUsers = [];
-  if (mongoose.connection.readyState === 1) {
-    const query = { role: { $in: requestedRoles } };
-    sourceUsers = await User.find(query)
-      .select('-password -notifications -__v')
-      .limit(500)
-      .lean();
-  } else {
-    sourceUsers = Array.from(usersDatabase.values())
-      .filter(u => roleSet.has(u.role))
-      .map(u => { const { password, notifications: _n, ...safe } = u; return safe; });
-  }
-
-  const results = [];
-  for (const user of sourceUsers) {
-    const loc = user.location?.coordinates;
-    if (!loc?.latitude || !loc?.longitude) continue;
-    const dist = calculateDistanceKm(userLat, userLng, loc.latitude, loc.longitude);
-    if (dist === null || dist > maxRadius) continue;
-    results.push({
-      ...user,
-      distanceKm: dist,
-      availability: user.marketplaceData?.availability ?? user.availability ?? null,
-    });
-  }
-
-  results.sort((a, b) => a.distanceKm - b.distanceKm);
-
-  return res.json({ success: true, total: results.length, data: results });
 });
 
-/* ==================================================
-   📍 RADIUS ALERT
-   POST /radius-alert
-   Sends a notification to all users of target roles within a radius.
-   Body: { senderId, senderName, roles[], lat, lng, radius, title, message }
-   ================================================== */
+/* ── Radius alert ────────────────────────────────────────────────────────── */
 
-
-router.post("/radius-alert", (req, res) => {
+router.post('/radius-alert', async (req, res) => {
   const {
     senderId,
-    senderName = "JOBFAST",
+    senderName = 'JOBFAST',
     roles = [],
     lat, lng,
     radius = 25,
-    title = "Alèt Nouvo",
-    message = "",
-    alertType = "nearby_alert",
+    title = 'Alèt Nouvo',
+    message = '',
+    alertType = 'nearby_alert',
   } = req.body;
 
   const senderLat = parseFloat(lat);
   const senderLng = parseFloat(lng);
-
   if (!Number.isFinite(senderLat) || !Number.isFinite(senderLng)) {
-    return res.status(400).json({
-      success: false,
-      error: { message: 'lat ak lng requis' },
-    });
+    return res.status(400).json({ success: false, error: { message: 'lat ak lng requis' } });
   }
 
-  const maxRadius = Math.min(200, Math.max(1, parseFloat(radius) || 25));
-  const targetRoleSet = new Set(Array.isArray(roles) ? roles : [roles]);
-  const notified = [];
+  const maxRadius    = Math.min(200, Math.max(1, parseFloat(radius) || 25));
+  const targetRoles  = Array.isArray(roles) ? roles : [roles];
+  const notified     = [];
 
-  for (const user of usersDatabase.values()) {
-    if (user._id === senderId || user.id === senderId) continue;
-    if (targetRoleSet.size > 0 && !targetRoleSet.has(user.role)) continue;
+  try {
+    let q = supabase.from('profiles').select('id, role, location_lat, location_lng').limit(1000);
+    if (targetRoles.length > 0) q = q.in('role', targetRoles);
+    const { data: users = [] } = await q;
 
-    const loc = user.location?.coordinates;
-    if (!loc?.latitude || !loc?.longitude) continue;
+    const toNotify = [];
+    for (const user of users) {
+      if (String(user.id) === String(senderId)) continue;
+      if (user.location_lat == null || user.location_lng == null) continue;
+      const dist = calculateDistanceKm(senderLat, senderLng, user.location_lat, user.location_lng);
+      if (dist === null || dist > maxRadius) continue;
+      toNotify.push({
+        userId:    user.id,
+        type:      alertType,
+        title,
+        message,
+        data:      { senderId, senderName, distanceKm: dist },
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      });
+      notified.push(user.id);
+    }
 
-    const dist = calculateDistanceKm(senderLat, senderLng, loc.latitude, loc.longitude);
-    if (dist === null || dist > maxRadius) continue;
+    if (toNotify.length) await notificationRepo.broadcast(toNotify);
 
-    if (!user.notifications) user.notifications = [];
-    user.notifications.unshift({
-      id:        crypto.randomUUID(),
-      type:      alertType,
-      title,
-      message,
-      data:      { senderId, senderName, distanceKm: dist },
-      createdAt: new Date().toISOString(),
-      isRead:    false,
-    });
-
-    usersDatabase.set(user._id || user.id, user);
-    notified.push(user._id || user.id);
+    return res.json({ success: true, data: { notified: notified.length, userIds: notified } });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
-
-  return res.json({
-    success: true,
-    data: { notified: notified.length, userIds: notified },
-  });
 });
 
-/* ==================================================
-   📍 CLUSTERS MAP
-   GET /clusters-map?lat=&lng=&radius=&roles=&gridSize=
-   Returns grid-clustered markers for all roles in the radius.
-   ================================================== */
+/* ── Clusters map ────────────────────────────────────────────────────────── */
 
-router.get("/clusters-map", (req, res) => {
-  const { lat, lng, radius = "25", roles = "", gridSize = "1.5" } = req.query;
+router.get('/clusters-map', async (req, res) => {
+  const { lat, lng, radius = '25', roles = '', gridSize = '1.5' } = req.query;
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
-
   if (!Number.isFinite(userLat) || !Number.isFinite(userLng)) {
-    return res.status(400).json({
-      success: false,
-      error: { message: 'lat ak lng requis' },
-    });
+    return res.status(400).json({ success: false, error: { message: 'lat ak lng requis' } });
   }
 
-  const maxRadius  = Math.min(200, Math.max(1,  parseFloat(radius)   || 25));
+  const maxRadius  = Math.min(200, Math.max(1,   parseFloat(radius)   || 25));
   const gridSizeKm = Math.min(10,  Math.max(0.1, parseFloat(gridSize) || 1.5));
 
   const requestedRoles = roles
-    ? roles.split(",").map(r => r.trim()).filter(r => SEARCHABLE_ROLES.has(r))
+    ? roles.split(',').map(r => r.trim()).filter(r => SEARCHABLE_ROLES.has(r))
     : [...SEARCHABLE_ROLES];
 
-  const roleSet = new Set(requestedRoles);
-  const nearby = [];
+  try {
+    let q = supabase
+      .from('profiles')
+      .select('id, name, role, is_available, location_city, location_lat, location_lng')
+      .limit(1000);
+    if (requestedRoles.length > 0) q = q.in('role', requestedRoles);
+    const { data: users = [] } = await q;
 
-  for (const user of usersDatabase.values()) {
-    if (roleSet.size > 0 && !roleSet.has(user.role)) continue;
-    const loc = user.location?.coordinates;
-    if (!loc?.latitude || !loc?.longitude) continue;
-    const dist = calculateDistanceKm(userLat, userLng, loc.latitude, loc.longitude);
-    if (dist === null || dist > maxRadius) continue;
-    nearby.push({
-      id:         user._id || user.id,
-      name:       user.name,
-      role:       user.role,
-      distanceKm: dist,
-      location:   { lat: loc.latitude, lng: loc.longitude, city: user.location?.city },
-      availability: user.marketplaceData?.availability ?? user.availability ?? null,
-    });
+    const nearby = [];
+    for (const user of users) {
+      if (user.location_lat == null || user.location_lng == null) continue;
+      const dist = calculateDistanceKm(userLat, userLng, user.location_lat, user.location_lng);
+      if (dist === null || dist > maxRadius) continue;
+      nearby.push({
+        id:           user.id,
+        name:         user.name,
+        role:         user.role,
+        distanceKm:   dist,
+        location:     { lat: user.location_lat, lng: user.location_lng, city: user.location_city },
+        availability: user.is_available ? 'available' : 'unavailable',
+      });
+    }
+
+    const clusters = clusterMarkers(nearby, gridSizeKm);
+    return res.json({ success: true, total: nearby.length, clusters: clusters.length, data: clusters });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
-
-  const clusters = clusterMarkers(nearby, gridSizeKm);
-
-  return res.json({
-    success:  true,
-    total:    nearby.length,
-    clusters: clusters.length,
-    data:     clusters,
-  });
 });
-
-/* ==================================================
-   📍 EXPORT ROUTER
-   ================================================== */
 
 export default router;

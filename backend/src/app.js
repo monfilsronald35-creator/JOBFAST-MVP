@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
@@ -27,11 +26,8 @@ import messageRoutes    from './routes/messages.routes.js';
 import postRoutes       from './routes/posts.routes.js';
 import bookingRoutes    from './routes/bookings.routes.js';
 import pushRoutes       from './routes/push.routes.js';
-
-// ✅ CHEMEN KORÈK LA: Nou retire "/middlewares" paske fichye a nan menm nivo ak app.js
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
-import User from './models/user.model.js';
-import { usersDatabase } from './controllers/register.controller.js';
+import userRepo from './repositories/user.repository.js';
 
 const app = express();
 
@@ -41,20 +37,14 @@ app.use(
   })
 );
 
-// CORS: when origin list contains '*' we allow any origin explicitly (not the
-// wildcard string) so it stays compatible with credentials mode in browsers.
-const allowedOrigins = env.CORS_ORIGIN; // string[]
+const allowedOrigins = env.CORS_ORIGIN;
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Non-browser requests (curl, Render health check, server-to-server) have
-      // no Origin header — always allow them.
       if (!origin) return cb(null, true);
-      // Wildcard configured → allow every browser origin, echo it back.
       if (allowedOrigins.includes('*')) return cb(null, origin);
-      // Specific list → check membership.
       if (allowedOrigins.includes(origin)) return cb(null, origin);
-      cb(null, false); // blocked — no CORS headers sent
+      cb(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -114,55 +104,25 @@ app.use(`${API_PREFIX}/push`,       pushRoutes);
 app.get(`${API_PREFIX}/community/members`, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 30, 100);
+    const { users } = await userRepo.getUsers({ page: 1, limit });
 
-    // Prefer MongoDB (persistent); fall back to in-memory for MVP
-    let members = [];
-    if (mongoose.connection.readyState === 1) {
-      const docs = await User.find({})
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .select('name role profession category location profileMetadata profileCompleteness stats availability createdAt')
-        .lean();
-      members = docs.map(u => ({
-        id: u._id,
-        name: u.name,
-        role: u.role,
-        profession: u.profession,
-        category: u.category,
-        city: u.location?.city || '',
-        country: u.location?.country || 'Haiti',
-        photo: u.profileMetadata?.profilePhoto || null,
-        yearsExperience: u.profileMetadata?.yearsExperience || null,
-        specialties: u.profileMetadata?.specialties || [],
-        rating: u.stats?.rating || 5.0,
-        profileCompleteness: u.profileCompleteness || 0,
-        availability: u.availability || 'available',
-        memberSince: u.stats?.memberSince || '',
-        joinedAt: u.createdAt,
-      }));
-    } else {
-      // In-memory fallback
-      members = Array.from(usersDatabase.values())
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, limit)
-        .map(u => ({
-          id: u.id,
-          name: u.name,
-          role: u.role,
-          profession: u.profession,
-          category: u.category,
-          city: u.location?.city || '',
-          country: u.location?.country || 'Haiti',
-          photo: u.profileMetadata?.profilePhoto || null,
-          yearsExperience: u.profileMetadata?.yearsExperience || null,
-          specialties: u.profileMetadata?.specialties || [],
-          rating: u.stats?.rating || 5.0,
-          profileCompleteness: u.profileCompleteness || 0,
-          availability: u.availability || 'available',
-          memberSince: u.stats?.memberSince || '',
-          joinedAt: u.createdAt,
-        }));
-    }
+    const members = users.map(u => ({
+      id:                  u.id,
+      name:                u.name,
+      role:                u.role,
+      profession:          u.profession,
+      category:            u.category,
+      city:                u.location?.city    || '',
+      country:             u.location?.country || 'Haiti',
+      photo:               u.profileMetadata?.profilePhoto || u.profilePhoto || null,
+      yearsExperience:     u.profileMetadata?.yearsExperience || null,
+      specialties:         u.profileMetadata?.specialties || [],
+      rating:              u.stats?.rating || 5.0,
+      profileCompleteness: u.profileCompleteness || 0,
+      availability:        u.isAvailable ? 'available' : 'unavailable',
+      memberSince:         u.stats?.memberSince || '',
+      joinedAt:            u.createdAt,
+    }));
 
     return res.json({ success: true, data: members, total: members.length });
   } catch (err) {
@@ -172,7 +132,5 @@ app.get(`${API_PREFIX}/community/members`, async (req, res) => {
 
 app.use(notFoundHandler);
 app.use(errorHandler);
-
-// Keep-alive ping is handled in server.js (every 9 min). No duplicate here.
 
 export default app;

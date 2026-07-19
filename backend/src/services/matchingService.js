@@ -1,5 +1,8 @@
-import Notification from '../models/notification.model.js';
-import User from '../models/user.model.js';
+// =========================================================================
+// JOBFAST — MATCHING SERVICE (Supabase)
+// =========================================================================
+import supabase from '../config/supabaseClient.js';
+import notificationRepo from '../repositories/notification.repository.js';
 import { getProfessionsByCategory } from '../config/categories.js';
 
 /**
@@ -9,36 +12,32 @@ export const createMatchNotifications = async (job) => {
   try {
     const { category, profession, userId, title, description, location } = job;
 
-    // Find all users in the same category
-    const matchingUsers = await User.find({
-      category,
-      profession: { $in: getProfessionsByCategory(category) },
-      _id: { $ne: userId }, // Don't notify the poster
-    })
-      .select('_id email location')
-      .lean();
+    const professions = getProfessionsByCategory(category);
 
-    if (matchingUsers.length === 0) return;
+    const { data: matchingUsers } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('category', category)
+      .in('profession', professions.length ? professions : [profession])
+      .neq('id', userId)
+      .limit(100);
 
-    // Create notifications for matching users
+    if (!matchingUsers?.length) return;
+
     const notifications = matchingUsers.map(user => ({
-      userId: user._id,
-      type: 'job_match',
+      userId:       user.id,
+      type:         'job_match',
       category,
-      title: `Nouvo ${profession} pou ${location}`,
-      message: `${title} - ${description?.substring(0, 100)}...`,
-      data: {
-        jobId: job._id,
-        profession,
-        location,
-      },
-      actionUrl: `/job/${job._id}`,
+      title:        `Nouvo ${profession} pou ${location}`,
+      message:      `${title} - ${description?.substring(0, 100) || ''}...`,
+      data:         { jobId: job._id || job.id, profession, location },
+      actionUrl:    `/job/${job._id || job.id}`,
       sourceUserId: userId,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      expiresAt:    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     }));
 
-    await Notification.insertMany(notifications);
-    console.log(`Created ${notifications.length} match notifications for job ${job._id}`);
+    await notificationRepo.broadcast(notifications);
+    console.log(`Created ${notifications.length} match notifications for job ${job._id || job.id}`);
   } catch (error) {
     console.error('Error creating match notifications:', error.message);
   }
@@ -49,37 +48,41 @@ export const createMatchNotifications = async (job) => {
  */
 export const notifyNewCategoryMember = async (newUser) => {
   try {
-    const { category, profession, _id, name, location } = newUser;
+    const { category, profession, _id, id, name, location } = newUser;
+    const newUserId = _id || id;
 
-    // Find active businesses/service providers in same category
-    const recipients = await User.find({
-      category,
-      profession: { $in: getProfessionsByCategory(category) },
-      _id: { $ne: _id },
-      isAvailable: true,
-    })
-      .select('_id')
-      .lean()
-      .limit(50); // Limit to prevent spam
+    if (!category) return;
 
-    if (recipients.length === 0) return;
+    const professions = getProfessionsByCategory(category);
+
+    const { data: recipients } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('category', category)
+      .in('profession', professions.length ? professions : [profession].filter(Boolean))
+      .neq('id', newUserId)
+      .eq('is_available', true)
+      .limit(50);
+
+    if (!recipients?.length) return;
+
+    const cityName = typeof location === 'string'
+      ? location
+      : location?.city || 'nan zòn ou';
 
     const notifications = recipients.map(user => ({
-      userId: user._id,
-      type: 'system',
+      userId:       user.id,
+      type:         'system',
       category,
-      title: `Nouvo moun nan ${profession}`,
-      message: `${name} soti nan ${location || 'nan zòn ou'}`,
-      data: {
-        newUserId: _id,
-        profession,
-      },
-      actionUrl: `/user/${_id}`,
-      sourceUserId: _id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      title:        `Nouvo moun nan ${profession || category}`,
+      message:      `${name} soti nan ${cityName}`,
+      data:         { newUserId, profession },
+      actionUrl:    `/user/${newUserId}`,
+      sourceUserId: newUserId,
+      expiresAt:    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     }));
 
-    await Notification.insertMany(notifications);
+    await notificationRepo.broadcast(notifications);
     console.log(`Notified ${notifications.length} users about new member`);
   } catch (error) {
     console.error('Error notifying new category member:', error.message);
@@ -91,31 +94,25 @@ export const notifyNewCategoryMember = async (newUser) => {
  */
 export const sendLocationAlert = async (category, radius, location, title, message) => {
   try {
-    // For MVP, simple category + location match
-    const affectedUsers = await User.find({
-      category,
-      location: { $ne: null },
-    })
-      .select('_id')
-      .lean()
+    const { data: affectedUsers } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('category', category)
       .limit(100);
 
-    if (affectedUsers.length === 0) return;
+    if (!affectedUsers?.length) return;
 
     const notifications = affectedUsers.map(user => ({
-      userId: user._id,
-      type: 'alert',
+      userId:    user.id,
+      type:      'alert',
       category,
       title,
       message,
-      data: {
-        location,
-        radius,
-      },
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
+      data:      { location, radius },
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     }));
 
-    await Notification.insertMany(notifications);
+    await notificationRepo.broadcast(notifications);
     console.log(`Sent ${notifications.length} location alerts`);
   } catch (error) {
     console.error('Error sending location alerts:', error.message);
@@ -127,12 +124,8 @@ export const sendLocationAlert = async (category, radius, location, title, messa
  */
 export const cleanupExpiredNotifications = async () => {
   try {
-    const result = await Notification.deleteMany({
-      expiresAt: { $lt: new Date() },
-    });
-
-    console.log(`Cleaned up ${result.deletedCount} expired notifications`);
-    return result.deletedCount;
+    await notificationRepo.deleteExpired();
+    console.log('Cleaned up expired notifications');
   } catch (error) {
     console.error('Error cleaning up notifications:', error.message);
   }
