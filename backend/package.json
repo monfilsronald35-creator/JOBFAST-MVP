@@ -10,6 +10,7 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
@@ -22,13 +23,14 @@
     "socket.io": "^4.8.3",
     "stripe": "16.12.0",
     "web-push": "^3.6.7",
-    "winston": "^3.13.0"
+    "winston": "^3.13.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
   },
   "engines": {
-    "node": ">=18 <21"
+    "node": ">=20"
   },
   "keywords": [
     "jobfast",
@@ -40,8 +42,8 @@
     "construction",
     "gps",
     "jobs",
-    "mongodb",
-    "mongoose",
+    "supabase",
+    "postgresql",
     "winston"
   ],
   "author": "Monfils Ronald",

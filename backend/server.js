@@ -3,7 +3,6 @@ dotenv.config();
 
 import http from 'http';
 import { Server as SocketIO } from 'socket.io';
-import mongoose from 'mongoose';
 import app from './src/app.js';
 import { env } from './src/config/env.js';
 import { setIO } from './src/utils/io.js';
@@ -100,25 +99,11 @@ async function start() {
       console.log(`♻️  Keep-alive aktif → ${SELF_URL}/health (chak 9 min)`);
     }
 
-    // MongoDB is optional for MVP — in-memory storage works without it
-    const dbUrl = env.DB_URL;
-    const isLocalMongo = !dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
-
-    if (!isLocalMongo) {
-      try {
-        await mongoose.connect(dbUrl, { serverSelectionTimeoutMS: 10000 });
-        console.log('🍃 MongoDB konekte ak siksè');
-      } catch (dbErr) {
-        console.warn('⚠️ MongoDB koneksyon echwe — in-memory mode aktif:', dbErr.message);
-      }
-    } else {
-      console.log('ℹ️ In-memory mode aktif (DB_URL pa konfigire pou pwodiksyon)');
-    }
+    console.log('🗄️  Supabase PostgreSQL aktif kòm baz done prensipal');
 
     const shutdown = async (signal) => {
       console.log(`⚠️ ${signal} received. Stopping gracefully...`);
-      httpServer.close(async () => {
-        try { await mongoose.disconnect(); } catch (_) {}
+      httpServer.close(() => {
         console.log('🛑 Server stopped.');
         process.exit(0);
       });
