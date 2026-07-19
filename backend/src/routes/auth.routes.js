@@ -2,10 +2,12 @@
 // JOBFAST — AUTH ROUTES (Supabase)
 // =========================================================================
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import { loginController }    from '../controllers/login.controller.js';
 import { registerController } from '../controllers/register.controller.js';
 import { authMiddleware }     from '../middlewares/authMiddleware.js';
 import userRepo from '../repositories/user.repository.js';
+import { env } from '../config/env.js';
 
 const router = express.Router();
 
@@ -58,6 +60,41 @@ router.get('/me', authMiddleware, async (req, res) => {
 // ── /logout (stateless JWT — just confirm client-side disposal) ───────────
 router.post('/logout', authMiddleware, (_req, res) =>
   res.status(200).json({ success: true, message: 'Session closed successfully.' })
+);
+
+// ── /validate — token check (alias of /me, called by frontend auth.js) ───
+router.get('/validate', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const user   = await userRepo.getById(String(userId));
+    const { passwordHash: _pw, ...safeUser } = user;
+    return res.status(200).json({
+      success: true,
+      data: { user: { ...safeUser, _id: safeUser.id }, valid: true },
+    });
+  } catch (err) {
+    const status = err.statusCode === 404 ? 404 : 500;
+    return res.status(status).json({ success: false, message: err.message });
+  }
+});
+
+// ── /refresh — issue a new JWT from a currently-valid token ──────────────
+router.post('/refresh', authMiddleware, (req, res) => {
+  const { id, email, role } = req.user;
+  const newToken = jwt.sign({ id, email, role }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN || '7d' });
+  return res.status(200).json({
+    success: true,
+    data: {
+      token:      newToken,
+      token_type: 'Bearer',
+      expires_in: env.JWT_EXPIRES_IN || '7d',
+    },
+  });
+});
+
+// ── /health — simple liveness check for auth subsystem ───────────────────
+router.get('/health', (_req, res) =>
+  res.status(200).json({ success: true, status: 'ok', service: 'auth' })
 );
 
 // ── /bootstrap-admin (one-time; delete after first use) ──────────────────

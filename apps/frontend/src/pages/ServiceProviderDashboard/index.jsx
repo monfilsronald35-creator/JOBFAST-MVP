@@ -88,9 +88,33 @@ export default function ServiceProviderDashboard() {
   const { user } = useAuth();
 
   const [tab, setTab]       = useState('overview');
-  const [services, setServices] = useState(MOCK_SERVICES);
+  const [services, setServices] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('jf_sp_services') || 'null') || MOCK_SERVICES; } catch { return MOCK_SERVICES; }
+  });
   const [bookings, setBookings] = useState(MOCK_BOOKINGS);
   const [showCreate, setShowCreate] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem('jf_sp_services', JSON.stringify(services)); } catch {}
+  }, [services]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+    API.get('/bookings', { params: { userId: user._id } })
+      .then(r => {
+        const d = r?.data?.data || r?.data;
+        if (Array.isArray(d) && d.length) setBookings(d.map(b => ({
+          _id: b._id || b.id,
+          client: b.clientName || b.client || 'Kliyan',
+          service: b.serviceName || b.service || 'Sèvis',
+          date: b.date || b.scheduledDate || '',
+          time: b.time || b.scheduledTime || '',
+          status: b.status || 'pending',
+          amount: b.amount || 0,
+        })));
+      })
+      .catch(() => {});
+  }, [user?._id]);
 
   const completedJobs = user?.stats?.totalJobs ?? 0;
   const rating        = user?.stats?.rating    ?? 0;
@@ -249,10 +273,14 @@ export default function ServiceProviderDashboard() {
                   </div>
                   {b.status === 'pending' && (
                     <div className="flex gap-2 mt-3">
-                      <button type="button" onClick={() => setBookings(p => p.map(x => x._id === b._id ? { ...x, status:'confirmed' } : x))}
-                        className="flex-1 py-2 rounded-xl bg-green-500 text-white text-xs font-bold">✅ Konfime</button>
-                      <button type="button" onClick={() => setBookings(p => p.map(x => x._id === b._id ? { ...x, status:'cancelled' } : x))}
-                        className="flex-1 py-2 rounded-xl border border-red-500/40 text-red-400 text-xs font-bold">✕ Refize</button>
+                      <button type="button" onClick={() => {
+                        API.patch(`/bookings/${b._id}/status`, { status: 'confirmed' }).catch(() => {});
+                        setBookings(p => p.map(x => x._id === b._id ? { ...x, status:'confirmed' } : x));
+                      }} className="flex-1 py-2 rounded-xl bg-green-500 text-white text-xs font-bold">✅ Konfime</button>
+                      <button type="button" onClick={() => {
+                        API.patch(`/bookings/${b._id}/status`, { status: 'cancelled' }).catch(() => {});
+                        setBookings(p => p.map(x => x._id === b._id ? { ...x, status:'cancelled' } : x));
+                      }} className="flex-1 py-2 rounded-xl border border-red-500/40 text-red-400 text-xs font-bold">✕ Refize</button>
                     </div>
                   )}
                 </div>

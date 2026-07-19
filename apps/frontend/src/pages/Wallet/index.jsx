@@ -911,17 +911,31 @@ export default function WalletPage() {
   const [securityState, setSecurity]  = useState({ pin: true, faceId: true, fingerprint: true, tfa: true });
   const [frozenCards, setFrozenCards] = useState({});
   const [pageToast, setPageToast]     = useState('');
+  const [displayBalances, setDisplayBalances] = useState(MOCK_BALANCES);
 
   const showPageToast = (msg) => { setPageToast(msg); setTimeout(() => setPageToast(''), 2500); };
 
-  // Try to load real data; fall back silently to mock
   useEffect(() => {
     walletAPI.getTransactions()
       .then(r => { const d = r?.data?.data || r?.data; if (Array.isArray(d) && d.length) setTransactions(d); })
       .catch(() => {});
+    walletAPI.getWallet()
+      .then(r => {
+        const wallet = r?.data?.data?.wallet || r?.data?.wallet || r?.data?.data;
+        const bals = wallet?.balances;
+        if (Array.isArray(bals) && bals.length) {
+          const SYM = { USD: '$', EUR: '€', HTG: 'HTG ', DOP: 'RD$', CAD: 'CA$', GBP: '£', BTC: '₿' };
+          setDisplayBalances(bals.map(b => ({
+            currency: b.currency,
+            symbol: SYM[b.currency] || (b.currency + ' '),
+            amount: (b.available || 0) / 100,
+          })));
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const currentBalance = MOCK_BALANCES[currencyIdx];
+  const currentBalance = displayBalances[currencyIdx] || displayBalances[0];
 
   const filteredTx = transactions.filter(tx => {
     if (txFilter === 'all') return true;
@@ -973,8 +987,8 @@ export default function WalletPage() {
 
             {/* other currencies */}
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-              {MOCK_BALANCES.filter((_, i) => i !== currencyIdx).map(b => (
-                <button key={b.currency} type="button" onClick={() => setCurrencyIdx(MOCK_BALANCES.indexOf(b))}
+              {displayBalances.filter((_, i) => i !== currencyIdx).map(b => (
+                <button key={b.currency} type="button" onClick={() => setCurrencyIdx(displayBalances.indexOf(b))}
                   className="text-indigo-300 text-[11px] hover:text-white transition">
                   {fmtBalance(b)}
                 </button>

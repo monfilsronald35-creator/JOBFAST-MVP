@@ -376,16 +376,16 @@ function ProfileScreen() {
   };
 
   // ── Load posts from backend ─────────────────────────────────────────
-  useEffect(() => {
-    if (!user?._id && !user?.id) return;
-    const userId = user._id || user.id;
+  const loadPosts = useCallback(() => {
+    const userId = user?._id || user?.id;
+    if (!userId) return;
     API.get(`/posts/user/${userId}`, { params: { limit: 24 } })
-      .then(res => {
-        if (res?.data?.success) setPosts(res.data.posts || []);
-      })
+      .then(res => { if (res?.data?.success) setPosts(res.data.posts || []); })
       .catch(() => {})
       .finally(() => setPostsLoaded(true));
   }, [user?._id, user?.id]);
+
+  useEffect(() => { loadPosts(); }, [loadPosts]);
 
   // ── Avatar photo change ─────────────────────────────────────────────
   const handlePhotoChange = useCallback(async (e) => {
@@ -418,8 +418,9 @@ function ProfileScreen() {
 
   // ── Post created ────────────────────────────────────────────────────
   const handlePostCreated = useCallback((newPost) => {
-    setPosts(prev => [newPost, ...prev]);
-  }, []);
+    setPosts(prev => [newPost, ...prev]); // optimistic — visible immediately
+    setTimeout(loadPosts, 1500);          // re-sync with DB after 1.5s
+  }, [loadPosts]);
 
   // ── Logout ──────────────────────────────────────────────────────────
   const handleLogout = useCallback(() => {

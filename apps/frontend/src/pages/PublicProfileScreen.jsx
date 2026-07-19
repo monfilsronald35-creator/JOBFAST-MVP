@@ -541,9 +541,9 @@ function AICareerSection({ profile }) {
 }
 
 // 17. Contact
-function ContactSection({ profile, navigate }) {
+function ContactSection({ profile, navigate, onMessage }) {
   const methods = [
-    { icon: '💬', label: 'Message',   action: () => navigate('/chat'),                                           active: true   },
+    { icon: '💬', label: 'Message',   action: onMessage,                                                         active: true   },
     { icon: '📞', label: 'Voice Call', action: () => { window.location.href = 'tel:+18095550100'; },            active: true   },
     { icon: '🎥', label: 'Video Call', action: () => navigate('/chat'),                                          active: true   },
     { icon: '📧', label: 'Email',      action: () => { window.open(`mailto:${profile.email || ''}`); },         active: !!profile.contact?.email     },
@@ -662,7 +662,7 @@ function TrustCenterSection({ profile }) {
 // ════════════════════════════════════════════════════════════════
 // HERO SECTION (always visible)
 // ════════════════════════════════════════════════════════════════
-function HeroSection({ profile, isOwnProfile, followed, saved, onFollow, onSave, navigate }) {
+function HeroSection({ profile, isOwnProfile, followed, saved, onFollow, onSave, navigate, onMessage }) {
   const photo = profile.profilePhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile.name || 'user')}`;
   const avColor = { available: '#22c55e', busy: '#ef4444', vacation: '#f59e0b' }[profile.availability] || '#94a3b8';
 
@@ -750,7 +750,7 @@ function HeroSection({ profile, isOwnProfile, followed, saved, onFollow, onSave,
           <div className="mt-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             <div className="flex gap-2 pb-1" style={{ width: 'max-content' }}>
               <ActionBtn icon={followed ? '✅' : '➕'} label={followed ? 'Following' : 'Follow'} primary={!followed} onClick={onFollow} />
-              <ActionBtn icon="💬" label="Message"   onClick={() => navigate('/chat')} />
+              <ActionBtn icon="💬" label="Message"   onClick={onMessage} />
               <ActionBtn icon="📞" label="Voice"     onClick={() => { window.location.href = 'tel:+18095550100'; }} />
               <ActionBtn icon="🎥" label="Video"     onClick={() => navigate('/chat')} />
               <ActionBtn icon="💼" label="Hire Now"  primary onClick={() => navigate('/post-job')} />
@@ -862,6 +862,27 @@ export default function PublicProfileScreen() {
     else       { saveUser(myId, userId);   setSaved(true);  }
   }, [saved, myId, userId]);
 
+  const handleMessage = useCallback(async () => {
+    try {
+      const res = await API.post('/messages/start', { targetUserId: userId });
+      const { conversationId, participant } = res.data;
+      navigate('/chat', {
+        state: {
+          chatInfo: {
+            id:      conversationId,
+            name:    participant?.name    || profile.name,
+            role:    participant?.role    || profile.role,
+            city:    participant?.city    || profile.city,
+            avatar:  participant?.avatar  || profile.avatar,
+            otherId: participant?.id      || userId,
+          }
+        }
+      });
+    } catch {
+      navigate('/chat');
+    }
+  }, [userId, navigate, profile]);
+
   return (
     <div className="min-h-screen pb-24 text-white" style={{ background: BG }}>
 
@@ -870,7 +891,7 @@ export default function PublicProfileScreen() {
         profile={profile} isOwnProfile={isOwnProfile}
         followed={followed} saved={saved}
         onFollow={handleFollow} onSave={handleSave}
-        navigate={navigate}
+        navigate={navigate} onMessage={handleMessage}
       />
 
       {/* 3. Stories (highlights) */}
@@ -921,7 +942,7 @@ export default function PublicProfileScreen() {
         {activeTab === 'jobs'       && <JobsSection        profile={profile} />}
         {activeTab === 'documents'  && <DocumentsSection />}
         {activeTab === 'ai'         && <AICareerSection    profile={profile} />}
-        {activeTab === 'contact'    && <ContactSection     profile={profile} navigate={navigate} />}
+        {activeTab === 'contact'    && <ContactSection     profile={profile} navigate={navigate} onMessage={handleMessage} />}
         {activeTab === 'stats'      && <StatsSection       profile={profile} />}
         {activeTab === 'trust'      && <TrustCenterSection profile={profile} />}
       </div>

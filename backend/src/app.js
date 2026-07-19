@@ -100,6 +100,11 @@ app.use(`${API_PREFIX}/posts`,      postRoutes);
 app.use(`${API_PREFIX}/bookings`,   bookingRoutes);
 app.use(`${API_PREFIX}/push`,       pushRoutes);
 
+// Stories stub — frontend fails gracefully with mock data but shouldn't 404
+app.all(`${API_PREFIX}/stories*`, (_req, res) =>
+  res.status(200).json({ success: true, data: [], total: 0 })
+);
+
 // Public community feed — returns latest registered members (no auth required)
 app.get(`${API_PREFIX}/community/members`, async (req, res) => {
   try {

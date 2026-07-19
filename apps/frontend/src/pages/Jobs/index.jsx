@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAllJobs } from '../../services/jobs';
 import {
   Search, SlidersHorizontal, X, ChevronRight, MapPin,
   Bookmark, Share2, MessageSquare, Phone, Building2,
@@ -568,6 +569,7 @@ export default function Jobs() {
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState(false);
   const [isOnline,    setIsOnline]    = useState(navigator.onLine);
+  const [allJobs,     setAllJobs]     = useState(BASE_JOBS);
 
   useEffect(() => {
     const on  = () => setIsOnline(true);
@@ -575,6 +577,16 @@ export default function Jobs() {
     window.addEventListener('online',  on);
     window.addEventListener('offline', off);
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+  }, []);
+
+  useEffect(() => {
+    getAllJobs()
+      .then(r => {
+        const payload = r?.data;
+        const jobs = payload?.jobs || payload?.data;
+        if (Array.isArray(jobs) && jobs.length) setAllJobs(jobs);
+      })
+      .catch(() => {});
   }, []);
 
   // Simulate loading on tab change
@@ -603,7 +615,7 @@ export default function Jobs() {
     });
   }, []);
 
-  let tabJobs = getTabJobs(activeTab, BASE_JOBS);
+  let tabJobs = getTabJobs(activeTab, allJobs);
 
   // Client-side filtering
   if (searchQuery.trim()) {
