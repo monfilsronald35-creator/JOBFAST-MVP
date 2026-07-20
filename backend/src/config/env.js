@@ -6,11 +6,13 @@ function normalize(value) {
   return (value ?? '').toString().trim();
 }
 
-function required(name, fallback) {
+function required(name, fallback = '') {
   const value = normalize(process.env[name]);
 
   if (!value) {
-    if (process.env.APP_STAGE === 'production') {
+    // Only throw in production when there is truly no default (fallback is empty string).
+    // Vars with a sensible default (APP_NAME, APP_VERSION, etc.) use it in all environments.
+    if (process.env.APP_STAGE === 'production' && fallback === '') {
       throw new Error(`Missing env: ${name}`);
     }
     return fallback;
