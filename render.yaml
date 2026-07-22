@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: jobfast-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: APP_STAGE
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: CORS_ORIGIN
+        value: "https://jobfast-mvp.vercel.app,https://jobfast-mvp-git-main-monfilsronald35-creators.vercel.app,http://localhost:5173"
+      # ── Secrets: set these in Render Dashboard → Environment (never commit) ──
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
