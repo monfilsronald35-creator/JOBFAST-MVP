@@ -1,482 +1,729 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+// src/pages/UniversalSearch.jsx
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  Suspense,
+  lazy,
+  memo,
+  useDeferredValue,
+  Component,
+} from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useInView } from 'react-intersection-observer';
+import { motion, AnimatePresence } from 'framer-motion';
+import localforage from 'localforage';
+import {
+  Search,
+  Mic,
+  ScanSearch,
+  X,
+  ChevronRight,
+  Loader2,
+  Globe,
+  Star,
+  BadgeCheck,
+  TrendingUp,
+  History,
+  Building2,
+  Briefcase,
+  User,
+  ShoppingBag,
+  Home,
+  Hotel,
+  UtensilsCrossed,
+  FileText,
+  Link as LinkIcon,
+  FileAudio2,
+  Filter,
+  WifiOff,
+  MapPin,
+  Layers3,
+  Landmark,
+  CarFront,
+  PenTool,
+  Video,
+  Image as ImageIcon,
+  Plane,
+  Stethoscope,
+  Gavel,
+  Wrench,
+  School,
+  TrainFront,
+  BusFront,
+  Package,
+  Store,
+  Banknote,
+  Clock3,
+  Sparkles,
+} from 'lucide-react';
 import API from '../../api/axios';
 
-// ── Design tokens ─────────────────────────────────────────────
-const BG     = '#050B18';
-const CARD   = '#111827';
+const SearchSkeleton = lazy(() => import('../../components/skeletons/SearchSkeleton'));
+
+const BG = '#050B18';
+const CARD = '#111827';
 const BORDER = '#1F2937';
-const GOLD   = '#FACC15';
+const GOLD = '#FACC15';
 
-// ── 16 entity types ───────────────────────────────────────────
-const ENTITY_TYPES = [
-  { id: 'all',          icon: '🌐', label: 'Tout'         },
-  { id: 'job',          icon: '💼', label: 'Jobs'         },
-  { id: 'worker',       icon: '👷', label: 'Workers'      },
-  { id: 'company',      icon: '🏢', label: 'Companies'    },
-  { id: 'hotel',        icon: '🏨', label: 'Hotels'       },
-  { id: 'restaurant',   icon: '🍽', label: 'Restaurants'  },
-  { id: 'product',      icon: '📦', label: 'Products'     },
-  { id: 'vehicle',      icon: '🚗', label: 'Vehicles'     },
-  { id: 'house',        icon: '🏠', label: 'Real Estate'  },
-  { id: 'hospital',     icon: '🏥', label: 'Hospitals'    },
-  { id: 'clinic',       icon: '🩺', label: 'Clinics'      },
-  { id: 'story',        icon: '📖', label: 'Stories'      },
-  { id: 'user',         icon: '👤', label: 'Users'        },
-  { id: 'reservation',  icon: '📅', label: 'Reservations' },
-  { id: 'country',      icon: '🌍', label: 'Countries'    },
-  { id: 'city',         icon: '🏙', label: 'Cities'       },
-];
-
-// ── Mock results ──────────────────────────────────────────────
-const MOCK = {
-  job: [
-    { id:'j1', title:'Electricien Senior',    sub:'ABC Construction · Punta Cana',   meta:'$900/sem · Full Time',    icon:'💼', badge:'Urgent' },
-    { id:'j2', title:'Chef Cuisinier',        sub:'Hotel Playa · Cap-Haïtien',       meta:'$750/sem · Full Time',    icon:'👨‍🍳', badge:null   },
-    { id:'j3', title:'Chauffeur Privé',       sub:'VIP Transport · Santo Domingo',   meta:'$600/sem · Permanent',    icon:'🚗', badge:'New'    },
-    { id:'j4', title:'Infirmière Certifiée',  sub:'Hôpital Général · Port-au-Prince',meta:'$800/sem · Nuit',         icon:'👩‍⚕️', badge:null  },
-  ],
-  worker: [
-    { id:'w1', title:'Jean-Pierre M.',   sub:'Électricien · 8 ans expérience',        meta:'★ 4.9 · Disponib',  icon:'⚡',  badge:'Top'      },
-    { id:'w2', title:'Marie Celeste R.', sub:'Infirmière · 5 ans',                    meta:'★ 4.8 · Disponib',  icon:'👩‍⚕️',badge:null       },
-    { id:'w3', title:'Carlos Mendez',    sub:'Chef / Kuyinye · 12 ans',               meta:'★ 5.0 · Disponib',  icon:'👨‍🍳',badge:'Pro'      },
-    // Asistan workers
-    { id:'w4', title:'Claudette V.',     sub:'Asistan Menaj · 3 ans',                 meta:'★ 4.7 · Disponib',  icon:'🤝', badge:'Disponib'  },
-    { id:'w5', title:'Louis Bernard T.', sub:'Asistan Biwo / Kouri Komisyon · 2 ans', meta:'★ 4.5 · Disponib',  icon:'🤝', badge:null        },
-    { id:'w6', title:'Rose-Marie J.',    sub:'Asistan Pèsonèl / Ajoudante · 4 ans',  meta:'★ 4.8 · Disponib',  icon:'🤝', badge:'Top'       },
-    { id:'w7', title:'Édouard P.',       sub:'Asistan Magazen · 1 an',                meta:'★ 4.3 · Disponib',  icon:'🤝', badge:null        },
-    // Construction workers
-    { id:'w8', title:'Moïse Jean-Gilles',sub:'Konstriksyon / Mason · 9 ans',          meta:'★ 4.9 · Disponib',  icon:'🏗️', badge:'Top'       },
-    { id:'w9', title:'Dieudonne F.',     sub:'Konstriksyon / Karpantye · 6 ans',       meta:'★ 4.7 · Disponib',  icon:'🏗️', badge:null        },
-    { id:'w10',title:'Pierre-Louis R.', sub:'Konstriksyon / Electricite · 11 ans',    meta:'★ 5.0 · Disponib',  icon:'🏗️', badge:'Pro'       },
-    { id:'w11',title:'Anita S.',        sub:'Konstriksyon / Peintire · 5 ans',        meta:'★ 4.6 · Disponib',  icon:'🏗️', badge:null        },
-    { id:'w12',title:'Marc Antoine B.', sub:'Konstriksyon / Plonbye · 8 ans',         meta:'★ 4.8 · Disponib',  icon:'🏗️', badge:'Disponib'  },
-  ],
-  company: [
-    { id:'c1', title:'MATCO Construction', sub:'413 branches · 29,481 employees', meta:'Verified · Enterprise', icon:'🏗', badge:'Top'  },
-    { id:'c2', title:'Hotel Oloffson',     sub:'35 employees · Port-au-Prince',   meta:'Verified · Hotel',      icon:'🏨', badge:null   },
-    { id:'c3', title:'ABC Medical Group',  sub:'12 clinics · Haiti & DR',         meta:'Verified · Medical',    icon:'🏥', badge:null   },
-  ],
-  hotel: [
-    { id:'h1', title:'Hotel Montana',       sub:'Port-au-Prince · 4★ · 85 chambres', meta:'$120/nuit · Disponib',  icon:'🏨', badge:'Best'  },
-    { id:'h2', title:'Royal Decameron DR',  sub:'Montrouis · 5★ · 352 chambres',     meta:'$280/nuit · Disponib',  icon:'🏨', badge:null    },
-    { id:'h3', title:'Karibe Convention',   sub:'Port-au-Prince · 4★',               meta:'$150/nuit · Disponib',  icon:'🏨', badge:null    },
-  ],
-  restaurant: [
-    { id:'r1', title:'Chez Marie',        sub:'Pétionville · Cuisine Créole', meta:'★ 4.8 · Open',     icon:'🍽', badge:'Hot'  },
-    { id:'r2', title:'La Souvenance',     sub:'Port-au-Prince · Haïtienne',   meta:'★ 4.6 · Open',     icon:'🥘', badge:null   },
-  ],
-  product: [
-    { id:'p1', title:'iPhone 16 Pro Max',  sub:'TechShop DR · Punta Cana',     meta:'$1,099 · Verified',  icon:'📱', badge:'Hot'  },
-    { id:'p2', title:'Toyota Hilux 2023',  sub:'AutoDeal · Santo Domingo',      meta:'$32,000 · Dealer',   icon:'🚗', badge:null   },
-    { id:'p3', title:'MacBook Pro M3',     sub:'iCenter HT · Pétionville',      meta:'$2,499 · New',       icon:'💻', badge:null   },
-  ],
-  house: [
-    { id:'re1', title:'Villa 4 Chambres — Pétion-Ville', sub:'ImmoHaïti · 450m² · Piscine', meta:'$850,000 · Vann',    icon:'🏠', badge:null   },
-    { id:'re2', title:'Apt T3 Centre Commercial',         sub:'Delmas 33 · 120m² · Balcon',  meta:'$1,200/mois · Loye', icon:'🏢', badge:'New'  },
-  ],
-  user: [
-    { id:'u1', title:'Ronald Monfils', sub:'Elektrisyen · Punta Cana',    meta:'★ 4.9 · 127 travay',  icon:'👤', badge:'Pro'  },
-    { id:'u2', title:'Marie Solange',  sub:'Enfimyè · Port-au-Prince',   meta:'★ 4.8 · 89 travay',   icon:'👤', badge:null   },
-  ],
-  city: [
-    { id:'ct1', title:'Port-au-Prince', sub:'Haiti · 1.2M habitans',       meta:'2,381 djòb aktif',     icon:'🏙', badge:null   },
-    { id:'ct2', title:'Punta Cana',     sub:'Dominican Republic · Tourism', meta:'1,847 djòb aktif',     icon:'🏖', badge:'Hot'  },
-    { id:'ct3', title:'Cap-Haïtien',    sub:'Haiti · 2nd pi gwo vil',       meta:'987 djòb aktif',       icon:'🏙', badge:null   },
-  ],
+const ENTITY_META = {
+  all: { icon: Globe, labelKey: 'search.tabs.all' },
+  jobs: { icon: Briefcase, labelKey: 'search.tabs.jobs' },
+  workers: { icon: User, labelKey: 'search.tabs.workers' },
+  companies: { icon: Building2, labelKey: 'search.tabs.companies' },
+  hotels: { icon: Hotel, labelKey: 'search.tabs.hotels' },
+  restaurants: { icon: UtensilsCrossed, labelKey: 'search.tabs.restaurants' },
+  products: { icon: ShoppingBag, labelKey: 'search.tabs.products' },
+  houses: { icon: Home, labelKey: 'search.tabs.houses' },
+  cars: { icon: CarFront, labelKey: 'search.tabs.cars' },
+  posts: { icon: Layers3, labelKey: 'search.tabs.posts' },
+  files: { icon: FileText, labelKey: 'search.tabs.files' },
+  voice: { icon: FileAudio2, labelKey: 'search.tabs.voice' },
+  videos: { icon: Video, labelKey: 'search.tabs.videos' },
+  images: { icon: ImageIcon, labelKey: 'search.tabs.images' },
+  services: { icon: PenTool, labelKey: 'search.tabs.services' },
+  travel: { icon: Landmark, labelKey: 'search.tabs.travel' },
+  flights: { icon: Plane, labelKey: 'search.tabs.flights' },
+  hospitals: { icon: Stethoscope, labelKey: 'search.tabs.hospitals' },
+  clinics: { icon: Stethoscope, labelKey: 'search.tabs.clinics' },
+  lawyers: { icon: Gavel, labelKey: 'search.tabs.lawyers' },
+  mechanics: { icon: Wrench, labelKey: 'search.tabs.mechanics' },
+  courses: { icon: School, labelKey: 'search.tabs.courses' },
+  buses: { icon: BusFront, labelKey: 'search.tabs.buses' },
+  trains: { icon: TrainFront, labelKey: 'search.tabs.trains' },
+  deliveries: { icon: Package, labelKey: 'search.tabs.deliveries' },
+  marketplaces: { icon: Store, labelKey: 'search.tabs.marketplaces' },
+  banks: { icon: Banknote, labelKey: 'search.tabs.banks' },
 };
 
-const TRENDING = [
-  'Électricien', 'Chef Cuisinier', 'iPhone 16', 'Hotel Punta Cana',
-  'Toyota Hilux', 'Appartement Delmas', 'Infirmière', 'Chauffeur',
-  'Construction Haiti', 'MacBook Pro',
-];
+const cls = (...p) => p.filter(Boolean).join(' ');
 
-const RECENT_DEFAULT = [
-  'electricien cap-haïtien',
-  'hotel port-au-prince 4 etoile',
-  'macbook pro m3',
-];
-
-// ── Chevron SVG ───────────────────────────────────────────────
-function Chevron() {
-  return (
-    <svg className="w-4 h-4 text-slate-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6"/>
-    </svg>
-  );
+function useDebouncedValue(value, delay = 240) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return v;
 }
 
-// ── Search input box ──────────────────────────────────────────
-function SearchInput({ value, onChange, inputRef }) {
-  return (
-    <div className="flex items-center gap-2.5 px-4 py-3.5 rounded-[16px] transition-all"
-      style={{ background: CARD, border:`1px solid ${BORDER}` }}>
-      <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-        <circle cx="11" cy="11" r="8"/><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35"/>
-      </svg>
-      <input
-        ref={inputRef}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder="Search everything..."
-        autoComplete="off"
-        className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 outline-none"
-      />
-      {value && (
-        <button type="button" onClick={() => onChange('')} className="text-slate-500 hover:text-white transition-colors">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      )}
-    </div>
-  );
+function useOfflineCache() {
+  const HISTORY_KEY = 'jobfast-search-history-v5';
+  const LAST_KEY = 'jobfast-last-results-v5';
+  const [history, setHistory] = useState([]);
+  const [lastResults, setLastResults] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      setHistory((await localforage.getItem(HISTORY_KEY)) || []);
+      setLastResults((await localforage.getItem(LAST_KEY)) || null);
+    })();
+  }, []);
+
+  const pushHistory = useCallback(async (q) => {
+    if (!q?.trim()) return;
+    setHistory((prev) => {
+      const next = [q, ...prev.filter((x) => x !== q)].slice(0, 12);
+      localforage.setItem(HISTORY_KEY, next).catch(() => {});
+      return next;
+    });
+  }, []);
+
+  const clearHistory = useCallback(async () => {
+    setHistory([]);
+    await localforage.removeItem(HISTORY_KEY).catch(() => {});
+  }, []);
+
+  const saveLastResults = useCallback(async (payload) => {
+    setLastResults(payload);
+    await localforage.setItem(LAST_KEY, payload).catch(() => {});
+  }, []);
+
+  return { history, pushHistory, clearHistory, lastResults, saveLastResults };
 }
 
-// ── Result card inside a grouped section ──────────────────────
-function ResultItem({ item, isLast, onClick, onMessage }) {
-  return (
-    <>
-      <div className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.015] active:bg-white/[0.025]">
-        <div onClick={onClick} className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
-          <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-xl shrink-0"
-            style={{ background: BORDER }}>
-            {item.icon}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <p className="text-[13px] font-bold text-white truncate">{item.title}</p>
-              {item.badge && (
-                <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full"
-                  style={{ background:`${GOLD}20`, color: GOLD, border:`1px solid ${GOLD}35` }}>
-                  {item.badge}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-400 truncate">{item.sub}</p>
-            <p className="text-[10px] text-slate-600 mt-0.5">{item.meta}</p>
-          </div>
-        </div>
-        {onMessage ? (
-          <button type="button" onClick={onMessage}
-            className="shrink-0 text-[10px] font-bold px-2.5 py-1.5 rounded-full transition-all active:scale-95"
-            style={{ background:`${GOLD}20`, color: GOLD, border:`1px solid ${GOLD}35` }}>
-            💬 Mesaj
-          </button>
-        ) : (
-          <div onClick={onClick} className="cursor-pointer"><Chevron /></div>
-        )}
-      </div>
-      {!isLast && <div className="h-px mx-4" style={{ background: BORDER }} />}
-    </>
-  );
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
 }
 
-// ── Route for a result item based on entity type ─────────────
-function itemRoute(typeId, item) {
-  if (typeId === 'job')    return '/jobs';
-  if (typeId === 'worker' || typeId === 'user') return `/u/${item.id}`;
-  if (typeId === 'company' || typeId === 'hotel' || typeId === 'restaurant' ||
-      typeId === 'hospital' || typeId === 'clinic') return `/u/${item.id}`;
-  return '/search';
+function useAbortablePost() {
+  const ref = useRef(null);
+  const run = useCallback(async (url, data = {}, config = {}) => {
+    ref.current?.abort?.();
+    const controller = new AbortController();
+    ref.current = controller;
+    const res = await API.post(url, data, { ...config, signal: controller.signal, timeout: 15000 });
+    return res.data;
+  }, []);
+  useEffect(() => () => ref.current?.abort?.(), []);
+  return run;
 }
 
-// ── Grouped section ───────────────────────────────────────────
-function ResultSection({ typeId, items, navigate }) {
-  const info = ENTITY_TYPES.find(e => e.id === typeId);
-  if (!info || !items?.length) return null;
+function useGeolocation() {
+  const [position, setPosition] = useState(null);
 
-  const handleMessage = async (item) => {
-    try {
-      const res = await API.post('/messages/start', { targetUserId: item.id });
-      const { conversationId, participant } = res.data;
-      navigate('/chat', {
-        state: {
-          chatInfo: {
-            id:      conversationId,
-            name:    participant.name,
-            role:    participant.role,
-            avatar:  participant.avatar,
-            otherId: participant.id,
-          },
+  const getLocation = useCallback(() => {
+    return new Promise((resolve) => {
+      if (!('geolocation' in navigator)) {
+        setPosition(null);
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const next = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+          };
+          setPosition(next);
+          resolve(next);
         },
-      });
-    } catch (_) {
-      navigate('/chat');
-    }
-  };
+        () => {
+          setPosition(null);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    });
+  }, []);
+
+  return { position, getLocation };
+}
+
+function useVoiceSearch(onQuery, lang) {
+  const supported = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const start = useCallback(() => {
+    if (!supported) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new SR();
+    rec.lang = lang || 'en-US';
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.onresult = (e) => {
+      const txt = Array.from(e.results).map((r) => r[0]?.transcript || '').join(' ').trim();
+      if (txt) onQuery(txt);
+    };
+    rec.start();
+  }, [supported, onQuery, lang]);
+  return { start, supported };
+}
+
+function SmartImage({ src, alt, className }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  const optimized = useMemo(() => {
+    if (!src || error) return null;
+    const base = src.trim();
+    if (/cloudinary\.com/.test(base)) return base.replace('/upload/', '/upload/f_auto,q_auto,w_128,dpr_2.0,c_fill,g_auto/');
+    if (/imagekit\.io/.test(base)) return `${base}${base.includes('?') ? '&' : '?'}tr=w-128,dpr-2,f-auto,q-80`;
+    return base;
+  }, [src, error]);
+
+  if (!optimized) {
+    return (
+      <div className={cls('bg-white/5 flex items-center justify-center', className)}>
+        <ImageIcon className="h-5 w-5 text-slate-500" />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base">{info.icon}</span>
-          <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">{info.label}</p>
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold text-slate-600"
-            style={{ background: BORDER }}>{items.length}</span>
-        </div>
-        <button type="button" onClick={() => navigate(`/search?type=${typeId}`)}
-          className="text-[11px] font-bold hover:opacity-80 transition-opacity"
-          style={{ color: GOLD }}>
-          Wè tout
-        </button>
-      </div>
-      <div className="rounded-[20px] overflow-hidden shadow-xl shadow-black/30"
-        style={{ background: CARD, border:`1px solid ${BORDER}` }}>
-        {items.map((item, idx) => (
-          <ResultItem key={item.id} item={item} isLast={idx === items.length - 1}
-            onClick={() => navigate(itemRoute(typeId, item))}
-            onMessage={typeId === 'user' && isRealId(item.id) ? () => handleMessage(item) : undefined} />
-        ))}
-      </div>
+    <div className={cls('relative overflow-hidden', className)}>
+      {!loaded && <div className="absolute inset-0 animate-pulse bg-white/5" />}
+      <img
+        src={optimized}
+        alt={alt || ''}
+        loading="lazy"
+        decoding="async"
+        className={cls('w-full h-full object-cover transition-opacity duration-300', loaded ? 'opacity-100' : 'opacity-0')}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+      />
     </div>
   );
 }
 
-// MongoDB ObjectId validator — mock IDs like 'u1' fail this
-const isRealId = (id) => /^[a-f0-9]{24}$/i.test(String(id ?? ''));
-
-// Map a raw API user object to a result card item
-const mapApiUser = (u) => ({
-  id:    u._id || u.id,
-  title: u.name || 'Itilizatè',
-  sub:   `${u.profession || u.role || 'Worker'} · ${u.location?.city || ''}`,
-  meta:  `★ ${u.stats?.rating ?? u.reputationData?.avgRating ?? '5.0'} · ${u.stats?.totalJobs ?? 0} djòb`,
-  icon:  '👤',
-  badge: u.availability === 'available' ? 'Disponib' : null,
+const ResultCard = memo(function ResultCard({ item, onClick, onHover }) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileTap={{ scale: 0.985 }}
+      onClick={() => onClick(item)}
+      onMouseEnter={() => onHover?.(item)}
+      onFocus={() => onHover?.(item)}
+      className="w-full rounded-[20px] border text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+      style={{ background: CARD, borderColor: BORDER }}
+      aria-label={item.title}
+      role="listitem"
+    >
+      <div className="p-4 flex gap-3 items-center">
+        <SmartImage src={item.image || item.avatar || item.thumbnail} alt={item.title} className="w-14 h-14 rounded-2xl shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <p className="text-sm font-extrabold text-white truncate">{item.title}</p>
+            {item.verified && <BadgeCheck className="h-4 w-4 text-cyan-400 shrink-0" aria-hidden />}
+            {item.premium && <Star className="h-4 w-4 text-amber-400 shrink-0" aria-hidden />}
+          </div>
+          <p className="text-xs text-slate-400 truncate">{item.sub || ''}</p>
+          <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 truncate">
+            {item.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{item.location}</span>}
+            {typeof item.distanceKm === 'number' && <span>{item.distanceKm} km</span>}
+            {typeof item.etaMin === 'number' && <span>{item.etaMin} min ETA</span>}
+            {item.freshness && <span>{item.freshness}</span>}
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-slate-500 shrink-0" aria-hidden />
+      </div>
+    </motion.button>
+  );
 });
 
-// ── Main component ────────────────────────────────────────────
-export default function UniversalSearch() {
-  const navigate          = useNavigate();
-  const [params]          = useSearchParams();
-  const inputRef          = useRef(null);
+function SearchHeader({ query, setQuery, onVoice, onQr, onClear, inputRef, voiceSupported, offline }) {
+  const { t } = useTranslation();
+  return (
+    <header className="sticky top-0 z-40 border-b" style={{ background: 'rgba(5,11,24,0.9)', backdropFilter: 'blur(20px)', borderColor: BORDER }}>
+      <div className="mx-auto max-w-6xl px-4 py-4">
+        <div className="flex items-center gap-2 rounded-2xl border px-4 py-3" style={{ background: CARD, borderColor: BORDER }} role="search">
+          <Search className="h-4 w-4 text-slate-500 shrink-0" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('search.placeholder')}
+            className="flex-1 bg-transparent outline-none text-white placeholder:text-slate-500"
+            autoComplete="off"
+            spellCheck="false"
+            aria-label={t('search.placeholder')}
+          />
+          {offline && <WifiOff className="h-4 w-4 text-amber-400" />}
+          {query && (
+            <button onClick={onClear} aria-label={t('search.clear')}>
+              <X className="h-4 w-4 text-slate-500" />
+            </button>
+          )}
+          <button onClick={onVoice} disabled={!voiceSupported} aria-label={t('search.voice')}>
+            <Mic className="h-4 w-4 text-slate-500" />
+          </button>
+          <button onClick={onQr} aria-label={t('search.qr')}>
+            <ScanSearch className="h-4 w-4 text-slate-500" />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
 
-  const [query,       setQuery]       = useState(params.get('q') || '');
-  const [activeType,  setActiveType]  = useState(params.get('type') || 'all');
-  const [results,     setResults]     = useState(null);
-  const [loading,     setLoading]     = useState(!!params.get('q'));
-  const [hasSearched, setHasSearched] = useState(!!params.get('q'));
-  const [recent,      setRecent]      = useState(RECENT_DEFAULT);
-
-  // Focus on mount
-  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
-
-  // Auto-browse real users when "Users" tab is active with no search query
-  useEffect(() => {
-    if (activeType !== 'user' || query.trim()) return;
-    setLoading(true);
-    setHasSearched(true);
-    API.get('/search', { params: { limit: 30 }, timeout: 8000 })
-      .then(res => {
-        const items = Array.isArray(res?.data?.data?.items) ? res.data.data.items
-          : Array.isArray(res?.data?.data) ? res.data.data
-          : [];
-        setResults({ user: items.map(mapApiUser) });
-      })
-      .catch(() => { setResults({ user: MOCK.user }); })
-      .finally(() => setLoading(false));
-  }, [activeType]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Debounced search — real API first; mock is fallback only for non-user types
-  useEffect(() => {
-    if (!query.trim()) {
-      if (activeType !== 'user') { setResults(null); setHasSearched(false); }
-      return;
-    }
-    setHasSearched(true);
-    setLoading(true);
-    const timer = setTimeout(async () => {
-      const q = query.toLowerCase();
-
-      // Filter mock data for all types EXCEPT user (user comes from real API only)
-      const filtered = {};
-      Object.entries(MOCK).forEach(([type, items]) => {
-        if (type === 'user') return; // never show mock users
-        const matched = items.filter(it =>
-          it.title.toLowerCase().includes(q) ||
-          it.sub.toLowerCase().includes(q)   ||
-          it.meta.toLowerCase().includes(q)
-        );
-        if (matched.length) filtered[type] = matched;
-      });
-
-      // Try real jobs API — merge real results on top of mock jobs
-      try {
-        const res = await API.get('/jobs', { params: { category: query }, timeout: 5000 });
-        const apiJobs = Array.isArray(res?.data) ? res.data : [];
-        if (apiJobs.length > 0) {
-          const mapped = apiJobs.map(j => ({
-            id: j.id || j._id,
-            title: j.title,
-            sub: `${j.createdBy || 'JOBFAST'} · ${j.location?.city || ''}`,
-            meta: `$${j.budget || 0} · ${j.type || 'Full Time'}`,
-            icon: '💼',
-            badge: j.status === 'open' ? 'Open' : null,
-          }));
-          filtered.job = [...mapped, ...(filtered.job || [])];
-        }
-      } catch (_) { /* keep mock jobs */ }
-
-      // Real users search — REPLACE mock users, never mix
-      let userApiOk = false;
-      try {
-        const res = await API.get('/search', { params: { q: query }, timeout: 5000 });
-        const apiUsers = Array.isArray(res?.data?.data?.items) ? res.data.data.items
-          : Array.isArray(res?.data?.data) ? res.data.data
-          : Array.isArray(res?.data) ? res.data
-          : [];
-        userApiOk = true;
-        if (apiUsers.length > 0) filtered.user = apiUsers.map(mapApiUser);
-        // If API worked but returned 0 users, don't add any user section
-      } catch (_) {
-        // API failed entirely — show mock users as fallback only
-        if (!userApiOk) {
-          const mockMatched = MOCK.user.filter(it =>
-            it.title.toLowerCase().includes(q) || it.sub.toLowerCase().includes(q)
-          );
-          if (mockMatched.length) filtered.user = mockMatched;
-        }
-      }
-
-      setResults(Object.keys(filtered).length ? filtered : {});
-      setLoading(false);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Displayed results based on active type filter
-  const displayed = results
-    ? (activeType === 'all' ? results : { [activeType]: results[activeType] || [] })
-    : {};
-
-  const hasResults = Object.values(displayed).some(a => a?.length);
+function VirtualList({ items, onClick, onHover }) {
+  const parentRef = useRef(null);
+  const rowVirtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 120,
+    overscan: 8,
+  });
 
   return (
-    <div className="min-h-screen pb-24 text-white" style={{ background: BG }}>
-
-      {/* ── STICKY HEADER ─────────────────────────────────────── */}
-      <div className="sticky top-14 z-30 px-4 pt-3.5 pb-3.5 border-b"
-        style={{ background:`${BG}FC`, backdropFilter:'blur(20px)', borderColor: BORDER }}>
-        <SearchInput value={query} onChange={setQuery} inputRef={inputRef} />
+    <div ref={parentRef} className="h-[70vh] overflow-auto rounded-[24px] border" style={{ borderColor: BORDER }}>
+      <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
+        {rowVirtualizer.getVirtualItems().map((vRow) => {
+          const item = items[vRow.index];
+          if (!item) return null;
+          return (
+            <div
+              key={item.id}
+              ref={rowVirtualizer.measureElement}
+              className="absolute left-0 top-0 w-full p-4"
+              style={{ transform: `translateY(${vRow.start}px)` }}
+            >
+              <ResultCard item={item} onClick={onClick} onHover={onHover} />
+            </div>
+          );
+        })}
       </div>
+    </div>
+  );
+}
 
-      {/* ── TYPE FILTER CHIPS (only when results exist) ───────── */}
-      {hasSearched && results && (
-        <div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-2" style={{ scrollbarWidth:'none' }}>
-          {ENTITY_TYPES.map(et => {
-            const count = results[et.id]?.length || 0;
-            const show  = et.id === 'all' || count > 0;
-            if (!show) return null;
-            return (
-              <button key={et.id} type="button" onClick={() => setActiveType(et.id)}
-                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all duration-150 active:scale-95"
-                style={activeType === et.id
-                  ? { background: GOLD, color: BG, borderColor: GOLD, boxShadow:'0 4px 14px rgba(250,204,21,0.18)' }
-                  : { background: CARD, color:'#94a3b8', borderColor: BORDER }}>
-                <span>{et.icon}</span> {et.label}
-                {et.id !== 'all' && count > 0 && (
-                  <span className="px-1 rounded-full text-[9px] font-black"
-                    style={activeType === et.id
-                      ? { background:'rgba(0,0,0,0.2)', color: BG }
-                      : { background: BORDER, color:'#64748b' }}>
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+function SearchErrorState({ error, retry, offline }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-3xl border p-6 text-center" style={{ background: CARD, borderColor: BORDER }} role="alert">
+      <p className="text-lg font-bold">{t('search.errors.unavailable')}</p>
+      <p className="text-sm text-slate-400 mt-2">
+        {offline ? t('search.offlineBanner') : error?.message || t('search.errors.network')}
+      </p>
+      {!offline && (
+        <button onClick={retry} className="mt-4 px-5 py-2.5 rounded-full font-semibold" style={{ background: GOLD, color: '#050B18' }}>
+          {t('search.retry')}
+        </button>
       )}
+    </div>
+  );
+}
 
-      {/* ── LOADING ───────────────────────────────────────────── */}
-      {loading && (
-        <div className="flex flex-col gap-3 px-4 pt-5">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="h-[62px] rounded-[16px] animate-pulse" style={{ background: CARD }} />
-          ))}
-        </div>
-      )}
+export default function UniversalSearch() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const { history, pushHistory, clearHistory, lastResults, saveLastResults } = useOfflineCache();
+  const { position, getLocation } = useGeolocation();
 
-      {/* ── RESULTS ───────────────────────────────────────────── */}
-      {!loading && hasSearched && (
-        <div className="px-4 pt-4 space-y-5">
-          {hasResults
-            ? Object.entries(displayed).map(([type, items]) => (
-                <ResultSection key={type} typeId={type} items={items} navigate={navigate} />
-              ))
-            : (
-              <div className="flex flex-col items-center justify-center pt-20 gap-3">
-                <span className="text-5xl">🔍</span>
-                <p className="text-slate-400 text-sm font-bold">Okenn rezilta pou "{query}"</p>
-                <p className="text-slate-600 text-xs">Eseye mo kle diferan</p>
+  const [query, setQuery] = useState(params.get('q') || '');
+  const [scope, setScope] = useState(params.get('type') || 'all');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    verifiedOnly: false,
+    premiumOnly: false,
+    openNow: false,
+    priceMin: '',
+    priceMax: '',
+    distanceKm: '',
+    country: '',
+    city: '',
+    category: '',
+    ratingMin: '',
+    language: '',
+    availability: '',
+    dateFrom: '',
+    dateTo: '',
+    salaryMin: '',
+    salaryMax: '',
+    contractType: '',
+    delivery: false,
+  });
+  const [offline, setOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+
+  const inputRef = useRef(null);
+  const debouncedQuery = useDebouncedValue(query, 240);
+  const deferredQuery = useDeferredValue(debouncedQuery);
+  const searchApi = useAbortablePost();
+  const voice = useVoiceSearch((txt) => setQuery(txt), i18n.language || 'en-US');
+
+  useEffect(() => {
+    const on = () => setOffline(false);
+    const off = () => setOffline(true);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, []);
+
+  useEffect(() => {
+    const next = new URLSearchParams(params);
+    if (debouncedQuery) next.set('q', debouncedQuery);
+    else next.delete('q');
+    if (scope && scope !== 'all') next.set('type', scope);
+    else next.delete('type');
+    setParams(next, { replace: true });
+  }, [debouncedQuery, scope, params, setParams]);
+
+  useEffect(() => {
+    const id = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(id);
+  }, []);
+
+  const searchQuery = useInfiniteQuery({
+    queryKey: ['global-search', deferredQuery, scope, JSON.stringify(filters), JSON.stringify(position)],
+    enabled: !!deferredQuery.trim() && !offline,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam = 1 }) => {
+      const data = await searchApi('/api/search/universal', {
+        query: deferredQuery,
+        types: scope === 'all' ? Object.keys(ENTITY_META).filter((k) => k !== 'all') : [scope],
+        page: pageParam,
+        limit: 20,
+        location: position ? { lat: position.lat, lng: position.lng, radiusKm: Number(filters.distanceKm) || 25 } : undefined,
+        language: i18n.language || 'en',
+        currency: filters.currency || 'USD',
+        filters,
+      });
+      if (pageParam === 1) await saveLastResults({ q: deferredQuery, scope, data, ts: Date.now() });
+      return data;
+    },
+    getNextPageParam: (last) => last?.nextPage ?? undefined,
+    staleTime: 60_000,
+    gcTime: 15 * 60_000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 8000),
+    refetchOnWindowFocus: true,
+    placeholderData: (prev) => prev,
+  });
+
+  const suggestionsQuery = useQuery({
+    queryKey: ['search-suggest', deferredQuery, scope, i18n.language, JSON.stringify(position)],
+    enabled: !!deferredQuery.trim() && !offline,
+    queryFn: async () =>
+      (await API.post('/api/search/suggestions', {
+        query: deferredQuery,
+        scope,
+        language: i18n.language || 'en',
+        location: position ? { lat: position.lat, lng: position.lng } : undefined,
+      })).data,
+    staleTime: 5 * 60_000,
+  });
+
+  const items = useMemo(() => {
+    const raw = (searchQuery.data?.pages || []).flatMap((p) => p.items || []);
+    const source = raw.length ? raw : offline && lastResults?.q === deferredQuery ? (lastResults?.data?.items || []) : [];
+    return source.slice().sort((a, b) => (b.rankingScore ?? b.score ?? 0) - (a.rankingScore ?? a.score ?? 0));
+  }, [searchQuery.data, offline, lastResults, deferredQuery]);
+
+  const counts = useMemo(() => {
+    const c = { all: items.length };
+    for (const item of items) {
+      const type = item.type || 'all';
+      c[type] = (c[type] || 0) + 1;
+    }
+    return c;
+  }, [items]);
+
+  const grouped = useMemo(() => {
+    const map = {};
+    for (const item of items) {
+      const key = item.type || 'all';
+      (map[key] ||= []).push(item);
+    }
+    return map;
+  }, [items]);
+
+  const { ref: sentinelRef, inView } = useInView({ threshold: 0.1 });
+  useEffect(() => {
+    if (inView && searchQuery.hasNextPage && !searchQuery.isFetchingNextPage && !offline) {
+      searchQuery.fetchNextPage();
+    }
+  }, [inView, searchQuery, offline]);
+
+  useEffect(() => {
+    if (!deferredQuery.trim()) return;
+    pushHistory(deferredQuery);
+  }, [deferredQuery, pushHistory]);
+
+  const trackEvent = useCallback((event, payload = {}) => {
+    const base = {
+      event,
+      query: deferredQuery,
+      scope,
+      country: filters.country || '',
+      language: i18n.language || 'en',
+      device: /Mobi/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      responseTime: payload.responseTime || null,
+      resultCount: payload.resultCount || items.length,
+      timestamp: Date.now(),
+      ...payload,
+    };
+    API.post('/api/analytics/events', base).catch(() => {});
+  }, [deferredQuery, scope, filters.country, i18n.language, items.length]);
+
+  useEffect(() => {
+    if (!deferredQuery.trim()) return;
+    trackEvent('search_query', { resultCount: items.length });
+  }, [deferredQuery, trackEvent, items.length]);
+
+  const prefetchDetail = useCallback((item) => {
+    if (!item?.href || offline) return;
+    queryClient.prefetchQuery({
+      queryKey: ['detail', item.id],
+      queryFn: async () => (await API.get(item.href)).data,
+      staleTime: 5 * 60_000,
+    });
+  }, [queryClient, offline]);
+
+  const onClick = useCallback((item) => {
+    trackEvent('search_click', { id: item.id, type: item.type });
+    navigate(item.href || `/detail/${item.id}`);
+  }, [navigate, trackEvent]);
+
+  const onHover = useCallback((item) => {
+    prefetchDetail(item);
+  }, [prefetchDetail]);
+
+  const canRender = !!deferredQuery.trim();
+  const showEmpty = canRender && !searchQuery.isLoading && items.length === 0;
+
+  return (
+    <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center text-slate-400 px-4">{t('search.crash')}</div>}>
+      <div className="min-h-screen text-white" style={{ background: BG }}>
+        <SearchHeader
+          query={query}
+          setQuery={setQuery}
+          onVoice={() => {
+            if (voice.supported) return voice.start();
+            API.post('/api/search/voice', { query }).catch(() => {});
+          }}
+          onQr={() => navigate('/scan')}
+          onClear={() => setQuery('')}
+          inputRef={inputRef}
+          voiceSupported={voice.supported}
+          offline={offline}
+        />
+
+        <main className="mx-auto max-w-6xl px-4 py-6 space-y-6">
+          {!canRender && (
+            <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+              <div className="rounded-[28px] border p-5" style={{ background: CARD, borderColor: BORDER }}>
+                <h2 className="text-lg font-black flex items-center gap-2"><TrendingUp className="h-5 w-5 text-amber-400" />{t('search.trending')}</h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {['electrician', 'cheap hotel near beach', 'driver punta cana'].map((term) => (
+                    <button key={term} onClick={() => setQuery(term)} className="px-3 py-2 rounded-full text-sm border" style={{ background: '#0b1220', borderColor: BORDER }}>
+                      {term}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )
-          }
-        </div>
-      )}
 
-      {/* ── PRE-SEARCH STATE ──────────────────────────────────── */}
-      {!hasSearched && !loading && (
-        <div className="px-4 pt-5 space-y-7">
+              <div className="rounded-[28px] border p-5" style={{ background: CARD, borderColor: BORDER }}>
+                <h2 className="text-lg font-black flex items-center gap-2"><History className="h-5 w-5 text-slate-400" />{t('search.recent')}</h2>
+                <div className="mt-4 space-y-2">
+                  {history.length ? history.map((h) => (
+                    <button key={h} onClick={() => setQuery(h)} className="w-full flex items-center justify-between rounded-2xl px-3 py-3 border text-left" style={{ borderColor: BORDER }}>
+                      <span className="truncate text-sm">{h}</span>
+                      <ChevronRight className="h-4 w-4 text-slate-500" />
+                    </button>
+                  )) : <p className="text-sm text-slate-500">{t('search.noRecent')}</p>}
+                </div>
+                {history.length > 0 && <button onClick={clearHistory} className="mt-4 text-xs text-slate-500">{t('search.clearHistory')}</button>}
+              </div>
+            </section>
+          )}
 
-          {/* Recent searches */}
-          {recent.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Rechèch Resan</p>
-                <button type="button" onClick={() => setRecent([])}
-                  className="text-[11px] font-bold text-slate-600 hover:text-slate-400 transition-colors">
-                  Efase tout
+          <div className="flex flex-wrap items-center gap-2">
+            {Object.entries(ENTITY_META).map(([key, meta]) => {
+              const Icon = meta.icon;
+              const active = scope === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setScope(key)}
+                  className={cls('flex items-center gap-2 px-4 py-2 rounded-full border text-sm')}
+                  style={{ background: active ? GOLD : CARD, color: active ? '#050B18' : '#94a3b8', borderColor: active ? GOLD : BORDER }}
+                >
+                  <Icon className="h-4 w-4" />
+                  {t(meta.labelKey)}
+                  <span className="text-xs opacity-80">({counts[key] || 0})</span>
                 </button>
-              </div>
-              <div className="space-y-1">
-                {recent.map(r => (
-                  <button key={r} type="button" onClick={() => setQuery(r)}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-[12px] text-sm text-slate-300 hover:text-white hover:bg-white/[0.03] transition-all text-left">
-                    <svg className="w-4 h-4 text-slate-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                    </svg>
-                    {r}
-                    <Chevron />
+              );
+            })}
+            <button onClick={() => setFiltersOpen((v) => !v)} className="ml-auto flex items-center gap-2 px-4 py-2 rounded-full border text-sm" style={{ background: CARD, borderColor: BORDER }}>
+              <Filter className="h-4 w-4" />
+              {t('search.filters')}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {filtersOpen && (
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[24px] border p-4" style={{ background: CARD, borderColor: BORDER }}>
+                <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 text-sm">
+                  {[
+                    ['verifiedOnly', 'Verified only'],
+                    ['premiumOnly', 'Premium only'],
+                    ['openNow', 'Open now'],
+                    ['delivery', 'Delivery'],
+                  ].map(([key, label]) => (
+                    <label key={key} className="flex items-center gap-2">
+                      <input type="checkbox" checked={!!filters[key]} onChange={() => setFilters((p) => ({ ...p, [key]: !p[key] }))} />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                  <input placeholder="Min price" value={filters.priceMin} onChange={(e) => setFilters((p) => ({ ...p, priceMin: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Max price" value={filters.priceMax} onChange={(e) => setFilters((p) => ({ ...p, priceMax: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Distance km" value={filters.distanceKm} onChange={(e) => setFilters((p) => ({ ...p, distanceKm: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Country" value={filters.country} onChange={(e) => setFilters((p) => ({ ...p, country: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="City" value={filters.city} onChange={(e) => setFilters((p) => ({ ...p, city: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Language" value={filters.language} onChange={(e) => setFilters((p) => ({ ...p, language: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Category" value={filters.category} onChange={(e) => setFilters((p) => ({ ...p, category: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Rating min" value={filters.ratingMin} onChange={(e) => setFilters((p) => ({ ...p, ratingMin: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Date from" value={filters.dateFrom} onChange={(e) => setFilters((p) => ({ ...p, dateFrom: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Date to" value={filters.dateTo} onChange={(e) => setFilters((p) => ({ ...p, dateTo: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Salary min" value={filters.salaryMin} onChange={(e) => setFilters((p) => ({ ...p, salaryMin: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Salary max" value={filters.salaryMax} onChange={(e) => setFilters((p) => ({ ...p, salaryMax: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                  <input placeholder="Contract type" value={filters.contractType} onChange={(e) => setFilters((p) => ({ ...p, contractType: e.target.value }))} className="rounded-xl bg-white/5 border border-white/10 px-3 py-2" />
+                </div>
+                <div className="mt-4">
+                  <button onClick={getLocation} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border" style={{ borderColor: BORDER }}>
+                    <MapPin className="h-4 w-4" />
+                    Use my location
                   </button>
-                ))}
-              </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {searchQuery.isLoading && !offline && (
+            <Suspense fallback={<div className="space-y-3">{[1, 2, 3, 4].map((i) => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: CARD }} />)}</div>}>
+              <SearchSkeleton />
+            </Suspense>
+          )}
+
+          {searchQuery.isError && !offline && <SearchErrorState error={searchQuery.error} retry={() => searchQuery.refetch()} offline={offline} />}
+
+          {offline && (
+            <div className="rounded-2xl border px-4 py-3 text-sm flex items-center gap-2" style={{ background: 'rgba(250,204,21,0.08)', borderColor: GOLD }}>
+              <WifiOff className="h-4 w-4" />
+              {t('search.offlineBanner')}
             </div>
           )}
 
-          {/* Trending */}
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">🔥 Trending</p>
-            <div className="flex flex-wrap gap-2">
-              {TRENDING.map(t => (
-                <button key={t} type="button" onClick={() => setQuery(t)}
-                  className="px-3 py-2 rounded-full text-[12px] font-bold border transition-all duration-150 active:scale-95 text-slate-300 hover:text-white"
-                  style={{ background: CARD, borderColor: BORDER }}>
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
+          {!!suggestionsQuery.data?.items?.length && canRender && (
+            <section className="rounded-[24px] border p-4" style={{ background: CARD, borderColor: BORDER }}>
+              <h3 className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">{t('search.suggestions')}</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {suggestionsQuery.data.items.map((s) => (
+                  <button key={s} onClick={() => setQuery(s)} className="px-3 py-2 rounded-full bg-white/5 border border-white/10 text-sm">
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
-          {/* Search by category grid */}
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 mb-3">Chèche pa Kategori</p>
-            <div className="grid grid-cols-4 gap-2">
-              {ENTITY_TYPES.filter(e => e.id !== 'all').map(e => (
-                <button key={e.id} type="button" onClick={() => { setQuery(e.label); setActiveType(e.id); }}
-                  className="flex flex-col items-center gap-1.5 py-3 rounded-[16px] border transition-all duration-150 active:scale-95"
-                  style={{ background: CARD, borderColor: BORDER }}>
-                  <span className="text-xl leading-none">{e.icon}</span>
-                  <span className="text-[8px] font-bold text-slate-400 leading-tight text-center px-1">{e.label}</span>
-                </button>
-              ))}
+          {canRender && items.length > 0 ? (
+            <section className="space-y-6">
+              {scope === 'all'
+                ? Object.entries(grouped).map(([type, arr]) => (
+                    <div key={type} className="space-y-3">
+                      <h3 className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black">
+                        {t(ENTITY_META[type]?.labelKey || type)} ({arr.length})
+                      </h3>
+                      <VirtualList items={arr} onClick={onClick} onHover={onHover} />
+                    </div>
+                  ))
+                : <VirtualList items={grouped[scope] || []} onClick={onClick} onHover={onHover} />
+              }
+              <div ref={sentinelRef} className="h-10" />
+              {searchQuery.isFetchingNextPage && (
+                <div className="flex justify-center py-4 text-slate-400 text-sm">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t('search.loadingMore')}
+                </div>
+              )}
+            </section>
+          ) : showEmpty ? (
+            <div className="py-16 text-center text-slate-400">
+              <p className="text-lg font-bold">{t('search.noResults')}</p>
+              <p className="text-sm mt-2">{t('search.tryAnother')}</p>
             </div>
-          </div>
-
-        </div>
-      )}
-    </div>
+          ) : null}
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }

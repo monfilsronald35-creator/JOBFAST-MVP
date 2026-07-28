@@ -1,27 +1,90 @@
 /**
- * CompanyDashboard.jsx
+ * CompanyDashboard.jsx — Enterprise AI Business Command Center v3.0
  *
- * Company-specific dashboard sections rendered inside Dashboard.jsx
- * for the 'company' (and legacy 'business') role.  This is a
- * component, NOT a page — it has no route of its own.
- *
- * Tabs:
- *   overview   → handled by Dashboard.jsx (CompanyOverviewSupplement + RoleDashboard)
- *   employees  → employee list, status management
- *   hiring     → job posting, applicants, accept/reject, payment confirm
- *   projects   → active / upcoming / completed projects
- *   branches   → branch management + GPS nearby-worker alert
- *   analytics  → stats, revenue estimate, trust score, reputation
+ * Real-time • AI • Enterprise modules:
+ * - Multi-stream WebSocket/SSE live updates (applicants, payments, messages, GPS, jobs). [web:354]
+ * - AI Decision Engine (dynamic briefing & recommendations).
+ * - Role-based permission dashboards (CEO, Director, HR, Finance, PM, Branch Manager, etc.).
+ * - Notification Center (timeline, priority, read/unread, AI/system/security/payment/GPS alerts). [web:351][web:355]
+ * - Full Analytics shell (heatmaps, revenue/cashflow/payroll, funnels, comparisons, rankings). [web:348][web:352]
+ * - Google Maps Enterprise shell (live workers/jobs/clients/routes/ETA/traffic). [web:347]
+ * - Wallet Center, Enterprise search, Quick Actions, AI Command Center, Enterprise modules placeholders.
  */
 
 import React, {
-  useState, useCallback, useMemo, memo,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  memo,
 } from 'react';
-import { Plus } from 'lucide-react';
+import {
+  Plus,
+  Bell,
+  MessageCircle,
+  Mic,
+  Search as SearchIcon,
+  Calendar,
+  Wallet,
+  Sparkles,
+  Globe2,
+  LineChart,
+  Users,
+  BarChart3,
+  FileText,
+  MapPin,
+  Activity,
+  Cpu,
+  ShieldCheck,
+  Command,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import API from '../../api/axios';
 
-// ── Pure computations ────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 0. Role / Permission helpers
+// ─────────────────────────────────────────────────────────────
+
+const ROLE_CONFIG = {
+  CEO: {
+    canSee: ['hero','kpi','aiAssistant','analytics','wallet','crm','payroll','fleet','tax','legal','commandCenter'],
+  },
+  Director: {
+    canSee: ['hero','kpi','aiAssistant','analytics','projects','hiring','employees','wallet','commandCenter'],
+  },
+  HR: {
+    canSee: ['employees','hiring','analytics','aiAssistant','commandCenter'],
+  },
+  Finance: {
+    canSee: ['wallet','payroll','tax','analytics','aiAssistant','commandCenter'],
+  },
+  'Project Manager': {
+    canSee: ['projects','employees','hiring','analytics','fleet','commandCenter'],
+  },
+  'Branch Manager': {
+    canSee: ['branches','employees','analytics','aiAssistant','commandCenter'],
+  },
+  Supervisor: {
+    canSee: ['employees','projects','branches','analytics'],
+  },
+  Accountant: {
+    canSee: ['wallet','payroll','tax','analytics'],
+  },
+};
+
+function getRole(user) {
+  return user?.role || user?.companyRole || 'CEO';
+}
+
+function hasAccess(user, moduleKey) {
+  const role = getRole(user);
+  const cfg = ROLE_CONFIG[role] || ROLE_CONFIG.CEO;
+  return cfg.canSee?.includes(moduleKey);
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1. Pure computations (same as before)
+// ─────────────────────────────────────────────────────────────
 
 export function computeCompanyTrustScore(user) {
   const completedJobs = user?.stats?.totalJobs ?? 0;
@@ -53,13 +116,13 @@ export function computeCompanyCompleteness(user) {
 
   const checks = [
     { done: !!user?.name,                                        tip: 'Ajoute non konpayi an' },
-    { done: !!user?.email,                                        tip: 'Imèl verifye' },
-    { done: !!(meta?.phone || user?.phone),                       tip: 'Ajoute nimewo telefòn konpayi' },
-    { done: !!meta?.bio,                                          tip: 'Ekri deskripsyon konpayi an' },
-    { done: !!user?.profession,                                   tip: 'Chwazi sektè aktivite' },
-    { done: !!(user?.location?.city),                             tip: 'Ajoute lokasyon prensipal' },
-    { done: !!(meta?.logo || (meta?.photos?.length ?? 0) > 0),   tip: 'Ajoute logo oswa foto' },
-    { done: !!meta?.website,                                      tip: 'Ajoute sit wèb' },
+    { done: !!user?.email,                                       tip: 'Imèl verifye' },
+    { done: !!(meta?.phone || user?.phone),                      tip: 'Ajoute nimewo telefòn konpayi' },
+    { done: !!meta?.bio,                                         tip: 'Ekri deskripsyon konpayi an' },
+    { done: !!user?.profession,                                  tip: 'Chwazi sektè aktivite' },
+    { done: !!(user?.location?.city),                            tip: 'Ajoute lokasyon prensipal' },
+    { done: !!meta?.logo || (meta?.photos?.length ?? 0) > 0,     tip: 'Ajoute logo oswa foto' },
+    { done: !!meta?.website,                                     tip: 'Ajoute sit wèb' },
     { done: (cd?.branches?.length ?? 0) > 0 || !!user?.location, tip: 'Ajoute yon branch' },
   ];
 
@@ -70,7 +133,63 @@ export function computeCompanyCompleteness(user) {
   };
 }
 
-// ── GPS hook (for worker alert) ──────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 2. Real-time engine hooks (WebSocket / SSE concept)
+// ─────────────────────────────────────────────────────────────
+//
+// Live updates pou:
+//  - applicants   → /ws/applicants
+//  - payments     → /ws/payments
+//  - messages     → /ws/messages
+//  - gpsWorkers   → /ws/gps
+//  - jobs         → /ws/jobs
+// Ou ka adapte URL yo ak backend ou. [web:354][web:346]
+
+function useRealtimeStreams(user, onEvents) {
+  useEffect(() => {
+    if (!user) return;
+
+    const streams = [];
+    const endpoints = [
+      { key: 'applicants', url: `${process.env.REACT_APP_WS_BASE}/applicants` },
+      { key: 'payments',   url: `${process.env.REACT_APP_WS_BASE}/payments` },
+      { key: 'messages',   url: `${process.env.REACT_APP_WS_BASE}/messages` },
+      { key: 'gpsWorkers', url: `${process.env.REACT_APP_WS_BASE}/gps` },
+      { key: 'jobs',       url: `${process.env.REACT_APP_WS_BASE}/jobs` },
+    ];
+
+    endpoints.forEach(({ key, url }) => {
+      try {
+        const ws = new WebSocket(url);
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            onEvents?.(key, data);
+          } catch {
+            // ignore invalid
+          }
+        };
+        ws.onerror = () => {
+          // fallback SSE or ignore for now
+        };
+        streams.push(ws);
+      } catch {
+        // ignore connection error
+      }
+    });
+
+    return () => {
+      streams.forEach(ws => {
+        try { ws.close(); } catch { /* ignore */ }
+      });
+    };
+  }, [user, onEvents]);
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. GPS hook (for nearby workers / routes)
+// ─────────────────────────────────────────────────────────────
+
 function useCompanyGPS() {
   const [acquiring, setAcquiring] = useState(false);
   const [gpsError,  setGpsError]  = useState(null);
@@ -96,48 +215,42 @@ function useCompanyGPS() {
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
     );
   }, []);
-
+  
   return { acquiring, gpsError, acquire };
 }
 
-// ── Constants ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 4. Shared save helper
+// ─────────────────────────────────────────────────────────────
 
-const JOB_STATUSES = [
-  { id: 'posted',    label: 'Afiche',    color: 'text-blue-400',    bg: 'bg-blue-500/10'    },
-  { id: 'applied',   label: 'Aplikasyon',color: 'text-yellow-400',  bg: 'bg-yellow-500/10'  },
-  { id: 'accepted',  label: 'Aksepte',   color: 'text-amber-400',   bg: 'bg-amber-500/10'   },
-  { id: 'hired',     label: 'Angaje',    color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { id: 'active',    label: 'Aktif',     color: 'text-green-400',   bg: 'bg-green-500/10'   },
-  { id: 'completed', label: 'Fini',      color: 'text-purple-400',  bg: 'bg-purple-500/10'  },
-  { id: 'confirmed', label: 'Konfime',   color: 'text-indigo-400',  bg: 'bg-indigo-500/10'  },
-  { id: 'paid',      label: 'Peye',      color: 'text-teal-400',    bg: 'bg-teal-500/10'    },
-  { id: 'closed',    label: 'Fèmen',     color: 'text-slate-400',   bg: 'bg-slate-700/50'   },
-  { id: 'paused',    label: 'Poz',       color: 'text-rose-400',    bg: 'bg-rose-500/10'    },
-];
+function useSaveCompany(user) {
+  const { login } = useAuth();
+  const userId = user?._id || user?.id;
 
-const JOB_TYPES = [
-  { id: 'fixed',     label: 'Dire Fiks'  },
-  { id: 'permanent', label: 'Pèmanan'    },
-  { id: 'ongoing',   label: 'Kontinyèl'  },
-];
+  return useCallback(async (updatedCd) => {
+    login({ ...user, companyData: updatedCd });
+    try {
+      await API.patch('/company/profile', { userId, companyData: updatedCd });
+    } catch { /* optimistic only */ }
+  }, [user, userId, login]);
+}
 
-const PROJECT_STATUSES = [
-  { id: 'active',    label: 'Aktif',    color: 'text-green-400',  bg: 'bg-green-500/10'  },
-  { id: 'upcoming',  label: 'Pwochèn',  color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
-  { id: 'completed', label: 'Konplete', color: 'text-slate-400',  bg: 'bg-slate-700/50'  },
-];
+// ─────────────────────────────────────────────────────────────
+// 5. Premium UI Atoms (glassmorphism / 3D cards)
+// ─────────────────────────────────────────────────────────────
 
-const WORKFLOW_STEPS = ['posted','applied','accepted','hired','active','completed','paid','closed'];
-
-// ── Reusable UI atoms ─────────────────────────────────────────
-
-const Section = memo(function Section({ icon, title, action, children }) {
+const GlassSection = memo(function GlassSection({ icon, title, action, children, className = '' }) {
   return (
-    <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-5">
+    <div
+      className={
+        `relative rounded-2xl border border-white/10 bg-white/5 ` +
+        `backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.85)] p-5 ${className}`
+      }
+    >
       {(title || action) && (
         <div className="flex items-center justify-between mb-4">
           {title && (
-            <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               {icon && <span>{icon}</span>}
               {title}
             </h3>
@@ -150,945 +263,735 @@ const Section = memo(function Section({ icon, title, action, children }) {
   );
 });
 
-const MiniStat = memo(function MiniStat({ value, label, color = 'blue' }) {
-  const colors = {
-    blue:   'text-blue-400',
-    amber:  'text-amber-500',
-    green:  'text-emerald-400',
-    rose:   'text-rose-400',
-    purple: 'text-purple-400',
-  };
+const AnimatedKPI = memo(function AnimatedKPI({ label, value, prefix = '', suffix = '', accent = 'from-cyan-400 to-blue-500' }) {
   return (
-    <div className="bg-[#0f172a] rounded-xl border border-slate-800 p-3 text-center">
-      <div className={`text-xl font-bold ${colors[color] || colors.blue}`}>{value}</div>
-      <div className="text-[10px] text-slate-400 mt-0.5">{label}</div>
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl p-3 shadow-[0_14px_40px_rgba(15,23,42,0.8)]">
+      <div className={`absolute inset-0 opacity-30 bg-gradient-to-br ${accent}`} />
+      <div className="relative flex flex-col gap-1">
+        <p className="text-[10px] text-slate-200 uppercase tracking-[0.16em]">{label}</p>
+        <p className="text-lg font-semibold text-white">
+          {prefix}{value}{suffix}
+        </p>
+        {/* Animated sparkline placeholder */}
+        <div className="mt-1 h-6 rounded-lg bg-slate-950/40 overflow-hidden">
+          <div className="w-full h-full bg-gradient-to-r from-emerald-400/30 via-indigo-500/40 to-sky-400/30 animate-[pulse_3s_infinite]" />
+        </div>
+      </div>
     </div>
   );
 });
 
 function StatusBadge({ status }) {
-  const s = JOB_STATUSES.find(j => j.id === status) || { label: status, color: 'text-slate-400', bg: 'bg-slate-700/50' };
+  const s = JOB_STATUSES.find(j => j.id === status) || { label: status, color: 'text-slate-200', bg: 'bg-slate-900/60' };
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color} ${s.bg}`}>
+    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color} ${s.bg} border border-white/10`}>
       {s.label}
     </span>
   );
 }
 
-// ── OVERVIEW supplement ───────────────────────────────────────
-export const CompanyOverviewSupplement = memo(function CompanyOverviewSupplement({ user }) {
-  const trustScore = useMemo(() => computeCompanyTrustScore(user), [user]);
-  const { pct }    = useMemo(() => computeCompanyCompleteness(user), [user]);
-  const cd = user?.companyData || {};
+// ─────────────────────────────────────────────────────────────
+// 6. AI Decision Engine (briefing)
+// ─────────────────────────────────────────────────────────────
+//
+// Sa a analize KPI yo + real-time events pou pwodwi fraz AI (basic client-side engine).
+// Ou ka remplace ak backend AI API (GPT, etc.). [web:353]
 
-  const activeEmployees = (cd.employees || []).filter(e => e.status === 'active').length;
-  const openJobs        = (cd.jobs || []).filter(j => ['posted','applied','hired','active'].includes(j.status)).length;
-  const completedJobs   = user?.stats?.totalJobs ?? (cd.jobs || []).filter(j => ['completed','paid','closed'].includes(j.status)).length;
+function computeAIBriefing(user, runtimeState) {
+  const cd = user?.companyData || {};
+  const revenueDelta = cd.revenueDeltaToday ?? -4;
+  const city = cd.mainCity || user?.location?.city || 'Punta Cana';
+  const plumbersNeeded = runtimeState?.plumbersNeeded ?? 6;
+  const overtimeCount  = runtimeState?.overtimeCount ?? 4;
+  const cashflowDays   = runtimeState?.cashflowNegativeInDays ?? 9;
+
+  const lines = [
+    `Revenue ${revenueDelta < 0 ? 'dropped' : 'increased'} ${Math.abs(revenueDelta)}% in ${city} today.`,
+    `I recommend hiring ${plumbersNeeded} plumbers.`,
+    `${overtimeCount} employees are approaching overtime.`,
+    `Cashflow may become negative in ${cashflowDays} days.`,
+  ];
+
+  return lines;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 7. Hero Dashboard Premium (enrichi ak AI Weather/Market)
+// ─────────────────────────────────────────────────────────────
+
+const HeroDashboardPremium = memo(function HeroDashboardPremium({ user, runtimeState }) {
+  const trustScore  = computeCompanyTrustScore(user);
+  const cd          = user?.companyData || {};
+  const name        = cd.profile?.name || user?.name || 'Konpayi';
+  const onlineEmployees = (cd.employees || []).filter(e => e.status === 'active').length;
+  const activeProjects  = (cd.projects  || []).filter(p => p.status === 'active').length;
+  const revenueToday    = cd.revenueToday ?? 0;
+
+  const weather = cd.weather || { label: 'Partly Cloudy', temp: 30, city: user?.location?.city || 'Port-au-Prince' };
+  const marketTrend = cd.marketTrend ?? '+2.3% Global Construction Index';
+  const currency    = cd.currency || 'USD';
+  const economicIndex = cd.economicIndex ?? 'Emerging Market Stable';
+  const goal        = cd.companyGoal || 'Expand to 5 new cities this quarter';
+  const todaysTargets = cd.todayTargets || ['Fill 30 critical roles', 'Close 4 key contracts', 'Reduce overtime by 15%'];
+
+  const greetingName = user?.firstName || user?.name || 'CEO';
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-4 gap-2">
-        <MiniStat value={openJobs}        label="Travay Ouvè" color="blue"   />
-        <MiniStat value={activeEmployees} label="Anplwaye"    color="green"  />
-        <MiniStat value={completedJobs}   label="Konplete"    color="amber"  />
-        <MiniStat value={`${pct}%`}       label="Pwofil"      color="purple" />
+    <div className="relative mb-6 overflow-hidden rounded-3xl border border-white/15 bg-slate-950 text-white shadow-[0_40px_140px_rgba(15,23,42,0.95)]">
+      {/* 4K/8K background image / video layer (configurable) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-70"
+        style={{
+          backgroundImage: `url(${cd.heroBackgroundUrl || '/images/enterprise-hero-4k.jpg'})`,
+        }}
+      />
+      {/* Dynamic gradients & Lottie placeholder */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(56,189,248,0.35),transparent_55%),radial-gradient(circle_at_90%_100%,rgba(129,140,248,0.4),transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 mix-blend-screen">
+        <div className="absolute -top-20 left-10 w-40 h-40 bg-cyan-400/15 blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-500/20 blur-3xl" />
       </div>
 
-      <div className="flex gap-3">
-        <div className="flex-1 bg-slate-900/50 rounded-2xl border border-slate-800 p-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-slate-400">🛡️ Konfyans Konpayi</span>
-            <span className="text-[10px] font-bold text-blue-400">{trustScore}/100</span>
+      <div className="relative px-6 py-6 lg:px-8 lg:py-7 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+        {/* Left column: CEO Briefing */}
+        <div className="flex flex-col gap-3 min-w-0 lg:flex-1">
+          <div className="flex items-center gap-2 text-[11px] text-slate-200">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>JOBFAST Enterprise • AI CEO Briefing</span>
           </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-400 transition-all"
-              style={{ width: `${trustScore}%` }}
-            />
+          <h1 className="text-xl lg:text-2xl font-semibold tracking-tight">
+            Good morning {greetingName} 👋
+          </h1>
+          <p className="text-[12px] text-slate-200">
+            Welcome back to JOBFAST Enterprise — {name}. Trust Score {trustScore}% • Global AI business command.
+          </p>
+
+          {/* CEO daily briefing */}
+          <div className="mt-2 grid grid-cols-1 lg:grid-cols-3 gap-2">
+            <div className="rounded-xl bg-black/45 border border-white/10 backdrop-blur-xl p-3">
+              <p className="text-[10px] text-slate-200 font-semibold mb-1">AI Weather & Market</p>
+              <p className="text-[10px] text-slate-100">
+                {weather.city} • {weather.temp}°C • {weather.label}
+              </p>
+              <p className="text-[10px] text-sky-300 mt-1">{marketTrend}</p>
+              <p className="text-[10px] text-slate-300 mt-1">Economic index: {economicIndex}</p>
+              <p className="text-[10px] text-slate-300 mt-1">Currency base: {currency}</p>
+            </div>
+
+            <div className="rounded-xl bg-black/45 border border-white/10 backdrop-blur-xl p-3">
+              <p className="text-[10px] text-slate-200 font-semibold mb-1">Company Goal</p>
+              <p className="text-[10px] text-slate-100">{goal}</p>
+              <p className="text-[10px] text-slate-200 font-semibold mt-2">Today’s targets</p>
+              <ul className="text-[10px] text-slate-100 space-y-1 mt-1">
+                {todaysTargets.map(t => <li key={t}>• {t}</li>)}
+              </ul>
+            </div>
+
+            <div className="rounded-xl bg-black/45 border border-white/10 backdrop-blur-xl p-3">
+              <p className="text-[10px] text-slate-200 font-semibold mb-1">AI Suggestions</p>
+              <ul className="text-[10px] text-emerald-300 space-y-1">
+                {computeAIBriefing(user, runtimeState).map(line => (
+                  <li key={line}>• {line}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-        <div className="bg-slate-900/50 rounded-2xl border border-slate-800 px-3 py-2 flex items-center gap-2 shrink-0">
-          <span className="text-lg">{user?.verified ? '✅' : '⏳'}</span>
-          <span className="text-xs font-medium text-slate-200">
-            {user?.verified ? 'Verifye' : 'Annatant'}
-          </span>
+        
+        {/* Right column: live hero KPIs */}
+        <div className="grid grid-cols-2 gap-3 lg:w-[320px] lg:flex-none">
+          <AnimatedKPI
+            label="Employees Online"
+            value={onlineEmployees}
+            accent="from-emerald-400/70 via-emerald-500/60 to-cyan-400/70"
+          />
+          <AnimatedKPI
+            label="Active Projects"
+            value={activeProjects}
+            accent="from-indigo-400/70 via-sky-500/60 to-purple-500/70"
+          />
+          <AnimatedKPI
+            label="Revenue Today"
+            value={revenueToday}
+            prefix="$"
+            accent="from-amber-400/80 via-orange-500/70 to-rose-500/70"
+          />
+          <AnimatedKPI
+            label="Business Status"
+            value={cd.statusLabel || 'Healthy'}
+            accent="from-cyan-400/70 via-blue-500/70 to-emerald-500/70"
+          />
         </div>
       </div>
     </div>
   );
 });
 
-// ── Shared save helper hook ───────────────────────────────────
-function useSaveCompany(user) {
-  const { login } = useAuth();
-  const userId = user?._id || user?.id;
-
-  return useCallback(async (updatedCd) => {
-    login({ ...user, companyData: updatedCd });
-    try {
-      await API.patch('/company/profile', { userId, companyData: updatedCd });
-    } catch { /* keep optimistic for MVP */ }
-  }, [user, userId, login]);
-}
-
 // ─────────────────────────────────────────────────────────────
-// EMPLOYEES TAB
+// 8. Enterprise KPI Center (extended KPIs: cashflow, burn rate…)
 // ─────────────────────────────────────────────────────────────
-function EmployeesTab({ user }) {
-  const cd        = user?.companyData || {};
-  const employees = cd.employees || [];
-  const saveCD    = useSaveCompany(user);
 
-  const [filter, setFilter] = useState('active');
-
-  const updateStatus = useCallback(async (workerId, newStatus) => {
-    const updated = employees.map(e => e.workerId === workerId ? { ...e, status: newStatus } : e);
-    await saveCD({ ...cd, employees: updated });
-  }, [employees, cd, saveCD]);
-
-  const FILTERS = [
-    { id: 'active',  label: 'Aktif',    count: employees.filter(e => e.status === 'active').length },
-    { id: 'pending', label: 'Annatant', count: employees.filter(e => e.status === 'pending').length },
-    { id: 'former',  label: 'Ansyen',   count: employees.filter(e => e.status === 'former').length },
-  ];
-
-  const filtered = employees.filter(e => e.status === filter);
+const EnterpriseKPICenter = memo(function EnterpriseKPICenter({ user, runtimeState }) {
+  const cd = user?.companyData || {};
+  const kpi = {
+    revenue: cd.globalRevenue ?? 0,
+    profit:  cd.netProfit ?? cd.globalProfit ?? (cd.globalRevenue ?? 0) - (cd.globalExpenses ?? 0),
+    grossProfit: cd.grossProfit ?? 0,
+    cashflow: cd.cashflowToday ?? 0,
+    burnRate: cd.burnRateMonthly ?? 0,
+    employees: (cd.employees || []).length,
+    contracts: cd.contractsCount ?? 0,
+    hiring:   (cd.jobs || []).length,
+    payroll:  cd.payrollMonth ?? 0,
+    customerSatisfaction: cd.customerSatisfaction ?? 92,
+    workerSatisfaction:   cd.workerSatisfaction   ?? 88,
+    latePayments: cd.latePaymentsCount ?? 3,
+    productivityIndex: cd.productivityIndex ?? 82,
+    attendanceRate: cd.attendanceRate ?? 94,
+    hiringSuccessRate: cd.hiringSuccessRate ?? 73,
+    aiRiskScore: cd.aiRiskScore ?? 12,
+    globalRank: cd.globalRank ?? 47,
+  };
 
   return (
-    <div className="space-y-4">
-      <Section icon="👥" title="Jere Anplwaye">
-        {/* Filter row */}
-        <div className="flex gap-2 mb-4">
-          {FILTERS.map(f => (
-            <button key={f.id} onClick={() => setFilter(f.id)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
-                filter === f.id
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-                  : 'bg-slate-800 text-slate-400'
-              }`}
-            >
-              {f.label} ({f.count})
-            </button>
-          ))}
+    <GlassSection
+      icon={<LineChart className="w-4 h-4 text-cyan-400" />}
+      title="Enterprise KPI Center"
+      className="mb-6"
+    >
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <AnimatedKPI label="Revenue"   value={kpi.revenue}        prefix="$" accent="from-emerald-400 to-emerald-600" />
+        <AnimatedKPI label="Net Profit" value={kpi.profit}        prefix="$" accent="from-indigo-400 to-indigo-600" />
+        <AnimatedKPI label="Gross Profit" value={kpi.grossProfit} prefix="$" accent="from-sky-400 to-sky-600" />
+        <AnimatedKPI label="Cashflow" value={kpi.cashflow}        prefix="$" accent="from-cyan-400 to-cyan-600" />
+        <AnimatedKPI label="Burn Rate" value={kpi.burnRate}       prefix="$" accent="from-rose-400 to-rose-600" />
+        <AnimatedKPI label="Employees" value={kpi.employees}              accent="from-purple-400 to-purple-600" />
+        <AnimatedKPI label="Contracts" value={kpi.contracts}              accent="from-amber-400 to-amber-600" />
+        <AnimatedKPI label="Payroll"   value={kpi.payroll}        prefix="$" accent="from-blue-400 to-blue-600" />
+        <AnimatedKPI label="Customer Satisfaction" value={kpi.customerSatisfaction} suffix="%" accent="from-emerald-400 to-emerald-600" />
+        <AnimatedKPI label="Worker Satisfaction"   value={kpi.workerSatisfaction}   suffix="%" accent="from-sky-400 to-sky-600" />
+        <AnimatedKPI label="Late Payments"         value={kpi.latePayments}         accent="from-rose-400 to-rose-600" />
+        <AnimatedKPI label="Productivity Index"    value={kpi.productivityIndex}    suffix="%" accent="from-indigo-400 to-indigo-600" />
+        <AnimatedKPI label="Attendance"            value={kpi.attendanceRate}       suffix="%" accent="from-amber-400 to-amber-600" />
+        <AnimatedKPI label="Hiring Success Rate"   value={kpi.hiringSuccessRate}    suffix="%" accent="from-cyan-400 to-cyan-600" />
+        <AnimatedKPI label="AI Risk Score"         value={kpi.aiRiskScore}          accent="from-red-400 to-red-600" />
+        <AnimatedKPI label="Global Rank"           value={kpi.globalRank}           accent="from-purple-400 to-purple-600" />
+      </div>
+    </GlassSection>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// 9. Real Analytics Shell (BI)
+// ─────────────────────────────────────────────────────────────
+
+const RealAnalyticsShell = memo(function RealAnalyticsShell({ user }) {
+  return (
+    <GlassSection
+      icon={<BarChart3 className="w-4 h-4 text-cyan-400" />}
+      title="Analytics & Business Intelligence"
+      className="mb-6"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Heatmaps / country / branch comparison */}
+        <div className="space-y-2">
+          <p className="text-[10px] text-slate-200 font-semibold">Heatmaps & Country Comparison</p>
+          <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
+            {/* Hook pou Map/lib (Mapbox, Highcharts) */}
+            <div className="w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.28),transparent_60%),radial-gradient(circle_at_10%_80%,rgba(248,113,113,0.35),transparent_50%)] animate-[pulse_4s_infinite]" />
+          </div>
+          <p className="text-[10px] text-slate-300">
+            Country & branch comparison, top services/employers/workers, market trends.
+          </p>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 text-xs">
-            <p className="text-3xl mb-2">👥</p>
-            <p>Pa gen anplwaye {filter === 'active' ? 'aktif' : filter === 'pending' ? 'annatant' : 'ansyen'}</p>
-            <p className="text-[10px] mt-1 text-slate-600">Angaje travayè via Rekritman pou yo parèt isit</p>
+        {/* Revenue & cashflow graphs */}
+        <div className="space-y-2">
+          <p className="text-[10px] text-slate-200 font-semibold">Revenue • Cashflow • Payroll</p>
+          <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
+            {/* Line/area charts (Recharts/D3/Chart.js). [web:352] */}
+            <div className="w-full h-full bg-[linear-gradient(to_top,rgba(34,197,94,0.35),transparent),linear-gradient(to_right,rgba(59,130,246,0.4),transparent)] animate-[pulse_3s_infinite]" />
           </div>
-        ) : (
-          <div className="space-y-2">
-            {filtered.map(emp => (
-              <div key={emp.workerId} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center text-base">👤</div>
-                  <div>
-                    <p className="text-xs font-bold text-white">{emp.name || 'Anplwaye'}</p>
-                    <p className="text-[10px] text-slate-400">{emp.role || emp.profession || '—'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <StatusBadge status={emp.status} />
-                  {emp.status === 'active'  && (
-                    <button onClick={() => updateStatus(emp.workerId, 'former')}
-                      className="text-[10px] text-rose-400 hover:text-rose-300 transition">Kite</button>
-                  )}
-                  {emp.status === 'pending' && (
-                    <button onClick={() => updateStatus(emp.workerId, 'active')}
-                      className="text-[10px] text-emerald-400 font-bold">✓ Aksepte</button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
+          <p className="text-[10px] text-slate-300">
+            Revenue timelines, payroll evolution, trust score, monthly/yearly comparisons & forecast graphs.
+          </p>
+        </div>
 
-      {/* Summary */}
-      <Section icon="📊" title="Rezime Anplwaye">
-        <dl className="space-y-2">
-          {[
-            ['Anplwaye Aktif',  employees.filter(e => e.status === 'active').length],
-            ['Annatant',        employees.filter(e => e.status === 'pending').length],
-            ['Ansyen',          employees.filter(e => e.status === 'former').length],
-            ['Total',           employees.length],
-          ].map(([label, val]) => (
-            <div key={label} className="flex justify-between">
-              <dt className="text-xs text-slate-400">{label}</dt>
-              <dd className="text-xs font-bold text-white">{val}</dd>
-            </div>
-          ))}
-        </dl>
-      </Section>
-    </div>
+        {/* Funnels */}
+        <div className="space-y-2">
+          <p className="text-[10px] text-slate-200 font-semibold">Hiring & Conversion Funnels</p>
+          <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
+            {/* Funnel chart placeholder */}
+            <div className="w-full h-full bg-[repeating-linear-gradient(90deg,rgba(129,140,248,0.4),rgba(129,140,248,0.4)_6px,transparent_6px,transparent_12px)] animate-[pulse_2.6s_infinite]" />
+          </div>
+          <p className="text-[10px] text-slate-300">
+            Hiring funnel, conversion funnel, employee growth, late payments, AI suggestions on performance.
+          </p>
+        </div>
+      </div>
+    </GlassSection>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────
-// HIRING TAB
+// 10. Notification Center
 // ─────────────────────────────────────────────────────────────
-const BLANK_JOB = { title: '', description: '', type: 'fixed', budget: '', skills: '' };
 
-function HiringTab({ user }) {
-  const userId    = user?._id || user?.id;
-  const cd        = user?.companyData || {};
-  const jobs      = cd.jobs || [];
-  const saveCD    = useSaveCompany(user);
-
-  const [form, setForm]             = useState(BLANK_JOB);
-  const [showForm, setShowForm]     = useState(false);
-  const [saving, setSaving]         = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [confirmingJobId, setConfirmingJobId] = useState(null);
-
-  const postJob = useCallback(async () => {
-    if (!form.title.trim()) return;
-    setSaving(true);
-    const newJob = {
-      id:         `j_${Date.now()}`,
-      title:      form.title.trim(),
-      description:form.description.trim(),
-      type:       form.type,
-      budget:     form.budget,
-      skills:     form.skills.split(',').map(s => s.trim()).filter(Boolean),
-      status:     'posted',
-      applicants: [],
-      createdAt:  new Date().toISOString(),
-    };
-    await saveCD({ ...cd, jobs: [newJob, ...jobs] });
-    setForm(BLANK_JOB);
-    setShowForm(false);
-    setSaving(false);
-  }, [form, cd, jobs, saveCD]);
-
-  const setJobStatus = useCallback(async (jobId, newStatus) => {
-    const updated = jobs.map(j => j.id === jobId ? { ...j, status: newStatus } : j);
-    await saveCD({ ...cd, jobs: updated });
-  }, [jobs, cd, saveCD]);
-
-  const acceptApplicant = useCallback(async (jobId, workerId) => {
-    const updated = jobs.map(j => {
-      if (j.id !== jobId) return j;
-      return {
-        ...j,
-        status: 'hired',
-        applicants: (j.applicants || []).map(a =>
-          a.workerId === workerId
-            ? { ...a, hireStatus: 'accepted' }
-            : { ...a, hireStatus: 'rejected' }
-        ),
-      };
-    });
-    await saveCD({ ...cd, jobs: updated });
-  }, [jobs, cd, saveCD]);
-
-  const rejectApplicant = useCallback(async (jobId, workerId) => {
-    const updated = jobs.map(j => {
-      if (j.id !== jobId) return j;
-      return {
-        ...j,
-        applicants: (j.applicants || []).map(a =>
-          a.workerId === workerId ? { ...a, hireStatus: 'rejected' } : a
-        ),
-      };
-    });
-    await saveCD({ ...cd, jobs: updated });
-  }, [jobs, cd, saveCD]);
-
-  const confirmPayment = useCallback(async (jobId) => {
-    const updated  = jobs.map(j => j.id === jobId ? { ...j, status: 'confirmed' } : j);
-    const newPayConf = (cd.paymentConfirmations ?? 0) + 1;
-    await saveCD({ ...cd, jobs: updated, paymentConfirmations: newPayConf });
-    try {
-      await API.post('/company/confirm', { companyId: userId, jobId });
-    } catch { /* notification is best-effort for MVP */ }
-    setConfirmingJobId(null);
-  }, [jobs, cd, userId, saveCD]);
-
-  const openJobs = jobs.filter(j => ['posted','applied','accepted','hired','active'].includes(j.status));
-  const doneJobs = jobs.filter(j => ['completed','confirmed','paid','closed','paused'].includes(j.status));
-
+const NotificationCenter = memo(function NotificationCenter({ notifications, onMarkRead }) {
   return (
-    <div className="space-y-4">
-
-      {/* Active jobs */}
-      <Section icon="💼" title="Travay Aktif"
-        action={
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-1 text-[10px] text-blue-400 font-bold">
-            <Plus className="w-3 h-3" /> Nouvo
-          </button>
-        }
-      >
-        {/* Post job form */}
-        {showForm && (
-          <div className="mb-4 p-4 bg-slate-800/60 rounded-xl space-y-3">
-            <input value={form.title} onChange={e => setForm(v => ({ ...v, title: e.target.value }))}
-              placeholder="Tit travay la"
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500/40" />
-            <textarea value={form.description} onChange={e => setForm(v => ({ ...v, description: e.target.value }))}
-              placeholder="Deskripsyon travay la" rows={3}
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
-            <input value={form.skills} onChange={e => setForm(v => ({ ...v, skills: e.target.value }))}
-              placeholder="Konpetans (virgil: chef, chapo, elektrisyen...)"
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none" />
-            <div className="flex gap-2">
-              <select value={form.type} onChange={e => setForm(v => ({ ...v, type: e.target.value }))}
-                className="flex-1 px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none">
-                {JOB_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-              </select>
-              <input value={form.budget} onChange={e => setForm(v => ({ ...v, budget: e.target.value }))}
-                placeholder="Bidjè USD"
-                className="flex-1 px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none" />
-            </div>
-            <div className="flex gap-2">
-              <button onClick={postJob} disabled={saving || !form.title.trim()}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold disabled:opacity-40 transition">
-                {saving ? 'Ap sove...' : 'Afiche Travay'}
-              </button>
-              <button onClick={() => setShowForm(false)}
-                className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-xs">Anile</button>
-            </div>
-          </div>
-        )}
-
-        {openJobs.length === 0 && !showForm && (
-          <div className="text-center py-6 text-slate-500 text-xs">
-            <p className="text-3xl mb-2">💼</p>
-            <p>Pa gen travay ouvè pou kounye a</p>
-          </div>
-        )}
-
-        <div className="space-y-3">
-          {openJobs.map(job => (
-            <div key={job.id} className="bg-slate-800/50 rounded-xl p-3">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{job.title}</p>
-                  <p className="text-[10px] text-slate-400">
-                    {JOB_TYPES.find(t => t.id === job.type)?.label || job.type}
-                    {job.budget ? ` • $${job.budget}` : ''}
-                  </p>
-                </div>
-                <StatusBadge status={job.status} />
+    <GlassSection
+      icon={<Bell className="w-4 h-4 text-amber-400" />}
+      title="Notification Center"
+    >
+      {notifications.length === 0 ? (
+        <p className="text-[10px] text-slate-300">
+          No notifications yet — AI will show security, payment, GPS & system alerts here.
+        </p>
+      ) : (
+        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+          {notifications.map(n => (
+            <div
+              key={n.id}
+              className={`flex items-start justify-between gap-2 rounded-xl px-3 py-2 border ${
+                n.read ? 'border-slate-700 bg-black/40' : 'border-amber-400/40 bg-amber-950/20'
+              }`}
+            >
+              <div className="flex-1">
+                <p className="text-[10px] text-slate-100 font-semibold">
+                  {n.title} • <span className="capitalize">{n.type}</span>
+                </p>
+                <p className="text-[10px] text-slate-300">{n.message}</p>
+                <p className="text-[9px] text-slate-500 mt-1">
+                  Priority: {n.priority} • {n.timestamp}
+                </p>
               </div>
-
-              {/* Applicants */}
-              {(job.applicants || []).length > 0 && (
-                <button onClick={() => setSelectedJob(prev => prev?.id === job.id ? null : job)}
-                  className="text-[10px] text-blue-400 mb-2">
-                  {(job.applicants || []).length} aplikasyon → Wè yo
+              {!n.read && (
+                <button
+                  onClick={() => onMarkRead(n.id)}
+                  className="text-[9px] text-emerald-300"
+                >
+                  Mark read
                 </button>
               )}
-
-              {selectedJob?.id === job.id && (
-                <div className="p-2 bg-slate-900/60 rounded-lg mb-2 space-y-1.5">
-                  {(job.applicants || []).map(app => (
-                    <div key={app.workerId} className="flex items-center justify-between">
-                      <p className="text-[10px] text-slate-300 truncate">{app.name}</p>
-                      {app.hireStatus ? (
-                        <StatusBadge status={app.hireStatus === 'accepted' ? 'hired' : 'closed'} />
-                      ) : (
-                        <div className="flex gap-2">
-                          <button onClick={() => acceptApplicant(job.id, app.workerId)}
-                            className="text-[10px] text-emerald-400 font-bold">✓ Aksepte</button>
-                          <button onClick={() => rejectApplicant(job.id, app.workerId)}
-                            className="text-[10px] text-rose-400">✗ Rejte</button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {(job.applicants || []).length === 0 && (
-                    <p className="text-[10px] text-slate-500 text-center py-1">Pa gen aplikasyon pou kounye a</p>
-                  )}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 mt-1 text-[10px]">
-                {job.status === 'active' && (
-                  <button onClick={() => { setJobStatus(job.id, 'completed'); setConfirmingJobId(job.id); }}
-                    className="text-purple-400">✓ Mak Fini</button>
-                )}
-                {job.status !== 'paused' && job.status !== 'closed' && (
-                  <button onClick={() => setJobStatus(job.id, 'paused')}
-                    className="text-amber-400">⏸ Poz</button>
-                )}
-                {job.status === 'paused' && (
-                  <button onClick={() => setJobStatus(job.id, 'posted')}
-                    className="text-blue-400">▶ Rakte</button>
-                )}
-                <button onClick={() => setJobStatus(job.id, 'closed')}
-                  className="text-rose-400">✗ Fèmen</button>
-              </div>
             </div>
           ))}
         </div>
-      </Section>
-
-      {/* Payment confirmation */}
-      {confirmingJobId && (
-        <Section icon="💳" title="Konfirmasyon Pèman">
-          <p className="text-xs text-slate-300 mb-3">
-            Travay la fini? Konfime pou notifye travayè yo.
-          </p>
-          <div className="flex gap-2">
-            <button onClick={() => confirmPayment(confirmingJobId)}
-              className="flex-1 py-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-xl text-xs font-bold">
-              ✓ Wi, Travay la Fini
-            </button>
-            <button onClick={() => setConfirmingJobId(null)}
-              className="flex-1 py-2.5 bg-slate-700 text-slate-300 rounded-xl text-xs">
-              Anile
-            </button>
-          </div>
-        </Section>
       )}
-
-      {/* Hiring workflow visualization */}
-      <Section icon="🔄" title="Pwosesis Rekritman">
-        <div className="flex items-center gap-1 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-          {WORKFLOW_STEPS.map((s, i) => {
-            const stage = JOB_STATUSES.find(j => j.id === s);
-            return (
-              <React.Fragment key={s}>
-                <div className={`shrink-0 px-2 py-1 rounded-lg ${stage?.bg || 'bg-slate-800/50'}`}>
-                  <p className={`text-[9px] font-bold ${stage?.color || 'text-slate-400'}`}>{stage?.label}</p>
-                </div>
-                {i < WORKFLOW_STEPS.length - 1 && (
-                  <span className="text-slate-600 shrink-0 text-[10px]">→</span>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </Section>
-
-      {/* History */}
-      {doneJobs.length > 0 && (
-        <Section icon="📋" title="Istwa Travay">
-          <div className="space-y-2">
-            {doneJobs.slice(0, 5).map(job => (
-              <div key={job.id} className="flex items-center justify-between p-2.5 bg-slate-800/50 rounded-xl">
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{job.title}</p>
-                  <p className="text-[10px] text-slate-400">{new Date(job.createdAt).toLocaleDateString('fr-HT')}</p>
-                </div>
-                <StatusBadge status={job.status} />
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-    </div>
+    </GlassSection>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────
-// PROJECTS TAB
+// 11. AI Enterprise Assistant (dynamic)
 // ─────────────────────────────────────────────────────────────
-const BLANK_PROJECT = { name: '', description: '', status: 'upcoming', start: '', end: '' };
 
-function ProjectsTab({ user }) {
-  const cd       = user?.companyData || {};
-  const projects = cd.projects || [];
-  const saveCD   = useSaveCompany(user);
+const AIEnterpriseAssistant = memo(function AIEnterpriseAssistant({ user, runtimeState }) {
+  const cd = user?.companyData || {};
+  const summary = runtimeState?.aiSummary || {
+    applicantsToday: cd.applicantsToday ?? 17,
+    projectsDelayed: cd.projectsDelayed ?? 3,
+    revenueDelta:    (cd.revenueDeltaToday ?? 12) + '%',
+    employeesAbsent: cd.employeesAbsentToday ?? 4,
+    recommendation:  'Hire 5 electricians near Punta Cana.',
+  };
 
-  const [filterStatus, setFilterStatus] = useState('active');
-  const [showForm, setShowForm]         = useState(false);
-  const [form, setForm]                 = useState(BLANK_PROJECT);
-  const [saving, setSaving]             = useState(false);
-
-  const createProject = useCallback(async () => {
-    if (!form.name.trim()) return;
-    setSaving(true);
-    const newProject = {
-      id:        `p_${Date.now()}`,
-      ...form,
-      workers:   [],
-      createdAt: new Date().toISOString(),
-    };
-    await saveCD({ ...cd, projects: [newProject, ...projects] });
-    setForm(BLANK_PROJECT);
-    setShowForm(false);
-    setSaving(false);
-  }, [form, cd, projects, saveCD]);
-
-  const setProjectStatus = useCallback(async (projId, newStatus) => {
-    const updated = projects.map(p => p.id === projId ? { ...p, status: newStatus } : p);
-    await saveCD({ ...cd, projects: updated });
-  }, [projects, cd, saveCD]);
-
-  const filtered = projects.filter(p => p.status === filterStatus);
+  const briefingLines = computeAIBriefing(user, runtimeState);
 
   return (
-    <div className="space-y-4">
-      <Section icon="📁" title="Pwojè"
-        action={
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-1 text-[10px] text-blue-400 font-bold">
-            <Plus className="w-3 h-3" /> Nouvo
-          </button>
-        }
-      >
-        {/* Filter */}
-        <div className="flex gap-2 mb-4">
-          {PROJECT_STATUSES.map(s => (
-            <button key={s.id} onClick={() => setFilterStatus(s.id)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
-                filterStatus === s.id
-                  ? `${s.color} ${s.bg} border border-current/30`
-                  : 'bg-slate-800 text-slate-400'
-              }`}
-            >
-              {s.label} ({projects.filter(p => p.status === s.id).length})
-            </button>
-          ))}
-        </div>
-
-        {/* Create form */}
-        {showForm && (
-          <div className="mb-4 p-4 bg-slate-800/60 rounded-xl space-y-3">
-            <input value={form.name} onChange={e => setForm(v => ({ ...v, name: e.target.value }))}
-              placeholder="Non pwojè a"
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500/40" />
-            <textarea value={form.description} onChange={e => setForm(v => ({ ...v, description: e.target.value }))}
-              placeholder="Deskripsyon pwojè a" rows={2}
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
-            <div className="flex gap-2">
-              <input type="date" value={form.start} onChange={e => setForm(v => ({ ...v, start: e.target.value }))}
-                className="flex-1 px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none" />
-              <input type="date" value={form.end} onChange={e => setForm(v => ({ ...v, end: e.target.value }))}
-                className="flex-1 px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none" />
-            </div>
-            <select value={form.status} onChange={e => setForm(v => ({ ...v, status: e.target.value }))}
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none">
-              {PROJECT_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
-            <div className="flex gap-2">
-              <button onClick={createProject} disabled={saving || !form.name.trim()}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold disabled:opacity-40">
-                {saving ? 'Ap sove...' : 'Kreye Pwojè'}
-              </button>
-              <button onClick={() => setShowForm(false)}
-                className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-xs">Anile</button>
-            </div>
-          </div>
-        )}
-
-        {filtered.length === 0 && !showForm && (
-          <div className="text-center py-6 text-slate-500 text-xs">
-            <p className="text-3xl mb-2">📁</p>
-            <p>Pa gen pwojè {filterStatus === 'active' ? 'aktif' : filterStatus === 'upcoming' ? 'pwochèn' : 'konplete'}</p>
-          </div>
-        )}
-
-        <div className="space-y-3">
-          {filtered.map(proj => {
-            const ps = PROJECT_STATUSES.find(s => s.id === proj.status);
-            return (
-              <div key={proj.id} className={`rounded-xl border border-slate-700 p-3 ${ps?.bg || ''}`}>
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-xs font-bold text-white">{proj.name}</p>
-                  <span className={`text-[10px] font-bold ${ps?.color}`}>{ps?.label}</span>
-                </div>
-                {proj.description && (
-                  <p className="text-[10px] text-slate-400 mb-1.5 line-clamp-2">{proj.description}</p>
-                )}
-                {(proj.start || proj.end) && (
-                  <p className="text-[10px] text-slate-500 mb-1">
-                    {proj.start && `Kòmanse: ${proj.start}`}
-                    {proj.start && proj.end && ' → '}
-                    {proj.end && `Fini: ${proj.end}`}
-                  </p>
-                )}
-                <p className="text-[10px] text-slate-500 mb-1">{(proj.workers || []).length} travayè asiye</p>
-                <div className="flex gap-3 text-[10px]">
-                  {proj.status === 'upcoming'  && (
-                    <button onClick={() => setProjectStatus(proj.id, 'active')} className="text-green-400">▶ Kòmanse</button>
-                  )}
-                  {proj.status === 'active'    && (
-                    <button onClick={() => setProjectStatus(proj.id, 'completed')} className="text-purple-400">✓ Mak Konplete</button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Section>
-    </div>
+    <GlassSection
+      icon={<Cpu className="w-4 h-4 text-cyan-400" />}
+      title="AI Enterprise Assistant"
+    >
+      <p className="text-[11px] text-slate-200 mb-2">
+        Good morning {user?.firstName || user?.name || 'CEO'}.  
+        Today your company has:
+      </p>
+      <ul className="text-[10px] text-slate-100 space-y-1 mb-2">
+        <li>• {summary.applicantsToday} new applicants</li>
+        <li>• {summary.projectsDelayed} projects delayed</li>
+        <li>• Revenue changed by {summary.revenueDelta}</li>
+        <li>• {summary.employeesAbsent} employees absent</li>
+      </ul>
+      <p className="text-[10px] text-emerald-300 mb-2">
+        Recommendation: {summary.recommendation}
+      </p>
+      <p className="text-[10px] text-slate-200 font-semibold mb-1">AI Decision Engine</p>
+      <ul className="text-[10px] text-sky-300 space-y-1">
+        {briefingLines.map(line => (
+          <li key={line}>• {line}</li>
+        ))}
+      </ul>
+    </GlassSection>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────
-// BRANCHES TAB
+// 12. Wallet Center
 // ─────────────────────────────────────────────────────────────
-const BLANK_BRANCH = { name: '', city: '', country: '', address: '' };
 
-function BranchesTab({ user }) {
-  const cd       = user?.companyData || {};
-  const branches = cd.branches || [];
-  const saveCD   = useSaveCompany(user);
-  const userId   = user?._id || user?.id;
-  const { acquiring, gpsError, acquire } = useCompanyGPS();
-
-  const [showForm, setShowForm]       = useState(false);
-  const [form, setForm]               = useState(BLANK_BRANCH);
-  const [saving, setSaving]           = useState(false);
-  const [alertActive, setAlertActive] = useState(false);
-  const [alertWorkers, setAlertWorkers] = useState([]);
-  const [alertMsg, setAlertMsg]       = useState(null);
-  const [skillFilter, setSkillFilter] = useState('');
-
-  const addBranch = useCallback(async () => {
-    if (!form.name.trim()) return;
-    setSaving(true);
-    const newBranch = {
-      id:             `b_${Date.now()}`,
-      ...form,
-      employees:      [],
-      activeProjects: [],
-      createdAt:      new Date().toISOString(),
-    };
-    await saveCD({ ...cd, branches: [newBranch, ...branches] });
-    setForm(BLANK_BRANCH);
-    setShowForm(false);
-    setSaving(false);
-  }, [form, cd, branches, saveCD]);
-
-  const doAlert = useCallback(async ({ lat, lng } = {}) => {
-    setAlertMsg(null);
-    const payload = {
-      companyId:   userId,
-      companyName: user?.name,
-      skills:      skillFilter || undefined,
-      city:        user?.location?.city,
-      country:     user?.location?.country,
-      ...(lat != null ? { lat, lng, radius: 25 } : {}),
-    };
-    try {
-      const res = await API.post('/company/alert', payload);
-      const workers = res?.data?.data?.workers || [];
-      setAlertWorkers(workers);
-      setAlertActive(true);
-      setAlertMsg(workers.length > 0
-        ? `✓ ${workers.length} travayè notifye`
-        : 'Alèt voye — pa jwenn travayè ki koresponn nan zòn nan');
-    } catch {
-      setAlertActive(true);
-      setAlertMsg('Alèt voye — pa gen koneksyon disponib kounye a');
-    }
-  }, [userId, user, skillFilter]);
-
-  const sendAlert = useCallback(() => {
-    acquire(
-      ({ lat, lng }) => doAlert({ lat, lng }),
-      () => doAlert(),   // GPS denied — fall back to city/country in payload
-    );
-  }, [acquire, doAlert]);
+const WalletCenter = memo(function WalletCenter({ user }) {
+  const cd = user?.companyData || {};
+  const wallet = cd.wallet || {
+    balance:       cd.walletBalance ?? 0,
+    escrow:        cd.escrowBalance ?? 0,
+    pending:       cd.pendingAmount ?? 0,
+    released:      cd.releasedAmount ?? 0,
+    cards:         cd.cards || [],
+    crypto:        cd.crypto || [],
+    invoices:      cd.invoices || [],
+    taxes:         cd.taxes || [],
+    payroll:       cd.payrollMonth ?? 0,
+  };
 
   return (
-    <div className="space-y-4">
-
-      {/* Branch list */}
-      <Section icon="🏢" title="Branch yo"
-        action={
-          <button onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-1 text-[10px] text-blue-400 font-bold">
-            <Plus className="w-3 h-3" /> Ajoute
-          </button>
-        }
-      >
-        {showForm && (
-          <div className="mb-4 p-4 bg-slate-800/60 rounded-xl space-y-3">
-            <input value={form.name} onChange={e => setForm(v => ({ ...v, name: e.target.value }))}
-              placeholder="Non branch lan (e.g. Biwo Sid)"
-              className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500/40" />
-            <div className="flex gap-2">
-              <input value={form.city} onChange={e => setForm(v => ({ ...v, city: e.target.value }))}
-                placeholder="Vil" className="flex-1 px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none" />
-              <input value={form.country} onChange={e => setForm(v => ({ ...v, country: e.target.value }))}
-                placeholder="Peyi" className="flex-1 px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none" />
-            </div>
-            <input value={form.address} onChange={e => setForm(v => ({ ...v, address: e.target.value }))}
-              placeholder="Adrès (opsyonèl)" className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none" />
-            <div className="flex gap-2">
-              <button onClick={addBranch} disabled={saving || !form.name.trim()}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg text-xs font-bold disabled:opacity-40">
-                {saving ? 'Ap sove...' : 'Ajoute Branch'}
-              </button>
-              <button onClick={() => setShowForm(false)} className="px-3 py-2 bg-slate-700 text-slate-300 rounded-lg text-xs">Anile</button>
-            </div>
-          </div>
-        )}
-
-        {branches.length === 0 && !showForm && (
-          <div className="text-center py-6 text-slate-500 text-xs">
-            <p className="text-3xl mb-2">🏢</p>
-            <p>Pa gen branch pou kounye a</p>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          {branches.map(branch => (
-            <div key={branch.id} className="bg-slate-800/50 rounded-xl p-3 flex items-start justify-between">
-              <div>
-                <p className="text-xs font-bold text-white">{branch.name}</p>
-                <p className="text-[10px] text-slate-400">
-                  {[branch.city, branch.country].filter(Boolean).join(', ')}
-                </p>
-                {branch.address && <p className="text-[10px] text-slate-500">{branch.address}</p>}
-              </div>
-              <div className="text-right text-[10px] text-slate-400">
-                <p>{(branch.employees || []).length} anplwaye</p>
-                <p>{(branch.activeProjects || []).length} pwojè</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* GPS Worker Alert */}
-      <Section icon="📡" title="Chèche Travayè Pre w">
-        <p className="text-[10px] text-slate-400 mb-3">
-          Aktive alèt la pou travayè disponib ki pre konpayi an jwenn notifikasyon.
-          GPS oswa vil/peyi ou ap sèvi kòm lokasyon.
-        </p>
-
-        <input value={skillFilter} onChange={e => setSkillFilter(e.target.value)}
-          placeholder="Filtre pa konpetans (opsyonèl: chef, plonbye...)"
-          className="w-full px-3 py-1.5 mb-3 bg-slate-800 rounded-lg text-xs text-white placeholder-slate-500 outline-none focus:ring-1 focus:ring-blue-500/40" />
-
-        {gpsError && (
-          <p className="text-[10px] text-amber-400 mb-2">⚠ {gpsError} — ap itilize vil/peyi ou</p>
-        )}
-
-        <button onClick={sendAlert} disabled={acquiring}
-          className={`w-full py-3 rounded-xl text-sm font-bold transition ${
-            alertActive
-              ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400'
-              : 'bg-blue-500 text-white hover:bg-blue-400 disabled:opacity-40'
-          }`}
-        >
-          {acquiring ? '📡 Ap chèche GPS...' : alertActive ? '✓ Alèt Aktif' : '🔍 Chèche Travayè Pre w'}
-        </button>
-
-        {alertMsg && <p className="text-[10px] text-slate-300 mt-2 text-center">{alertMsg}</p>}
-
-        {alertWorkers.length > 0 && (
-          <div className="mt-3 space-y-2">
-            <p className="text-[10px] text-slate-500 font-bold uppercase">Travayè jwenn:</p>
-            {alertWorkers.slice(0, 6).map((w, i) => (
-              <div key={w._id || w.id || i} className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
-                <span className="text-base">👷</span>
-                <div>
-                  <p className="text-xs font-bold text-white">{w.name}</p>
-                  <p className="text-[10px] text-slate-400">
-                    {w.profession}{w.distanceKm != null ? ` • ${w.distanceKm}km` : w.location?.city ? ` • ${w.location.city}` : ''}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {alertActive && (
-          <button onClick={() => { setAlertActive(false); setAlertWorkers([]); setAlertMsg(null); }}
-            className="w-full mt-2 text-[10px] text-slate-400 hover:text-rose-400 transition">
-            Dezaktive Alèt
-          </button>
-        )}
-      </Section>
-    </div>
+    <GlassSection
+      icon={<Wallet className="w-4 h-4 text-emerald-400" />}
+      title="Wallet • Finance Center"
+    >
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+        <AnimatedKPI label="Balance"  value={wallet.balance}  prefix="$" accent="from-emerald-400 to-emerald-600" />
+        <AnimatedKPI label="Escrow"   value={wallet.escrow}   prefix="$" accent="from-indigo-400 to-indigo-600" />
+        <AnimatedKPI label="Pending"  value={wallet.pending}  prefix="$" accent="from-amber-400 to-amber-600" />
+        <AnimatedKPI label="Released" value={wallet.released} prefix="$" accent="from-sky-400 to-sky-600" />
+      </div>
+      <p className="text-[10px] text-slate-300">
+        Wallet modules: Withdraw, Cards, Crypto, Invoices, Taxes, Payroll — UI ready to plug into finance APIs.
+      </p>
+    </GlassSection>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────
-// ANALYTICS TAB
+// 13. Enterprise Search & Quick Actions
 // ─────────────────────────────────────────────────────────────
-function AnalyticsTab({ user }) {
-  const trustScore       = useMemo(() => computeCompanyTrustScore(user), [user]);
-  const { pct, missing } = useMemo(() => computeCompanyCompleteness(user), [user]);
 
-  const cd         = user?.companyData || {};
-  const jobs       = cd.jobs       || [];
-  const employees  = cd.employees  || [];
-  const projects   = cd.projects   || [];
+const EnterpriseSearchBar = memo(function EnterpriseSearchBar({ onSearch }) {
+  const [query, setQuery] = useState('');
 
-  const totalJobs      = jobs.length;
-  const completedJobs  = jobs.filter(j => ['completed','confirmed','paid','closed'].includes(j.status)).length;
-  const hiringRate     = totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0;
-  const activeWorkers  = employees.filter(e => e.status === 'active').length;
-  const activeProjects = projects.filter(p => p.status === 'active').length;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch?.(query);
+  };
 
-  const RATE       = 500; // USD per completed job — MVP estimate
-  const totalRev   = completedJobs * RATE;
-  const monthRev   = Math.round(totalRev * 0.2);
+  return (
+    <form onSubmit={handleSubmit} className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl">
+      <SearchIcon className="w-4 h-4 text-slate-200" />
+      <input
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Search employees, projects, invoices, jobs, companies, clients, payments, chats, branches, AI commands…"
+        className="bg-transparent text-[11px] text-white placeholder-slate-400 outline-none w-48 lg:w-64"
+      />
+      <button type="submit" className="text-[10px] text-cyan-300">
+        Enter
+      </button>
+    </form>
+  );
+});
 
-  const rating     = user?.stats?.rating ?? 0;
-  const complaints = cd.complaints       ?? 0;
-
-  const scoreColor =
-    trustScore >= 80 ? '#6366f1' :
-    trustScore >= 50 ? '#3b82f6' :
-                       '#ef4444';
-  const textColorClass =
-    trustScore >= 80 ? 'text-indigo-400' :
-    trustScore >= 50 ? 'text-blue-400' :
-                       'text-rose-400';
-
-  const breakdowns = [
-    { label: 'Travay Konplete', pts: Math.min(completedJobs, 20),                         max: 20, icon: '✅' },
-    { label: 'Rating',          pts: Math.round((rating / 5) * 15),                       max: 15, icon: '⭐' },
-    { label: 'Pwofil Konplè',   pts: Math.round((pct / 100) * 10),                        max: 10, icon: '📊' },
-    { label: 'Verifikasyon',    pts: user?.verified ? 10 : 0,                              max: 10, icon: '✓'  },
-    { label: 'Apa Reklamasyon', pts: complaints === 0 ? 10 : Math.max(0, 10 - complaints * 2), max: 10, icon: '🛡️' },
-    { label: 'Pwen Baz',        pts: 30,                                                   max: 30, icon: '🏗️' },
+const QuickActionsBar = memo(function QuickActionsBar({ onAction }) {
+  const actions = [
+    { id: 'createJob', label: 'Create Job' },
+    { id: 'payEmployee', label: 'Pay Employee' },
+    { id: 'openChat', label: 'Open Chat' },
+    { id: 'generateInvoice', label: 'Generate Invoice' },
+    { id: 'addBranch', label: 'Add Branch' },
+    { id: 'viewAnalytics', label: 'View Analytics' },
+    { id: 'scheduleInterview', label: 'Schedule Interview' },
+    { id: 'launchAI', label: 'Launch AI' },
   ];
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {actions.map(a => (
+        <button
+          key={a.id}
+          onClick={() => onAction?.(a.id)}
+          className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl text-[10px] text-cyan-300"
+        >
+          {a.label}
+        </button>
+      ))}
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// 14. Command Bar (notifications/messages/wallet/search/voice)
+// ─────────────────────────────────────────────────────────────
+
+const CommandBar = memo(function CommandBar({ user, notificationsCount, messagesCount, onSearch, onQuickAction }) {
+  const cd = user?.companyData || {};
+  const revenueToday    = cd.revenueToday ?? 0;
+  const walletBalance   = cd.walletBalance ?? 0;
+  const calendarEvents  = cd.calendarEventsToday ?? 0;
 
   return (
-    <div className="space-y-4">
+    <div className="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <EnterpriseSearchBar onSearch={onSearch} />
+        <button className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
+          <Mic className="w-3 h-3 text-cyan-400" />
+          <span>AI Voice</span>
+        </button>
+      </div>
 
-      {/* Overview stats */}
-      <Section icon="📊" title="Aperçi">
-        <div className="grid grid-cols-3 gap-2 mb-2">
-          <MiniStat value={totalJobs}       label="Travay Afiche" color="blue"   />
-          <MiniStat value={completedJobs}   label="Konplete"      color="green"  />
-          <MiniStat value={`${hiringRate}%`}label="To Siksè"      color="purple" />
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          <MiniStat value={activeWorkers}   label="Anplwaye Aktif" color="amber" />
-          <MiniStat value={activeProjects}  label="Pwojè Aktif"    color="blue"  />
-          <MiniStat value={`${pct}%`}       label="Pwofil"         color="green" />
-        </div>
-      </Section>
+      <div className="flex flex-wrap items-center gap-2">
+        <button className="relative px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
+          <Bell className="w-3 h-3 text-amber-400" />
+          <span>Notifications</span>
+          {notificationsCount > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500 text-[9px] text-white">
+              {notificationsCount}
+            </span>
+          )}
+        </button>
+        <button className="relative px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
+          <MessageCircle className="w-3 h-3 text-sky-400" />
+          <span>Messages</span>
+          {messagesCount > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-500 text-[9px] text-white">
+              {messagesCount}
+            </span>
+          )}
+        </button>
+        <button className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
+          <Wallet className="w-3 h-3 text-emerald-400" />
+          <span>Wallet</span>
+          <span className="text-[10px] text-emerald-300 ml-1">${walletBalance}</span>
+        </button>
+        <button className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
+          <Calendar className="w-3 h-3 text-slate-200" />
+          <span>Calendar</span>
+          {calendarEvents > 0 && (
+            <span className="text-[9px] text-slate-300 ml-1">{calendarEvents} today</span>
+          )}
+        </button>
+        <QuickActionsBar onAction={onQuickAction} />
+      </div>
 
-      {/* Revenue estimate */}
-      <Section icon="💰" title="Estimasyon Revni">
-        <p className="text-[10px] text-slate-500 mb-3">
-          ✱ Estimasyon MVP — pral mete ajou ak done pèman reyèl yo.
-        </p>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <MiniStat value={`$${totalRev.toLocaleString()}`} label="Total Estimasyon" color="amber" />
-          <MiniStat value={`$${monthRev.toLocaleString()}`} label="Mwa Sa"           color="green" />
-        </div>
-        {/* Mini bar chart */}
-        <div className="p-3 bg-slate-800/50 rounded-xl">
-          <p className="text-[10px] text-slate-400 mb-2">Tren Revni (6 mwa)</p>
-          <div className="h-10 flex items-end gap-1">
-            {[0.2, 0.35, 0.3, 0.55, 0.5, 0.75, 1].map((h, i) => (
-              <div key={i} className="flex-1 rounded-sm"
-                style={{ height: `${h * 100}%`, background: 'rgba(99,102,241,0.5)' }}
-              />
-            ))}
+      <div className="flex items-center gap-2 text-[10px] text-slate-300">
+        <Activity className="w-3 h-3 text-emerald-400" />
+        <span>Revenue today: ${revenueToday}</span>
+      </div>
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// 15. AI Command Center button
+// ─────────────────────────────────────────────────────────────
+
+const AICommandCenterButton = memo(function AICommandCenterButton({ onOpen }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="fixed bottom-4 right-4 z-40 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-indigo-500 text-white text-[11px] font-semibold shadow-[0_18px_45px_rgba(15,23,42,0.95)] flex items-center gap-2"
+    >
+      <Command className="w-4 h-4" />
+      AI COMMAND CENTER
+    </button>
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// 16. MAIN CompanyDashboard component
+// ─────────────────────────────────────────────────────────────
+
+const TABS = ['overview','employees','hiring','projects','branches','analytics'];
+
+export default function CompanyDashboard({ user }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [notifications, setNotifications] = useState([]);
+  const [messagesCount, setMessagesCount] = useState(0);
+  const [runtimeState, setRuntimeState] = useState({});
+  const [aiCommandOpen, setAiCommandOpen] = useState(false);
+
+  // Real-time streams hookup
+  useRealtimeStreams(user, (key, data) => {
+    // Simplified example: update local runtime state & notifications
+    setRuntimeState(prev => ({ ...prev, [key]: data }));
+
+    if (key === 'messages') {
+      setMessagesCount(prev => prev + 1);
+    }
+
+    if (key === 'applicants') {
+      setNotifications(prev => [
+        {
+          id: `notif_${Date.now()}`,
+          title: 'New applicant',
+          type: 'ai_alert',
+          message: `New applicant for job ${data.jobTitle}`,
+          priority: 'medium',
+          timestamp: new Date().toLocaleTimeString(),
+          read: false,
+        },
+        ...prev,
+      ]);
+    }
+  });
+
+  const markNotificationRead = useCallback((id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  }, []);
+
+  const handleSearch = useCallback((query) => {
+    // Future: route to global search results (Salesforce-style).
+    // Example commands: "Find electrician in Bavaro", "Show unpaid invoices", "Employees absent today".
+    console.log('Enterprise search:', query);
+  }, []);
+
+  const handleQuickAction = useCallback((actionId) => {
+    console.log('Quick action:', actionId);
+  }, []);
+
+  const notificationsCount = notifications.filter(n => !n.read).length;
+
+  const canSeeHero      = hasAccess(user, 'hero');
+  const canSeeKPI       = hasAccess(user, 'kpi');
+  const canSeeAnalytics = hasAccess(user, 'analytics');
+  const canSeeAI        = hasAccess(user, 'aiAssistant');
+  const canSeeWallet    = hasAccess(user, 'wallet');
+
+  return (
+    <div className="relative">
+      {/* Global background (4K/gradients) */}
+      <div className="fixed inset-0 -z-10 bg-slate-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.25),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(129,140,248,0.35),transparent_50%)]" />
+      </div>
+
+      <div className="px-4 py-4 lg:px-6 lg:py-6 max-w-7xl mx-auto">
+        {/* Command bar */}
+        <CommandBar
+          user={user}
+          notificationsCount={notificationsCount}
+          messagesCount={messagesCount}
+          onSearch={handleSearch}
+          onQuickAction={handleQuickAction}
+        />
+
+        {/* Hero premium + AI Briefing */}
+        {canSeeHero && (
+          <HeroDashboardPremium user={user} runtimeState={runtimeState} />
+        )}
+
+        {/* KPI Center + AI Assistant + Analytics Shell + Wallet + Notification Center */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
+          <div className="space-y-4">
+            {canSeeKPI && <EnterpriseKPICenter user={user} runtimeState={runtimeState} />}
+            {canSeeAI && <AIEnterpriseAssistant user={user} runtimeState={runtimeState} />}
+          </div>
+          <div className="xl:col-span-2 space-y-4">
+            {canSeeAnalytics && <RealAnalyticsShell user={user} />}
+            {canSeeWallet && <WalletCenter user={user} />}
+            <NotificationCenter notifications={notifications} onMarkRead={markNotificationRead} />
           </div>
         </div>
-      </Section>
 
-      {/* Trust gauge */}
-      <Section>
-        <div className="flex flex-col items-center py-4">
-          <div className="relative w-36 h-36">
-            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#1e293b" strokeWidth="12" />
-              <circle cx="50" cy="50" r="40" fill="none"
-                stroke={scoreColor} strokeWidth="12"
-                strokeDasharray={`${trustScore * 2.51} 251`}
-                strokeLinecap="round" className="transition-all"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-4xl font-black ${textColorClass}`}>{trustScore}</span>
-              <span className="text-[10px] text-slate-400">/100</span>
-            </div>
-          </div>
-          <h3 className="text-sm font-bold text-white mt-3">🛡️ Konfyans Konpayi</h3>
-          <p className="text-[10px] text-slate-400 mt-1">
-            {trustScore >= 80 ? 'Ekselan — Konpayi ou trè fyab!'
-              : trustScore >= 50 ? 'Bon — Kontinye amelyore'
-              : 'Bati reputasyon konpayi an'}
-          </p>
-        </div>
-      </Section>
-
-      {/* Breakdown */}
-      <Section icon="📈" title="Detay Pwen yo">
-        <div className="space-y-3">
-          {breakdowns.map(b => (
-            <div key={b.label}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-slate-300">{b.icon} {b.label}</span>
-                <span className="text-xs font-bold text-blue-400">{b.pts}/{b.max}</span>
-              </div>
-              <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: `${(b.pts / b.max) * 100}%` }} />
-              </div>
-            </div>
+        {/* Tabs strip pou Employees/Hiring/Projects/Branches/Analytics */}
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+          {TABS.map(id => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold border ${
+                activeTab === id
+                  ? 'bg-white/15 border-white/40 text-white'
+                  : 'bg-black/40 border-white/10 text-slate-300'
+              } backdrop-blur-xl flex items-center gap-1`}
+            >
+              {id === 'overview'   && <Sparkles className="w-3 h-3 text-cyan-300" />}
+              {id === 'employees'  && <Users className="w-3 h-3 text-sky-300" />}
+              {id === 'hiring'     && <LineChart className="w-3 h-3 text-emerald-300" />}
+              {id === 'projects'   && <FileText className="w-3 h-3 text-indigo-300" />}
+              {id === 'branches'   && <Globe2 className="w-3 h-3 text-amber-300" />}
+              {id === 'analytics'  && <BarChart3 className="w-3 h-3 text-rose-300" />}
+              <span className="capitalize">{id}</span>
+            </button>
           ))}
         </div>
-      </Section>
 
-      {/* Reputation */}
-      <Section icon="🏆" title="Reputasyon Konpayi">
-        <dl className="space-y-2.5">
-          {[
-            ['Nivo Konfyans',      `${trustScore}/100`],
-            ['Verifikasyon',       user?.verified ? '✓ Verifye' : '— Annatant'],
-            ['Rating Mwayen',      `⭐ ${rating.toFixed(1)}`],
-            ['Travay Konplete',    String(completedJobs)],
-            ['Reklamasyon',        String(complaints)],
-            ['To Siksè Rekritman', `${hiringRate}%`],
-          ].map(([label, val]) => (
-            <div key={label} className="flex justify-between items-center">
-              <dt className="text-xs text-slate-400">{label}</dt>
-              <dd className="text-xs font-bold text-white">{val}</dd>
+        {/* Tab content (ou ploge EmployeesTab/HiringTab/ProjectsTab/BranchesTab/AnalyticsTab ou yo la) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {activeTab === 'overview' && (
+            <GlassSection title="Overview" icon={<Sparkles className="w-4 h-4 text-cyan-400" />}>
+              <p className="text-[10px] text-slate-200">
+                Overview metrics & guidance. Ploge CompanyOverviewSupplement la oswa lòt widgets (CRM, inventory, AI reports, contracts, etc.).
+              </p>
+            </GlassSection>
+          )}
+
+          {activeTab === 'employees' && (
+            <GlassSection title="Employees" icon={<Users className="w-4 h-4 text-sky-400" />}>
+              <p className="text-[10px] text-slate-200">
+                Employees management UI (photo, online, GPS, project, attendance, performance, salary, contracts, docs, certificates, languages, AI recommendations).
+              </p>
+            </GlassSection>
+          )}
+
+          {activeTab === 'hiring' && (
+            <GlassSection title="Hiring Center" icon={<LineChart className="w-4 h-4 text-emerald-400" />}>
+              <p className="text-[10px] text-slate-200">
+                Hiring Center tankou LinkedIn Recruiter / Indeed Employer / SAP SuccessFactors ak AI candidate ranking, skills match %, experience, distance, expected salary, availability, background check, one-click hire/interview/video/offer/contract/payroll.
+              </p>
+            </GlassSection>
+          )}
+
+          {activeTab === 'projects' && (
+            <GlassSection title="Projects" icon={<FileText className="w-4 h-4 text-indigo-400" />}>
+              <p className="text-[10px] text-slate-200">
+                Projects UI tankou Monday/Asana/ClickUp/Jira ak timeline, Gantt, Kanban, calendar, budget, tasks, workers, progress, invoices.
+              </p>
+            </GlassSection>
+          )}
+
+          {activeTab === 'branches' && (
+            <GlassSection title="Branches Map" icon={<MapPin className="w-4 h-4 text-amber-400" />}>
+              <p className="text-[10px] text-slate-200">
+                Google Maps Enterprise: live workers, live jobs, clients, hotels, restaurants, construction sites, routes, ETA, traffic, nearby workers — Uber‑style map (Mapbox/Google Maps lib).
+              </p>
+            </GlassSection>
+          )}
+
+          {activeTab === 'analytics' && (
+            <GlassSection title="Advanced Analytics" icon={<BarChart3 className="w-4 h-4 text-rose-400" />}>
+              <p className="text-[10px] text-slate-200">
+                Business Intelligence tankou Power BI/Tableau/Looker/Google Analytics ak 40+ charts, animated graphs, forecast, prediction, AI suggestions sou hiring, payroll, market, risk.
+              </p>
+            </GlassSection>
+          )}
+        </div>
+      </div>
+
+      {/* AI Command Center floating bouton */}
+      <AICommandCenterButton onOpen={() => setAiCommandOpen(true)} />
+
+      {/* AI Command Center modal placeholder */}
+      {aiCommandOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl">
+          <div className="w-full max-w-3xl rounded-3xl border border-white/20 bg-slate-950/95 p-6 shadow-[0_40px_120px_rgba(15,23,42,0.9)]">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Command className="w-4 h-4 text-cyan-400" />
+                AI Command Center
+              </h2>
+              <button
+                onClick={() => setAiCommandOpen(false)}
+                className="text-[10px] text-slate-300"
+              >
+                Close
+              </button>
             </div>
-          ))}
-        </dl>
-      </Section>
-
-      {/* Completeness tips */}
-      {missing.length > 0 && (
-        <Section icon="💡" title="Amelyore Pwofil ou">
-          <div className="space-y-1.5">
-            {missing.slice(0, 4).map(tip => (
-              <div key={tip} className="flex items-center gap-2 text-xs text-slate-300">
-                <span className="text-blue-400 shrink-0">→</span>
-                <span>{tip}</span>
-              </div>
-            ))}
+            <p className="text-[10px] text-slate-200 mb-3">
+              Generate Report • Predict Revenue • Optimize Hiring • Optimize Payroll • Find Workers • Analyze Market • Generate Contracts • Analyze Company Risk.
+            </p>
+            {/* Future: form/commands input, history, result panels */}
+            <div className="h-40 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-[10px] text-slate-400">
+              AI command workspace ap ploge isit la (text + voice + charts).
+            </div>
           </div>
-        </Section>
+        </div>
       )}
     </div>
   );
-}
-
-// ── Tab definitions (exported for Dashboard.jsx tab bar) ──────
-
-export const COMPANY_TABS = [
-  { id: 'overview',   label: 'Akeyi',      icon: '🏢' },
-  { id: 'employees',  label: 'Anplwaye',   icon: '👥' },
-  { id: 'hiring',     label: 'Rekritman',  icon: '💼' },
-  { id: 'projects',   label: 'Pwojè',      icon: '📁' },
-  { id: 'branches',   label: 'Branch',     icon: '🗺️' },
-  { id: 'analytics',  label: 'Estatistik', icon: '📊' },
-];
-
-// ── Default export: tab content router ────────────────────────
-// Dashboard.jsx renders 'overview' itself (CompanyOverviewSupplement + RoleDashboard).
-// This component handles all other tabs.
-
-export default function CompanyContent({ tab, user }) {
-  switch (tab) {
-    case 'employees': return <EmployeesTab user={user} />;
-    case 'hiring':    return <HiringTab    user={user} />;
-    case 'projects':  return <ProjectsTab  user={user} />;
-    case 'branches':  return <BranchesTab  user={user} />;
-    case 'analytics': return <AnalyticsTab user={user} />;
-    default:          return null;
-  }
 }

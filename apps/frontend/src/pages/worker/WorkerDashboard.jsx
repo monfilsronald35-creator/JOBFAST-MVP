@@ -1,31 +1,34 @@
 /**
- * WorkerDashboard.jsx
+ * WorkerDashboard.jsx — Premium Enterprise v2.0
  *
  * Worker-specific dashboard sections rendered inside Dashboard.jsx
- * for the 'worker' role.  This is a component, NOT a page — it has
- * no route and no layout of its own.  All data flows in via props
- * (jobs list, user from AuthContext) so there is zero duplication
- * of fetching logic that already lives in Dashboard.jsx.
+ * for the 'worker' role.  Sa rete yon component (pa gen route pa li),
+ * tout done rive via props (user, jobs) jan li ye kounye a.
  *
- * Tabs:
- *   overview  → handled by Dashboard.jsx (job list, preserved exactly)
- *   profile   → portfolio, skills, experience, completeness, verification
- *   schedule  → availability toggle, GPS location, service radius
- *   income    → earnings estimate, completed jobs, reviews
- *   trust     → trust score gauge, score breakdown, notifications preview
+ * Nivo vizyèl: Uber Driver + LinkedIn Premium + Stripe Dashboard style.
+ * - Hero Card (Good Morning + AI Score + Trust + Today Revenue + Nearby Jobs).
+ * - Glassmorphism, Dynamic Blur, Depth, Soft Shadows, Premium Typography. [web:260]
+ * - Motion Design (Fade, Scale, Spring, Card Expand, Micro Animations). [web:239]
+ * - Mini Design System: Section, StatCard, HeroCard, PillBadge.
  */
 
 import React, {
-  useState, useCallback, useMemo, memo,
+  useState,
+  useCallback,
+  useMemo,
+  memo,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  CheckCircle, RefreshCcw, ChevronRight,
+  CheckCircle,
+  RefreshCcw,
+  ChevronRight,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';        // Motion [web:239]
 import { useAuth } from '../../context/AuthContext';
 import API from '../../api/axios';
 
-// ── Pure computations ────────────────────────────────────────
+// ── Pure computations ─────────────────────────────────────────
 
 export function computeTrustScore(user) {
   const rating   = user?.stats?.rating    ?? 0;
@@ -36,7 +39,7 @@ export function computeTrustScore(user) {
   return Math.min(100, Math.round(
     40                               // base
     + (rating / 5) * 20              // 0–20 from rating
-    + Math.min(jobs, 20) * 0.75      // 0–15 from jobs  (caps at 20 jobs)
+    + Math.min(jobs, 20) * 0.75      // 0–15 from jobs (caps at 20 jobs)
     + (complete / 100) * 15          // 0–15 from completeness
     + (verified ? 10 : 0),           // 10 for verification
   ));
@@ -51,8 +54,8 @@ export function computeCompleteness(user) {
     { done: !!meta?.bio,                                     tip: 'Ekri yon bio pou pwofil ou' },
     { done: !!user?.profession,                              tip: 'Chwazi yon metye' },
     { done: !!(user?.location?.city || meta?.city),          tip: 'Ajoute lokasyon ou' },
-    { done: (meta?.skills?.length ?? 0) > 0,                tip: 'Ajoute konpetans ou yo' },
-    { done: (meta?.workPhotos?.length ?? 0) > 0,            tip: 'Ajoute foto travay ou' },
+    { done: (meta?.skills?.length ?? 0) > 0,                 tip: 'Ajoute konpetans ou yo' },
+    { done: (meta?.workPhotos?.length ?? 0) > 0,             tip: 'Ajoute foto travay ou' },
     { done: !!(meta?.yearsExperience ?? user?.experience),   tip: 'Espesifye eksperyans ou' },
   ];
   const done = checks.filter(c => c.done).length;
@@ -62,9 +65,7 @@ export function computeCompleteness(user) {
   };
 }
 
-// ── GPS hook for updating the worker's OWN stored location ────
-// Distinct from SearchScreen's GPS (which locates the searcher).
-// Here we update the worker's coordinates so others can find them.
+// ── GPS hook ──────────────────────────────────────────────────
 
 function useWorkerGPS() {
   const [acquiring, setAcquiring] = useState(false);
@@ -94,24 +95,29 @@ function useWorkerGPS() {
   return { acquiring, gpsError, acquire };
 }
 
-// ── Availability mode definitions ────────────────────────────
+// ── Availability modes ────────────────────────────────────────
 
 const AVAIL_MODES = [
-  { id: 'available',  label: 'Disponib',     emoji: '🟢', desc: 'Disponib pou travay nenpòt ki lè'  },
-  { id: 'busy',       label: 'Okipe',        emoji: '🔵', desc: 'Ap travay kounye a, limite'          },
-  { id: 'looking',    label: 'Chèche Travay', emoji: '🟡', desc: 'Chèche opòtinite aktivman'          },
-  { id: 'vacation',   label: 'Vakans',       emoji: '🔴', desc: 'An vakans — pa disponib'             },
+  { id: 'available',  label: 'Disponib',       emoji: '🟢', desc: 'Disponib pou travay nenpòt ki lè'  },
+  { id: 'busy',       label: 'Okipe',          emoji: '🔵', desc: 'Ap travay kounye a, limite'          },
+  { id: 'looking',    label: 'Chèche Travay',  emoji: '🟡', desc: 'Chèche opòtinite aktivman'          },
+  { id: 'vacation',   label: 'Vakans',         emoji: '🔴', desc: 'An vakans — pa disponib'             },
 ];
 
-// ── Reusable UI atoms ────────────────────────────────────────
+// ── Mini Design System ────────────────────────────────────────
 
 const Section = memo(function Section({ icon, title, action, children }) {
   return (
-    <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-5">
+    <motion.section
+      className="bg-slate-900/60 rounded-2xl border border-slate-800/80 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.9)] backdrop-blur-xl"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 140, damping: 18 }}
+    >
       {(title || action) && (
         <div className="flex items-center justify-between mb-4">
           {title && (
-            <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
               {icon && <span>{icon}</span>}
               {title}
             </h3>
@@ -120,28 +126,87 @@ const Section = memo(function Section({ icon, title, action, children }) {
         </div>
       )}
       {children}
-    </div>
+    </motion.section>
   );
 });
 
-const MiniStat = memo(function MiniStat({ value, label, color = 'amber' }) {
+const StatCard = memo(function StatCard({ value, label, color = 'amber' }) {
   const colors = {
-    amber: 'text-amber-500',
+    amber: 'text-amber-400',
     green: 'text-emerald-400',
-    blue:  'text-blue-400',
+    blue:  'text-sky-400',
     rose:  'text-rose-400',
   };
   return (
-    <div className="bg-[#0f172a] rounded-xl border border-slate-800 p-3 text-center">
+    <motion.div
+      className="bg-[#0f172a] rounded-xl border border-slate-800 px-3 py-3 text-center shadow-[0_10px_30px_rgba(15,23,42,0.8)]"
+      whileHover={{ y: -2 }}
+    >
       <div className={`text-xl font-bold ${colors[color] || colors.amber}`}>{value}</div>
       <div className="text-[10px] text-slate-400 mt-0.5">{label}</div>
-    </div>
+    </motion.div>
   );
 });
 
-// ── Overview supplement ───────────────────────────────────────
-// Rendered at the TOP of the Overview tab, above the existing job list.
-// Shows quick stats + trust bar + current availability badge.
+const PillBadge = memo(function PillBadge({ label }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-slate-900/80 border border-slate-700/60 px-2.5 py-0.5 text-[10px] text-slate-300">
+      {label}
+    </span>
+  );
+});
+
+// Hero card (Header style “Good Morning Ronald”)
+const HeroCard = memo(function HeroCard({ user }) {
+  const name       = user?.name || user?.firstName || 'Travayè';
+  const trustScore = useMemo(() => computeTrustScore(user), [user]);
+  const { pct }    = useMemo(() => computeCompleteness(user), [user]);
+  const todayRev   = user?.stats?.todayRevenue ?? 0;
+  const nearbyJobs = user?.stats?.nearbyJobs   ?? 0;
+
+  return (
+    <motion.div
+      className="relative rounded-3xl p-5 border border-slate-700/70 bg-gradient-to-br from-slate-900/80 via-slate-900/40 to-slate-900/90 backdrop-blur-2xl shadow-[0_40px_120px_rgba(15,23,42,0.98)] overflow-hidden"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+    >
+      {/* Dynamic lighting blobs */}
+      <div className="absolute -top-20 -left-10 w-48 h-48 bg-amber-500/15 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-10 w-52 h-52 bg-sky-500/10 blur-3xl pointer-events-none" />
+
+      <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-2 min-w-0">
+          <p className="text-[11px] text-slate-400 uppercase tracking-[0.18em]">
+            Good Morning {name}
+          </p>
+          <h2 className="text-lg sm:text-xl font-semibold text-white leading-tight">
+            Dashboard Travayè JOBFAST
+          </h2>
+          <p className="text-[11px] text-slate-300 max-w-md">
+            AI ap ede w jwenn pi bon travay, ogmante revni, epi bati konfyans ak kliyan yo.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <PillBadge label={`AI Score: ${trustScore}/100`} />
+            <PillBadge label={`Pwofil: ${pct}%`} />
+            <PillBadge label={`Revni jodi a: $${todayRev}`} />
+            <PillBadge label={`Travay tou pre: ${nearbyJobs}`} />
+          </div>
+        </div>
+
+        {/* Mini hero stats */}
+        <div className="grid grid-cols-2 gap-3 sm:w-56">
+          <StatCard value={`${trustScore}/100`} label="Nivo konfyans" color="green" />
+          <StatCard value={`${pct}%`} label="Konplè pwofil" color="blue" />
+          <StatCard value={`$${todayRev}`} label="Jodi a" color="amber" />
+          <StatCard value={nearbyJobs} label="Travay tou pre" color="rose" />
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+// ── OverviewSupplement ───────────────────────────────────────
 
 export const OverviewSupplement = memo(function OverviewSupplement({ user }) {
   const trustScore = useMemo(() => computeTrustScore(user), [user]);
@@ -150,34 +215,44 @@ export const OverviewSupplement = memo(function OverviewSupplement({ user }) {
   const availMode  = AVAIL_MODES.find(m => m.id === avail) || AVAIL_MODES[0];
 
   return (
-    <div className="space-y-3">
-      {/* Quick stats row */}
-      <div className="grid grid-cols-3 gap-3">
-        <MiniStat value={`⭐ ${(user?.stats?.rating ?? 5).toFixed(1)}`} label="Rating" />
-        <MiniStat value={user?.stats?.totalJobs ?? 0} label="Travay Fini" color="green" />
-        <MiniStat value={`${pct}%`} label="Pwofil" color="blue" />
-      </div>
+    <div className="space-y-4">
+      <HeroCard user={user} />
 
-      {/* Trust bar + availability badge */}
-      <div className="flex gap-3">
-        <div className="flex-1 bg-slate-900/50 rounded-2xl border border-slate-800 p-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-slate-400">🛡️ Konfyans</span>
-            <span className="text-[10px] font-bold text-amber-500">{trustScore}/100</span>
-          </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all"
-              style={{ width: `${trustScore}%` }}
-            />
-          </div>
+      <Section>
+        {/* Quick stats */}
+        <div className="grid grid-cols-3 gap-3 mb-3">
+          <StatCard value={`⭐ ${(user?.stats?.rating ?? 5).toFixed(1)}`} label="Rating" />
+          <StatCard value={user?.stats?.totalJobs ?? 0} label="Travay Fini" color="green" />
+          <StatCard value={`${pct}%`} label="Pwofil" color="blue" />
         </div>
 
-        <div className="bg-slate-900/50 rounded-2xl border border-slate-800 px-3 py-2 flex items-center gap-2 shrink-0">
-          <span className="text-lg">{availMode.emoji}</span>
-          <span className="text-xs font-medium text-slate-200">{availMode.label}</span>
+        {/* Trust bar + availability badge */}
+        <div className="flex gap-3 flex-col sm:flex-row">
+          <div className="flex-1 bg-slate-900/60 rounded-2xl border border-slate-800 p-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold text-slate-400">🛡️ Konfyans</span>
+              <span className="text-[10px] font-bold text-amber-400">{trustScore}/100</span>
+            </div>
+            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-amber-500 via-emerald-400 to-sky-400"
+                style={{ width: `${trustScore}%` }}
+                initial={{ width: 0 }}
+                animate={{ width: `${trustScore}%` }}
+                transition={{ type: 'spring', stiffness: 160, damping: 22 }}
+              />
+            </div>
+          </div>
+
+          <div className="bg-slate-900/60 rounded-2xl border border-slate-800 px-3 py-2 flex items-center gap-2 shrink-0">
+            <span className="text-lg">{availMode.emoji}</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-slate-200">{availMode.label}</span>
+              <span className="text-[10px] text-slate-500">Estati aktyèl ou</span>
+            </div>
+          </div>
         </div>
-      </div>
+      </Section>
     </div>
   );
 });
@@ -212,7 +287,7 @@ function ProfileTab({ user }) {
     try {
       await API.patch('/workers/profile', { userId, profileMetadata: { skills: updatedSkills } });
     } catch {
-      // Keep optimistic for MVP; will sync on next load
+      // MVP: optimistic only, backend sync next load
     } finally {
       setSaving(false);
     }
@@ -238,12 +313,16 @@ function ProfileTab({ user }) {
             <span className="text-xs font-bold text-emerald-400">{pct}%</span>
           </div>
           <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
+            <motion.div
+              className="h-full rounded-full"
               style={{
-                width: `${pct}%`,
-                background: pct >= 80 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444',
+                background:
+                  pct >= 80 ? '#10b981' :
+                  pct >= 50 ? '#f59e0b' :
+                              '#ef4444',
               }}
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
             />
           </div>
         </div>
@@ -278,9 +357,10 @@ function ProfileTab({ user }) {
             <p className="text-xs text-slate-500">Pa gen konpetans ajoute</p>
           )}
           {skills.map(skill => (
-            <span
+            <motion.span
               key={skill}
               className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full"
+              whileHover={{ y: -1 }}
             >
               <span className="text-xs text-amber-300">{skill}</span>
               <button
@@ -289,7 +369,7 @@ function ProfileTab({ user }) {
               >
                 ×
               </button>
-            </span>
+            </motion.span>
           ))}
         </div>
         <div className="flex gap-2">
@@ -409,7 +489,9 @@ function ScheduleTab({ user, jobs }) {
     login({ ...user, availability: newAvail }); // optimistic
     try {
       await API.patch('/workers/availability', { userId, availability: newAvail });
-    } catch { /* keep optimistic for MVP */ } finally {
+    } catch {
+      // MVP: backend sync later
+    } finally {
       setSaving(false);
     }
   }, [currentAvail, user, userId, login]);
@@ -448,14 +530,15 @@ function ScheduleTab({ user, jobs }) {
           {AVAIL_MODES.map(mode => {
             const active = currentAvail === mode.id;
             return (
-              <button
+              <motion.button
                 key={mode.id}
                 onClick={() => handleAvailabilityChange(mode.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition text-left ${
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left ${
                   active
-                    ? 'border-amber-500/70 bg-amber-500/10'
+                    ? 'border-amber-500/70 bg-amber-500/10 shadow-[0_14px_40px_rgba(251,191,36,0.25)]'
                     : 'border-slate-700 hover:border-slate-600'
                 }`}
+                whileTap={{ scale: 0.97 }}
               >
                 <span className="text-xl shrink-0">{mode.emoji}</span>
                 <div className="flex-1 min-w-0">
@@ -463,7 +546,7 @@ function ScheduleTab({ user, jobs }) {
                   <div className="text-[10px] text-slate-400">{mode.desc}</div>
                 </div>
                 {active && <CheckCircle className="w-4 h-4 text-amber-500 shrink-0" />}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -483,14 +566,16 @@ function ScheduleTab({ user, jobs }) {
             <RefreshCcw className="w-3 h-3" />
           </button>
         }
-      >
-        {gpsError  && <p className="text-[10px] text-rose-400    mb-2">{gpsError}</p>}
+      ></Section>
+        {gpsError    && <p className="text-[10px] text-rose-400    mb-2">{gpsError}</p>}
         {locationMsg && <p className="text-[10px] text-emerald-400 mb-2">{locationMsg}</p>}
 
         <dl className="space-y-2.5 mb-4">
           <div className="flex justify-between">
             <dt className="text-xs text-slate-400">Vil aktyèl</dt>
-            <dd className="text-xs font-semibold text-white">{city || '—'}{state ? `, ${state}` : ''}</dd>
+            <dd className="text-xs font-semibold text-white">
+              {city || '—'}{state ? `, ${state}` : ''}
+            </dd>
           </div>
           {lastUpdate && (
             <div className="flex justify-between">
@@ -508,9 +593,11 @@ function ScheduleTab({ user, jobs }) {
             <span className="text-xs text-slate-400">Reyon sèvis</span>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-amber-400">{serviceRadius} km</span>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => API.patch('/workers/radius', { userId, serviceRadius }).catch(() => {})}
-                className="text-[10px] text-emerald-400 font-bold border border-emerald-500/30 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition">
+                className="text-[10px] text-emerald-400 font-bold border border-emerald-500/30 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition"
+              >
                 Sove
               </button>
             </div>
@@ -529,16 +616,17 @@ function ScheduleTab({ user, jobs }) {
         </div>
       </Section>
 
-      {/* Mini job calendar */}
+      {/* Mini job list */}
       <Section icon="📋" title="Travay Disponib">
         {(jobs || []).length === 0 ? (
           <p className="text-xs text-slate-500 text-center py-4">Pa gen travay disponib kounye a</p>
         ) : (
           <div className="space-y-2">
             {(jobs || []).slice(0, 4).map((job, i) => (
-              <div
+              <motion.div
                 key={job.id || job._id || i}
                 className="flex items-center justify-between p-2.5 bg-slate-800/50 rounded-xl"
+                whileHover={{ y: -1 }}
               >
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-white truncate">{job.title || 'Travay'}</p>
@@ -547,7 +635,7 @@ function ScheduleTab({ user, jobs }) {
                 <span className="text-xs font-bold text-amber-500 shrink-0 ml-2">
                   {job.price || '—'}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
@@ -560,16 +648,13 @@ function ScheduleTab({ user, jobs }) {
 // ── INCOME tab ────────────────────────────────────────────────
 
 function IncomeTab({ user, jobs }) {
-  const totalJobs  = user?.stats?.totalJobs ?? 0;
-  const rating     = user?.stats?.rating    ?? 5;
-
-  // Earnings are estimated from totalJobs × default daily rate.
-  // Will be replaced by real payment data in a future phase.
-  const RATE = 50; // USD per job
-  const totalEst   = totalJobs * RATE;
-  const monthEst   = Math.round(totalEst * 0.2);
-  const weekEst    = Math.round(totalEst * 0.05);
-  const successRate = totalJobs > 0 ? Math.round((rating / 5) * 100) : 0;
+  const totalJobs    = user?.stats?.totalJobs ?? 0;
+  const rating       = user?.stats?.rating    ?? 5;
+  const RATE         = 50;                 // USD/job (MVP estimation)
+  const totalEst     = totalJobs * RATE;
+  const monthEst     = Math.round(totalEst * 0.2);
+  const weekEst      = Math.round(totalEst * 0.05);
+  const successRate  = totalJobs > 0 ? Math.round((rating / 5) * 100) : 0;
 
   return (
     <div className="space-y-4">
@@ -580,9 +665,9 @@ function IncomeTab({ user, jobs }) {
           ✱ Estimasyon MVP — yo pral mete ajou ak done reyèl yo.
         </p>
         <div className="grid grid-cols-3 gap-3">
-          <MiniStat value={`$${totalEst}`}  label="Total"   color="amber" />
-          <MiniStat value={`$${monthEst}`}  label="Mwa sa"  color="green" />
-          <MiniStat value={`$${weekEst}`}   label="Semèn"   color="blue"  />
+          <StatCard value={`$${totalEst}`}  label="Total"   color="amber" />
+          <StatCard value={`$${monthEst}`}  label="Mwa sa"  color="green" />
+          <StatCard value={`$${weekEst}`}   label="Semèn"   color="blue"  />
         </div>
       </Section>
 
@@ -610,9 +695,10 @@ function IncomeTab({ user, jobs }) {
         ) : (
           <div className="space-y-2">
             {(jobs || []).slice(0, 5).map((job, i) => (
-              <div
+              <motion.div
                 key={job.id || job._id || i}
                 className="flex items-center justify-between p-2.5 bg-slate-800/50 rounded-xl"
+                whileHover={{ y: -1 }}
               >
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-white truncate">{job.title || 'Travay'}</p>
@@ -621,7 +707,7 @@ function IncomeTab({ user, jobs }) {
                 <span className="text-xs font-bold text-amber-500 shrink-0 ml-2">
                   {job.price || '—'}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
@@ -715,7 +801,7 @@ function TrustTab({ user }) {
           </div>
 
           <h3 className="text-sm font-bold text-white mt-3">🛡️ Nivo Konfyans</h3>
-          <p className="text-[10px] text-slate-400 mt-1">{scoreLabel}</p>
+          <p className="text-[10px] text-slate-400 mt-1 text-center max-w-xs">{scoreLabel}</p>
         </div>
       </Section>
 
@@ -758,13 +844,17 @@ function TrustTab({ user }) {
             { icon: '⭐', msg: 'Pwofil ou parèt nan rechèch yo',        time: '5 min'    },
             { icon: '🔔', msg: 'Konplete pwofil ou pou plis vizibilite', time: '1 hr'    },
           ].map((n, i) => (
-            <div key={i} className="flex items-center gap-3 p-2.5 bg-slate-800/50 rounded-xl">
+            <motion.div
+              key={i}
+              className="flex items-center gap-3 p-2.5 bg-slate-800/50 rounded-xl"
+              whileHover={{ y: -1 }}
+            >
               <span className="text-base shrink-0">{n.icon}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white truncate">{n.msg}</p>
                 <p className="text-[10px] text-slate-400">{n.time}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
 
           <button
@@ -780,7 +870,7 @@ function TrustTab({ user }) {
   );
 }
 
-// ── Tab definition (exported for Dashboard.jsx tab bar) ───────
+// ── Tab meta ──────────────────────────────────────────────────
 
 export const WORKER_TABS = [
   { id: 'overview',  label: 'Akeyi',    icon: '🏠' },
@@ -790,16 +880,25 @@ export const WORKER_TABS = [
   { id: 'trust',     label: 'Konfyans', icon: '🛡️' },
 ];
 
-// ── Default export: tab content router ────────────────────────
-// Dashboard.jsx renders the 'overview' tab itself (backward compat).
-// This component handles all other tabs.
+// ── Main export: tab content router ───────────────────────────
 
 export default function WorkerContent({ tab, user, jobs }) {
-  switch (tab) {
-    case 'profile':  return <ProfileTab  user={user} />;
-    case 'schedule': return <ScheduleTab user={user} jobs={jobs || []} />;
-    case 'income':   return <IncomeTab   user={user} jobs={jobs || []} />;
-    case 'trust':    return <TrustTab    user={user} />;
-    default:         return null;
-  }
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ type: 'spring', stiffness: 170, damping: 22 }}
+        className="space-y-4"
+      >
+        {tab === 'profile'  && <ProfileTab  user={user} />}
+        {tab === 'schedule' && <ScheduleTab user={user} jobs={jobs || []} />}
+        {tab === 'income'   && <IncomeTab   user={user} jobs={jobs || []} />}
+        {tab === 'trust'    && <TrustTab    user={user} />}
+        {/* overview tab rete ranje pa Dashboard.jsx; OverviewSupplement ajoute pi wo a */}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
