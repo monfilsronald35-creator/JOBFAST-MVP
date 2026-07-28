@@ -6,6 +6,8 @@
 import authService from "../services/authService.js";
 import { HTTP_STATUS } from "../config/constants.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { eventBus, Events } from "../core/eventBus.js";
+import { analytics } from "../core/analytics.js";
 
 // ======================================================
 // 🔐 LOGIN
@@ -17,6 +19,13 @@ export const login = asyncHandler(async (req, res) => {
     ipAddress: req.ip,
     userAgent: req.get("user-agent"),
   });
+
+  // Fire login event through Event Bus → notificationEngine, analytics, AI
+  const userId = result?.user?.id || result?.id;
+  if (userId) {
+    eventBus.publish(Events.USER_LOGGED_IN, { userId, role: result?.user?.role, ip: req.ip });
+    analytics.trackLogin(userId, req.body.method || 'email');
+  }
 
   return res.status(HTTP_STATUS.OK).json({
     success: true,
@@ -35,6 +44,20 @@ export const register = asyncHandler(async (req, res) => {
     ipAddress: req.ip,
     userAgent: req.get("user-agent"),
   });
+
+  // Fire registration event through Event Bus → Profile, Notification, Analytics, Dashboard
+  const userId = result?.user?.id || result?.id;
+  if (userId) {
+    const role = result?.user?.role || req.body.role;
+    eventBus.publish(Events.USER_REGISTERED, { userId, role, method: 'email' });
+    analytics.trackSignup(userId, 'email', role);
+    // Welcome notification via NotificationEngine (subscribed to NOTIFY_USER)
+    eventBus.publish(Events.NOTIFY_USER, {
+      userId,
+      type: 'system',
+      data: { title: 'Byenveni nan JOBFAST!', body: 'Kont ou kree avèk siksè. Kòmanse eksplo app lan kounye a.', actionUrl: '/dashboard' },
+    });
+  }
 
   return res.status(HTTP_STATUS.CREATED).json({
     success: true,

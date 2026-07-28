@@ -48,6 +48,8 @@ import insuranceRoutes   from './features/insurance/insurance.routes.js';
 import bankingRoutes     from './features/banking/banking.routes.js';
 import storiesRoutes     from './features/stories/stories.routes.js';
 import aiRoutes          from './features/ai/ai.routes.js';
+import businessRoutes    from './routes/business.routes.js';
+import socialRoutes      from './features/social/social.routes.js';
 
 import { notFoundHandler, errorHandler } from './ErrorHandler.js';
 import userRepo from './repositories/user.repository.js';
@@ -130,6 +132,10 @@ app.use(`${API_PREFIX}/stories`,        storiesRoutes);
 
 // ── AI Layer Routes ────────────────────────────────────────────────────────
 app.use(`${API_PREFIX}/ai`,             aiRoutes);
+
+// ── Business / Company / Social ───────────────────────────────────────────
+app.use(`${API_PREFIX}/business`,       businessRoutes);
+app.use(`${API_PREFIX}/social`,         socialRoutes);
 
 // ── Community Members (public feed) ───────────────────────────────────────
 app.get(`${API_PREFIX}/community/members`, async (req, res) => {

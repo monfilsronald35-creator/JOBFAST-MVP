@@ -1,5 +1,6 @@
-
 import express from "express";
+import { eventBus, Events } from "../core/eventBus.js";
+import { analytics } from "../core/analytics.js";
 
 const router = express.Router();
 
@@ -64,6 +65,11 @@ router.post("/create", (req, res) => {
   };
 
   jobs.push(job);
+
+  // Event Bus → AI Matching, Notification, Analytics, Dashboard
+  eventBus.publish(Events.JOB_CREATED, { jobId: job.id, userId: createdBy, category: job.category, title: job.title });
+  analytics.trackJobPosted(createdBy, job.id, job.category);
+  eventBus.publish(Events.NOTIFY_BROADCAST, { role: 'worker', type: 'system', data: { title: 'Nouvo travay disponib!', body: job.title, actionUrl: `/jobs/${job.id}` } });
 
   return res.status(201).json({
     message: "Job created successfully",

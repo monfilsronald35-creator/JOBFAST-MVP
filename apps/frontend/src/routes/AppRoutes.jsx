@@ -45,16 +45,21 @@ import EnterpriseDashboard      from "@/pages/EnterpriseDashboard/index.jsx";
 import CreatePostScreen         from "@/pages/CreatePost/index.jsx";
 
 // Business Verticals
-import Hotels        from "@/pages/Hotels/index.jsx";
-import Restaurants   from "@/pages/Restaurants/index.jsx";
-import Transport     from "@/pages/Transport/index.jsx";
-import Hospitals     from "@/pages/Hospitals/index.jsx";
-import Tourism       from "@/pages/Tourism/index.jsx";
-import Education     from "@/pages/Education/index.jsx";
-import Events        from "@/pages/Events/index.jsx";
-import Insurance     from "@/pages/Insurance/index.jsx";
-import Banking       from "@/pages/Banking/index.jsx";
-import AIAssistant   from "@/pages/AIAssistant/index.jsx";
+import Hotels          from "@/pages/Hotels/index.jsx";
+import Restaurants     from "@/pages/Restaurants/index.jsx";
+import Transport       from "@/pages/Transport/index.jsx";
+import Hospitals       from "@/pages/Hospitals/index.jsx";
+import Tourism         from "@/pages/Tourism/index.jsx";
+import Education       from "@/pages/Education/index.jsx";
+import Events          from "@/pages/Events/index.jsx";
+import Insurance       from "@/pages/Insurance/index.jsx";
+import Banking         from "@/pages/Banking/index.jsx";
+import AIAssistant     from "@/pages/AIAssistant/index.jsx";
+import Stories         from "@/pages/Stories/index.jsx";
+
+// Role Dashboards
+import WorkerDashboard  from "@/pages/worker/WorkerDashboard.jsx";
+import CompanyDashboard from "@/pages/company/CompanyDashboard.jsx";
 
 // ── Error Boundary ─────────────────────────────────────────────────────────────
 class AppErrorBoundary extends React.Component {
@@ -215,8 +220,11 @@ function AppRoutes() {
             <Route path="/education"       element={<AuthGate><Education   /></AuthGate>} />
             <Route path="/events"          element={<AuthGate><Events      /></AuthGate>} />
             <Route path="/insurance"       element={<AuthGate><Insurance   /></AuthGate>} />
-            <Route path="/banking"         element={<AuthGate><Banking     /></AuthGate>} />
-            <Route path="/ai-assistant"    element={<AuthGate><AIAssistant /></AuthGate>} />
+            <Route path="/banking"           element={<AuthGate><Banking          /></AuthGate>} />
+            <Route path="/ai-assistant"    element={<AuthGate><AIAssistant      /></AuthGate>} />
+            <Route path="/stories"         element={<AuthGate><Stories          /></AuthGate>} />
+            <Route path="/worker-dashboard"  element={<AuthGate><WorkerDashboard  /></AuthGate>} />
+            <Route path="/company-dashboard" element={<AuthGate><CompanyDashboard /></AuthGate>} />
 
             {/* Admin Routes */}
             <Route path="/admin"            element={<AdminGate><AdminDashboard  /></AdminGate>} />

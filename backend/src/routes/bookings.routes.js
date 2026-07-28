@@ -1,4 +1,6 @@
 import express from 'express';
+import { eventBus, Events } from '../core/eventBus.js';
+import { analytics } from '../core/analytics.js';
 
 const router = express.Router();
 
@@ -36,6 +38,11 @@ router.post('/', (req, res) => {
   };
 
   bookings.push(booking);
+
+  // Event Bus → Notification, Analytics, Wallet, Invoice
+  eventBus.publish(Events.BOOKING_CREATED, { bookingId: booking.id, clientId, providerId, serviceType, date });
+  analytics.trackBooking(clientId, booking.id, price || 0);
+  eventBus.publish(Events.NOTIFY_USER, { userId: providerId, type: 'booking_new', data: { title: 'Nouvo rezèvasyon!', body: `${title || 'Rezervasyon'} — ${date}`, actionUrl: `/booking/${booking.id}` } });
 
   return res.status(201).json({ success: true, data: booking });
 });

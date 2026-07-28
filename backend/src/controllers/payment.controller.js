@@ -2,6 +2,8 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import * as paymentService from '../services/payment.service.js';
 import { HTTP_STATUS } from '../config/constants.js';
 import { FinancialError } from '../utils/money.js';
+import { eventBus, Events } from '../core/eventBus.js';
+import { analytics } from '../core/analytics.js';
 
 // POST /api/v1/payments
 export const initiatePayment = asyncHandler(async (req, res) => {
@@ -20,6 +22,12 @@ export const initiatePayment = asyncHandler(async (req, res) => {
 
   const responseData = { payment };
   if (stripeClientSecret) responseData.stripeClientSecret = stripeClientSecret;
+
+  const payerId = req.user.id;
+  // Event Bus → Wallet, Notification, Analytics, Fraud Detection
+  eventBus.publish(Events.PAYMENT_INITIATED, { payerId, payeeId, amount: Number(amount), currency: currency ?? 'HTG', jobId });
+  analytics.trackPayment(payerId, Number(amount), 'initiated');
+  eventBus.publish(Events.NOTIFY_USER, { userId: payeeId, type: 'payment_received', data: { title: 'Peman resevwa!', body: `${amount} ${currency ?? 'HTG'} voye ba ou`, actionUrl: '/wallet' } });
 
   return res.status(HTTP_STATUS.CREATED).json({
     success: true,
