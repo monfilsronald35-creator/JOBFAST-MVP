@@ -566,7 +566,7 @@ function ScheduleTab({ user, jobs }) {
             <RefreshCcw className="w-3 h-3" />
           </button>
         }
-      ></Section>
+      >
         {gpsError    && <p className="text-[10px] text-rose-400    mb-2">{gpsError}</p>}
         {locationMsg && <p className="text-[10px] text-emerald-400 mb-2">{locationMsg}</p>}
 
