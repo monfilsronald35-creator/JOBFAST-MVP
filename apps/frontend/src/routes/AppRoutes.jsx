@@ -10,10 +10,13 @@ import PublicLayout from "@/components/PublicLayout.jsx";
 import Loader from "@/components/Loader.jsx";
 
 // Auth & Public Pages
-import SplashScreen from "@/pages/SplashScreen.jsx";
-import Onboarding from "@/pages/Onboarding.jsx";
-import RegisterScreen from "@/pages/Register/index.jsx";
-import LoginScreen from "@/pages/Login.jsx";
+import SplashScreen    from "@/pages/SplashScreen.jsx";
+import Onboarding      from "@/pages/Onboarding.jsx";
+import RegisterScreen  from "@/pages/Register/index.jsx";
+import LoginScreen     from "@/pages/Login.jsx";
+import ForgotPassword  from "@/pages/ForgotPassword/index.jsx";
+import VerifyLogin     from "@/pages/VerifyLogin/index.jsx";
+import TwoFA           from "@/pages/TwoFA/index.jsx";
 
 // Protected Pages
 import Dashboard from "@/pages/Dashboard.jsx";
@@ -155,7 +158,9 @@ function AppRoutes() {
             {/* Auth Routes */}
             <Route path="/register" element={<GuestGate><RegisterScreen /></GuestGate>} />
             <Route path="/login" element={<GuestGate><LoginScreen /></GuestGate>} />
-            <Route path="/forgot-password" element={<GuestGate><div className="p-8 text-center"><h2 className="text-2xl font-bold mb-4">Forgot Password</h2><p className="text-slate-400">Feature coming soon</p></div></GuestGate>} />
+            <Route path="/forgot-password" element={<GuestGate><ForgotPassword /></GuestGate>} />
+            <Route path="/verify-login"   element={<VerifyLogin />} />
+            <Route path="/2fa"            element={<TwoFA />} />
 
             {/* Protected User Routes */}
             <Route path="/dashboard" element={<AuthGate><Dashboard /></AuthGate>} />
@@ -171,7 +176,8 @@ function AppRoutes() {
             <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
             <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
             <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
-            <Route path="/notifications" element={<AuthGate><NotificationsCenter /></AuthGate>} />
+            <Route path="/notifications"       element={<AuthGate><SmartNotifications  /></AuthGate>} />
+            <Route path="/smart-notifications" element={<AuthGate><SmartNotifications  /></AuthGate>} />
             <Route path="/chat" element={<AuthGate><ChatScreen /></AuthGate>} />
             <Route path="/chat/:id" element={<AuthGate><ChatScreen /></AuthGate>} />
             <Route path="/u/:userId" element={<AuthGate><PublicProfileScreen /></AuthGate>} />
