@@ -57,8 +57,8 @@ import Banking         from "@/pages/Banking/index.jsx";
 import AIAssistant     from "@/pages/AIAssistant/index.jsx";
 import Stories         from "@/pages/Stories/index.jsx";
 
-// Role Dashboards
-import WorkerDashboard  from "@/pages/worker/WorkerDashboard.jsx";
+// Role Dashboards (sub-components — need user/tab from context)
+import WorkerContent    from "@/pages/worker/WorkerDashboard.jsx";
 import CompanyDashboard from "@/pages/company/CompanyDashboard.jsx";
 
 // ── Error Boundary ─────────────────────────────────────────────────────────────
@@ -161,6 +161,18 @@ const SmartRoot = () => {
   return <SplashScreen />;
 };
 
+// Standalone wrappers for role-specific dashboard components that expect props
+const WorkerDashboardPage = () => {
+  const { user } = useAuth();
+  const [tab, setTab] = React.useState('profile');
+  return <WorkerContent tab={tab} user={user} jobs={[]} />;
+};
+
+const CompanyDashboardPage = () => {
+  const { user } = useAuth();
+  return <CompanyDashboard user={user} />;
+};
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -223,8 +235,8 @@ function AppRoutes() {
             <Route path="/banking"           element={<AuthGate><Banking          /></AuthGate>} />
             <Route path="/ai-assistant"    element={<AuthGate><AIAssistant      /></AuthGate>} />
             <Route path="/stories"         element={<AuthGate><Stories          /></AuthGate>} />
-            <Route path="/worker-dashboard"  element={<AuthGate><WorkerDashboard  /></AuthGate>} />
-            <Route path="/company-dashboard" element={<AuthGate><CompanyDashboard /></AuthGate>} />
+            <Route path="/worker-dashboard"  element={<AuthGate><WorkerDashboardPage  /></AuthGate>} />
+            <Route path="/company-dashboard" element={<AuthGate><CompanyDashboardPage /></AuthGate>} />
 
             {/* Admin Routes */}
             <Route path="/admin"            element={<AdminGate><AdminDashboard  /></AdminGate>} />
