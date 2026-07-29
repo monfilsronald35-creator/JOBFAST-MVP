@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send, Loader2, Bot, Sparkles, RefreshCw } from "lucide-react";
-import { api } from "../../core/api/client.js";
+import { api } from "../../core/api/client";
 
 const BG = "#050B18"; const GOLD = "#FACC15";
 
