@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+﻿import React, { useState, useCallback, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Search, Bell, User, Menu, X, Settings, LogOut,
@@ -6,7 +6,7 @@ import {
   Briefcase, Wrench, Building2, WifiOff, Mic, QrCode, Sparkles,
   ShieldAlert, Plus, RefreshCw,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext.jsx";
+import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "../i18n";
 import { sounds } from "../utils/sounds";

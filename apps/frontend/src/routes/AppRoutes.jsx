@@ -1,6 +1,6 @@
-import React, { Suspense, lazy } from "react";
+﻿import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext.jsx";
+import { useAuth } from "@/context/AuthContext";
 import { getRoleDefaultPath } from "@/config/roleConfig";
 
 // Layouts & UI Components
