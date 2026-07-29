@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
 export function useOfflineStatus() {
-  const [isOffline, setIsOffline] = useState(
+  const [isOffline,  setIsOffline]  = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false
   );
-  const [lastSyncAt, setLastSyncAt] = useState(null);
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
 
   useEffect(() => {
     const goOnline  = () => { setIsOffline(false); setLastSyncAt(new Date()); };
