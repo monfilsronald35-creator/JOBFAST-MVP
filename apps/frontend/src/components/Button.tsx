@@ -18,60 +18,36 @@ import React, { useState, useRef, useEffect, memo, forwardRef } from 'react';
 const VARIANT_CLASSES = {
   primary:
     'bg-amber-500 text-slate-950 shadow-[0_4px_16px_rgba(245,158,11,0.35)] ' +
-    'hover:bg-amber-400 active:bg-amber-600 ' +
-    'focus-visible:ring-amber-400/50',
-
+    'hover:bg-amber-400 active:bg-amber-600 focus-visible:ring-amber-400/50',
   secondary:
     'bg-slate-700 text-slate-100 shadow-sm ' +
-    'hover:bg-slate-600 active:bg-slate-800 ' +
-    'focus-visible:ring-slate-500/50',
-
+    'hover:bg-slate-600 active:bg-slate-800 focus-visible:ring-slate-500/50',
   success:
     'bg-emerald-500 text-white shadow-[0_4px_16px_rgba(16,185,129,0.30)] ' +
-    'hover:bg-emerald-400 active:bg-emerald-600 ' +
-    'focus-visible:ring-emerald-400/50',
-
+    'hover:bg-emerald-400 active:bg-emerald-600 focus-visible:ring-emerald-400/50',
   danger:
     'bg-red-500 text-white shadow-[0_4px_16px_rgba(239,68,68,0.30)] ' +
-    'hover:bg-red-400 active:bg-red-600 ' +
-    'focus-visible:ring-red-400/50',
-
+    'hover:bg-red-400 active:bg-red-600 focus-visible:ring-red-400/50',
   warning:
     'bg-orange-500 text-white shadow-[0_4px_16px_rgba(249,115,22,0.30)] ' +
-    'hover:bg-orange-400 active:bg-orange-600 ' +
-    'focus-visible:ring-orange-400/50',
-
+    'hover:bg-orange-400 active:bg-orange-600 focus-visible:ring-orange-400/50',
   outline:
     'bg-transparent border border-slate-600 text-slate-200 ' +
     'hover:border-amber-500/60 hover:text-amber-400 hover:bg-amber-500/5 ' +
-    'active:bg-amber-500/10 ' +
-    'focus-visible:ring-amber-400/40',
-
+    'active:bg-amber-500/10 focus-visible:ring-amber-400/40',
   ghost:
     'bg-transparent text-slate-400 ' +
-    'hover:text-slate-100 hover:bg-slate-800/70 ' +
-    'active:bg-slate-800 ' +
-    'focus-visible:ring-slate-500/40',
-
+    'hover:text-slate-100 hover:bg-slate-800/70 active:bg-slate-800 focus-visible:ring-slate-500/40',
   link:
     'bg-transparent text-amber-400 underline-offset-4 shadow-none ' +
-    'hover:underline hover:text-amber-300 ' +
-    'active:text-amber-500 ' +
-    'focus-visible:ring-amber-400/40',
-
-  // fab & icon handled by dedicated components
+    'hover:underline hover:text-amber-300 active:text-amber-500 focus-visible:ring-amber-400/40',
   fab:
     'bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 ' +
     'shadow-[0_8px_24px_rgba(245,158,11,0.50)] ' +
-    'hover:shadow-[0_12px_32px_rgba(245,158,11,0.60)] ' +
-    'active:scale-95 ' +
-    'focus-visible:ring-amber-400/60',
-
+    'hover:shadow-[0_12px_32px_rgba(245,158,11,0.60)] active:scale-95 focus-visible:ring-amber-400/60',
   icon:
-    'bg-transparent text-slate-400 ' +
-    'hover:text-slate-100 hover:bg-slate-800/70 ' +
-    'focus-visible:ring-slate-500/40',
-};
+    'bg-transparent text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 focus-visible:ring-slate-500/40',
+} as const;
 
 const SIZE_CLASSES = {
   xs:  'h-7  px-2.5 text-[11px] gap-1   rounded-lg',
@@ -79,7 +55,7 @@ const SIZE_CLASSES = {
   md:  'h-11 px-4   text-sm    gap-2    rounded-xl',
   lg:  'h-12 px-5   text-[15px] gap-2   rounded-2xl',
   xl:  'h-14 px-6   text-base  gap-2.5  rounded-2xl',
-};
+} as const;
 
 const ICON_SIZE_CLASSES = {
   xs: 'w-7  h-7  rounded-lg',
@@ -87,15 +63,22 @@ const ICON_SIZE_CLASSES = {
   md: 'w-11 h-11 rounded-xl',
   lg: 'w-12 h-12 rounded-2xl',
   xl: 'w-14 h-14 rounded-2xl',
-};
+} as const;
 
-const SPINNER_SIZES = { xs:'w-3 h-3', sm:'w-3.5 h-3.5', md:'w-4 h-4', lg:'w-4 h-4', xl:'w-5 h-5' };
+const SPINNER_SIZES = {
+  xs: 'w-3 h-3', sm: 'w-3.5 h-3.5', md: 'w-4 h-4', lg: 'w-4 h-4', xl: 'w-5 h-5',
+} as const;
+
+type ButtonVariant  = keyof typeof VARIANT_CLASSES;
+type ButtonSize     = keyof typeof SIZE_CLASSES;
 
 // ─────────────────────────────────────────────────────────────
 // TOOLTIP WRAPPER
 // ─────────────────────────────────────────────────────────────
 
-function TooltipWrap({ tooltip, children }) {
+interface TooltipWrapProps { tooltip?: string; children: React.ReactElement; }
+
+function TooltipWrap({ tooltip, children }: TooltipWrapProps) {
   if (!tooltip) return children;
   return (
     <span className="relative group/tip inline-flex">
@@ -105,8 +88,7 @@ function TooltipWrap({ tooltip, children }) {
         className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2
           whitespace-nowrap rounded-lg bg-slate-950 border border-slate-700/60
           px-2.5 py-1 text-[11px] font-semibold text-slate-200 shadow-xl
-          opacity-0 group-hover/tip:opacity-100
-          scale-95 group-hover/tip:scale-100
+          opacity-0 group-hover/tip:opacity-100 scale-95 group-hover/tip:scale-100
           transition-all duration-150 z-[300]">
         {tooltip}
         <span className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0
@@ -121,41 +103,57 @@ function TooltipWrap({ tooltip, children }) {
 // MAIN BUTTON COMPONENT
 // ─────────────────────────────────────────────────────────────
 
-const Button = forwardRef(function Button(
+interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
+  variant?:          ButtonVariant;
+  size?:             ButtonSize;
+  leftIcon?:         React.ReactNode;
+  rightIcon?:        React.ReactNode;
+  loading?:          boolean;
+  loadingText?:      string;
+  fullWidth?:        boolean;
+  rounded?:          boolean;
+  tooltip?:          string;
+  badge?:            React.ReactNode;
+  notificationCount?: number | null;
+  href?:             string | null;
+  type?:             'button' | 'submit' | 'reset';
+}
+
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     children,
-    variant      = 'primary',
-    size         = 'md',
-    leftIcon     = null,
-    rightIcon    = null,
-    loading      = false,
-    loadingText  = 'Ap trete…',
-    disabled     = false,
-    fullWidth    = false,
-    rounded      = false,
-    tooltip      = '',
-    badge        = null,
+    variant           = 'primary',
+    size              = 'md',
+    leftIcon          = null,
+    rightIcon         = null,
+    loading           = false,
+    loadingText       = 'Ap trete…',
+    disabled          = false,
+    fullWidth         = false,
+    rounded           = false,
+    tooltip           = '',
+    badge             = null,
     notificationCount = null,
-    href         = null,
-    type         = 'button',
-    className    = '',
+    href              = null,
+    type              = 'button',
+    className         = '',
     onClick,
     ...rest
   },
   ref
 ) {
-  const isDisabled = loading || disabled;
-  const spinnerClass = SPINNER_SIZES[size] || SPINNER_SIZES.md;
+  const isDisabled  = loading || disabled;
+  const spinnerClass = SPINNER_SIZES[size] ?? SPINNER_SIZES.md;
 
   const base = [
     'relative inline-flex items-center justify-center font-bold select-none transition-all duration-150',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]',
     'active:scale-[0.97]',
     'disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none',
-    SIZE_CLASSES[size]     || SIZE_CLASSES.md,
-    VARIANT_CLASSES[variant] || VARIANT_CLASSES.primary,
-    fullWidth  ? 'w-full' : '',
-    rounded    ? '!rounded-full' : '',
+    SIZE_CLASSES[size]      ?? SIZE_CLASSES.md,
+    VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.primary,
+    fullWidth ? 'w-full' : '',
+    rounded   ? '!rounded-full' : '',
     className,
   ].filter(Boolean).join(' ');
 
@@ -166,10 +164,9 @@ const Button = forwardRef(function Button(
     </>
   ) : (
     <>
-      {leftIcon  && <span className="shrink-0 leading-none"  aria-hidden="true">{leftIcon}</span>}
+      {leftIcon  && <span className="shrink-0 leading-none" aria-hidden="true">{leftIcon}</span>}
       {children}
-      {rightIcon && <span className="shrink-0 leading-none"  aria-hidden="true">{rightIcon}</span>}
-      {/* Badge (text/number) */}
+      {rightIcon && <span className="shrink-0 leading-none" aria-hidden="true">{rightIcon}</span>}
       {badge != null && (
         <span className="ml-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-white/20 px-1 text-[9px] font-black">
           {badge}
@@ -178,32 +175,19 @@ const Button = forwardRef(function Button(
     </>
   );
 
-  const el = href ? (
-    <a href={href} ref={ref} className={base} aria-disabled={isDisabled} {...rest}>
-      {inner}
-      {notificationCount != null && notificationCount > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 border-2 border-[#020617] text-[9px] font-black text-white px-0.5 shadow-lg">
-          {notificationCount > 99 ? '99+' : notificationCount}
-        </span>
-      )}
+  const notifBadge = notificationCount != null && notificationCount > 0 ? (
+    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 border-2 border-[#020617] text-[9px] font-black text-white px-0.5 shadow-lg">
+      {notificationCount > 99 ? '99+' : notificationCount}
+    </span>
+  ) : null;
+
+  const el: React.ReactElement = href ? (
+    <a href={href} ref={ref as React.Ref<HTMLAnchorElement>} className={base} aria-disabled={isDisabled} {...(rest as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
+      {inner}{notifBadge}
     </a>
   ) : (
-    <button
-      ref={ref}
-      type={type}
-      disabled={isDisabled}
-      aria-busy={loading || undefined}
-      aria-disabled={isDisabled}
-      onClick={onClick}
-      className={base}
-      {...rest}
-    >
-      {inner}
-      {notificationCount != null && notificationCount > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 border-2 border-[#020617] text-[9px] font-black text-white px-0.5 shadow-lg">
-          {notificationCount > 99 ? '99+' : notificationCount}
-        </span>
-      )}
+    <button ref={ref} type={type} disabled={isDisabled} aria-busy={loading || undefined} aria-disabled={isDisabled} onClick={onClick} className={base} {...rest}>
+      {inner}{notifBadge}
     </button>
   );
 
@@ -211,54 +195,56 @@ const Button = forwardRef(function Button(
 });
 
 Button.displayName = 'Button';
-
 export default Button;
 
 // ─────────────────────────────────────────────────────────────
 // ICON BUTTON
-// Compact, square — icon only. Pass `label` for screen reader.
 // ─────────────────────────────────────────────────────────────
 
-export const IconButton = forwardRef(function IconButton(
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  icon:              React.ReactNode;
+  label:             string;
+  size?:             ButtonSize;
+  variant?:          ButtonVariant;
+  tooltip?:          string;
+  notificationCount?: number | null;
+  loading?:          boolean;
+  rounded?:          boolean;
+  className?:        string;
+}
+
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   {
     icon,
     label,
-    size         = 'md',
-    variant      = 'icon',
-    tooltip      = '',
+    size              = 'md',
+    variant           = 'icon',
+    tooltip           = '',
     notificationCount = null,
-    loading      = false,
-    disabled     = false,
-    rounded      = false,
-    className    = '',
+    loading           = false,
+    disabled          = false,
+    rounded           = false,
+    className         = '',
     ...rest
   },
   ref
 ) {
-  const isDisabled = loading || disabled;
-  const spinnerClass = SPINNER_SIZES[size] || SPINNER_SIZES.md;
+  const isDisabled  = loading || disabled;
+  const spinnerClass = SPINNER_SIZES[size] ?? SPINNER_SIZES.md;
 
   const base = [
     'relative inline-flex items-center justify-center font-bold select-none transition-all duration-150',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]',
     'active:scale-[0.95]',
     'disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none',
-    ICON_SIZE_CLASSES[size]  || ICON_SIZE_CLASSES.md,
-    VARIANT_CLASSES[variant] || VARIANT_CLASSES.icon,
+    ICON_SIZE_CLASSES[size]  ?? ICON_SIZE_CLASSES.md,
+    VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.icon,
     rounded ? '!rounded-full' : '',
     className,
   ].filter(Boolean).join(' ');
 
-  const el = (
-    <button
-      ref={ref}
-      type="button"
-      disabled={isDisabled}
-      aria-label={label}
-      aria-busy={loading || undefined}
-      className={base}
-      {...rest}
-    >
+  const el: React.ReactElement = (
+    <button ref={ref} type="button" disabled={isDisabled} aria-label={label} aria-busy={loading || undefined} className={base} {...rest}>
       {loading
         ? <span className={`${spinnerClass} animate-spin rounded-full border-2 border-current border-r-transparent`} aria-hidden="true" />
         : <span aria-hidden="true">{icon}</span>
@@ -278,10 +264,11 @@ IconButton.displayName = 'IconButton';
 
 // ─────────────────────────────────────────────────────────────
 // BUTTON GROUP
-// Wraps children into a seamless horizontal cluster.
 // ─────────────────────────────────────────────────────────────
 
-export const ButtonGroup = memo(function ButtonGroup({ children, className = '', fullWidth = false }) {
+interface ButtonGroupProps { children: React.ReactNode; className?: string; fullWidth?: boolean; }
+
+export const ButtonGroup = memo(function ButtonGroup({ children, className = '', fullWidth = false }: ButtonGroupProps) {
   return (
     <div
       role="group"
@@ -304,31 +291,33 @@ ButtonGroup.displayName = 'ButtonGroup';
 
 // ─────────────────────────────────────────────────────────────
 // FAB — Floating Action Button with Speed Dial
-//
-// Usage:
-//   <FAB actions={[
-//     { icon: '💼', label: 'Kreye Djòb',      onClick: () => navigate('/post-job')          },
-//     { icon: '📖', label: 'Kreye Istwa',     onClick: () => navigate('/stories/create')    },
-//     { icon: '🛠',  label: 'Kreye Sèvis',     onClick: () => navigate('/provider-dashboard')},
-//     { icon: '📅', label: 'Kreye Rezèvasyon',onClick: () => navigate('/booking')            },
-//   ]} />
 // ─────────────────────────────────────────────────────────────
 
+interface FABActionItem { icon: string; label: string; onClick?: () => void; }
+
+interface FABProps {
+  actions?:   FABActionItem[];
+  mainIcon?:  string;
+  mainLabel?: string;
+  position?:  'bottom-right' | 'bottom-center' | 'bottom-left';
+  className?: string;
+}
+
 export const FAB = memo(function FAB({
-  actions       = [],
-  mainIcon      = '+',
-  mainLabel     = 'Kreye',
-  position      = 'bottom-right',      // 'bottom-right' | 'bottom-center' | 'bottom-left'
-  className     = '',
-}) {
+  actions   = [],
+  mainIcon  = '+',
+  mainLabel = 'Kreye',
+  position  = 'bottom-right',
+  className = '',
+}: FABProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    const handler = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
@@ -337,7 +326,7 @@ export const FAB = memo(function FAB({
   // Close on Escape
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
@@ -346,7 +335,7 @@ export const FAB = memo(function FAB({
     'bottom-right':  'fixed bottom-20 right-4 z-[60]',
     'bottom-center': 'fixed bottom-20 left-1/2 -translate-x-1/2 z-[60]',
     'bottom-left':   'fixed bottom-20 left-4 z-[60]',
-  }[position] || 'fixed bottom-20 right-4 z-[60]';
+  }[position] ?? 'fixed bottom-20 right-4 z-[60]';
 
   return (
     <div ref={ref} className={`${posClass} flex flex-col-reverse items-end gap-2 ${className}`}>
@@ -356,17 +345,15 @@ export const FAB = memo(function FAB({
           key={action.label}
           className="flex items-center gap-2"
           style={{
-            transform:   open ? 'translateY(0) scale(1)' : `translateY(${(actions.length - i) * 16}px) scale(0.85)`,
-            opacity:     open ? 1 : 0,
+            transform:     open ? 'translateY(0) scale(1)' : `translateY(${(actions.length - i) * 16}px) scale(0.85)`,
+            opacity:       open ? 1 : 0,
             pointerEvents: open ? 'auto' : 'none',
-            transition:  `transform 200ms cubic-bezier(0.34,1.56,0.64,1) ${i * 40}ms, opacity 160ms ease ${i * 30}ms`,
+            transition:    `transform 200ms cubic-bezier(0.34,1.56,0.64,1) ${i * 40}ms, opacity 160ms ease ${i * 30}ms`,
           }}
         >
-          {/* Label chip */}
           <span className="bg-[#0d1526] border border-slate-700/70 text-slate-100 text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg whitespace-nowrap">
             {action.label}
           </span>
-          {/* Action icon button */}
           <button
             type="button"
             onClick={() => { action.onClick?.(); setOpen(false); }}
@@ -395,7 +382,6 @@ export const FAB = memo(function FAB({
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]',
         ].join(' ')}
       >
-        {/* Pulse ring */}
         {!open && (
           <span className="absolute inset-[-4px] rounded-[20px] border-2 border-amber-400/30 animate-ping"
             style={{ animationDuration:'2s' }} aria-hidden="true" />

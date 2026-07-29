@@ -1,15 +1,24 @@
 import React from "react";
 import { FolderOpen } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+interface EmptyStateProps {
+  title?:       string;
+  message?:     string;
+  actionLabel?: string;
+  onAction?:    () => void;
+  icon?:        LucideIcon;
+}
 
 export default function EmptyState({
-  title = "Pa gen done yo jwenn",
-  message = "Pa gen anyen ki disponib pou moman sa a.",
+  title       = "Pa gen done yo jwenn",
+  message     = "Pa gen anyen ki disponib pou moman sa a.",
   actionLabel,
   onAction,
   icon: IconComponent,
-}) {
+}: EmptyStateProps) {
   const hasAction = typeof onAction === "function" && Boolean(actionLabel);
-  const Icon = typeof IconComponent === "function" ? IconComponent : FolderOpen;
+  const Icon = IconComponent ?? FolderOpen;
 
   return (
     <section
@@ -34,7 +43,6 @@ export default function EmptyState({
         <button
           type="button"
           onClick={onAction}
-          disabled={!hasAction}
           className="mt-5 rounded-xl bg-gold-400 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-navy-950 shadow-md shadow-gold-400/5 transition-all hover:bg-gold-500 hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/20"
         >
           {actionLabel}

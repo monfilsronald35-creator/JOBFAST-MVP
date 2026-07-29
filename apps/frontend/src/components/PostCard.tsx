@@ -1,50 +1,53 @@
 import React from "react";
 import {
-  Briefcase,
-  Building2,
-  Zap,
-  Folder,
-  MapPin,
-  User,
-  CheckCircle2,
-  XCircle,
+  Briefcase, Building2, Zap, Folder,
+  MapPin, User, CheckCircle2, XCircle,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const STATUS_CONFIG = {
-  OPEN: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
-  BUSY: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+const STATUS_CONFIG: Record<string, string> = {
+  OPEN:    "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+  BUSY:    "bg-amber-500/10 border-amber-500/30 text-amber-400",
   DEFAULT: "bg-rose-500/10 border-rose-500/30 text-rose-400",
 };
 
-const TYPE_CONFIG = {
+interface TypeEntry { label: string; icon: LucideIcon; }
+const TYPE_CONFIG: Record<string, TypeEntry> = {
   construction: { label: "Construction", icon: Briefcase },
-  business: { label: "Business", icon: Building2 },
-  service: { label: "Service", icon: Zap },
-  default: { label: "General", icon: Folder },
+  business:     { label: "Business",     icon: Building2 },
+  service:      { label: "Service",      icon: Zap       },
+  default:      { label: "General",      icon: Folder    },
 };
 
-function PostCard({ post, onClick }) {
+interface PostData {
+  id:        string | number;
+  title:     string;
+  role?:     string;
+  type?:     string;
+  status?:   string;
+  location?: string;
+  distance?: string | number;
+  name?:     string;
+  bio?:      string;
+  available?: boolean;
+}
+
+interface PostCardProps {
+  post:     PostData;
+  onClick?: (id: string | number) => void;
+}
+
+function PostCard({ post, onClick }: PostCardProps) {
   if (!post?.id || !post?.title) return null;
 
-  const {
-    id,
-    title,
-    role,
-    type,
-    status,
-    location,
-    distance,
-    name,
-    bio,
-    available,
-  } = post;
+  const { id, title, role, type, status, location, distance, name, bio, available } = post;
 
-  const normalizedType = (type || "default").toLowerCase();
+  const normalizedType   = (type   || "default").toLowerCase();
   const normalizedStatus = (status || "default").toUpperCase();
 
-  const statusClass = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.DEFAULT;
-  const typeInfo = TYPE_CONFIG[normalizedType] || TYPE_CONFIG.default;
-  const TypeIcon = typeInfo.icon;
+  const statusClass  = STATUS_CONFIG[normalizedStatus]  ?? STATUS_CONFIG['DEFAULT']!;
+  const typeInfo     = TYPE_CONFIG[normalizedType]       ?? TYPE_CONFIG['default']!;
+  const TypeIcon     = typeInfo.icon;
 
   return (
     <button
@@ -58,19 +61,13 @@ function PostCard({ post, onClick }) {
           <TypeIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden="true" />
           <span>{typeInfo.label}</span>
         </div>
-
         <span className={`rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${statusClass}`}>
           {status || "UNKNOWN"}
         </span>
       </div>
 
-      <h3 className="text-sm font-black tracking-wide text-white group-hover:text-gold-400 transition-colors">
-        {title}
-      </h3>
-
-      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">
-        {role || "General"}
-      </p>
+      <h3 className="text-sm font-black tracking-wide text-white group-hover:text-gold-400 transition-colors">{title}</h3>
+      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">{role || "General"}</p>
 
       <div className="mt-4 flex items-center gap-1 text-[11px] font-bold text-slate-400">
         <MapPin className="h-3.5 w-3.5 shrink-0 text-gold-400/80" strokeWidth={2.5} aria-hidden="true" />
@@ -87,12 +84,7 @@ function PostCard({ post, onClick }) {
             </div>
             <span className="text-xs font-bold text-slate-300">{name}</span>
           </div>
-
-          {bio && (
-            <p className="mt-1.5 pl-8 text-xs font-medium italic text-slate-500">
-              {bio}
-            </p>
-          )}
+          {bio && <p className="mt-1.5 pl-8 text-xs font-medium italic text-slate-500">{bio}</p>}
         </div>
       )}
 

@@ -1,53 +1,66 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-const TIERS = [
+interface TierEntry {
+  id:       string;
+  icon:     string;
+  color:    string;
+  bg:       string;
+  minJobs:  number;
+  maxJobs:  number;
+  minRating:number;
+  showStars:boolean;
+}
+
+const TIERS: TierEntry[] = [
   {
     id: 'new_member',
     icon: '🌱',
     color: 'text-slate-400',
     bg: 'bg-slate-700/60 border-slate-600',
-    minJobs: 0,
-    maxJobs: 0,
-    minRating: 0,
-    showStars: false,
+    minJobs: 0, maxJobs: 0, minRating: 0, showStars: false,
   },
   {
     id: 'verified_worker',
     icon: '✅',
     color: 'text-blue-400',
     bg: 'bg-blue-500/10 border-blue-500/40',
-    minJobs: 1,
-    maxJobs: 9,
-    minRating: 0,
-    showStars: true,
+    minJobs: 1, maxJobs: 9, minRating: 0, showStars: true,
   },
   {
     id: 'trusted_professional',
     icon: '⭐',
     color: 'text-amber-400',
     bg: 'bg-amber-500/10 border-amber-500/40',
-    minJobs: 10,
-    maxJobs: Infinity,
-    minRating: 4.5,
-    showStars: true,
+    minJobs: 10, maxJobs: Infinity, minRating: 4.5, showStars: true,
   },
 ];
 
-function resolveTier(completedJobs = 0, rating = 0) {
-  if (completedJobs >= 10 && rating >= 4.5) return TIERS[2];
-  if (completedJobs >= 1) return TIERS[1];
-  return TIERS[0];
+function resolveTier(completedJobs = 0, rating = 0): TierEntry {
+  if (completedJobs >= 10 && rating >= 4.5) return TIERS[2]!;
+  if (completedJobs >= 1) return TIERS[1]!;
+  return TIERS[0]!;
+}
+
+type BadgeSize = 'xs' | 'sm' | 'md' | 'card';
+
+interface ReputationBadgeProps {
+  completedJobs?:   number;
+  rating?:          number;
+  reviewCount?:     number;
+  satisfactionPct?: number;
+  size?:            BadgeSize;
+  showStats?:       boolean;
 }
 
 export default function ReputationBadge({
-  completedJobs = 0,
-  rating = 0,
-  reviewCount = 0,
+  completedJobs   = 0,
+  rating          = 0,
+  reviewCount     = 0,
   satisfactionPct = 0,
-  size = 'sm',       // 'xs' | 'sm' | 'md' | 'card'
-  showStats = false,
-}) {
+  size            = 'sm',
+  showStats       = false,
+}: ReputationBadgeProps) {
   const { t } = useTranslation();
   const tier = resolveTier(completedJobs, rating);
 

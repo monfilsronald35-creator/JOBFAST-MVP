@@ -1,6 +1,15 @@
 import React from "react";
+import type { LucideIcon } from "lucide-react";
 
-const RoleCard = ({ title, icon: Icon, selected = false, disabled = false, onClick }) => {
+interface RoleCardProps {
+  title:     string;
+  icon?:     LucideIcon;
+  selected?: boolean;
+  disabled?: boolean;
+  onClick?:  () => void;
+}
+
+const RoleCard = ({ title, icon: Icon, selected = false, disabled = false, onClick }: RoleCardProps) => {
   return (
     <button
       type="button"

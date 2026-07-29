@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt:     () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+type ExtendedNavigator = Navigator & { standalone?: boolean };
+
 // Captures the browser's beforeinstallprompt event so we can trigger it ourselves
-let deferredPrompt = null;
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
 export default function InstallPrompt() {
-  const [show, setShow] = useState(false);
+  const [show,      setShow]      = useState(false);
   const [installed, setInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [isIOS,     setIsIOS]     = useState(false);
 
   useEffect(() => {
     // Already installed as standalone?
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
+    if (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as ExtendedNavigator).standalone === true
+    ) return;
 
     // Dismissed before?
     try { if (localStorage.getItem('jf_pwa_dismissed')) return; } catch {}
@@ -24,9 +34,9 @@ export default function InstallPrompt() {
       return () => clearTimeout(t);
     }
 
-    const onPrompt = (e) => {
+    const onPrompt = (e: Event) => {
       e.preventDefault();
-      deferredPrompt = e;
+      deferredPrompt = e as BeforeInstallPromptEvent;
       setShow(true);
     };
 
@@ -43,7 +53,7 @@ export default function InstallPrompt() {
 
   const install = async () => {
     if (!deferredPrompt) return;
-    deferredPrompt.prompt();
+    await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
     if (outcome === 'accepted') { setInstalled(true); setShow(false); }

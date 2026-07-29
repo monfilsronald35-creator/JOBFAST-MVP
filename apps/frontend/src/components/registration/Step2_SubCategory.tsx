@@ -7,11 +7,10 @@ import React, {
   useState,
   forwardRef,
 } from 'react';
-import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 import { getRoleConfig, getProfessionsByRole } from '../../config/roleConfig';
 
-function DefaultEmptyIcon(props) {
+function DefaultEmptyIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
       <path
@@ -22,7 +21,13 @@ function DefaultEmptyIcon(props) {
   );
 }
 
-function SearchProfession({ value, onChange, t }) {
+interface SearchProfessionProps {
+  value: string;
+  onChange: (val: string) => void;
+  t: (key: string, opts?: object) => string;
+}
+
+function SearchProfession({ value, onChange, t }: SearchProfessionProps) {
   return (
     <div className="mb-4">
       <label className="mb-2 block text-sm font-medium text-[var(--c-text)]" htmlFor="profession-search">
@@ -40,12 +45,6 @@ function SearchProfession({ value, onChange, t }) {
   );
 }
 
-SearchProfession.propTypes = {
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
-};
-
 function SkeletonCard() {
   return (
     <div className="rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)] p-5 animate-pulse">
@@ -57,7 +56,12 @@ function SkeletonCard() {
   );
 }
 
-function EmptyState({ t, onBack }) {
+interface EmptyStateProps {
+  t: (key: string, opts?: object) => string;
+  onBack?: () => void;
+}
+
+function EmptyState({ t, onBack }: EmptyStateProps) {
   return (
     <div className="rounded-2xl border border-[var(--c-border)] bg-[var(--c-surface)]/80 p-8 text-center">
       <DefaultEmptyIcon className="mx-auto mb-3 h-10 w-10 text-[var(--c-muted)]" />
@@ -67,7 +71,6 @@ function EmptyState({ t, onBack }) {
       <p className="mt-1 text-xs text-[var(--c-muted)]">
         {t('registration.try_back', { defaultValue: 'Retounen epi chwazi yon lòt kategori.' })}
       </p>
-
       {typeof onBack === 'function' ? (
         <button
           type="button"
@@ -81,33 +84,76 @@ function EmptyState({ t, onBack }) {
   );
 }
 
-function getLocalizedLabel(item, language = 'ht') {
+interface ProfessionItem {
+  id: string;
+  code?: string;
+  label?: string;
+  icon?: React.ComponentType<{ className?: string; [k: string]: unknown }>;
+  category?: string;
+  profession?: string;
+  description?: unknown;
+  translations?: Record<string, string>;
+  displayName?: string;
+  name?: string;
+  title?: string;
+}
+
+function getLocalizedLabel(item: unknown, language = 'ht'): string {
   if (!item) return '';
   if (typeof item === 'string') return item;
-
-  const lang = language?.split('-')?.[0] || 'ht';
-  return (
-    item.translations?.[lang] ||
-    item.translations?.ht ||
-    item.translations?.en ||
-    item.displayName ||
-    item.label ||
-    item.name ||
-    item.title ||
-    item.code ||
-    item.id ||
+  const obj = item as Record<string, unknown>;
+  const lang = (typeof language === 'string' ? language : 'ht').split('-')[0] ?? 'ht';
+  const translations = obj['translations'] as Record<string, string> | undefined;
+  return String(
+    (translations?.[lang]) ||
+    (translations?.['ht']) ||
+    (translations?.['en']) ||
+    obj['displayName'] ||
+    obj['label'] ||
+    obj['name'] ||
+    obj['title'] ||
+    obj['code'] ||
+    obj['id'] ||
     ''
   );
 }
 
-function isProfessionSelected(selected, role, professionId) {
+type ProfessionSelection =
+  | string
+  | { role: string; professionId: string };
+
+function isProfessionSelected(selected: ProfessionSelection | undefined | null, role: string | undefined, professionId: string): boolean {
   if (!selected) return false;
   if (typeof selected === 'string') return selected === `${role}:${professionId}`;
   return selected.role === role && selected.professionId === professionId;
 }
 
+interface ProfessionTheme {
+  primary?: string;
+  surface?: string;
+  text?: string;
+  muted?: string;
+  border?: string;
+  borderStrong?: string;
+  skeleton?: string;
+}
+
+interface ProfessionCardProps {
+  profession: ProfessionItem;
+  selectedState: boolean;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
+  onFocusCard: (e: React.FocusEvent<HTMLButtonElement>) => void;
+  onHoverCard: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  label: string;
+  description?: string;
+  icon: React.ComponentType<{ className?: string; [k: string]: unknown }>;
+  t: (key: string, opts?: object) => string;
+  index: number;
+}
+
 const ProfessionCard = memo(
-  forwardRef(function ProfessionCard(
+  forwardRef<HTMLButtonElement, ProfessionCardProps>(function ProfessionCard(
     {
       profession,
       selectedState,
@@ -156,13 +202,10 @@ const ProfessionCard = memo(
             </span>
           ) : null}
         </div>
-
         <h3 className="text-sm font-bold text-[var(--c-text)]">{label}</h3>
-
         {description ? (
           <p className="mt-2 text-xs leading-5 text-[var(--c-muted)]">{description}</p>
         ) : null}
-
         {profession.code ? (
           <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-[var(--c-muted)]">
             {profession.code}
@@ -175,22 +218,22 @@ const ProfessionCard = memo(
 
 ProfessionCard.displayName = 'ProfessionCard';
 
-ProfessionCard.propTypes = {
-  profession: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    code: PropTypes.string,
-  }).isRequired,
-  selectedState: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func.isRequired,
-  onFocusCard: PropTypes.func.isRequired,
-  onHoverCard: PropTypes.func.isRequired,
-  label: PropTypes.string.isRequired,
-  description: PropTypes.string,
-  icon: PropTypes.elementType,
-  t: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
-};
+interface ProfessionGridProps {
+  role?: string;
+  selected?: ProfessionSelection | null;
+  onSelect: (sel: object) => void;
+  loading?: boolean;
+  t: (key: string, opts?: object) => string;
+  i18n?: { language?: string };
+  professionProvider?: ((role: string) => ProfessionItem[]) | null;
+  logger?: { capture?: (e: unknown, m?: object) => void };
+  onBack?: () => void;
+  onSearch?: (q: string) => void;
+  analytics?: { track?: (event: string, payload?: object) => void };
+  theme?: ProfessionTheme;
+  enableSearch?: boolean;
+  pageSize?: number;
+}
 
 function ProfessionGrid({
   role,
@@ -207,34 +250,34 @@ function ProfessionGrid({
   analytics,
   enableSearch = true,
   pageSize = 24,
-}) {
+}: ProfessionGridProps) {
   const [query, setQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(pageSize);
-  const cardsRef = useRef([]);
-  const listRef = useRef(null);
+  const cardsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const listRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const roleConfig = useMemo(() => {
     try {
-      return role ? getRoleConfig(role) : null;
+      return role ? getRoleConfig(role) as unknown : null;
     } catch (error) {
       logger?.capture?.(error, { module: 'ProfessionGrid', role });
       return null;
     }
   }, [role, logger]);
 
-  const rawProfessions = useMemo(() => {
+  const rawProfessions = useMemo((): ProfessionItem[] => {
     try {
       if (!role) return [];
-      const provider = professionProvider || getProfessionsByRole;
-      return provider(role);
+      const provider = professionProvider ?? getProfessionsByRole;
+      return (provider(role) as ProfessionItem[]);
     } catch (error) {
       logger?.capture?.(error, { module: 'ProfessionGrid', role });
       return [];
     }
   }, [role, professionProvider, logger]);
 
-  const professions = useMemo(() => {
+  const professions = useMemo<ProfessionItem[]>(() => {
     const list = Array.isArray(rawProfessions) ? rawProfessions : [];
     const q = query.trim().toLowerCase();
 
@@ -249,7 +292,6 @@ function ProfessionGrid({
           ]
             .join(' ')
             .toLowerCase();
-
           return haystack.includes(q);
         });
 
@@ -266,14 +308,14 @@ function ProfessionGrid({
       profession,
       label: getLocalizedLabel(profession, i18n?.language),
       description: getLocalizedLabel(profession.description, i18n?.language),
-      icon: profession.icon || roleConfig?.icon || DefaultEmptyIcon,
+      icon: (profession.icon ?? (roleConfig as { icon?: React.ComponentType<{ className?: string; [k: string]: unknown }> } | null)?.icon ?? DefaultEmptyIcon) as React.ComponentType<{ className?: string; [k: string]: unknown }>,
     }));
   }, [visibleProfessions, i18n?.language, roleConfig]);
 
   const handleSelect = useCallback(
-    (profession) => {
+    (profession: ProfessionItem) => {
       if (loading || !profession?.id) return;
-      onSelect?.({
+      onSelect({
         role,
         professionId: profession.id,
         professionCode: profession.code,
@@ -288,14 +330,14 @@ function ProfessionGrid({
     [loading, onSelect, role, analytics],
   );
 
-  const focusCard = useCallback((index) => {
+  const focusCard = useCallback((index: number) => {
     const node = cardsRef.current[index];
     if (node instanceof HTMLElement) node.focus({ preventScroll: true });
   }, []);
 
   const handleClick = useCallback(
-    (e) => {
-      const id = e.currentTarget.dataset.id;
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const id = (e.currentTarget as HTMLButtonElement).dataset['id'];
       const profession = visibleProfessions.find((item) => item.id === id);
       if (profession) handleSelect(profession);
     },
@@ -303,8 +345,8 @@ function ProfessionGrid({
   );
 
   const handleKeyDown = useCallback(
-    (e) => {
-      const currentIndex = Number(e.currentTarget.dataset.index || 0);
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      const currentIndex = Number((e.currentTarget as HTMLButtonElement).dataset['index'] ?? 0);
       const maxIndex = visibleProfessions.length - 1;
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
@@ -314,7 +356,6 @@ function ProfessionGrid({
         focusCard(next);
         return;
       }
-
       if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
         e.preventDefault();
         const prev = currentIndex <= 0 ? maxIndex : currentIndex - 1;
@@ -322,21 +363,18 @@ function ProfessionGrid({
         focusCard(prev);
         return;
       }
-
       if (e.key === 'Home') {
         e.preventDefault();
         setActiveIndex(0);
         focusCard(0);
         return;
       }
-
       if (e.key === 'End') {
         e.preventDefault();
         setActiveIndex(maxIndex);
         focusCard(maxIndex);
         return;
       }
-
       if (e.key === 'PageDown') {
         e.preventDefault();
         const next = Math.min(currentIndex + 5, maxIndex);
@@ -344,7 +382,6 @@ function ProfessionGrid({
         focusCard(next);
         return;
       }
-
       if (e.key === 'PageUp') {
         e.preventDefault();
         const prev = Math.max(currentIndex - 5, 0);
@@ -352,10 +389,9 @@ function ProfessionGrid({
         focusCard(prev);
         return;
       }
-
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        const id = e.currentTarget.dataset.id;
+        const id = (e.currentTarget as HTMLButtonElement).dataset['id'];
         const profession = visibleProfessions.find((item) => item.id === id);
         if (profession) handleSelect(profession);
       }
@@ -363,8 +399,8 @@ function ProfessionGrid({
     [focusCard, handleSelect, visibleProfessions],
   );
 
-  const handleFocusCard = useCallback((e) => {
-    const index = Number(e.currentTarget.dataset.index || 0);
+  const handleFocusCard = useCallback((e: React.FocusEvent<HTMLButtonElement>) => {
+    const index = Number((e.currentTarget as HTMLButtonElement).dataset['index'] ?? 0);
     setActiveIndex(index);
     const profession = visibleProfessions[index];
     if (profession) {
@@ -376,8 +412,8 @@ function ProfessionGrid({
     }
   }, [analytics, role, visibleProfessions]);
 
-  const handleHoverCard = useCallback((e) => {
-    const index = Number(e.currentTarget.dataset.index || 0);
+  const handleHoverCard = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const index = Number((e.currentTarget as HTMLButtonElement).dataset['index'] ?? 0);
     const profession = visibleProfessions[index];
     if (profession) {
       analytics?.track?.('registration_profession_hover', {
@@ -405,19 +441,19 @@ function ProfessionGrid({
 
   const cssVars = useMemo(
     () => ({
-      '--c-primary': theme.primary || '#F59E0B',
-      '--c-surface': theme.surface || '#0F172A',
-      '--c-text': theme.text || '#F8FAFC',
-      '--c-muted': theme.muted || '#94A3B8',
-      '--c-border': theme.border || 'rgba(148,163,184,0.22)',
-      '--c-border-strong': theme.borderStrong || 'rgba(148,163,184,0.42)',
-      '--c-skeleton': theme.skeleton || 'rgba(148,163,184,0.14)',
-    }),
+      '--c-primary':      theme.primary      ?? '#F59E0B',
+      '--c-surface':      theme.surface      ?? '#0F172A',
+      '--c-text':         theme.text         ?? '#F8FAFC',
+      '--c-muted':        theme.muted        ?? '#94A3B8',
+      '--c-border':       theme.border       ?? 'rgba(148,163,184,0.22)',
+      '--c-border-strong':theme.borderStrong ?? 'rgba(148,163,184,0.42)',
+      '--c-skeleton':     theme.skeleton     ?? 'rgba(148,163,184,0.14)',
+    } as React.CSSProperties),
     [theme],
   );
 
   const activedescendant = visibleProfessions[activeIndex]
-    ? `${role || 'role'}:${visibleProfessions[activeIndex].id}`
+    ? `${role ?? 'role'}:${visibleProfessions[activeIndex]!.id}`
     : undefined;
 
   if (loading) {
@@ -449,7 +485,11 @@ function ProfessionGrid({
   return (
     <div className="w-full" style={cssVars}>
       {enableSearch ? (
-        <SearchProfession value={query} onChange={(val) => { setQuery(val); setVisibleCount(pageSize); onSearch?.(val); }} t={t} />
+        <SearchProfession
+          value={query}
+          onChange={(val) => { setQuery(val); setVisibleCount(pageSize); onSearch?.(val); }}
+          t={t}
+        />
       ) : null}
 
       <p className="mb-4 text-center text-sm text-[var(--c-muted)]">
@@ -469,13 +509,10 @@ function ProfessionGrid({
       >
         {localizedProfessions.map(({ profession, label, description, icon: Icon }, index) => {
           const selectedState = isProfessionSelected(selected, role, profession.id);
-
           return (
             <ProfessionCard
-              key={`${role}:${profession.id}`}
-              ref={(node) => {
-                cardsRef.current[index] = node;
-              }}
+              key={`${role ?? ''}:${profession.id}`}
+              ref={(node) => { cardsRef.current[index] = node; }}
               profession={profession}
               selectedState={selectedState}
               onClick={handleClick}
@@ -507,46 +544,9 @@ function ProfessionGrid({
   );
 }
 
-ProfessionGrid.propTypes = {
-  role: PropTypes.string,
-  selected: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.shape({
-      role: PropTypes.string,
-      professionId: PropTypes.string,
-    }),
-  ]),
-  onSelect: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
-  t: PropTypes.func.isRequired,
-  i18n: PropTypes.shape({
-    language: PropTypes.string,
-  }),
-  professionProvider: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
-  logger: PropTypes.shape({
-    capture: PropTypes.func,
-  }),
-  onBack: PropTypes.func,
-  onSearch: PropTypes.func,
-  analytics: PropTypes.shape({
-    track: PropTypes.func,
-  }),
-  theme: PropTypes.shape({
-    primary: PropTypes.string,
-    surface: PropTypes.string,
-    text: PropTypes.string,
-    muted: PropTypes.string,
-    border: PropTypes.string,
-    borderStrong: PropTypes.string,
-    skeleton: PropTypes.string,
-  }),
-  enableSearch: PropTypes.bool,
-  pageSize: PropTypes.number,
-};
-
 export default memo(
   ProfessionGrid,
-  (prev, next) =>
+  (prev: ProfessionGridProps, next: ProfessionGridProps) =>
     prev.role === next.role &&
     prev.selected === next.selected &&
     prev.loading === next.loading &&

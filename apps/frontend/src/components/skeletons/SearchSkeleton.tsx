@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 
-const SearchSkeleton = memo(function SearchSkeleton({ count = 6 }) {
+interface SearchSkeletonProps { count?: number; }
+
+const SearchSkeleton = memo(function SearchSkeleton({ count = 6 }: SearchSkeletonProps) {
   return (
     <div className="space-y-3 p-4">
       {Array.from({ length: count }, (_, i) => (

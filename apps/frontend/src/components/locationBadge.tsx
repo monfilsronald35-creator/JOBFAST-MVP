@@ -21,22 +21,34 @@ const STATUS_CONFIG = Object.freeze({
   },
 });
 
+type AvailabilityStatus = keyof typeof STATUS_CONFIG;
+
+interface LocationBadgeProps {
+  location?:     string | Record<string, unknown> | null;
+  distanceKm?:   number | null;
+  availability?: string;
+  role?:         string;
+  businessType?: string;
+  serviceType?:  string;
+  compact?:      boolean;
+}
+
 function LocationBadge({
-  location = null,
-  distanceKm = null,
+  location     = null,
+  distanceKm   = null,
   availability = "available",
-  role = "",
+  role         = "",
   businessType = "",
-  serviceType = "",
-  compact = false,
-}) {
+  serviceType  = "",
+  compact      = false,
+}: LocationBadgeProps) {
   const formatted = formatLocation(location);
   const locationText =
     (typeof formatted === "string" ? formatted.trim() : "") || "Kote ki enkoni";
 
   const category = (role || businessType || serviceType || "jeneral").trim();
-  const normalizedStatus = (availability || "available").toLowerCase();
-  const statusConfig = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.available;
+  const normalizedStatus = ((availability || "available").toLowerCase()) as AvailabilityStatus;
+  const statusConfig = STATUS_CONFIG[normalizedStatus] ?? STATUS_CONFIG.available;
 
   const safeDistance =
     typeof distanceKm === "number" &&

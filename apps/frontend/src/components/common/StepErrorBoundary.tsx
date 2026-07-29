@@ -1,16 +1,19 @@
 import React from 'react';
 
-export class StepErrorBoundary extends React.Component {
-  constructor(props) {
+interface StepErrorBoundaryProps { children: React.ReactNode; }
+interface StepErrorBoundaryState { hasError: boolean; error: Error | null; }
+
+export class StepErrorBoundary extends React.Component<StepErrorBoundaryProps, StepErrorBoundaryState> {
+  constructor(props: StepErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): StepErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
     console.error('[StepErrorBoundary]', error, info);
   }
 

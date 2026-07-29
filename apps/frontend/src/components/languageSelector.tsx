@@ -9,11 +9,13 @@ const LANGUAGES = Object.freeze([
   { code: "fr", label: "Français" },
 ]);
 
-function LanguageSelector({ compact = false }) {
+interface LanguageSelectorProps { compact?: boolean; }
+
+function LanguageSelector({ compact = false }: LanguageSelectorProps) {
   const { i18n } = useTranslation();
   const currentLanguage = (i18n?.language || "es").slice(0, 2);
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = event.target.value;
     if (!newLanguage || newLanguage === currentLanguage) return;
     i18n?.changeLanguage?.(newLanguage);

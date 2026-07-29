@@ -2,32 +2,39 @@ import React, { useCallback } from "react";
 import { MapPin, User, Briefcase, Star, Phone } from "lucide-react";
 
 const STATUS_CONFIG = Object.freeze({
-  ACTIVE: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
-  BUSY: "bg-amber-500/10 border-amber-500/30 text-amber-400",
-  OFFLINE: "bg-rose-500/10 border-rose-500/30 text-rose-400",
-  DEFAULT: "bg-slate-500/10 border-slate-500/30 text-slate-400",
+  ACTIVE:   "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+  BUSY:     "bg-amber-500/10 border-amber-500/30 text-amber-400",
+  OFFLINE:  "bg-rose-500/10 border-rose-500/30 text-rose-400",
+  DEFAULT:  "bg-slate-500/10 border-slate-500/30 text-slate-400",
 });
 
-function UserCard({ user, onClick }) {
+interface UserData {
+  id:          string | number;
+  name:        string;
+  role?:       string;
+  profession?: string;
+  location?:   string;
+  distance?:   string;
+  status?:     string;
+  rating?:     number | string;
+  phone?:      string;
+  bio?:        string;
+}
+
+interface UserCardProps {
+  user:     UserData;
+  onClick?: (id: string | number) => void;
+}
+
+function UserCard({ user, onClick }: UserCardProps) {
   if (!user?.id || !user?.name) return null;
 
-  const {
-    id,
-    name,
-    role,
-    profession,
-    location,
-    distance,
-    status,
-    rating,
-    phone,
-    bio,
-  } = user;
+  const { id, name, role, profession, location, distance, status, rating, phone, bio } = user;
 
   const normalizedStatus = (status || "DEFAULT").toUpperCase().trim();
-  const statusClass = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.DEFAULT;
+  const statusClass = STATUS_CONFIG[normalizedStatus as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.DEFAULT;
   const displayRole = role || profession || "General";
-  const safeRating = rating ?? "0.0";
+  const safeRating  = rating ?? "0.0";
 
   const handleClick = useCallback(() => {
     onClick?.(id);
@@ -45,7 +52,6 @@ function UserCard({ user, onClick }) {
           <User className="h-3.5 w-3.5" aria-hidden="true" />
           <span>User Profile</span>
         </div>
-
         <span className={`rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${statusClass}`}>
           {normalizedStatus}
         </span>
@@ -68,9 +74,7 @@ function UserCard({ user, onClick }) {
       </div>
 
       {bio && (
-        <p className="mt-3 text-xs italic leading-relaxed text-slate-500">
-          {bio}
-        </p>
+        <p className="mt-3 text-xs italic leading-relaxed text-slate-500">{bio}</p>
       )}
 
       <div className="mt-4 flex items-center justify-between border-t border-slate-800/40 pt-3">
@@ -78,7 +82,6 @@ function UserCard({ user, onClick }) {
           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
           <span>{safeRating}</span>
         </div>
-
         {phone && (
           <div className="flex items-center gap-1 text-xs font-bold text-slate-400">
             <Phone className="h-3.5 w-3.5" aria-hidden="true" />

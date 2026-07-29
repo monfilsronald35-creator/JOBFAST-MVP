@@ -4,20 +4,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 const TYPES = [
   { id: 'image', label: 'Photo', icon: '📷', accept: 'image/*' },
   { id: 'video', label: 'Video', icon: '🎬', accept: 'video/*' },
-  { id: 'file', label: 'File', icon: '📎', accept: '*/*' },
-  { id: 'audio', label: 'Audio', icon: '🎵', accept: 'audio/*' },
-];
+  { id: 'file',  label: 'File',  icon: '📎', accept: '*/*'    },
+  { id: 'audio', label: 'Audio', icon: '🎵', accept: 'audio/*'},
+] as const;
 
-const AttachmentPicker = memo(function AttachmentPicker({ open, onClose, onSelect }) {
-  const inputRef = useRef(null);
+interface AttachmentPickerProps {
+  open:      boolean;
+  onClose?:  () => void;
+  onSelect?: (files: File[]) => void;
+}
 
-  const handlePick = (accept) => {
+const AttachmentPicker = memo(function AttachmentPicker({ open, onClose, onSelect }: AttachmentPickerProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handlePick = (accept: string) => {
     if (!inputRef.current) return;
     inputRef.current.accept = accept;
     inputRef.current.click();
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length > 0) {
       onSelect?.(files);

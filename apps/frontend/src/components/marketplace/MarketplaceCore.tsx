@@ -1,23 +1,9 @@
 /**
- * MarketplaceCore.jsx
+ * MarketplaceCore.tsx
  *
  * Shared marketplace engine for JOBFAST.
  * All role-specific behavior is driven by marketplaceConfig.js —
  * no role conditions live in this file.
- *
- * Exports:
- *   AvailabilityBadge      — shows availability state chip
- *   ReputationBar          — trust/reputation score bar
- *   MarketplaceListingCard — role-adapted result card
- *   BookingModal           — role-adapted booking form
- *   ReviewModal            — role-adapted review form
- *   ContactPanel           — contact options panel
- *   useMarketplaceListings — data-fetching hook (backend aware)
- *   default MarketplaceCore — full browse experience for a role
- *
- * Usage:
- *   import MarketplaceCore, { BookingModal } from '../../components/marketplace/MarketplaceCore';
- *   <MarketplaceCore role="restaurant" />
  */
 
 import React, {
@@ -29,16 +15,77 @@ import API from '../../api/axios';
 import {
   getMarketplaceConfig,
   AVAILABILITY_STATES,
-  BOOKING_STATUSES,
   computeMarketplaceReputation,
 } from '../../config/marketplaceConfig';
 import useGPS, { GPS_STATES } from '../../hooks/useGPS';
 
+interface ListingLocation {
+  city?: string;
+  state?: string;
+  coordinates?: { latitude?: number; longitude?: number };
+}
+
+interface ListingItem {
+  id?: string;
+  _id?: string;
+  name: string;
+  availability?: string;
+  location?: ListingLocation;
+  phone?: string;
+  profileMetadata?: {
+    bio?: string;
+    photos?: string[];
+    amenities?: string[];
+    cuisine?: string;
+    roomType?: string;
+    propertyType?: string;
+    workspaceType?: string;
+    tourType?: string;
+  };
+  profession?: string;
+  experience?: string;
+  language?: string;
+  verified?: boolean;
+  trust_score?: number;
+  distanceKm?: number;
+  stats?: { rating?: number };
+  rating?: number;
+  marketplaceData?: unknown;
+}
+
+type ConfigShape = Record<string, unknown> & {
+  icon?: string;
+  label?: string;
+  browseTitle?: string;
+  gpsLabel?: string;
+  browsePlaceholder?: string;
+  galleryType?: string;
+  cardFields?: string[];
+  contactOptions?: string[];
+  tabs?: { id: string; icon?: string; label: string }[];
+  reviewCriteria?: string[];
+  booking: {
+    label: string;
+    type?: string;
+    requiresDate?: boolean;
+    requiresTime?: boolean;
+    requiresPartySize?: boolean;
+    requiresDuration?: boolean;
+    requiresNotes?: boolean;
+    partySizeLabel?: string;
+    durationLabel?: string;
+    notesLabel?: string;
+  };
+};
+
+interface AvailabilityState { color: string; bg: string; dot: string; label: string; }
+
 // ─────────────────────────────────────────────────────────────
-// AVAILABILITY BADGE — shared, adapts from AVAILABILITY_STATES
+// AVAILABILITY BADGE
 // ─────────────────────────────────────────────────────────────
-export const AvailabilityBadge = memo(function AvailabilityBadge({ state }) {
-  const cfg = AVAILABILITY_STATES[state] || AVAILABILITY_STATES.available;
+export const AvailabilityBadge = memo(function AvailabilityBadge({ state }: { state?: string }) {
+  const states = AVAILABILITY_STATES as Record<string, AvailabilityState>;
+  const cfg: AvailabilityState = states[state ?? 'available'] ?? states['available']!;
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.color} ${cfg.bg}`}>
       {cfg.dot} {cfg.label}
@@ -47,9 +94,9 @@ export const AvailabilityBadge = memo(function AvailabilityBadge({ state }) {
 });
 
 // ─────────────────────────────────────────────────────────────
-// REPUTATION BAR — shared, computed from computeMarketplaceReputation
+// REPUTATION BAR
 // ─────────────────────────────────────────────────────────────
-export const ReputationBar = memo(function ReputationBar({ score }) {
+export const ReputationBar = memo(function ReputationBar({ score }: { score: number }) {
   const color =
     score >= 80 ? '#10b981' :
     score >= 50 ? '#6366f1' :
@@ -57,10 +104,7 @@ export const ReputationBar = memo(function ReputationBar({ score }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${score}%`, background: color }}
-        />
+        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: color }} />
       </div>
       <span className="text-[10px] font-bold text-slate-400 shrink-0">{score}</span>
     </div>
@@ -68,9 +112,9 @@ export const ReputationBar = memo(function ReputationBar({ score }) {
 });
 
 // ─────────────────────────────────────────────────────────────
-// GALLERY VIEWER — shared image gallery, type label only
+// GALLERY VIEWER
 // ─────────────────────────────────────────────────────────────
-const GalleryViewer = memo(function GalleryViewer({ images = [], type }) {
+const GalleryViewer = memo(function GalleryViewer({ images = [], type }: { images?: string[]; type?: string }) {
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
@@ -84,23 +128,16 @@ const GalleryViewer = memo(function GalleryViewer({ images = [], type }) {
   return (
     <div>
       <div className="h-40 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center">
-        <img
-          src={images[active]}
-          alt={type}
-          className="w-full h-full object-cover"
-          onError={e => { e.target.style.display='none'; }}
-        />
+        <img src={images[active]} alt={type} className="w-full h-full object-cover"
+          onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
       </div>
       {images.length > 1 && (
         <div className="flex gap-1.5 mt-2">
           {images.slice(0, 5).map((src, i) => (
             <button key={i} onClick={() => setActive(i)}
-              className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border-2 transition ${
-                i === active ? 'border-indigo-500' : 'border-transparent'
-              }`}
-            >
+              className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border-2 transition ${i === active ? 'border-indigo-500' : 'border-transparent'}`}>
               <img src={src} alt="" className="w-full h-full object-cover"
-                onError={e => { e.target.style.display='none'; }} />
+                onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
             </button>
           ))}
         </div>
@@ -110,15 +147,22 @@ const GalleryViewer = memo(function GalleryViewer({ images = [], type }) {
 });
 
 // ─────────────────────────────────────────────────────────────
-// CONTACT PANEL — shared, adapts from config.contactOptions
+// CONTACT PANEL
 // ─────────────────────────────────────────────────────────────
-export const ContactPanel = memo(function ContactPanel({ listing, config, onClose, onBook }) {
-  const navigate = useNavigate();
-  const phone = listing.phone || listing.profileMetadata?.phone;
+interface ContactPanelProps {
+  listing: ListingItem;
+  config: ConfigShape;
+  onClose?: () => void;
+  onBook?: (listing: ListingItem) => void;
+}
 
-  const actions = {
+export const ContactPanel = memo(function ContactPanel({ listing, config, onClose, onBook }: ContactPanelProps) {
+  const navigate = useNavigate();
+  const phone = listing.phone ?? (listing.profileMetadata as Record<string, unknown> | undefined)?.['phone'] as string | undefined;
+
+  const actions: Record<string, () => void> = {
     call:       () => phone && (window.location.href = `tel:${phone}`),
-    chat:       () => navigate(`/chat/${listing.id || listing._id}`),
+    chat:       () => navigate(`/chat/${listing.id ?? listing._id}`),
     directions: () => {
       const lat = listing.location?.coordinates?.latitude;
       const lng = listing.location?.coordinates?.longitude;
@@ -128,7 +172,7 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
     emergency:  () => phone && (window.location.href = `tel:${phone}`),
   };
 
-  const OPTION_LABELS = {
+  const OPTION_LABELS: Record<string, { icon: string; label: string; color: string }> = {
     call:       { icon: '📞', label: 'Rele',      color: 'bg-green-500 text-black'   },
     chat:       { icon: '💬', label: 'Chat',      color: 'bg-blue-500 text-white'    },
     book:       { icon: '📅', label: config.booking.label, color: 'bg-indigo-500 text-white' },
@@ -138,7 +182,7 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
 
   return (
     <div className="space-y-2">
-      {(config.contactOptions || []).map(opt => {
+      {(config.contactOptions ?? []).map(opt => {
         const o = OPTION_LABELS[opt];
         if (!o) return null;
         return (
@@ -148,8 +192,7 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
           </button>
         );
       })}
-      <button onClick={onClose}
-        className="w-full py-2 rounded-xl text-xs text-slate-400 bg-slate-800/50">
+      <button onClick={onClose} className="w-full py-2 rounded-xl text-xs text-slate-400 bg-slate-800/50">
         Fèmen
       </button>
     </div>
@@ -157,32 +200,34 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
 });
 
 // ─────────────────────────────────────────────────────────────
-// BOOKING MODAL — shared form, adapts from config.booking
+// BOOKING MODAL
 // ─────────────────────────────────────────────────────────────
-export const BookingModal = memo(function BookingModal({ listing, config, onClose, onSubmit }) {
-  const { user } = useAuth();
+interface BookingModalProps {
+  listing: ListingItem;
+  config: ConfigShape;
+  onClose?: () => void;
+  onSubmit?: () => void;
+}
+
+export const BookingModal = memo(function BookingModal({ listing, config, onClose, onSubmit }: BookingModalProps) {
+  const { user } = useAuth() as { user: Record<string, unknown> | null };
   const bc = config.booking;
 
-  const [form, setForm] = useState({
-    date:      '',
-    time:      '',
-    partySize: 1,
-    duration:  1,
-    notes:     '',
-  });
+  const [form, setForm] = useState({ date: '', time: '', partySize: 1, duration: 1, notes: '' });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
+    setForm(prev => ({ ...prev, [k]: v }));
 
   const handleSubmit = useCallback(async () => {
     if (!form.date && bc.requiresDate) return;
     setSubmitting(true);
     try {
       await API.post('/marketplace/book', {
-        customerId:   user?._id || user?.id,
-        customerName: user?.name,
-        targetId:     listing._id || listing.id,
+        customerId:   user?.['_id'] ?? user?.['id'],
+        customerName: user?.['name'],
+        targetId:     listing._id ?? listing.id,
         targetName:   listing.name,
         bookingType:  bc.type,
         ...form,
@@ -202,20 +247,14 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
         <p className="text-3xl">✅</p>
         <p className="text-white font-bold">Demann Anvwaye!</p>
         <p className="text-xs text-slate-400">Ou pral resevwa yon konfirmasyon tou dousman.</p>
-        <button onClick={onClose}
-          className="w-full py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold">
-          Fèmen
-        </button>
+        <button onClick={onClose} className="w-full py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold">Fèmen</button>
       </div>
     );
   }
 
   return (
     <div className="p-5 space-y-4">
-      <h3 className="text-sm font-bold text-white">
-        📅 {bc.label} — {listing.name}
-      </h3>
-
+      <h3 className="text-sm font-bold text-white">📅 {bc.label} — {listing.name}</h3>
       {bc.requiresDate && (
         <div>
           <label className="text-[10px] text-slate-400 block mb-1">Dat</label>
@@ -224,7 +263,6 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40" />
         </div>
       )}
-
       {bc.requiresTime && (
         <div>
           <label className="text-[10px] text-slate-400 block mb-1">Lè</label>
@@ -232,85 +270,73 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40" />
         </div>
       )}
-
       {bc.requiresPartySize && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">
-            {bc.partySizeLabel || 'Kantite Moun'}
-          </label>
+          <label className="text-[10px] text-slate-400 block mb-1">{bc.partySizeLabel ?? 'Kantite Moun'}</label>
           <div className="flex items-center gap-3">
-            <button onClick={() => set('partySize', Math.max(1, form.partySize - 1))}
-              className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">−</button>
+            <button onClick={() => set('partySize', Math.max(1, form.partySize - 1))} className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">−</button>
             <span className="text-white font-bold text-sm w-6 text-center">{form.partySize}</span>
-            <button onClick={() => set('partySize', Math.min(50, form.partySize + 1))}
-              className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">+</button>
+            <button onClick={() => set('partySize', Math.min(50, form.partySize + 1))} className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">+</button>
           </div>
         </div>
       )}
-
       {bc.requiresDuration && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">
-            {bc.durationLabel || 'Dire'}
-          </label>
+          <label className="text-[10px] text-slate-400 block mb-1">{bc.durationLabel ?? 'Dire'}</label>
           <div className="flex items-center gap-3">
-            <button onClick={() => set('duration', Math.max(1, form.duration - 1))}
-              className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">−</button>
+            <button onClick={() => set('duration', Math.max(1, form.duration - 1))} className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">−</button>
             <span className="text-white font-bold text-sm w-6 text-center">{form.duration}</span>
-            <button onClick={() => set('duration', form.duration + 1)}
-              className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">+</button>
+            <button onClick={() => set('duration', form.duration + 1)} className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">+</button>
           </div>
         </div>
       )}
-
       {bc.requiresNotes && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">
-            {bc.notesLabel || 'Nòt'}
-          </label>
+          <label className="text-[10px] text-slate-400 block mb-1">{bc.notesLabel ?? 'Nòt'}</label>
           <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
             rows={2} placeholder="Ekri nòt ou..."
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
         </div>
       )}
-
       <div className="flex gap-2 pt-2">
         <button onClick={handleSubmit}
-          disabled={submitting || (bc.requiresDate && !form.date)}
+          disabled={submitting || (bc.requiresDate === true && !form.date)}
           className="flex-1 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold disabled:opacity-40">
           {submitting ? 'Ap anvwaye...' : bc.label}
         </button>
-        <button onClick={onClose}
-          className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">
-          Anile
-        </button>
+        <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">Anile</button>
       </div>
     </div>
   );
 });
 
 // ─────────────────────────────────────────────────────────────
-// REVIEW MODAL — shared form, adapts from config.reviewCriteria
+// REVIEW MODAL
 // ─────────────────────────────────────────────────────────────
-export const ReviewModal = memo(function ReviewModal({ listing, config, onClose, onSubmit }) {
-  const { user } = useAuth();
+interface ReviewModalProps {
+  listing: ListingItem;
+  config: ConfigShape;
+  onClose?: () => void;
+  onSubmit?: () => void;
+}
+
+export const ReviewModal = memo(function ReviewModal({ listing, config, onClose, onSubmit }: ReviewModalProps) {
+  const { user } = useAuth() as { user: Record<string, unknown> | null };
   const [overallRating, setOverallRating] = useState(0);
-  const [criteria, setCriteria] = useState(
-    Object.fromEntries((config.reviewCriteria || []).map(c => [c, 0])),
+  const [criteria, setCriteria] = useState<Record<string, number>>(
+    Object.fromEntries((config.reviewCriteria ?? []).map(c => [c, 0])),
   );
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const setCriterion = (key, val) => setCriteria(prev => ({ ...prev, [key]: val }));
+  const setCriterion = (key: string, val: number) => setCriteria(prev => ({ ...prev, [key]: val }));
 
-  const StarPicker = ({ value, onChange }) => (
+  const StarPicker = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => (
     <div className="flex gap-1">
       {[1,2,3,4,5].map(s => (
         <button key={s} onClick={() => onChange(s)}
-          className={`text-lg transition ${s <= value ? 'text-amber-400' : 'text-slate-600'}`}>
-          ★
-        </button>
+          className={`text-lg transition ${s <= value ? 'text-amber-400' : 'text-slate-600'}`}>★</button>
       ))}
     </div>
   );
@@ -320,9 +346,9 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
     setSubmitting(true);
     try {
       await API.post('/marketplace/reviews', {
-        targetId:     listing._id || listing.id,
-        reviewerId:   user?._id || user?.id,
-        reviewerName: user?.name,
+        targetId:     listing._id ?? listing.id,
+        reviewerId:   user?.['_id'] ?? user?.['id'],
+        reviewerName: user?.['name'],
         rating:       overallRating,
         criteria,
         comment,
@@ -341,10 +367,7 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
       <div className="p-6 text-center space-y-3">
         <p className="text-3xl">⭐</p>
         <p className="text-white font-bold">Mèsi pou Evalyasyon Ou!</p>
-        <button onClick={onClose}
-          className="w-full py-2.5 bg-amber-500 text-black rounded-xl text-sm font-bold">
-          Fèmen
-        </button>
+        <button onClick={onClose} className="w-full py-2.5 bg-amber-500 text-black rounded-xl text-sm font-bold">Fèmen</button>
       </div>
     );
   }
@@ -352,91 +375,87 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
   return (
     <div className="p-5 space-y-4">
       <h3 className="text-sm font-bold text-white">⭐ Evalye — {listing.name}</h3>
-
       <div>
         <label className="text-[10px] text-slate-400 block mb-2">Rating Global</label>
         <StarPicker value={overallRating} onChange={setOverallRating} />
       </div>
-
-      {(config.reviewCriteria || []).length > 0 && (
+      {(config.reviewCriteria ?? []).length > 0 && (
         <div className="space-y-2.5">
           <label className="text-[10px] text-slate-400 block">Detay</label>
-          {config.reviewCriteria.map(criterion => (
+          {config.reviewCriteria!.map(criterion => (
             <div key={criterion} className="flex items-center justify-between">
               <span className="text-xs text-slate-300 capitalize">{criterion}</span>
-              <StarPicker value={criteria[criterion] || 0} onChange={v => setCriterion(criterion, v)} />
+              <StarPicker value={criteria[criterion] ?? 0} onChange={v => setCriterion(criterion, v)} />
             </div>
           ))}
         </div>
       )}
-
       <div>
         <label className="text-[10px] text-slate-400 block mb-1">Kòmantè</label>
         <textarea value={comment} onChange={e => setComment(e.target.value)}
           rows={3} placeholder="Pata eksperyans ou..."
           className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
       </div>
-
       <div className="flex gap-2">
         <button onClick={handleSubmit}
           disabled={submitting || overallRating === 0}
           className="flex-1 py-2.5 bg-amber-500 text-black rounded-xl text-sm font-bold disabled:opacity-40">
           {submitting ? 'Ap anvwaye...' : 'Soumèt Evalyasyon'}
         </button>
-        <button onClick={onClose}
-          className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">
-          Anile
-        </button>
+        <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">Anile</button>
       </div>
     </div>
   );
 });
 
 // ─────────────────────────────────────────────────────────────
-// MARKETPLACE LISTING CARD — shared, adapts from config.cardFields
+// MARKETPLACE LISTING CARD
 // ─────────────────────────────────────────────────────────────
-
-// Field renderers: each returns a displayable string or null
-const CARD_FIELD_RENDERERS = {
-  cuisine:         (item) => item.profileMetadata?.cuisine ? `🍽️ ${item.profileMetadata.cuisine}` : null,
-  room_type:       (item) => item.profileMetadata?.roomType ? `🛏️ ${item.profileMetadata.roomType}` : null,
-  property_type:   (item) => item.profileMetadata?.propertyType ? `🏠 ${item.profileMetadata.propertyType}` : null,
-  workspace_type:  (item) => item.profileMetadata?.workspaceType ? `💼 ${item.profileMetadata.workspaceType}` : null,
-  tour_type:       (item) => item.profileMetadata?.tourType ? `🗺️ ${item.profileMetadata.tourType}` : null,
-  specialty:       (item) => item.profession ? `⚕️ ${item.profession}` : null,
-  service_type:    (item) => item.profession ? `🔧 ${item.profession}` : null,
-  amenities:       (item) => (item.profileMetadata?.amenities || []).slice(0, 2).join(' • ') || null,
-  rating:          (item) => {
-    const r = item.stats?.rating ?? item.rating;
-    return r != null ? `⭐ ${Number(r).toFixed(1)}` : null;
-  },
-  trust_score:     (item) => item.trust_score != null ? `🛡️ ${item.trust_score}` : null,
-  distance:        (item) => item.distanceKm != null ? `📍 ${Number(item.distanceKm).toFixed(1)} km` : null,
-  experience:      (item) => item.experience ? `🎓 ${item.experience} ans` : null,
-  language:        (item) => item.language ? `🌐 ${item.language}` : null,
-  verified:        (item) => item.verified ? '✅ Verifye' : null,
-  availability:    (item) => null,  // rendered separately as AvailabilityBadge
+const CARD_FIELD_RENDERERS: Record<string, (item: ListingItem) => string | null> = {
+  cuisine:        (item) => item.profileMetadata?.cuisine ? `🍽️ ${item.profileMetadata.cuisine}` : null,
+  room_type:      (item) => item.profileMetadata?.roomType ? `🛏️ ${item.profileMetadata.roomType}` : null,
+  property_type:  (item) => item.profileMetadata?.propertyType ? `🏠 ${item.profileMetadata.propertyType}` : null,
+  workspace_type: (item) => item.profileMetadata?.workspaceType ? `💼 ${item.profileMetadata.workspaceType}` : null,
+  tour_type:      (item) => item.profileMetadata?.tourType ? `🗺️ ${item.profileMetadata.tourType}` : null,
+  specialty:      (item) => item.profession ? `⚕️ ${item.profession}` : null,
+  service_type:   (item) => item.profession ? `🔧 ${item.profession}` : null,
+  amenities:      (item) => (item.profileMetadata?.amenities ?? []).slice(0, 2).join(' • ') || null,
+  rating:         (item) => { const r = item.stats?.rating ?? item.rating; return r != null ? `⭐ ${Number(r).toFixed(1)}` : null; },
+  trust_score:    (item) => item.trust_score != null ? `🛡️ ${item.trust_score}` : null,
+  distance:       (item) => item.distanceKm != null ? `📍 ${Number(item.distanceKm).toFixed(1)} km` : null,
+  experience:     (item) => item.experience ? `🎓 ${item.experience} ans` : null,
+  language:       (item) => item.language ? `🌐 ${item.language}` : null,
+  verified:       (item) => item.verified ? '✅ Verifye' : null,
+  availability:   () => null,
 };
+
+interface MarketplaceListingCardProps {
+  item: ListingItem;
+  config: ConfigShape;
+  onBook?: (item: ListingItem) => void;
+  onContact?: (item: ListingItem) => void;
+  onReview?: (item: ListingItem) => void;
+  onFavorite?: (item: ListingItem) => void;
+  isFavorited?: boolean;
+}
 
 export const MarketplaceListingCard = memo(function MarketplaceListingCard({
   item, config, onBook, onContact, onReview, onFavorite, isFavorited,
-}) {
-  const city = item.location?.city || item.location?.state || '';
+}: MarketplaceListingCardProps) {
+  const city = item.location?.city ?? item.location?.state ?? '';
 
-  const fields = (config.cardFields || [])
+  const fields = (config.cardFields ?? [])
     .filter(f => f !== 'availability')
-    .map(f => ({ key: f, text: CARD_FIELD_RENDERERS[f]?.(item) }))
+    .map(f => ({ key: f, text: CARD_FIELD_RENDERERS[f]?.(item) ?? null }))
     .filter(f => f.text);
 
   const reputationScore = useMemo(
-    () => computeMarketplaceReputation(item, item.marketplaceData),
+    () => computeMarketplaceReputation(item, item.marketplaceData) as number,
     [item],
   );
 
   return (
     <div className="bg-[#0f172a] rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition">
-
-      {/* Header */}
       <div className="relative p-4 pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -447,21 +466,16 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
             {city && <p className="text-[10px] text-slate-400">📍 {city}</p>}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <AvailabilityBadge state={item.availability || 'available'} />
+            <AvailabilityBadge state={item.availability ?? 'available'} />
             <button onClick={() => onFavorite?.(item)}
               className={`text-lg transition ${isFavorited ? 'text-rose-400' : 'text-slate-600 hover:text-rose-300'}`}>
               {isFavorited ? '❤️' : '🤍'}
             </button>
           </div>
         </div>
-
-        {/* Reputation */}
-        <div className="mt-2">
-          <ReputationBar score={reputationScore} />
-        </div>
+        <div className="mt-2"><ReputationBar score={reputationScore} /></div>
       </div>
 
-      {/* Fields */}
       {fields.length > 0 && (
         <div className="px-4 pb-2 flex flex-wrap gap-x-3 gap-y-1">
           {fields.map(f => (
@@ -470,25 +484,18 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
         </div>
       )}
 
-      {/* Bio snippet */}
       {item.profileMetadata?.bio && (
-        <p className="px-4 pb-2 text-[10px] text-slate-400 line-clamp-2">
-          {item.profileMetadata.bio}
-        </p>
+        <p className="px-4 pb-2 text-[10px] text-slate-400 line-clamp-2">{item.profileMetadata.bio}</p>
       )}
 
-      {/* Actions */}
       <div className="px-4 pb-4 grid grid-cols-3 gap-2">
-        <button onClick={() => onBook?.(item)}
-          className="py-2 rounded-xl bg-indigo-500 text-white text-[10px] font-bold">
+        <button onClick={() => onBook?.(item)} className="py-2 rounded-xl bg-indigo-500 text-white text-[10px] font-bold">
           {config.booking.label}
         </button>
-        <button onClick={() => onContact?.(item)}
-          className="py-2 rounded-xl bg-slate-800 text-slate-200 text-[10px]">
+        <button onClick={() => onContact?.(item)} className="py-2 rounded-xl bg-slate-800 text-slate-200 text-[10px]">
           📞 Kontakte
         </button>
-        <button onClick={() => onReview?.(item)}
-          className="py-2 rounded-xl bg-slate-800 text-amber-400 text-[10px]">
+        <button onClick={() => onReview?.(item)} className="py-2 rounded-xl bg-slate-800 text-amber-400 text-[10px]">
           ⭐ Evalye
         </button>
       </div>
@@ -497,34 +504,40 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
 });
 
 // ─────────────────────────────────────────────────────────────
-// LISTING DETAIL PANEL — modal overlay with booking/review/contact
+// LISTING DETAIL PANEL
 // ─────────────────────────────────────────────────────────────
-function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavorite }) {
-  const [panel, setPanel] = useState('detail'); // 'detail' | 'book' | 'review' | 'contact'
-  const isFav = favorites?.has(listing._id || listing.id);
+type PanelMode = 'detail' | 'book' | 'review' | 'contact';
 
-  const panels = {
+interface ListingDetailPanelProps {
+  listing: ListingItem;
+  config: ConfigShape;
+  onClose: () => void;
+  favorites?: Set<string>;
+  onToggleFavorite?: (listing: ListingItem) => void;
+}
+
+function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavorite }: ListingDetailPanelProps) {
+  const [panel, setPanel] = useState<PanelMode>('detail');
+  const isFav = favorites?.has(listing._id ?? listing.id ?? '');
+
+  const panels: Record<PanelMode, React.ReactNode> = {
     detail: (
       <div className="p-5 space-y-4">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-base font-bold text-white">{listing.name}</h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              {listing.location?.city || ''} • {config.label}
+              {listing.location?.city ?? ''} • {config.label}
             </p>
           </div>
-          <button onClick={() => onToggleFavorite?.(listing)}
-            className={`text-2xl ${isFav ? 'text-rose-400' : 'text-slate-600'}`}>
+          <button onClick={() => onToggleFavorite?.(listing)} className={`text-2xl ${isFav ? 'text-rose-400' : 'text-slate-600'}`}>
             {isFav ? '❤️' : '🤍'}
           </button>
         </div>
 
-        <AvailabilityBadge state={listing.availability || 'available'} />
+        <AvailabilityBadge state={listing.availability ?? 'available'} />
 
-        <GalleryViewer
-          images={listing.profileMetadata?.photos || []}
-          type={config.galleryType}
-        />
+        <GalleryViewer images={listing.profileMetadata?.photos ?? []} type={config.galleryType} />
 
         {listing.profileMetadata?.bio && (
           <p className="text-xs text-slate-300">{listing.profileMetadata.bio}</p>
@@ -532,26 +545,22 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
 
         <div>
           <p className="text-[10px] font-bold text-slate-500 mb-1.5">Reputasyon</p>
-          <ReputationBar score={computeMarketplaceReputation(listing, listing.marketplaceData)} />
+          <ReputationBar score={computeMarketplaceReputation(listing, listing.marketplaceData) as number} />
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <button onClick={() => setPanel('book')}
-            className="py-2.5 rounded-xl bg-indigo-500 text-white text-xs font-bold">
+          <button onClick={() => setPanel('book')} className="py-2.5 rounded-xl bg-indigo-500 text-white text-xs font-bold">
             📅 {config.booking.label}
           </button>
-          <button onClick={() => setPanel('contact')}
-            className="py-2.5 rounded-xl bg-slate-800 text-slate-200 text-xs">
+          <button onClick={() => setPanel('contact')} className="py-2.5 rounded-xl bg-slate-800 text-slate-200 text-xs">
             📞 Kontakte
           </button>
-          <button onClick={() => setPanel('review')}
-            className="py-2.5 rounded-xl bg-slate-800 text-amber-400 text-xs">
+          <button onClick={() => setPanel('review')} className="py-2.5 rounded-xl bg-slate-800 text-amber-400 text-xs">
             ⭐ Evalye
           </button>
         </div>
       </div>
     ),
-
     book:    <BookingModal    listing={listing} config={config} onClose={() => setPanel('detail')} onSubmit={() => setPanel('detail')} />,
     review:  <ReviewModal     listing={listing} config={config} onClose={() => setPanel('detail')} onSubmit={() => setPanel('detail')} />,
     contact: <ContactPanel    listing={listing} config={config} onClose={() => setPanel('detail')} onBook={() => setPanel('book')} />,
@@ -569,15 +578,23 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
 }
 
 // ─────────────────────────────────────────────────────────────
-// DATA HOOK — fetches listings from backend marketplace endpoint
+// DATA HOOK
 // ─────────────────────────────────────────────────────────────
-export function useMarketplaceListings({ role, query = '', tab = 'all', coords, enabled = true }) {
-  const [listings, setListings] = useState([]);
+interface UseMarketplaceListingsOptions {
+  role?: string;
+  query?: string;
+  tab?: string;
+  coords?: { lat: number; lng: number } | null;
+  enabled?: boolean;
+}
+
+export function useMarketplaceListings({ role, query = '', tab = 'all', coords, enabled = true }: UseMarketplaceListingsOptions) {
+  const [listings, setListings] = useState<ListingItem[]>([]);
   const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState(null);
+  const [error, setError]       = useState<string | null>(null);
   const [hasMore, setHasMore]   = useState(false);
-  const abortRef  = useRef(null);
-  const pageRef   = useRef(1);
+  const abortRef = useRef<AbortController | null>(null);
+  const pageRef  = useRef(1);
 
   const fetch = useCallback(async (page = 1, append = false) => {
     if (!enabled) return;
@@ -588,17 +605,18 @@ export function useMarketplaceListings({ role, query = '', tab = 'all', coords, 
     setLoading(true);
     setError(null);
     try {
-      const params = { role, q: query, tab, page, limit: 20 };
-      if (coords) { params.lat = coords.lat; params.lng = coords.lng; }
+      const params: Record<string, unknown> = { role, q: query, tab, page, limit: 20 };
+      if (coords) { params['lat'] = coords.lat; params['lng'] = coords.lng; }
 
       const res = await API.get('/marketplace/listings', { params, signal: ctrl.signal });
-      const { items = [], hasMore: more = false } = res.data?.data || {};
+      const { items = [], hasMore: more = false } = (res.data?.data as { items?: ListingItem[]; hasMore?: boolean }) ?? {};
 
       setListings(prev => (append ? [...prev, ...items] : items));
       setHasMore(!!more);
       pageRef.current = page;
-    } catch (err) {
-      if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError') return;
+    } catch (err: unknown) {
+      const e = err as { code?: string; name?: string };
+      if (e?.code === 'ERR_CANCELED' || e?.name === 'CanceledError') return;
       setError('Erè rezo. Eseye ankò.');
     } finally {
       setLoading(false);
@@ -616,23 +634,23 @@ export function useMarketplaceListings({ role, query = '', tab = 'all', coords, 
 }
 
 // ─────────────────────────────────────────────────────────────
-// FAVORITES HOOK — shared favorites state via backend
+// FAVORITES HOOK
 // ─────────────────────────────────────────────────────────────
-function useFavorites(userId) {
-  const [favorites, setFavorites] = useState(new Set());
+function useFavorites(userId: string | undefined) {
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!userId) return;
     API.get('/marketplace/favorites', { params: { userId } })
       .then(res => {
-        const ids = res.data?.data?.favorites || [];
+        const ids: string[] = (res.data?.data as { favorites?: string[] })?.favorites ?? [];
         setFavorites(new Set(ids));
       })
       .catch(() => {});
   }, [userId]);
 
-  const toggle = useCallback(async (listing) => {
-    const id = listing._id || listing.id;
+  const toggle = useCallback(async (listing: ListingItem) => {
+    const id = listing._id ?? listing.id ?? '';
     const next = new Set(favorites);
     if (next.has(id)) next.delete(id); else next.add(id);
     setFavorites(next);
@@ -645,22 +663,28 @@ function useFavorites(userId) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// MARKETPLACE CORE — the full browse experience for one role
+// MARKETPLACE CORE
 // ─────────────────────────────────────────────────────────────
-export default function MarketplaceCore({ role, initialQuery = '' }) {
-  const { user } = useAuth();
-  const userId = user?._id || user?.id;
-  const config = useMemo(() => getMarketplaceConfig(role), [role]);
-  const { coords, gpsState, acquire } = useGPS();
+interface MarketplaceCoreProps { role?: string; initialQuery?: string; }
+
+export default function MarketplaceCore({ role, initialQuery = '' }: MarketplaceCoreProps) {
+  const { user } = useAuth() as { user: Record<string, unknown> | null };
+  const userId = (user?.['_id'] ?? user?.['id']) as string | undefined;
+  const config = useMemo(() => getMarketplaceConfig(role) as ConfigShape, [role]);
+  const { coords, gpsState, acquire } = useGPS() as {
+    coords: { lat: number; lng: number } | null;
+    gpsState: string;
+    acquire: () => void;
+  };
 
   useEffect(() => { acquire(); }, [acquire]);
 
   const [query, setQuery]               = useState(initialQuery);
   const [activeTab, setActiveTab]       = useState('all');
-  const [detailListing, setDetail]      = useState(null);
-  const [bookingListing, setBooking]    = useState(null);
-  const [reviewListing, setReview]      = useState(null);
-  const sentinelRef                     = useRef(null);
+  const [detailListing, setDetail]      = useState<ListingItem | null>(null);
+  const [bookingListing, setBooking]    = useState<ListingItem | null>(null);
+  const [reviewListing, setReview]      = useState<ListingItem | null>(null);
+  const sentinelRef                     = useRef<HTMLDivElement>(null);
 
   const { listings, loading, error, hasMore, loadMore } = useMarketplaceListings({
     role, query, tab: activeTab, coords,
@@ -668,46 +692,38 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
 
   const { favorites, toggleFavorite } = useFavorites(userId);
 
-  // Infinite scroll
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || !hasMore) return;
     const observer = new IntersectionObserver(
-      entries => { if (entries[0].isIntersecting) loadMore(); },
+      entries => { if (entries[0]?.isIntersecting) loadMore(); },
       { rootMargin: '150px' },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, loadMore]);
 
-  // Tab counts badge (shows total from current listing array)
-  const tabCounts = useMemo(() => {
-    const counts = { all: listings.length };
-    return counts;
-  }, [listings]);
+  const tabCounts = useMemo(() => ({ all: listings.length }), [listings]);
+
+  const gpsAcquiring = gpsState === (GPS_STATES as Record<string, string>)['acquiring'] || gpsState === (GPS_STATES as Record<string, string>)['idle'];
+  const gpsBlocked   = gpsState === (GPS_STATES as Record<string, string>)['denied']
+    || gpsState === (GPS_STATES as Record<string, string>)['unavailable']
+    || gpsState === (GPS_STATES as Record<string, string>)['disabled']
+    || gpsState === (GPS_STATES as Record<string, string>)['blocked'];
 
   return (
     <div className="min-h-screen bg-[#0B1528] text-white pb-28">
-
-      {/* Header */}
       <div className="px-5 pt-6 pb-3">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">{config.icon}</span>
           <div>
             <h1 className="text-sm font-bold text-white">{config.browseTitle}</h1>
-            {coords !== null && (
-              <p className="text-[10px] text-green-400">📡 {config.gpsLabel}</p>
-            )}
-            {(gpsState === GPS_STATES.acquiring || gpsState === GPS_STATES.idle) && (
-              <p className="text-[10px] text-slate-400">📡 Ap jwenn lokasyon...</p>
-            )}
-            {(gpsState === GPS_STATES.denied || gpsState === GPS_STATES.unavailable || gpsState === GPS_STATES.disabled || gpsState === GPS_STATES.blocked) && (
-              <p className="text-[10px] text-amber-400">📍 Chèche san distans</p>
-            )}
+            {coords !== null && <p className="text-[10px] text-green-400">📡 {config.gpsLabel}</p>}
+            {gpsAcquiring && <p className="text-[10px] text-slate-400">📡 Ap jwenn lokasyon...</p>}
+            {gpsBlocked   && <p className="text-[10px] text-amber-400">📍 Chèche san distans</p>}
           </div>
         </div>
 
-        {/* Search bar */}
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
@@ -716,17 +732,13 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
         />
       </div>
 
-      {/* Tab bar */}
       <div className="px-5 pb-3">
         <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-          {config.tabs.map(tab => (
+          {(config.tabs ?? []).map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-bold transition ${
-                activeTab === tab.id
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-[#1e2d45] text-slate-400 hover:text-white'
-              }`}
-            >
+                activeTab === tab.id ? 'bg-indigo-500 text-white' : 'bg-[#1e2d45] text-slate-400 hover:text-white'
+              }`}>
               {tab.icon} {tab.label}
               {tab.id === 'all' && tabCounts.all > 0 && (
                 <span className="ml-1 text-[9px] text-indigo-300">({tabCounts.all})</span>
@@ -736,11 +748,8 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
         </div>
       </div>
 
-      {/* Results */}
       <div className="px-5 space-y-3">
-        {error && (
-          <p className="text-center text-red-400 text-xs mt-4">{error}</p>
-        )}
+        {error && <p className="text-center text-red-400 text-xs mt-4">{error}</p>}
 
         {loading && listings.length === 0 && (
           <div className="space-y-3">
@@ -759,11 +768,11 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
         )}
 
         {listings.map(item => (
-          <div key={item.id || item._id} onClick={() => setDetail(item)}>
+          <div key={item.id ?? item._id} onClick={() => setDetail(item)}>
             <MarketplaceListingCard
               item={item}
               config={config}
-              isFavorited={favorites.has(item._id || item.id)}
+              isFavorited={favorites.has(item._id ?? item.id ?? '')}
               onBook={(l) => { setBooking(l); }}
               onContact={(l) => setDetail(l)}
               onReview={(l) => { setReview(l); }}
@@ -779,7 +788,6 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
         )}
       </div>
 
-      {/* Detail panel */}
       {detailListing && (
         <ListingDetailPanel
           listing={detailListing}
@@ -790,7 +798,6 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
         />
       )}
 
-      {/* Standalone booking modal */}
       {bookingListing && !detailListing && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
           onClick={e => e.target === e.currentTarget && setBooking(null)}>
@@ -802,7 +809,6 @@ export default function MarketplaceCore({ role, initialQuery = '' }) {
         </div>
       )}
 
-      {/* Standalone review modal */}
       {reviewListing && !detailListing && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
           onClick={e => e.target === e.currentTarget && setReview(null)}>

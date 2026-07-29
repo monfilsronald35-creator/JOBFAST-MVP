@@ -1,12 +1,20 @@
 import React, { memo, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }) {
-  const [state, setState] = useState('idle'); // idle | recording | done
+type RecordingState = 'idle' | 'recording' | 'done';
+
+interface VoiceRecorderProps {
+  open:       boolean;
+  onClose?:   () => void;
+  onRecord?:  (file: File) => void;
+}
+
+const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }: VoiceRecorderProps) {
+  const [state,    setState]    = useState<RecordingState>('idle');
   const [duration, setDuration] = useState(0);
-  const mediaRecorderRef = useRef(null);
-  const chunksRef = useRef([]);
-  const intervalRef = useRef(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef        = useRef<Blob[]>([]);
+  const intervalRef      = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -14,14 +22,16 @@ const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }) {
       setState('idle');
       setDuration(0);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const start = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
+      const mr     = new MediaRecorder(stream);
       chunksRef.current = [];
-      mr.ondataavailable = e => chunksRef.current.push(e.data);
+
+      mr.ondataavailable = (e: BlobEvent) => chunksRef.current.push(e.data);
       mr.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
@@ -29,6 +39,7 @@ const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }) {
         stream.getTracks().forEach(t => t.stop());
         onClose?.();
       };
+
       mr.start(200);
       mediaRecorderRef.current = mr;
       setState('recording');
@@ -42,10 +53,11 @@ const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }) {
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
-    clearInterval(intervalRef.current);
+    if (intervalRef.current !== null) clearInterval(intervalRef.current);
   };
 
-  const fmt = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+  const fmt = (s: number) =>
+    `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   return (
     <AnimatePresence>
@@ -64,19 +76,13 @@ const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }) {
           )}
 
           {state === 'idle' ? (
-            <button
-              type="button"
-              onClick={start}
-              className="h-16 w-16 rounded-full bg-red-500 flex items-center justify-center text-2xl shadow-lg hover:bg-red-400"
-            >
+            <button type="button" onClick={start}
+              className="h-16 w-16 rounded-full bg-red-500 flex items-center justify-center text-2xl shadow-lg hover:bg-red-400">
               🎙️
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={stop}
-              className="h-16 w-16 rounded-full bg-slate-700 flex items-center justify-center text-2xl border-2 border-red-500 hover:bg-slate-600"
-            >
+            <button type="button" onClick={stop}
+              className="h-16 w-16 rounded-full bg-slate-700 flex items-center justify-center text-2xl border-2 border-red-500 hover:bg-slate-600">
               ⏹️
             </button>
           )}

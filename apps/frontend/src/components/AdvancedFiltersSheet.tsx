@@ -1,26 +1,20 @@
 import React, { useState, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// ─────────────────────────────────────────────────────────────
-// FILTER SCHEMA
-// ─────────────────────────────────────────────────────────────
-
 export const DEFAULT_ADV_FILTERS = {
-  // Location
   country: '', state: '', province: '', city: '', district: '', radius: 0,
-  // Job
-  category: '', subcategory: '', profession: '', experience: '', skills: [], salary_min: '', salary_max: '', currency: 'HTG',
-  // Contract
-  contract_types: [],   // full_time | part_time | contract | temporary | internship | freelance | remote | hybrid | on_site
-  // Worker
-  languages: [], education: '', certifications: [], driving_license: false, vehicle: false, passport: false, visa: false,
-  // Company
+  category: '', subcategory: '', profession: '', experience: '',
+  skills: [] as string[], salary_min: '', salary_max: '', currency: 'HTG',
+  contract_types: [] as string[],
+  languages: [] as string[], education: '',
+  certifications: [] as string[],
+  driving_license: false, vehicle: false, passport: false, visa: false,
   verified_only: false, premium_only: false, hiring_now: false, urgent_only: false,
-  // Date
-  date_range: '',  // today | this_week | this_month
-  // Payment
-  payment_type: '',  // hourly | daily | weekly | monthly | fixed
+  date_range: '',
+  payment_type: '',
 };
+
+type AdvFilters = typeof DEFAULT_ADV_FILTERS;
 
 const COUNTRIES = [
   { code:'HT', name:'Haiti', flag:'🇭🇹' },
@@ -60,15 +54,15 @@ const SKILLS_COMMON = [
 const CURRENCIES = ['HTG', 'USD', 'EUR', 'DOP', 'MXN', 'CAD', 'GBP'];
 
 const CONTRACT_TYPES = [
-  { val:'full_time',   label:'Tan plen',        icon:'💼' },
-  { val:'part_time',   label:'Mi-tan',           icon:'⏰' },
-  { val:'contract',    label:'Kontra',           icon:'📋' },
-  { val:'temporary',   label:'Tanporè',          icon:'📅' },
-  { val:'internship',  label:'Stage',            icon:'🎓' },
-  { val:'freelance',   label:'Frilans',          icon:'🔧' },
-  { val:'remote',      label:'À distans',        icon:'🌐' },
-  { val:'hybrid',      label:'Ibrid',            icon:'🔄' },
-  { val:'on_site',     label:'Sou sit',          icon:'🏢' },
+  { val:'full_time',   label:'Tan plen',  icon:'💼' },
+  { val:'part_time',   label:'Mi-tan',    icon:'⏰' },
+  { val:'contract',    label:'Kontra',    icon:'📋' },
+  { val:'temporary',   label:'Tanporè',   icon:'📅' },
+  { val:'internship',  label:'Stage',     icon:'🎓' },
+  { val:'freelance',   label:'Frilans',   icon:'🔧' },
+  { val:'remote',      label:'À distans', icon:'🌐' },
+  { val:'hybrid',      label:'Ibrid',     icon:'🔄' },
+  { val:'on_site',     label:'Sou sit',   icon:'🏢' },
 ];
 
 const LANGUAGES_LIST = [
@@ -76,36 +70,34 @@ const LANGUAGES_LIST = [
 ];
 
 const EDUCATION_LEVELS = [
-  { val:'none',    label:'San diplòm'         },
-  { val:'primary', label:'Primè'              },
-  { val:'secondary',label:'Segondè'           },
-  { val:'vocational',label:'Vokasyonèl / CPC' },
-  { val:'bachelor',label:'Lisans'             },
-  { val:'master',  label:'Maîtrise'           },
-  { val:'phd',     label:'Doktora'            },
+  { val:'none',       label:'San diplòm'        },
+  { val:'primary',    label:'Primè'             },
+  { val:'secondary',  label:'Segondè'           },
+  { val:'vocational', label:'Vokasyonèl / CPC'  },
+  { val:'bachelor',   label:'Lisans'            },
+  { val:'master',     label:'Maîtrise'          },
+  { val:'phd',        label:'Doktora'           },
 ];
 
 const CERTS_COMMON = ['CCNA', 'PMP', 'CPA', 'ACCA', 'RN License', 'Pastry CAP', 'WSET', 'ISO 45001'];
 
 const DATE_RANGES = [
-  { val:'today',      label:'Jodia' },
+  { val:'today',      label:'Jodia'    },
   { val:'this_week',  label:'Semèn sa' },
-  { val:'this_month', label:'Mwa sa' },
+  { val:'this_month', label:'Mwa sa'   },
 ];
 
 const PAYMENT_TYPES = [
-  { val:'hourly',  label:'Pa èdtan',   icon:'⏱' },
-  { val:'daily',   label:'Pa jou',     icon:'📆' },
-  { val:'weekly',  label:'Pa semèn',   icon:'🗓' },
-  { val:'monthly', label:'Pa mwa',     icon:'📊' },
-  { val:'fixed',   label:'Pri fiks',   icon:'💰' },
+  { val:'hourly',  label:'Pa èdtan', icon:'⏱' },
+  { val:'daily',   label:'Pa jou',   icon:'📆' },
+  { val:'weekly',  label:'Pa semèn', icon:'🗓' },
+  { val:'monthly', label:'Pa mwa',   icon:'📊' },
+  { val:'fixed',   label:'Pri fiks', icon:'💰' },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// ATOMS
-// ─────────────────────────────────────────────────────────────
+interface PillProps { label: string; active: boolean; onClick: () => void; }
 
-const Pill = memo(function Pill({ label, active, onClick }) {
+const Pill = memo(function Pill({ label, active, onClick }: PillProps) {
   return (
     <button type="button" onClick={onClick}
       className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 ${
@@ -118,7 +110,9 @@ const Pill = memo(function Pill({ label, active, onClick }) {
   );
 });
 
-const Toggle = memo(function Toggle({ label, sublabel, value, onChange }) {
+interface ToggleProps { label: string; sublabel?: string; value: boolean; onChange: (v: boolean) => void; }
+
+const Toggle = memo(function Toggle({ label, sublabel, value, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-slate-800/60 last:border-0">
       <div>
@@ -138,7 +132,7 @@ const Toggle = memo(function Toggle({ label, sublabel, value, onChange }) {
   );
 });
 
-function SectionHead({ icon, label, count }) {
+function SectionHead({ icon, label, count }: { icon?: string; label: string; count?: number }) {
   return (
     <div className="flex items-center gap-2 mb-3 mt-5 first:mt-2">
       {icon && <span className="text-base">{icon}</span>}
@@ -150,7 +144,7 @@ function SectionHead({ icon, label, count }) {
   );
 }
 
-function TextInput({ value, onChange, placeholder, type = 'text' }) {
+function TextInput({ value, onChange, placeholder, type = 'text' }: { value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <input
       type={type}
@@ -162,19 +156,15 @@ function TextInput({ value, onChange, placeholder, type = 'text' }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// SECTION COMPONENTS
-// ─────────────────────────────────────────────────────────────
+type SetFn = (key: keyof AdvFilters, val: unknown) => void;
+type ToggleArrFn = (key: keyof AdvFilters, val: string) => void;
 
-function LocationSection({ local, set }) {
+function LocationSection({ local, set }: { local: AdvFilters; set: SetFn }) {
   const activeCount = [local.country, local.city, local.state, local.province, local.district].filter(Boolean).length
     + (local.radius > 0 ? 1 : 0);
-
   return (
     <>
       <SectionHead icon="📍" label="Lokasyon" count={activeCount} />
-
-      {/* Country */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Peyi</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {COUNTRIES.map(c => (
@@ -184,8 +174,6 @@ function LocationSection({ local, set }) {
             onClick={() => set('country', local.country === c.code ? '' : c.code)} />
         ))}
       </div>
-
-      {/* State / Province / City / District */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div>
           <p className="text-[10px] text-slate-500 mb-1 font-bold uppercase tracking-wide">Eta / Depatman</p>
@@ -204,8 +192,6 @@ function LocationSection({ local, set }) {
           <TextInput value={local.district} onChange={v => set('district', v)} placeholder="Delmas…" />
         </div>
       </div>
-
-      {/* Radius */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Reyon (km)</p>
       <div className="flex flex-wrap gap-1.5">
         {RADIUS_OPTIONS.map(r => (
@@ -216,30 +202,23 @@ function LocationSection({ local, set }) {
   );
 }
 
-function JobSection({ local, set, toggleArr }) {
+function JobSection({ local, set, toggleArr }: { local: AdvFilters; set: SetFn; toggleArr: ToggleArrFn }) {
   const activeCount = [local.category, local.profession, local.experience].filter(Boolean).length
     + local.skills.length
     + (local.salary_min || local.salary_max ? 1 : 0);
-
   return (
     <>
       <SectionHead icon="💼" label="Travay / Pwofesyon" count={activeCount} />
-
-      {/* Category */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Kategori</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {JOB_CATEGORIES.map(c => (
           <Pill key={c} label={c} active={local.category === c} onClick={() => set('category', local.category === c ? '' : c)} />
         ))}
       </div>
-
-      {/* Profession free text */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Pwofesyon</p>
       <div className="mb-3">
         <TextInput value={local.profession} onChange={v => set('profession', v)} placeholder="Elektrisyen, Enfimyè, Dev…" />
       </div>
-
-      {/* Experience */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Eksperyans</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {EXPERIENCE_OPTIONS.map(e => (
@@ -247,16 +226,12 @@ function JobSection({ local, set, toggleArr }) {
             onClick={() => set('experience', local.experience === e.val ? '' : e.val)} />
         ))}
       </div>
-
-      {/* Skills */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Konpetans</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {SKILLS_COMMON.map(s => (
           <Pill key={s} label={s} active={local.skills.includes(s)} onClick={() => toggleArr('skills', s)} />
         ))}
       </div>
-
-      {/* Salary */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Salè</p>
       <div className="flex gap-2 items-center mb-1">
         <select value={local.currency} onChange={e => set('currency', e.target.value)}
@@ -273,7 +248,7 @@ function JobSection({ local, set, toggleArr }) {
   );
 }
 
-function ContractSection({ local, toggleArr }) {
+function ContractSection({ local, toggleArr }: { local: AdvFilters; toggleArr: ToggleArrFn }) {
   return (
     <>
       <SectionHead icon="📋" label="Tip Kontra" count={local.contract_types.length} />
@@ -295,27 +270,22 @@ function ContractSection({ local, toggleArr }) {
   );
 }
 
-function WorkerSection({ local, set, toggleArr }) {
+function WorkerSection({ local, set, toggleArr }: { local: AdvFilters; set: SetFn; toggleArr: ToggleArrFn }) {
   const activeCount = local.languages.length + local.certifications.length
     + [local.education].filter(Boolean).length
     + (local.driving_license ? 1 : 0)
     + (local.vehicle ? 1 : 0)
     + (local.passport ? 1 : 0)
     + (local.visa ? 1 : 0);
-
   return (
     <>
       <SectionHead icon="👷" label="Travayè" count={activeCount} />
-
-      {/* Languages */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Lang</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {LANGUAGES_LIST.map(l => (
           <Pill key={l} label={l} active={local.languages.includes(l)} onClick={() => toggleArr('languages', l)} />
         ))}
       </div>
-
-      {/* Education */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Nivo Edikasyon</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {EDUCATION_LEVELS.map(e => (
@@ -323,16 +293,12 @@ function WorkerSection({ local, set, toggleArr }) {
             onClick={() => set('education', local.education === e.val ? '' : e.val)} />
         ))}
       </div>
-
-      {/* Certifications */}
       <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 font-bold">Sètifika</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {CERTS_COMMON.map(c => (
           <Pill key={c} label={c} active={local.certifications.includes(c)} onClick={() => toggleArr('certifications', c)} />
         ))}
       </div>
-
-      {/* Document toggles */}
       <div className="bg-slate-800/40 rounded-2xl px-4">
         <Toggle label="Lisans Kondwi" sublabel="Driving License" value={local.driving_license} onChange={v => set('driving_license', v)} />
         <Toggle label="Veyikil Pèsonèl" sublabel="Pwòp machin / moto" value={local.vehicle} onChange={v => set('vehicle', v)} />
@@ -343,9 +309,8 @@ function WorkerSection({ local, set, toggleArr }) {
   );
 }
 
-function CompanySection({ local, set }) {
+function CompanySection({ local, set }: { local: AdvFilters; set: SetFn }) {
   const activeCount = [local.verified_only, local.premium_only, local.hiring_now, local.urgent_only].filter(Boolean).length;
-
   return (
     <>
       <SectionHead icon="🏢" label="Antrepriz" count={activeCount} />
@@ -359,7 +324,7 @@ function CompanySection({ local, set }) {
   );
 }
 
-function DateSection({ local, set }) {
+function DateSection({ local, set }: { local: AdvFilters; set: SetFn }) {
   return (
     <>
       <SectionHead icon="📅" label="Dat Piblikasyon" count={local.date_range ? 1 : 0} />
@@ -379,7 +344,7 @@ function DateSection({ local, set }) {
   );
 }
 
-function PaymentSection({ local, set }) {
+function PaymentSection({ local, set }: { local: AdvFilters; set: SetFn }) {
   return (
     <>
       <SectionHead icon="💰" label="Tip Peman" count={local.payment_type ? 1 : 0} />
@@ -401,43 +366,43 @@ function PaymentSection({ local, set }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// SECTION TABS
-// ─────────────────────────────────────────────────────────────
-
 const SECTIONS = [
-  { id:'location', label:'📍', title:'Lokasyon'   },
-  { id:'job',      label:'💼', title:'Travay'     },
-  { id:'contract', label:'📋', title:'Kontra'     },
-  { id:'worker',   label:'👷', title:'Travayè'    },
-  { id:'company',  label:'🏢', title:'Antrepriz'  },
-  { id:'date',     label:'📅', title:'Dat'        },
-  { id:'payment',  label:'💰', title:'Peman'      },
-];
+  { id:'location', label:'📍', title:'Lokasyon'  },
+  { id:'job',      label:'💼', title:'Travay'    },
+  { id:'contract', label:'📋', title:'Kontra'    },
+  { id:'worker',   label:'👷', title:'Travayè'   },
+  { id:'company',  label:'🏢', title:'Antrepriz' },
+  { id:'date',     label:'📅', title:'Dat'       },
+  { id:'payment',  label:'💰', title:'Peman'     },
+] as const;
 
-// ─────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────
+type SectionId = (typeof SECTIONS)[number]['id'];
 
-export default function AdvancedFiltersSheet({ filters = DEFAULT_ADV_FILTERS, onApply, onClose }) {
+interface AdvancedFiltersSheetProps {
+  filters?: Partial<AdvFilters>;
+  onApply?: (f: AdvFilters) => void;
+  onClose?: () => void;
+}
+
+export default function AdvancedFiltersSheet({ filters = DEFAULT_ADV_FILTERS, onApply, onClose }: AdvancedFiltersSheetProps) {
   const { t } = useTranslation();
-  const [local, setLocal] = useState({ ...DEFAULT_ADV_FILTERS, ...filters });
-  const [activeSection, setActiveSection] = useState('location');
+  const [local, setLocal] = useState<AdvFilters>({ ...DEFAULT_ADV_FILTERS, ...filters });
+  const [activeSection, setActiveSection] = useState<SectionId>('location');
 
-  const set = useCallback((key, val) => setLocal(prev => ({ ...prev, [key]: val })), []);
+  const set = useCallback((key: keyof AdvFilters, val: unknown) =>
+    setLocal(prev => ({ ...prev, [key]: val })), []);
 
-  const toggleArr = useCallback((key, val) => {
+  const toggleArr = useCallback((key: keyof AdvFilters, val: string) => {
     setLocal(prev => {
-      const arr = prev[key] || [];
-      return { ...prev, [key]: arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val] };
+      const arr = (prev[key] as string[]) || [];
+      return { ...prev, [key]: arr.includes(val) ? arr.filter((x: string) => x !== val) : [...arr, val] };
     });
   }, []);
 
   const handleApply = () => { onApply?.(local); onClose?.(); };
   const handleReset = () => setLocal({ ...DEFAULT_ADV_FILTERS });
 
-  // Count active filters per section
-  const sectionCounts = {
+  const sectionCounts: Record<SectionId, number> = {
     location: [local.country, local.city, local.state, local.province, local.district].filter(Boolean).length + (local.radius > 0 ? 1 : 0),
     job:      [local.category, local.profession, local.experience].filter(Boolean).length + local.skills.length + (local.salary_min || local.salary_max ? 1 : 0),
     contract: local.contract_types.length,
@@ -451,13 +416,9 @@ export default function AdvancedFiltersSheet({ filters = DEFAULT_ADV_FILTERS, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-end">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Sheet */}
       <div className="relative w-full bg-[#0d1526] rounded-t-3xl z-10 flex flex-col max-h-[92vh]">
 
-        {/* ── Handle + global header ─────────────────── */}
         <div className="px-5 pt-4 pb-3 border-b border-slate-800 shrink-0">
           <div className="w-10 h-1 bg-slate-600 rounded-full absolute top-3 left-1/2 -translate-x-1/2" />
           <div className="flex items-center justify-between">
@@ -475,10 +436,9 @@ export default function AdvancedFiltersSheet({ filters = DEFAULT_ADV_FILTERS, on
           </div>
         </div>
 
-        {/* ── Section tab bar ────────────────────────── */}
         <div className="flex overflow-x-auto gap-1 px-4 py-2 border-b border-slate-800/50 shrink-0" style={{ scrollbarWidth:'none' }}>
           {SECTIONS.map(s => {
-            const count = sectionCounts[s.id] || 0;
+            const count = sectionCounts[s.id] ?? 0;
             const active = activeSection === s.id;
             return (
               <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
@@ -497,7 +457,6 @@ export default function AdvancedFiltersSheet({ filters = DEFAULT_ADV_FILTERS, on
           })}
         </div>
 
-        {/* ── Section content ────────────────────────── */}
         <div className="flex-1 overflow-y-auto px-5 py-2" style={{ scrollbarWidth:'thin' }}>
           {activeSection === 'location' && <LocationSection local={local} set={set} />}
           {activeSection === 'job'      && <JobSection      local={local} set={set} toggleArr={toggleArr} />}
@@ -506,12 +465,9 @@ export default function AdvancedFiltersSheet({ filters = DEFAULT_ADV_FILTERS, on
           {activeSection === 'company'  && <CompanySection  local={local} set={set} />}
           {activeSection === 'date'     && <DateSection     local={local} set={set} />}
           {activeSection === 'payment'  && <PaymentSection  local={local} set={set} />}
-
-          {/* Spacer */}
           <div className="h-4" />
         </div>
 
-        {/* ── Apply ─────────────────────────────────── */}
         <div className="px-5 pb-10 pt-3 border-t border-slate-800 shrink-0">
           <button type="button" onClick={handleApply}
             className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black text-sm transition-all shadow-xl shadow-amber-500/20 active:scale-[0.99]">
