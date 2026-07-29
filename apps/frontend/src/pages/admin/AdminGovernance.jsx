@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Flag, Globe, Lock, FileText, AlertTriangle,
   Scale, Heart, CheckCircle, XCircle, Clock, Search,
@@ -12,7 +12,7 @@ import {
   PERMISSION_LABELS, ROLES_WITH_PERMISSIONS,
   CONSENT_TYPE_LABELS, COUNTRY_FLAGS, COUNTRY_LABELS,
   COMPLAINT_STATUS_CONFIG, FLAG_ICONS,
-} from '../../config/governanceConfig.js';
+} from '../../config/governanceConfig';
 
 const API = '/api/v1/admin/governance';
 
