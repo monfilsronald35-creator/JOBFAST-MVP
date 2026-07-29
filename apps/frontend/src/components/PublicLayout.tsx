@@ -31,7 +31,9 @@ const STORE_LINKS = [
 // PUBLIC LAYOUT
 // ─────────────────────────────────────────────────────────────
 
-export default function PublicLayout({ children }) {
+interface PublicLayoutProps { children: React.ReactNode; }
+
+export default function PublicLayout({ children }: PublicLayoutProps) {
   const navigate  = useNavigate();
   const location  = useLocation();
 

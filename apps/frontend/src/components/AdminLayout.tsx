@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
@@ -11,7 +11,9 @@ const NAV = [
   { path: '/admin/governance', icon: '🛡', label: 'Governance'  },
 ];
 
-export default function AdminLayout({ children }) {
+interface AdminLayoutProps { children: React.ReactNode; }
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -86,7 +88,7 @@ export default function AdminLayout({ children }) {
             <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold">
               {user?.role?.toUpperCase() || 'ADMIN'}
             </span>
-            <span className="text-xs text-slate-400 font-semibold">{user?.name || 'Admin'}</span>
+            <span className="text-xs text-slate-400 font-semibold">{(user as { name?: string } | null)?.name || 'Admin'}</span>
           </div>
         </header>
 

@@ -4,10 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import { getRoleDefaultPath } from "@/config/roleConfig";
 
 // Layouts & UI Components
-import MainLayout from "@/components/MainLayout.jsx";
-import AdminLayout from "@/components/AdminLayout.jsx";
-import PublicLayout from "@/components/PublicLayout.jsx";
-import Loader from "@/components/Loader.jsx";
+import MainLayout from "@/components/MainLayout";
+import AdminLayout from "@/components/AdminLayout";
+import PublicLayout from "@/components/PublicLayout";
+import Loader from "@/components/Loader";
 
 // Auth & Public Pages
 import SplashScreen    from "@/pages/SplashScreen.jsx";

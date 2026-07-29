@@ -4,17 +4,19 @@ const BG   = '#050B18';
 const CARD = '#0d1526';
 const GOLD = '#FACC15';
 
-// Detekte si yo sou iOS Safari (pa deja enstale kòm PWA)
+type ExtendedWindow    = Window & { MSStream?: unknown };
+type ExtendedNavigator = Navigator & { standalone?: boolean };
+
 function isIOSSafari() {
   const ua = navigator.userAgent;
-  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as ExtendedWindow).MSStream;
   const isSafari = /WebKit/.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua);
   return isIOS && isSafari;
 }
 
 function isInStandaloneMode() {
   return (
-    window.navigator.standalone === true ||
+    (navigator as ExtendedNavigator).standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches
   );
 }

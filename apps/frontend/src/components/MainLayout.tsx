@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Search, Bell, User, Menu, X, Settings, LogOut,
@@ -6,6 +6,7 @@ import {
   Briefcase, Wrench, Building2, WifiOff, Mic, QrCode, Sparkles,
   ShieldAlert, Plus, RefreshCw,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "../i18n";
@@ -17,16 +18,20 @@ import InstallPrompt from "./InstallPrompt";
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────
 
-// type: 'link' | 'fab'  — 5 buttons: Home · Search · Create · Messages · Profile
-const BOTTOM_NAV = [
+type BottomNavLink = { type: 'link'; path: string; labelKey: string; icon: LucideIcon; };
+type BottomNavFAB  = { type: 'fab';  labelKey: string; };
+type BottomNavItem = BottomNavLink | BottomNavFAB;
+
+const BOTTOM_NAV: BottomNavItem[] = [
   { type: 'link', path: "/dashboard",  labelKey: "nav.home",     icon: Home          },
   { type: 'link', path: "/search",     labelKey: "nav.search",   icon: Search        },
-  { type: 'fab',  labelKey: 'nav.create'                                       },
+  { type: 'fab',  labelKey: 'nav.create'                                              },
   { type: 'link', path: "/chat",       labelKey: "nav.messages", icon: MessageSquare },
   { type: 'link', path: "/settings",   labelKey: "nav.profile",  icon: User          },
 ];
 
-const MENU_NAV = [
+interface MenuNavItem { path: string; labelKey: string; icon: LucideIcon; }
+const MENU_NAV: MenuNavItem[] = [
   { path: "/dashboard",           labelKey: "nav.home",         icon: Home       },
   { path: "/market",              labelKey: "nav.market",       icon: Globe      },
   { path: "/wallet",              labelKey: "nav.wallet",       icon: Wallet     },
@@ -41,7 +46,8 @@ const MENU_NAV = [
   { path: "/settings",            labelKey: "nav.profile",      icon: User       },
 ];
 
-const FAB_ACTIONS = [
+interface FabAction { icon: string; labelKey: string; path: string; }
+const FAB_ACTIONS: FabAction[] = [
   { icon: '💼', labelKey: 'fab.createJob',         path: '/post-job'               },
   { icon: '📖', labelKey: 'fab.createStory',       path: '/create-post'            },
   { icon: '🛠',  labelKey: 'fab.createService',     path: '/provider-dashboard'     },
@@ -53,7 +59,8 @@ const FAB_ACTIONS = [
   { icon: '🧾', labelKey: 'fab.createInvoice',     path: '/wallet'                 },
 ];
 
-const CURRENCIES = [
+interface CurrencyEntry { code: string; symbol: string; flag: string; }
+const CURRENCIES: CurrencyEntry[] = [
   { code:'HTG', symbol:'G',   flag:'🇭🇹' },
   { code:'USD', symbol:'$',   flag:'🇺🇸' },
   { code:'EUR', symbol:'€',   flag:'🇪🇺' },
@@ -63,24 +70,27 @@ const CURRENCIES = [
   { code:'GBP', symbol:'£',   flag:'🇬🇧' },
 ];
 
-const LANGS = [
+interface LangEntry { code: string; flag: string; label: string; }
+const LANGS: LangEntry[] = [
   { code: "ht", flag: "🇭🇹", label: "Kreyòl"   },
   { code: "fr", flag: "🇫🇷", label: "Français"  },
   { code: "en", flag: "🇺🇸", label: "English"   },
   { code: "es", flag: "🇩🇴", label: "Español"   },
 ];
 
-const LANG_FLAGS = { ht:"🇭🇹", fr:"🇫🇷", en:"🇺🇸", es:"🇩🇴" };
-const LANG_CODES = { ht:"HT",  fr:"FR", en:"EN", es:"ES"  };
+const LANG_FLAGS: Record<string, string> = { ht:"🇭🇹", fr:"🇫🇷", en:"🇺🇸", es:"🇩🇴" };
+const LANG_CODES: Record<string, string> = { ht:"HT",  fr:"FR", en:"EN", es:"ES"  };
 
 // ─────────────────────────────────────────────────────────────
 // SEARCH MODAL
 // ─────────────────────────────────────────────────────────────
 
-function GlobalSearchModal({ onClose }) {
-  const [query, setQuery]       = useState('');
+interface ModalProps { onClose: () => void; }
+
+function GlobalSearchModal({ onClose }: ModalProps) {
+  const [query, setQuery]         = useState('');
   const [listening, setListening] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => { inputRef.current?.focus(); }, []);
@@ -95,8 +105,13 @@ function GlobalSearchModal({ onClose }) {
   ];
 
   const handleVoice = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    type SpeechRecognitionCtor = new () => SpeechRecognition;
+    const win = window as Window & {
+      SpeechRecognition?: SpeechRecognitionCtor;
+      webkitSpeechRecognition?: SpeechRecognitionCtor;
+    };
+    const SR = win.SpeechRecognition ?? win.webkitSpeechRecognition;
+    if (!SR) return;
     const rec = new SR();
     rec.lang = 'fr-HT';
     rec.onstart = () => setListening(true);
@@ -106,7 +121,7 @@ function GlobalSearchModal({ onClose }) {
     rec.start();
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     navigate(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -167,7 +182,7 @@ function GlobalSearchModal({ onClose }) {
 // QR SCANNER MODAL (stub)
 // ─────────────────────────────────────────────────────────────
 
-function QRScannerModal({ onClose }) {
+function QRScannerModal({ onClose }: ModalProps) {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/85" onClick={onClose} />
@@ -209,7 +224,7 @@ function QRScannerModal({ onClose }) {
 // EMERGENCY MODAL
 // ─────────────────────────────────────────────────────────────
 
-function EmergencyModal({ onClose }) {
+function EmergencyModal({ onClose }: ModalProps) {
   const navigate = useNavigate();
   const EMERGENCY_ACTIONS = [
     { icon:'🚨', label:'Rapòte Ijan',     sublabel:'Djòb / Travayè',    color:'bg-red-500',   action: () => { navigate('/chat'); onClose(); } },
@@ -243,7 +258,14 @@ function EmergencyModal({ onClose }) {
 // FAB SPEED DIAL
 // ─────────────────────────────────────────────────────────────
 
-function SpeedDial({ open, onClose, actions, t }) {
+interface SpeedDialProps {
+  open:     boolean;
+  onClose:  () => void;
+  actions:  FabAction[];
+  t:        (key: string, opts?: Record<string, unknown>) => string;
+}
+
+function SpeedDial({ open, onClose, actions, t }: SpeedDialProps) {
   const navigate = useNavigate();
   if (!open) return null;
   return (
@@ -280,7 +302,9 @@ function SpeedDial({ open, onClose, actions, t }) {
 // MAIN LAYOUT
 // ─────────────────────────────────────────────────────────────
 
-export default function MainLayout({ children }) {
+interface MainLayoutProps { children: React.ReactNode; }
+
+export default function MainLayout({ children }: MainLayoutProps) {
   const navigate          = useNavigate();
   const location          = useLocation();
   const { user, logout }  = useAuth();
@@ -291,10 +315,10 @@ export default function MainLayout({ children }) {
   useEffect(() => {
     if (supported && user && !subscribed) {
       // Small delay so it doesn't interrupt the UI startup
-      const t = setTimeout(() => { subscribe().catch(() => {}); }, 3000);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => { subscribe().catch(() => {}); }, 3000);
+      return () => clearTimeout(timer);
     }
-  }, [supported, user, subscribed]);
+  }, [supported, user, subscribed, subscribe]);
 
   // UI state
   const [menuOpen,     setMenuOpen]     = useState(false);
@@ -307,19 +331,20 @@ export default function MainLayout({ children }) {
   const [aiOpen,       setAiOpen]       = useState(false);
 
   // Network status
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [offlineBanner, setOfflineBanner] = useState(false);
+  const [isOnline,     setIsOnline]     = useState(navigator.onLine);
+  const [offlineBanner,setOfflineBanner]= useState(false);
 
   // Selected currency (display only for now)
   const [activeCurrency, setActiveCurrency] = useState('HTG');
 
   // Wallet balance (live from API, fallback to user context)
-  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
   useEffect(() => {
     import('../services/wallet').then(({ walletAPI }) => {
       walletAPI.getWallet()
-        .then(r => {
-          const bal = r?.data?.balance ?? r?.data?.data?.balance;
+        .then((r: unknown) => {
+          const result = r as { data?: { balance?: number; data?: { balance?: number } } };
+          const bal = result?.data?.balance ?? result?.data?.data?.balance;
           if (bal != null) setWalletBalance(bal);
         })
         .catch(() => {});
@@ -340,7 +365,7 @@ export default function MainLayout({ children }) {
   // Close FAB on navigation
   useEffect(() => { setFabOpen(false); }, [location.pathname]);
 
-  const handleLangChange = useCallback((lang) => {
+  const handleLangChange = useCallback((lang: string) => {
     changeLanguage(lang);
     setLangOpen(false);
   }, []);
@@ -352,15 +377,16 @@ export default function MainLayout({ children }) {
     navigate("/login", { replace: true });
   }, [logout, navigate]);
 
-  const avatarSrc = user?.profileMetadata?.profilePhoto
-    || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.name || "user")}`;
+  const typedUser = user as (typeof user & { name?: string; profession?: string; profileMetadata?: { profilePhoto?: string }; location?: { city?: string } }) | null;
+  const avatarSrc = typedUser?.profileMetadata?.profilePhoto
+    || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(typedUser?.name || "user")}`;
 
   const isHome       = location.pathname === "/dashboard";
-  const userCity     = user?.location?.city || "";
+  const userCity     = typedUser?.location?.city || "";
   const currentLang  = i18n.language || "ht";
   const currentFlag  = LANG_FLAGS[currentLang] || "🌍";
   const currentCode  = LANG_CODES[currentLang]  || currentLang.toUpperCase();
-  const curData      = CURRENCIES.find(c => c.code === activeCurrency) || CURRENCIES[0];
+  const curData      = CURRENCIES.find(c => c.code === activeCurrency) || CURRENCIES[0]!;
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans antialiased">
@@ -457,7 +483,7 @@ export default function MainLayout({ children }) {
             {/* Avatar / Profile */}
             <button type="button" onClick={() => navigate("/settings")} aria-label="Profil"
               className="relative w-8 h-8 rounded-xl overflow-hidden border-2 border-amber-500/40 hover:border-amber-400 transition-all shadow-lg shadow-amber-500/10 ml-0.5 shrink-0">
-              <img src={avatarSrc} alt={user?.name || "user"} className="w-full h-full object-cover" />
+              <img src={avatarSrc} alt={typedUser?.name || "user"} className="w-full h-full object-cover" />
               <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#0b1120] ${isOnline ? 'bg-green-500' : 'bg-slate-500'}`} />
             </button>
           </div>
@@ -541,14 +567,14 @@ export default function MainLayout({ children }) {
             </div>
 
             {/* User card */}
-            {user && (
+            {typedUser && (
               <div className="mx-3 mt-3 p-3 rounded-2xl bg-gradient-to-br from-slate-800/60 to-slate-900/60 border border-slate-700/50 flex items-center gap-3 shrink-0">
-                <img src={avatarSrc} alt={user.name || "user"}
+                <img src={avatarSrc} alt={typedUser.name || "user"}
                   className="w-11 h-11 rounded-xl border-2 border-amber-500/30 object-cover shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{user.name}</p>
+                  <p className="text-sm font-bold text-white truncate">{typedUser.name}</p>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 truncate">
-                    {user.profession || user.role}
+                    {typedUser.profession || typedUser.role}
                   </p>
                   <div className="flex items-center gap-1 mt-0.5">
                     <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`} />
@@ -582,8 +608,8 @@ export default function MainLayout({ children }) {
               <p className="text-[9px] text-slate-500 uppercase tracking-widest font-black mb-2">Aksyon Rapid</p>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { icon:<Sparkles className="w-4 h-4" />, label:'AI',    action:() => { sounds.open(); setMenuOpen(false); setAiOpen(true);      } },
-                  { icon:<QrCode className="w-4 h-4" />,   label:'QR',    action:() => { sounds.click(); setMenuOpen(false); setQrOpen(true);       } },
+                  { icon:<Sparkles className="w-4 h-4" />, label:'AI',    action:() => { sounds.open();      setMenuOpen(false); setAiOpen(true);       } },
+                  { icon:<QrCode className="w-4 h-4" />,   label:'QR',    action:() => { sounds.click();     setMenuOpen(false); setQrOpen(true);       } },
                   { icon:<ShieldAlert className="w-4 h-4" />,label:'SOS', action:() => { sounds.emergency(); setMenuOpen(false); setEmergencyOpen(true);} },
                 ].map(qa => (
                   <button key={qa.label} type="button" onClick={qa.action}
@@ -624,7 +650,7 @@ export default function MainLayout({ children }) {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-end justify-around h-16 px-0.5 relative">
-          {BOTTOM_NAV.map((item, idx) => {
+          {BOTTOM_NAV.map((item) => {
 
             /* ── FAB ─────────────────────────────────────── */
             if (item.type === 'fab') return (
@@ -678,7 +704,7 @@ export default function MainLayout({ children }) {
       </nav>
 
       {/* ── Speed dial overlay ───────────────────────────────────── */}
-      <SpeedDial open={fabOpen} onClose={() => setFabOpen(false)} actions={FAB_ACTIONS} t={t} />
+      <SpeedDial open={fabOpen} onClose={() => setFabOpen(false)} actions={FAB_ACTIONS} t={t as SpeedDialProps['t']} />
 
       {/* AI Assistant modal — triggered from drawer Quick Actions */}
       {aiOpen && (

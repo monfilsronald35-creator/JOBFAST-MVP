@@ -1,9 +1,13 @@
-
 import React, { useEffect, useRef, useState } from "react";
 
-function Loader({ text = "Chaje opòtinite...", showProgress = true }) {
+interface LoaderProps {
+  text?:         string;
+  showProgress?: boolean;
+}
+
+function Loader({ text = "Chaje opòtinite...", showProgress = true }: LoaderProps) {
   const [progress, setProgress] = useState(5);
-  const rafRef = useRef(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!showProgress) return;
@@ -15,7 +19,7 @@ function Loader({ text = "Chaje opòtinite...", showProgress = true }) {
 
       if (current >= 98) {
         setProgress(98);
-        cancelAnimationFrame(rafRef.current);
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
         return;
       }
 
@@ -25,7 +29,9 @@ function Loader({ text = "Chaje opòtinite...", showProgress = true }) {
 
     rafRef.current = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
   }, [showProgress]);
 
   const isComplete = progress >= 98;
