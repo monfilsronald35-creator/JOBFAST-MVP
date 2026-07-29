@@ -60,7 +60,7 @@ import {
   Rocket,
   Globe2,
 } from 'lucide-react';
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { followUser, unfollowUser, isFollowing, saveUser, unsaveUser, isSaved } from '../services/social';
@@ -719,6 +719,164 @@ function SkillsSection({ profile }) {
         </div>
       </div>
     </GlassCard>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PublicProfileScreen — main default export
+// ─────────────────────────────────────────────────────────────────────────────
+export default function PublicProfileScreen() {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const motion_ = useHeroMotion();
+
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [followed, setFollowed] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const { ref: statsRef, ready: statsReady } = useDeferredSection(0);
+  const { ref: timelineRef, ready: timelineReady } = useDeferredSection(80);
+  const { ref: reviewsRef, ready: reviewsReady } = useDeferredSection(160);
+  const { ref: trustRef, ready: trustReady } = useDeferredSection(240);
+  const { ref: aiRef, ready: aiReady } = useDeferredSection(300);
+  const { ref: portfolioRef, ready: portfolioReady } = useDeferredSection(360);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    API.get(`/profiles/${userId}/public`)
+      .then(res => {
+        if (cancelled) return;
+        setProfile(res.data);
+        setFollowed(isFollowing(userId));
+        setSaved(isSaved(userId));
+      })
+      .catch(err => {
+        if (cancelled) return;
+        setError(err?.response?.data?.message ?? 'Profile not found');
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  const handleFollow = useCallback(() => {
+    if (!authUser) { navigate('/login'); return; }
+    if (followed) { unfollowUser(userId); setFollowed(false); }
+    else { followUser(userId); setFollowed(true); }
+  }, [followed, userId, authUser, navigate]);
+
+  const handleSave = useCallback(() => {
+    if (!authUser) { navigate('/login'); return; }
+    if (saved) { unsaveUser(userId); setSaved(false); }
+    else { saveUser(userId); setSaved(true); }
+  }, [saved, userId, authUser, navigate]);
+
+  const handleMessage = useCallback(() => {
+    if (!authUser) { navigate('/login'); return; }
+    navigate(`/chat?with=${userId}`);
+  }, [userId, authUser, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen" style={{ background: BG }}>
+        <div className="p-4 space-y-4">
+          <SkeletonBlock className="h-64 w-full" />
+          <SkeletonBlock className="h-32 w-full" />
+          <SkeletonBlock className="h-24 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+        <div className="text-center p-8">
+          <p className="text-lg font-bold text-white mb-2">{error ?? 'Profile unavailable'}</p>
+          <button onClick={() => navigate(-1)} className="text-sm text-amber-400 underline">Go back</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen pb-10" style={{ background: BG }}>
+      <HeroSection
+        profile={profile}
+        followed={followed}
+        saved={saved}
+        onFollow={handleFollow}
+        onSave={handleSave}
+        navigate={navigate}
+        onMessage={handleMessage}
+      />
+
+      <div className="px-4 max-w-2xl mx-auto space-y-4 mt-4">
+        <LivePresenceCard profile={profile} />
+        <DistanceCard profile={profile} />
+
+        {profile.skills?.length > 0 && <SkillsSection profile={profile} />}
+        {profile.languages?.length > 0 && <LanguagesSection profile={profile} />}
+
+        <ReputationEngine profile={profile} />
+        <GlobalVerification profile={profile} />
+        <PaymentTrust profile={profile} />
+        <AIResumeActions />
+
+        <div ref={statsRef}>
+          {statsReady && (
+            <Suspense fallback={<SkeletonBlock className="h-40 w-full" />}>
+              <StatsSection profile={profile} />
+            </Suspense>
+          )}
+        </div>
+
+        <div ref={timelineRef}>
+          {timelineReady && (
+            <Suspense fallback={<SkeletonBlock className="h-40 w-full" />}>
+              <TimelineSection profile={profile} />
+            </Suspense>
+          )}
+        </div>
+
+        <div ref={reviewsRef}>
+          {reviewsReady && (
+            <Suspense fallback={<SkeletonBlock className="h-40 w-full" />}>
+              <ReviewsSection profile={profile} />
+            </Suspense>
+          )}
+        </div>
+
+        <div ref={trustRef}>
+          {trustReady && (
+            <Suspense fallback={<SkeletonBlock className="h-40 w-full" />}>
+              <TrustCenterSection profile={profile} />
+            </Suspense>
+          )}
+        </div>
+
+        <div ref={aiRef}>
+          {aiReady && (
+            <Suspense fallback={<SkeletonBlock className="h-40 w-full" />}>
+              <AICareerSection profile={profile} />
+            </Suspense>
+          )}
+        </div>
+
+        <div ref={portfolioRef}>
+          {portfolioReady && (
+            <Suspense fallback={<SkeletonBlock className="h-40 w-full" />}>
+              <PortfolioSection profile={profile} />
+            </Suspense>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
  

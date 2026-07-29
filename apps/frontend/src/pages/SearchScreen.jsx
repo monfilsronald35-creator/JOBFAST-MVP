@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useState,
   useEffect,
   useRef,
@@ -102,7 +102,7 @@ const ResultCard = memo(function ResultCard({
       ? "🟡 Busy"
       : "🔴 Offline";
 
-  // Nou PA sèvi ak DiceBear. Avatar soti nan CDN ou. [web:1154]
+  // Nou PA sèvi ak DiceBear. Avatar soti nan CDN ou.
   // Egzanp: profileMetadata.profilePhotoPath = "/avatars/user123.jpg"
   let avatarSrc = item.photo || item.profileMetadata?.profilePhotoUrl || "";
   if (!avatarSrc && item.profileMetadata?.profilePhotoPath) {
@@ -230,8 +230,8 @@ const ResultCard = memo(function ResultCard({
         <button
           onClick={onChat}
           className="flex-1 py-2.5 text-[11px] font-bold text-blue-400 flex items-center justify-center gap-1 hover:bg-blue-500/10 transition border-l border-[#1e2d45]"
-        ></button>
-         💬 {t("search.chat")}
+        >
+          💬 {t("search.chat")}
         </button>
         <button
           onClick={onRate}
@@ -339,7 +339,7 @@ const FilterBar = memo(function FilterBar({
 });
 
 /* ================== POPULAR / RECENT / AI SUGGESTIONS ================== */
-// NOTE: nan prod, ranplase localStorage ak IndexedDB (Dexie) + Supabase sync pou history/favorites offline. [web:1142]
+// NOTE: nan prod, ranplase localStorage ak IndexedDB (Dexie) + Supabase sync pou history/favorites offline.
 
 function loadRecentSearches() {
   try {
@@ -422,7 +422,7 @@ function flushAnalytics(useBeacon = false) {
   const body = JSON.stringify({ events: batch });
 
   if (useBeacon && navigator.sendBeacon) {
-    // sendBeacon se ideyal pou analytics lè paj ap fèmen. [web:1149][web:1153]
+    // sendBeacon se ideyal pou analytics lè paj ap fèmen.
     const blob = new Blob([body], { type: "application/json" });
     navigator.sendBeacon(url, blob);
     return;
@@ -576,7 +576,7 @@ export default function SearchScreen() {
           items,
         })
       );
-      // Nan prod, mete tou nan IndexedDB pou offline global (providers, jobs, companies, favorites, history). [web:1142]
+      // Nan prod, mete tou nan IndexedDB pou offline global (providers, jobs, companies, favorites, history).
     } catch {
       // ignore
     }

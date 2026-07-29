@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useState,
   useRef,
   useCallback,
@@ -17,13 +17,13 @@ import {
   useMutation,
 } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
-import { useWindowVirtualizer } from "@tanstack/react-virtual"; // Virtualization reyèl [web:61][web:67]
+import { useWindowVirtualizer } from "@tanstack/react-virtual"; // Virtualization reyèl
 
 // Hook offline queue (IndexedDB / localForage) – implementasyon reyèl ap fèt an deyò
 import { useOfflineQueue } from "../hooks/useOfflineQueue"; // stub pou JOBFAST
 
 // Modals/Viewers code-splitted nan fichye separe
-const EditModal = lazy(() => import("./EditModal"));   // [web:52][web:54][web:59]
+const EditModal = lazy(() => import("./EditModal"));   //
 const PostModal = lazy(() => import("./PostModal"));
 const PostViewer = lazy(() => import("./PostViewer"));
 
@@ -361,11 +361,11 @@ function ProfileScreenInner() {
     refetchOnWindowFocus: false,
     retry: 3,
     networkMode: "online",
-  }); [web:47][web:21]
+  });
 
   const allPosts = data?.pages?.flatMap((p) => p.posts) ?? [];
 
-  // Virtualization pou grid la – 2 / 3 / 4 / 5 kolòn depann de tailwind, men virtualizer ranje DOM la. [web:61][web:65]
+  // Virtualization pou grid la – 2 / 3 / 4 / 5 kolòn depann de tailwind, men virtualizer ranje DOM la.
   const parentRef = useRef(null);
   const virtualizer = useWindowVirtualizer({
     count: allPosts.length,
@@ -439,7 +439,7 @@ function ProfileScreenInner() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["profileFeed", userId] });
     },
-  }); [web:41][web:62][web:66]
+  });
   
   const handlePostCreated = useCallback(
     (postPayload) => {
@@ -701,7 +701,7 @@ function ProfileScreenInner() {
                     right: 0,
                     padding: "2px",
                   }}
-                ></div>
+                >
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-0.5">
                     <FeedPostCard post={post} onOpen={setViewer} />
                   </div>

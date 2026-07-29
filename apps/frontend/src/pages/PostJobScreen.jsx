@@ -1,4 +1,4 @@
-// src/pages/PostJobScreen.jsx
+﻿// src/pages/PostJobScreen.jsx
 import React, {
   useState,
   useEffect,
@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next";
 import { createJob } from "../services/jobs";
 import { useOfflineQueue } from "../hooks/useOfflineQueue";
 import { useRetryEngine } from "../hooks/useRetryEngine";
-import { useUploadQueue } from "../hooks/useUploadQueue";   // concurrency + progress + cancel/resume [web:85]
-import { useJobDraft } from "../hooks/useJobDraft";         // autosave + versioning + unsaved warning [web:70][web:74]
+import { useUploadQueue } from "../hooks/useUploadQueue";   // concurrency + progress + cancel/resume
+import { useJobDraft } from "../hooks/useJobDraft";         // autosave + versioning + unsaved warning
 import { useGeoLocation } from "../hooks/useGeoLocation";   // GPS + reverse geocoding + cache
-import { useJobAI } from "../hooks/useJobAI";               // debounced AI (category/salary/skills/moderation) [web:79][web:86]
+import { useJobAI } from "../hooks/useJobAI";               // debounced AI (category/salary/skills/moderation)
 
 const JOB_CATEGORY_IDS = ["construction", "services", "business", "jobs"];
 const PAYMENT_TYPE_IDS  = ["fixed", "hourly", "negotiable"];
@@ -70,7 +70,7 @@ export default function PostJobScreen() {
     clearDraft,
     markDirty,
     hasUnsavedChanges,
-  } = useJobDraft(DRAFT_KEY); // internally use IndexedDB/localStorage + debounce [web:70][web:78]
+  } = useJobDraft(DRAFT_KEY); // internally use IndexedDB/localStorage + debounce
 
   // Restore draft
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function PostJobScreen() {
     setManualLocation,
     gpsLoading,
     gpsError,
-  } = useGeoLocation(); // pa bloke, toujou pèmèt manual [web:70]
+  } = useGeoLocation(); // pa bloke, toujou pèmèt manual
 
   useEffect(() => {
     if (locationLabel) {
@@ -128,7 +128,7 @@ export default function PostJobScreen() {
     category: formData.category,
     experienceLevel: formData.experienceLevel,
     location: formData.location,
-  }); // debaounced 700ms anndan hook la [web:79][web:86]
+  }); // debaounced 700ms anndan hook la
 
   /* =============== OFFLINE QUEUE + RETRY ENGINE + UPLOAD QUEUE =============== */
 
@@ -145,7 +145,7 @@ export default function PostJobScreen() {
     maxConcurrency: 3,
     maxSizeBytes: MAX_IMAGE_SIZE,
     allowedTypes: ALLOWED_TYPES,
-  }); // concurrency limit, resumable, cancel/resume, background [web:85]
+  }); // concurrency limit, resumable, cancel/resume, background
 
   /* =============== HELPERS =============== */
 
@@ -190,7 +190,7 @@ export default function PostJobScreen() {
           const text =
             name === "title" ? value : next.description;
           if (text.trim().length > 10) {
-            requestCategory(text);   // hooked debounce, pa spam API [web:79][web:86]
+            requestCategory(text);   // hooked debounce, pa spam API
             requestSkills(text);
           }
         }
@@ -358,7 +358,7 @@ export default function PostJobScreen() {
           .toString(16)
           .slice(2)}`;
 
-        // Upload an paralèl ak concurrency limit, pa sequential [web:81][web:85]
+        // Upload an paralèl ak concurrency limit, pa sequential
         const fileIds = formData.images.map((i) => i.fileId);
         const uploadedFiles = await uploadAllWithConcurrency(fileIds, {
           metadata: { kind: "job-image", idempotencyKey },
@@ -401,7 +401,7 @@ export default function PostJobScreen() {
           return;
         }
 
-        // Retry engine + backend validation (server se source-of-truth) [web:85]
+        // Retry engine + backend validation (server se source-of-truth)
         const res = await runWithRetry(() => createJob(payload));
 
         clearFiles(fileIds);

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WorkerDashboard.jsx — Premium Enterprise v2.0
  *
  * Worker-specific dashboard sections rendered inside Dashboard.jsx
@@ -7,8 +7,8 @@
  *
  * Nivo vizyèl: Uber Driver + LinkedIn Premium + Stripe Dashboard style.
  * - Hero Card (Good Morning + AI Score + Trust + Today Revenue + Nearby Jobs).
- * - Glassmorphism, Dynamic Blur, Depth, Soft Shadows, Premium Typography. [web:260]
- * - Motion Design (Fade, Scale, Spring, Card Expand, Micro Animations). [web:239]
+ * - Glassmorphism, Dynamic Blur, Depth, Soft Shadows, Premium Typography.
+ * - Motion Design (Fade, Scale, Spring, Card Expand, Micro Animations).
  * - Mini Design System: Section, StatCard, HeroCard, PillBadge.
  */
 
@@ -24,7 +24,7 @@ import {
   RefreshCcw,
   ChevronRight,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';        // Motion [web:239]
+import { motion, AnimatePresence } from 'framer-motion';        // Motion
 import { useAuth } from '../../context/AuthContext';
 import API from '../../api/axios';
 

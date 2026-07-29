@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect, useCallback, memo, lazy, Suspense 
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CATEGORIES, PROFESSION_METADATA } from '../constants/categories';
-import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowLeft, Star, Share2, Bookmark, Play, Phone, MessageCircle, MapPin, ShieldCheck,
   BadgeCheck, Sparkles, Eye, BriefcaseBusiness, Clock3, Route, Wifi, Heart, FileText,

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CategoryMarketplace — Enterprise Page Wrapper v3.1
  *
  * Route: /marketplace/:categoryId
@@ -9,7 +9,7 @@
  *   - AI Context pa depann de browser; li vini soti nan backend User Context API.
  *   - Security Layer relye ak backend: JWT rotation, refresh, WebAuthn/Passkey, device fingerprint, risk engine, rate limiter, CSRF, encryption.
  *   - Analytics kolekte tout events (listing view/search/filter/map/call/chat/booking/payment/cancel/favorite/review/conversion/revenue/retention/session/heatmap/AI prediction).
- *   - Smart Prefetch sèvi ak TanStack Query (React Query) `queryClient.prefetchQuery` olye callback vid. [web:146][web:152]
+ *   - Smart Prefetch sèvi ak TanStack Query (React Query) `queryClient.prefetchQuery` olye callback vid.
  *   - Voice AI sipòte English/Español/Français/Kreyòl epi voye transcript nan AI Search Engine.
  *   - Notification Hub konekte ak Firebase, WebSocket, Push, In-App, SMS, Email.
  *   - Mission Control Dashboard gen AI Revenue/Forecast/Orders/Drivers/Workers/Hotels/Flights/Restaurants/Weather/Traffic/Emergency/Wallet/Crypto/FX/Live Users/Server/API Health/Fraud/Security alerts.
@@ -29,8 +29,8 @@ import { ArrowLeft, Share2, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MarketplaceCore from '../components/marketplace/MarketplaceCore';
 import { getMarketplaceConfig } from '../config/marketplaceConfig';
-import { useQueryClient } from '@tanstack/react-query';           // TanStack Query [web:146][web:152]
-import { Responsive } from 'react-responsive';
+import { useQueryClient } from '@tanstack/react-query';           // TanStack Query
+import { MediaQuery } from 'react-responsive';
 import { useNotificationSocket } from '../hooks/useNotificationSocket'; // WebSocket (custom hook)
 import { useFirebaseMessaging } from '../hooks/useFirebaseMessaging';   // Firebase Push (custom hook)
 import { aiSearchClient } from '../services/aiSearchClient';             // AI Search Engine (backend client)
@@ -69,7 +69,7 @@ async function shareCategoryUrl(categoryId, title) {
 }
 
 // ─── AI Context Engine (backend-driven) ───────────────────────
-// Pa depann de navigator.*; li fè 1 API call pou konplè user context (profile/subscription/wallet/permissions/geo/behavior/risk/trust/lang/currency/timezone/weather/traffic/events). [web:136]
+// Pa depann de navigator.*; li fè 1 API call pou konplè user context (profile/subscription/wallet/permissions/geo/behavior/risk/trust/lang/currency/timezone/weather/traffic/events).
 function useAIContext(safeId) {
   const [context, setContext] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -127,7 +127,7 @@ function usePerformanceMonitor(categoryId) {
 }
 
 // ─── Smart Prefetch (React Query) ─────────────────────────────
-// Prefetch Hotel/Listing data (details/reviews/availability/map/photos/owner) avan click. [web:146][web:152]
+// Prefetch Hotel/Listing data (details/reviews/availability/map/photos/owner) avan click.
 function useSmartPrefetch() {
   const queryClient = useQueryClient();
 
@@ -171,7 +171,7 @@ function useSmartPrefetch() {
 }
 
 // ─── Enterprise Security Layer (backend-connected) ────────────
-// JWT Rotation, Refresh Token, Passkey/WebAuthn, FaceID/TouchID (native bridge), Risk Engine, Device Fingerprint, Rate Limiter, Session Manager, Token Binding, CSRF, CAPTCHA, Encryption. [web:144][web:150]
+// JWT Rotation, Refresh Token, Passkey/WebAuthn, FaceID/TouchID (native bridge), Risk Engine, Device Fingerprint, Rate Limiter, Session Manager, Token Binding, CSRF, CAPTCHA, Encryption.
 function useEnterpriseSecurity() {
   useEffect(() => {
     let cancelled = false;
@@ -212,7 +212,7 @@ function useEnterpriseSecurity() {
 }
 
 // ─── Offline Engine (full) ────────────────────────────────────
-// IndexedDB, Background Sync, Delta Sync, Conflict Resolution, Retry Queue, Upload Queue, Image/Video/Priority cache. [web:129]
+// IndexedDB, Background Sync, Delta Sync, Conflict Resolution, Retry Queue, Upload Queue, Image/Video/Priority cache.
 function useGlobalOfflineEngine() {
   useEffect(() => {
     let cancelled = false;
@@ -253,7 +253,7 @@ function useLiveCollaboration(categoryId) {
 }
 
 // ─── Analytics (full event model) ─────────────────────────────
-// Listing View, Search, Filter, Map Open, Call, Chat, Booking, Payment, Cancel, Favorite, Review, Conversion, Revenue, Retention, Session Length, Heatmap, AI Prediction. [web:149][web:150]
+// Listing View, Search, Filter, Map Open, Call, Chat, Booking, Payment, Cancel, Favorite, Review, Conversion, Revenue, Retention, Session Length, Heatmap, AI Prediction.
 function useMarketplaceAnalytics(categoryId) {
   useEffect(() => {
     analyticsClient.trackEvent('category_view', { categoryId });
@@ -530,10 +530,10 @@ const CategoryNavBar = memo(function CategoryNavBar({
 function ResponsiveLayout({ mobile, tablet, desktop, vision }) {
   return (
     <>
-      <Responsive displayIn={['Mobile']}>{mobile}</Responsive>
-      <Responsive displayIn={['Tablet']}>{tablet}</Responsive>
-      <Responsive displayIn={['Laptop']}>{desktop}</Responsive>
-      <Responsive displayIn={['LargerThanLaptop']}>{vision || desktop}</Responsive>
+      <MediaQuery maxWidth={639}>{mobile}</MediaQuery>
+      <MediaQuery minWidth={640} maxWidth={1023}>{tablet}</MediaQuery>
+      <MediaQuery minWidth={1024} maxWidth={1279}>{desktop}</MediaQuery>
+      <MediaQuery minWidth={1280}>{vision || desktop}</MediaQuery>
     </>
   );
 }

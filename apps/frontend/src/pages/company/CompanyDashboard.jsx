@@ -1,13 +1,13 @@
-/**
+﻿/**
  * CompanyDashboard.jsx — Enterprise AI Business Command Center v3.0
  *
  * Real-time • AI • Enterprise modules:
- * - Multi-stream WebSocket/SSE live updates (applicants, payments, messages, GPS, jobs). [web:354]
+ * - Multi-stream WebSocket/SSE live updates (applicants, payments, messages, GPS, jobs).
  * - AI Decision Engine (dynamic briefing & recommendations).
  * - Role-based permission dashboards (CEO, Director, HR, Finance, PM, Branch Manager, etc.).
- * - Notification Center (timeline, priority, read/unread, AI/system/security/payment/GPS alerts). [web:351][web:355]
- * - Full Analytics shell (heatmaps, revenue/cashflow/payroll, funnels, comparisons, rankings). [web:348][web:352]
- * - Google Maps Enterprise shell (live workers/jobs/clients/routes/ETA/traffic). [web:347]
+ * - Notification Center (timeline, priority, read/unread, AI/system/security/payment/GPS alerts).
+ * - Full Analytics shell (heatmaps, revenue/cashflow/payroll, funnels, comparisons, rankings).
+ * - Google Maps Enterprise shell (live workers/jobs/clients/routes/ETA/traffic).
  * - Wallet Center, Enterprise search, Quick Actions, AI Command Center, Enterprise modules placeholders.
  */
 
@@ -143,7 +143,7 @@ export function computeCompanyCompleteness(user) {
 //  - messages     → /ws/messages
 //  - gpsWorkers   → /ws/gps
 //  - jobs         → /ws/jobs
-// Ou ka adapte URL yo ak backend ou. [web:354][web:346]
+// Ou ka adapte URL yo ak backend ou.
 
 function useRealtimeStreams(user, onEvents) {
   useEffect(() => {
@@ -295,7 +295,7 @@ function StatusBadge({ status }) {
 // ─────────────────────────────────────────────────────────────
 //
 // Sa a analize KPI yo + real-time events pou pwodwi fraz AI (basic client-side engine).
-// Ou ka remplace ak backend AI API (GPT, etc.). [web:353]
+// Ou ka remplace ak backend AI API (GPT, etc.).
 
 function computeAIBriefing(user, runtimeState) {
   const cd = user?.companyData || {};
@@ -509,7 +509,7 @@ const RealAnalyticsShell = memo(function RealAnalyticsShell({ user }) {
         <div className="space-y-2">
           <p className="text-[10px] text-slate-200 font-semibold">Revenue • Cashflow • Payroll</p>
           <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
-            {/* Line/area charts (Recharts/D3/Chart.js). [web:352] */}
+            {/* Line/area charts (Recharts/D3/Chart.js). */}
             <div className="w-full h-full bg-[linear-gradient(to_top,rgba(34,197,94,0.35),transparent),linear-gradient(to_right,rgba(59,130,246,0.4),transparent)] animate-[pulse_3s_infinite]" />
           </div>
           <p className="text-[10px] text-slate-300">
@@ -992,6 +992,36 @@ export default function CompanyDashboard({ user }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Named exports required by Dashboard.jsx ────────────────────────────────
+
+export const COMPANY_TABS = [
+  { id: 'overview',   icon: '🏠', label: 'Overview' },
+  { id: 'employees',  icon: '👥', label: 'Employees' },
+  { id: 'hiring',     icon: '📋', label: 'Hiring' },
+  { id: 'projects',   icon: '📁', label: 'Projects' },
+  { id: 'branches',   icon: '🌐', label: 'Branches' },
+  { id: 'analytics',  icon: '📊', label: 'Analytics' },
+];
+
+export function CompanyOverviewSupplement({ user }) {
+  const kpis = [
+    { label: 'Employees',    value: user?.employeeCount   ?? 0 },
+    { label: 'Open Jobs',    value: user?.openJobs        ?? 0 },
+    { label: 'Projects',     value: user?.activeProjects  ?? 0 },
+    { label: 'Revenue MTD',  value: user?.revenueMTD      != null ? String(user.revenueMTD) : '—' },
+  ];
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {kpis.map(({ label, value }) => (
+        <div key={label} className="rounded-xl bg-slate-900/60 border border-slate-800 p-3">
+          <p className="text-xs text-slate-400">{label}</p>
+          <p className="text-lg font-black text-white">{value}</p>
+        </div>
+      ))}
     </div>
   );
 }

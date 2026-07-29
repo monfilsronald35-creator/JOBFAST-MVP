@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useState,
   useEffect,
   useMemo,
@@ -81,7 +81,7 @@ const Skeleton = ({ className }) => (
   <div className={`animate-pulse bg-slate-800/60 rounded-xl ${className}`} />
 );
 
-// --- Simple Error Boundary per tab (enterprise pattern) [web:261][web:384][web:387] ---
+// --- Simple Error Boundary per tab (enterprise pattern) ---
 class TabErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -152,7 +152,7 @@ export default function WorkerProfilePage() {
   const avatarSrc = user?.profileMetadata?.profilePhoto
     || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.name || 'user')}`;
 
-  // --- Fetch data: Promise.allSettled so one failing API doesn't crash page [web:388][web:389][web:391] ---
+  // --- Fetch data: Promise.allSettled so one failing API doesn't crash page ---
   useEffect(() => {
     let isMounted = true;
 

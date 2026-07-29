@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HomeMarketplace.jsx
  *
  * JOBFAST Super App Home (premium UI + performance + AI + realtime + security + 3D).
@@ -26,8 +26,6 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
-  lazy,
-  Suspense,
   memo,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -44,13 +42,7 @@ import {
 } from "../config/marketplaceConfig";
 import EmptyState from "../components/EmptyState";
 
-// Lazy heavy sections
-const PremiumHeroLazy = lazy(() => import("./PremiumHero"));
-const StoryStripLazy = lazy(() => import("./StoryStrip"));
-const MapPreviewLazy = lazy(() => import("./MapPreview"));
-const FeaturedBannerLazy = lazy(() => import("./FeaturedBanner"));
-
-// Responsive hero video sources ladder (adaptive bitrate style) [web:49]
+// Responsive hero video sources ladder (adaptive bitrate style)
 const HERO_VIDEO_SRC_1080 = "/assets/video/hero-jobfast-1080p.mp4";
 const HERO_VIDEO_SRC_720 = "/assets/video/hero-jobfast-720p.mp4";
 const HERO_VIDEO_SRC_480 = "/assets/video/hero-jobfast-480p.mp4";
@@ -464,7 +456,7 @@ function PremiumHero({ roleLabel, metrics, persona }) {
   const [videoError, setVideoError] = useState(false);
   const [videoSrc, setVideoSrc] = useState(HERO_VIDEO_SRC_1080);
 
-  // Simple network speed check via small image timing. [web:49]
+  // Simple network speed check via small image timing.
   useEffect(() => {
     const width = window.innerWidth;
 
@@ -891,3 +883,131 @@ const StoryStrip = memo(function StoryStrip({ stories }) {
     </div>
   );
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HomeMarketplace — main page component
+// ─────────────────────────────────────────────────────────────────────────────
+const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+const DEMO_LIVE = {
+  workersOnline: 1247,
+  jobsLive: 894,
+  ordersLive: 312,
+  taxisAvailable: 67,
+};
+
+const DEMO_STORIES = [
+  { id: "s1", title: "Plombier disponib", image: "/assets/stories/plombier.webp", blur: "/assets/stories/plombier-blur.jpg" },
+  { id: "s2", title: "Chef kwizin", image: "/assets/stories/chef.webp", blur: "/assets/stories/chef-blur.jpg" },
+  { id: "s3", title: "Sekretè bilingèl", image: "/assets/stories/secretary.webp", blur: "/assets/stories/secretary-blur.jpg" },
+];
+
+const DEMO_METRICS = [
+  { label: "Workers online", value: 1247 },
+  { label: "Jobs live", value: 894 },
+  { label: "Countries", value: 12 },
+];
+
+export default function HomeMarketplace() {
+  const { user } = useAuth();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const theme = useAutoTheme(user?.themePreference);
+  useSecurityHardening();
+  useMarketplaceFinance();
+
+  const [activeTab, setActiveTab] = useState("home");
+  const [live, setLive] = useState(DEMO_LIVE);
+  const [stories] = useState(DEMO_STORIES);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const categories = useMemo(() => getAllCategoryConfigs(), []);
+  const isProvider = useMemo(() => isMarketplaceProvider(user?.role), [user?.role]);
+
+  // Socket.io live data
+  useEffect(() => {
+    const socket = io(SOCKET_URL, { transports: ["websocket"], reconnection: true });
+    socket.on("marketplace:live", (data) => setLive((prev) => ({ ...prev, ...data })));
+    return () => socket.disconnect();
+  }, []);
+
+  const handleCategoryPress = useCallback(
+    (config) => navigate(`/marketplace/${config.role}`),
+    [navigate]
+  );
+
+  const handleSearchChange = useCallback(({ query }) => setSearchQuery(query), []);
+
+  const roleLabel = user?.role
+    ? t(`roles.${user.role}`, user.role)
+    : t("roles.guest", "Guest");
+
+  return (
+    <div
+      className="min-h-screen pb-24"
+      style={{ background: theme?.bg || "#020617", color: theme?.text || "#fff" }}
+    >
+      {/* Hero / AI briefing */}
+      <PremiumHero roleLabel={roleLabel} metrics={DEMO_METRICS} persona={user?.persona} />
+
+      <div className="px-4 max-w-2xl mx-auto">
+        {/* Search bar */}
+        <MarketplaceSearchBar
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onVoice={() => {}}
+          onAISearch={() => setAiOpen(true)}
+          onImageSearch={() => {}}
+          onQRSearch={() => {}}
+        />
+
+        {/* Live marketplace stats */}
+        <LiveMarketplaceStrip live={live} />
+
+        {/* Stories */}
+        <StoryStrip stories={stories} />
+
+        {/* Category grid */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {categories.map((config) => (
+            <CategoryCard
+              key={config.role}
+              config={config}
+              stats={null}
+              onClick={() => handleCategoryPress(config)}
+            />
+          ))}
+        </div>
+
+        {/* Map preview (Google Maps shell) */}
+        <MapPreview />
+
+        {/* Featured banner */}
+        <FeaturedBanner />
+
+        {/* Provider finance features */}
+        {isProvider && (
+          <LiveTicker items={[
+            { label: t("finance.auction", "Auction"), value: "Active" },
+            { label: t("finance.escrow", "Escrow"), value: "Enabled" },
+            { label: t("finance.loyalty", "Loyalty"), value: "12pts" },
+          ]} />
+        )}
+      </div>
+
+      {/* AI floating assistant */}
+      <AIAssistant onOpen={() => setAiOpen(true)} />
+      <AIAssistantPanel
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        user={user}
+        onRunQuery={(q) => navigate(`/search?q=${encodeURIComponent(q)}`)}
+      />
+
+      {/* Bottom navigation */}
+      <BottomNav active={activeTab} onChange={setActiveTab} />
+    </div>
+  );
+}

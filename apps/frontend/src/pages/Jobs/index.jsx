@@ -283,9 +283,8 @@ function VideoHero() {
 
   return (
     <motion.div
-      style={{ y }}
+      style={{ y, borderColor: BRAND.border, background: BRAND.panel }}
       className="relative overflow-hidden rounded-[2.25rem] border shadow-[0_40px_180px_rgba(0,0,0,.55)]"
-      style={{ borderColor: BRAND.border, background: BRAND.panel }}
     >
       <div className="absolute inset-0">
         <video
@@ -569,92 +568,94 @@ function JobDetailSheet({ job, onClose, saved, onToggleSave }) {
 
   if (!job) return null;
 
-const MOCK_RESERVATIONS = [
-  { id: 'r1', client: 'Jean B.', service: 'Chambre Deluxe', date: '2026-07-11', time: '14:00', guests: 2, amount: 8500, status: 'upcoming' },
-  { id: 'r2', client: 'Sophie L.', service: 'Table × 4', date: '2026-07-11', time: '20:00', guests: 4, amount: 3200, status: 'upcoming' },
-  { id: 'r3', client: 'Marc D.', service: 'Soin médical', date: '2026-07-12', time: '09:30', guests: 1, amount: 1500, status: 'thisweek' },
-  { id: 'r4', client: 'Anna R.', service: 'Tour Citadelle', date: '2026-07-15', time: '08:00', guests: 6, amount: 12000, status: 'future' },
-  { id: 'r5', client: 'Paul M.', service: 'Chambre Standard', date: '2026-07-08', time: '12:00', guests: 2, amount: 5000, status: 'completed' },
-];
-
-const MOCK_INVENTORY = [
-  { id: 'i1', cat: 'food', name: 'Riz (sak 50kg)', qty: 45, unit: 'sak', min: 20, price: 2500 },
-  { id: 'i2', cat: 'food', name: 'Poul (sò)', qty: 120, unit: 'lib', min: 50, price: 180 },
-  { id: 'i3', cat: 'medicine', name: 'Paracetamol 500', qty: 350, unit: 'bwat', min: 100, price: 150 },
-  { id: 'i4', cat: 'cleaning', name: 'Dézinfektan', qty: 15, unit: 'galon', min: 10, price: 800 },
-  { id: 'i5', cat: 'uniforms', name: 'Chemiz Hotel', qty: 80, unit: 'pyès', min: 30, price: 1200 },
-  { id: 'i6', cat: 'equipment', name: 'Vantilaton', qty: 8, unit: 'unit', min: 5, price: 15000 },
-];
-
-const MOCK_WALLET_BALANCES = [
-  { code: 'USD', balance: 12450.0 },
-  { code: 'EUR', balance: 8320.5 },
-  { code: 'HTG', balance: 1850000 },
-  { code: 'DOP', balance: 95000 },
-  { code: 'CAD', balance: 2100 },
-  { code: 'USDT', balance: 5000 },
-];
-
-const MOCK_TRANSACTIONS = [
-  { id: 't1', type: 'received', from: 'Client Hôtel', amount: 8500, currency: 'HTG', date: '2026-07-11' },
-  { id: 't2', type: 'salary', to: 'Jean-Robert P.', amount: 35000, currency: 'HTG', date: '2026-07-10' },
-  { id: 't3', type: 'received', from: 'Réservation', amount: 3200, currency: 'HTG', date: '2026-07-10' },
-  { id: 't4', type: 'sent', to: 'Fournisseur', amount: 125000, currency: 'HTG', date: '2026-07-09' },
-  { id: 't5', type: 'received', from: 'Escrow JOBFAST', amount: 45000, currency: 'HTG', date: '2026-07-09' },
-];
-
-const MOCK_AI_INSIGHTS = [
-  { id: 'ai1', title: 'Revenue Prediction', value: '+14.8% this week', tone: 'good' },
-  { id: 'ai2', title: 'Risk Detection', value: 'Low fraud probability', tone: 'good' },
-  { id: 'ai3', title: 'Hiring Recommendation', value: '3 new electricians needed', tone: 'warn' },
-  { id: 'ai4', title: 'Inventory Forecast', value: 'Rice stock drops in 8 days', tone: 'warn' },
-  { id: 'ai5', title: 'Customer Satisfaction', value: '94.2% avg score', tone: 'good' },
-  { id: 'ai6', title: 'Server Status', value: '99.98% uptime', tone: 'good' },
-];
-
-const MOCK_NOTIFICATIONS = [
-  { id: 'n1', title: 'Live Revenue spike', detail: '+8.2% in last 12 min', level: 'good' },
-  { id: 'n2', title: 'Branch health', detail: 'Miami branch has 2 open issues', level: 'warn' },
-  { id: 'n3', title: 'Fraud detection', detail: 'No abnormal payment pattern', level: 'good' },
-  { id: 'n4', title: 'Incoming orders', detail: '5 new reservations just arrived', level: 'blue' },
-];
-
-const MOCK_MARKET_ITEMS = [
-  { id: 'm1', title: 'Premium CRM Pack', vendor: 'JOBFAST Labs', price: '$49/mo' },
-  { id: 'm2', title: 'AI Forecast Module', vendor: 'Enterprise AI', price: '$79/mo' },
-  { id: 'm3', title: 'Security Suite', vendor: 'SecureOps', price: '$29/mo' },
-];
-
-const cn = (...x) => x.filter(Boolean).join(' ');
-const money = (v, c = 'HTG') => `${c} ${Number(v || 0).toLocaleString()}`;
-const fmt = v => Number(v || 0).toLocaleString();
-const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-
-function useLivePulse(seed, max = 100, step = 3, interval = 1200) {
-  const [value, setValue] = useState(seed);
-  useEffect(() => {
-    const id = setInterval(() => {
-      setValue(v => clamp(v + (Math.random() * step * 2 - step), 0, max));
-    }, interval);
-    return () => clearInterval(id);
-  }, [max, step, interval]);
-  return value;
-}
-
-function AppShell({ children }) {
   return (
-    <div className="min-h-screen overflow-hidden bg-[#040816] text-white">
-      <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_top,rgba(59,130,246,.20),transparent_32%),radial-gradient(circle_at_right,rgba(245,158,11,.12),transparent_30%),radial-gradient(circle_at_left,rgba(34,197,94,.08),transparent_25%),linear-gradient(180deg,#040816_0%,#07101d_100%)]" />
-      <div className="fixed inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] [background-size:72px_72px]" />
-      {children}
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/75 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-t-[2rem] border border-white/10 bg-[#050816] p-6 pb-10" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.22em] text-slate-400">{job.company}</p>
+            <h2 className="mt-1 text-xl font-black">{job.title}</h2>
+            <p className="text-sm text-slate-400">{job.city}, {job.country} {job.flag}</p>
+          </div>
+          <button onClick={onClose} className="rounded-full border border-white/10 bg-white/5 p-2">
+            <X className="h-4 w-4 text-white" />
+          </button>
+        </div>
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+          {['Description', 'Benefits', 'Company'].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={cn(
+                'shrink-0 rounded-full px-4 py-2 text-xs font-bold transition',
+                tab === t ? 'bg-white text-slate-950' : 'border border-white/10 bg-white/5 text-slate-300'
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        {tab === 'Description' && <p className="text-sm leading-relaxed text-slate-300">{job.description}</p>}
+        {tab === 'Benefits' && (
+          <div className="flex flex-wrap gap-2">
+            {job.benefits.map((b) => (
+              <span key={b} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-300">{b}</span>
+            ))}
+            {job.visa && <span className="rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-sm text-sky-200">Visa Sponsorship</span>}
+            {job.relocation && <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-sm text-emerald-200">Relocation</span>}
+          </div>
+        )}
+        {tab === 'Company' && (
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span className="text-slate-400">Team size</span>
+              <span className="font-bold">{job.teamSize}</span>
+            </div>
+            <div className="flex justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span className="text-slate-400">Hiring speed</span>
+              <span className="font-bold">{job.hiringSpeed}</span>
+            </div>
+            <div className="flex justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span className="text-slate-400">Recruiter</span>
+              <span className="font-bold">{job.recruiter}</span>
+            </div>
+          </div>
+        )}
+        <div className="mt-6 flex gap-3">
+          <button className="flex-1 rounded-full bg-white py-3 text-sm font-black text-slate-950">Apply Now</button>
+          <button
+            onClick={() => onToggleSave(job.id)}
+            className={cn(
+              'rounded-full border px-4 py-3 text-sm font-bold',
+              saved ? 'border-amber-400/30 bg-amber-400/10 text-amber-300' : 'border-white/10 bg-white/5 text-slate-300'
+            )}
+          >
+            {saved ? 'Saved ✓' : 'Save'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
+// ── Token system ───────────────────────────────────────────────────────────
+const TOKENS = {
+  panel:      'rounded-[2rem] border border-white/10 bg-slate-950/35 backdrop-blur-2xl',
+  panelStrong:'rounded-[2rem] border border-white/10 bg-[rgba(8,12,24,0.72)] backdrop-blur-2xl',
+  radius: { xl: 'rounded-[2rem]' },
+};
+
+const SECTIONS = [
+  { id: 'search',     label: 'Search'     },
+  { id: 'ai',         label: 'AI Match'   },
+  { id: 'categories', label: 'Categories' },
+  { id: 'saved',      label: 'Saved'      },
+];
+
 function SectionNav({ active, onChange }) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2">
-      {SECTIONS.map(s => (
+      {SECTIONS.map((s) => (
         <button
           key={s.id}
           onClick={() => onChange(s.id)}
@@ -680,7 +681,7 @@ const StatCard = memo(function StatCard({ icon, value, label, sub, color = 'text
         <div className="text-xl">{icon}</div>
         <div className={cn('mt-2 text-2xl font-black tracking-tight', color)}>{value}</div>
         <div className="text-[11px] uppercase tracking-[.22em] text-slate-400">{label}</div>
-        {sub ? <div className="mt-1 text-[11px] text-slate-500">{sub}</div> : null}
+        {sub && <div className="mt-1 text-[11px] text-slate-500">{sub}</div>}
       </div>
     </motion.div>
   );
@@ -718,5 +719,112 @@ function SectionFrame({ title, subtitle, action, children }) {
         {children}
       </div>
     </motion.section>
+  );
+}
+
+// ── Main JobsHub page ──────────────────────────────────────────────────────
+export default function JobsHub() {
+  const [query,        setQuery]        = useState('');
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [sortBy,       setSortBy]       = useState('recent');
+  const [jobs,         setJobs]         = useState(mockJobs);
+  const [openJob,      setOpenJob]      = useState(null);
+  const [loading]                       = useState(false);
+
+  const handleSave = useCallback((id) => {
+    setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, saved: !j.saved } : j)));
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = jobs;
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter((j) => j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q));
+    }
+    if (activeFilter) list = list.filter((j) => j[activeFilter] === true);
+    if (sortBy === 'salary') list = [...list].sort((a, b) => parseInt(b.salary) - parseInt(a.salary));
+    if (sortBy === 'match')  list = [...list].sort((a, b) => b.match - a.match);
+    return list;
+  }, [jobs, query, activeFilter, sortBy]);
+
+  return (
+    <Shell>
+      <div className="mx-auto max-w-[1600px] px-4 py-6 space-y-6">
+        <VideoHero />
+        <SearchBar query={query} setQuery={setQuery} />
+
+        {/* Filter pills */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {FILTERS.map((f) => (
+            <Pill
+              key={f.id}
+              label={f.label}
+              active={activeFilter === f.id}
+              onClick={() => setActiveFilter(activeFilter === f.id ? null : f.id)}
+            />
+          ))}
+        </div>
+
+        {/* Categories */}
+        <Section title="Job Categories" subtitle="Browse by sector">
+          <CategoriesCarousel />
+        </Section>
+
+        {/* Job listings */}
+        <Section
+          title="Jobs"
+          subtitle={`${filtered.length} opportunite`}
+          action={
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300 outline-none"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.id} value={o.id} style={{ background: '#050816' }}>{o.label}</option>
+              ))}
+            </select>
+          }
+        >
+          {loading ? (
+            <JobSkeletonGrid />
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center">
+              <WifiOff className="mx-auto h-8 w-8 text-slate-500 mb-3" />
+              <p className="text-sm text-slate-400">Pa gen rezilta pou "{query}"</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filtered.map((job) => (
+                <JobCard key={job.id} job={job} onOpen={setOpenJob} onSave={handleSave} />
+              ))}
+            </div>
+          )}
+        </Section>
+
+        <AiCoach />
+        <JobsFooter />
+      </div>
+
+      {/* Job detail sheet */}
+      <AnimatePresence>
+        {openJob && (
+          <motion.div
+            key="detail"
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 60 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+          >
+            <JobDetailSheet
+              job={openJob}
+              onClose={() => setOpenJob(null)}
+              saved={openJob.saved}
+              onToggleSave={handleSave}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Shell>
   );
 }

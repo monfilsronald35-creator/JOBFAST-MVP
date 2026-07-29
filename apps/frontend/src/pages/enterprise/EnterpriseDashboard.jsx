@@ -1,7 +1,7 @@
-/**
+﻿/**
  * EnterpriseDashboard.jsx — Ultra Enterprise v5.0
  *
- * Nivo: Stripe / Salesforce / SAP / Workday / Oracle / ServiceNow / Uber Fleet. [web:320][web:321]
+ * Nivo: Stripe / Salesforce / SAP / Workday / Oracle / ServiceNow / Uber Fleet.
  *
  * Highlights:
  * - KPIGrid dinamik: backend voye KPIs, frontend rann otomatikman.
@@ -12,8 +12,8 @@
  * - Map: workers, vehicles, clients, projects, branches, warehouses, routes, heatmap, live movement, geofencing, GPS replay.
  * - HR / Finance / CRM / Document modules avèk fields/sections ki pare pou backend.
  * - AI Forecast Engine: revenue, expenses, hiring, attrition, churn, projects, profit, risk, stock, market, inflation, FX.
- * - Dashboard Customization: drag/resize/save layouts / personal/department/executive dashboards. [web:320][web:325]
- * - Perf: React.memo, useDeferredValue, startTransition, IntersectionObserver hooks, code splitting, web workers, IndexedDB, SW/SSR hooks. [web:320]
+ * - Dashboard Customization: drag/resize/save layouts / personal/department/executive dashboards.
+ * - Perf: React.memo, useDeferredValue, startTransition, IntersectionObserver hooks, code splitting, web workers, IndexedDB, SW/SSR hooks.
  * - Monitoring: OpenTelemetry, Prometheus/Grafana, Sentry/Datadog/Elastic hooks.
  * - i18n: locale, currency, timezone, number/date formats, RTL.
  * - APIs: REST, GraphQL, WebSocket, Webhook, gRPC-ready, OAuth2/API Keys/OpenAPI.
@@ -32,7 +32,7 @@ import React, {
   useDeferredValue,
   startTransition,
 } from 'react';
-import { FixedSizeList as VirtualList } from 'react-window'; // Virtualization. [web:313]
+import { FixedSizeList as VirtualList } from 'react-window'; // Virtualization.
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -49,7 +49,7 @@ import {
   Users,
   Database,
 } from 'lucide-react';
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'; // React Query. [web:317]
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'; // React Query.
 import API from '../../api/axios';
 
 // ─────────────────────────────────────────────────────────────
@@ -94,7 +94,7 @@ function PermissionProvider({ user, children }) {
   const can = useCallback((resource, context) => {
     const matrix  = ROLE_MATRIX[role] || {};
     const allowed = !!matrix[resource];
-    // ABAC hook: pèmèt plis règle sou base attrs (country/branch/department). [web:319]
+    // ABAC hook: pèmèt plis règle sou base attrs (country/branch/department).
     if (!allowed) return false;
     // Egzanp: branch manager sèlman sou branch li.
     if (context?.branchId && attrs.branchId && context.branchId !== attrs.branchId) {
@@ -204,7 +204,7 @@ const AICopilot = memo(function AICopilot({ user }) {
 
     startTransition(async () => {
       try {
-        // Backend: /enterprise/ai-query (REST/GraphQL/WebSocket) ak tenant/country/branch. [web:320]
+        // Backend: /enterprise/ai-query (REST/GraphQL/WebSocket) ak tenant/country/branch.
         const res = await API.post('/enterprise/ai-query', {
           prompt: deferredPrompt,
           scope,
@@ -461,7 +461,7 @@ function useDashboardLayout(user) {
     'crm',
     'documents',
   ]);
-  // TODO: react-grid-layout / react-dnd-based layout persistence. [web:320][web:325]
+  // TODO: react-grid-layout / react-dnd-based layout persistence.
   return { layout, widgets, setLayout, setWidgets };
 }
 
@@ -561,5 +561,41 @@ export default function EnterpriseDashboard({ user }) {
         </div>
       </div>
     </QueryClientProvider>
+  );
+}
+
+// ─── Named exports required by Dashboard.jsx ────────────────────────────────
+
+export const ENTERPRISE_TABS = [
+  { id: 'overview',       icon: '🏠', label: 'Overview' },
+  { id: 'analytics',      icon: '📊', label: 'Analytics' },
+  { id: 'reports',        icon: '📄', label: 'Reports' },
+  { id: 'maps',           icon: '🗺️', label: 'Maps' },
+  { id: 'ai',             icon: '🤖', label: 'AI Suite' },
+  { id: 'finance',        icon: '💰', label: 'Finance' },
+  { id: 'hr',             icon: '👥', label: 'HR' },
+  { id: 'crm',            icon: '🤝', label: 'CRM' },
+  { id: 'documents',      icon: '📁', label: 'Documents' },
+  { id: 'audit',          icon: '🔍', label: 'Audit' },
+  { id: 'notifications',  icon: '🔔', label: 'Notif.' },
+  { id: 'workflow',       icon: '⚡', label: 'Workflow' },
+];
+
+export function EnterpriseOverviewSupplement({ user }) {
+  const kpis = [
+    { label: 'Total Users',     value: user?.totalUsers      ?? 0 },
+    { label: 'Revenue MTD',     value: user?.revenueMTD      != null ? String(user.revenueMTD) : '—' },
+    { label: 'Active Projects', value: user?.activeProjects  ?? 0 },
+    { label: 'Countries',       value: user?.countriesCount  ?? 0 },
+  ];
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {kpis.map(({ label, value }) => (
+        <div key={label} className="rounded-xl bg-slate-900/60 border border-slate-800 p-3">
+          <p className="text-xs text-slate-400">{label}</p>
+          <p className="text-lg font-black text-white">{value}</p>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+﻿import React, { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { changeLanguage, STORAGE_KEY } from "../i18n";
@@ -11,65 +11,41 @@ const LANGUAGES = [
   { code: "fr", name: "Français",       native: "Français" },
   { code: "en", name: "English",        native: "English" },
   { code: "es", name: "Español",        native: "Español" },
-] as const;
-
-type LanguageCode = (typeof LANGUAGES)[number]["code"];
-
-type SplashPhase = "language" | "checking" | "ready" | "error";
-
-type SplashErrorCode =
-  | "offline"
-  | "backend_offline"
-  | "supabase_offline"
-  | "session_expired"
-  | "invalid_token"
-  | "timeout"
-  | "unknown";
-
-interface SplashError {
-  code: SplashErrorCode;
-}
+];
 
 // Stubs pou entegre ak vrè services ou yo
-async function pingBackend(): Promise<boolean> {
-  // TODO: ranplase ak /health endpoint backend ou a
+async function pingBackend() {
   return true;
 }
 
-async function pingSupabase(): Promise<boolean> {
-  // TODO: ranplase ak Supabase health / ping call
+async function pingSupabase() {
   return true;
 }
 
-interface SessionInfo {
-  exists: boolean;
-  role?: "admin" | "employer" | "worker";
-  onboardingCompleted?: boolean;
-}
 
-async function getSupabaseSession(): Promise<SessionInfo> {
+async function getSupabaseSession() {
   // TODO: ranplase sa ak Supabase auth getSession()
   return { exists: false };
 }
 
-async function refreshSupabaseToken(): Promise<void> {
+async function refreshSupabaseToken() {
   // TODO: ranplase ak supabase.auth.refreshSession()
 }
 
-async function loadCurrentProfile(): Promise<{ onboardingCompleted?: boolean }> {
+async function loadCurrentProfile() {
   // TODO: ranplase ak /me oswa supabase.rpc(...)
   return { onboardingCompleted: false };
 }
 
-async function checkPermissions(): Promise<void> {
+async function checkPermissions() {
   // TODO: role/permissions logic
 }
 
-async function checkNotifications(): Promise<void> {
+async function checkNotifications() {
   // TODO: load notifications / permission status
 }
 
-function track(event: string, payload?: Record<string, unknown>) {
+function track(event, payload) {
   // TODO: ploge analytics SDK (PostHog, Amplitude, Segment, elatriye)
   // console.log("analytics", event, payload);
 }
@@ -92,9 +68,9 @@ function SplashScreen() {
   const [langPicked, setLangPicked] = useState(hasChosenLanguage);
   const [selecting, setSelecting] = useState(false);
 
-  const [phase, setPhase] = useState<SplashPhase>(hasChosenLanguage() ? "checking" : "language");
-  const [error, setError] = useState<SplashError | null>(null);
-  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [phase, setPhase] = useState(hasChosenLanguage() ? "checking" : "language");
+  const [error, setError] = useState(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const [isSlow, setIsSlow] = useState(false);
 
   useEffect(() => {
@@ -123,11 +99,11 @@ function SplashScreen() {
   }, [phase]);
 
   const currentLang =
-    LANGUAGES.find((l) => l.code === (i18n.language?.split("-")[0] as LanguageCode)) || LANGUAGES[0];
+    LANGUAGES.find((l) => l.code === (i18n.language?.split("-")[0])) || LANGUAGES[0];
 
   // ---- LANGUAGE HANDLERS ---------------------------------------------------
 
-  const handlePick = async (code: LanguageCode) => {
+  const handlePick = async (code) => {
     if (selecting || code === currentLang.code) return;
 
     setSelecting(true);

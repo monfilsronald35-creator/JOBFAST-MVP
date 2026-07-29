@@ -2,13 +2,21 @@
   "name": "jobfast-mvp",
   "version": "1.0.0",
   "private": true,
-  "description": "JOBFAST MVP — monorepo root. Frontend lives in apps/frontend, backend in backend/.",
+  "description": "JOBFAST GLOBAL — Enterprise monorepo. Frontend: apps/frontend, Backend: backend/.",
   "scripts": {
     "frontend": "cd apps/frontend && npm run dev",
     "backend": "cd backend && npm run dev",
-    "build:frontend": "cd apps/frontend && npm run build"
+    "build": "cd apps/frontend && npm run build",
+    "build:frontend": "cd apps/frontend && npm run build",
+    "lint": "cd apps/frontend && npm run lint",
+    "typecheck": "cd apps/frontend && npm run typecheck",
+    "test": "cd apps/frontend && npm run test",
+    "prepare": "cd apps/frontend && npx husky || true"
   },
-  "dependencies": {
-    "prop-types": "^15.8.1"
-  }
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^9.0.0"
+  },
+  "dependencies": {}
 }

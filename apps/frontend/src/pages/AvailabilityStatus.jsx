@@ -1,4 +1,4 @@
-
+﻿
 
 import React, {
   useState,
@@ -112,7 +112,7 @@ function useAvailabilityUpdate({ user, role, options, login, navigate, t }) {
   const abortRef = useRef(null);
   const snapshotRef = useRef(user);
 
-  // Refs pou evite re-subscribe sou websocket (memory leak). [web:217][web:219]
+  // Refs pou evite re-subscribe sou websocket (memory leak).
   const presenceRef = useRef(initialPresence);
   const geoRef = useRef(initialGeo);
   const untilRef = useRef(initialUntil);
@@ -273,7 +273,7 @@ function useAvailabilityUpdate({ user, role, options, login, navigate, t }) {
           },
           {
             signal: abortRef.current.signal,
-            timeout: 10000, // 10s timeout; exponential backoff/circuit breaker ka fèt nan axios interceptors. [web:217][web:219]
+            timeout: 10000, // 10s timeout; exponential backoff/circuit breaker ka fèt nan axios interceptors.
           }
         );
 
