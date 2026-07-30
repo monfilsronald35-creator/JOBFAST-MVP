@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import http from 'http';
 import { Server as SocketIO } from 'socket.io';
-import { createApp } from './app.js';
+import { createApp }     from './app.js';
+import { ChatGateway }   from './modules/chat/gateway/ChatGateway.js';
 
 const PORT = Number(process.env['PORT'] ?? 5000);
 
@@ -19,28 +20,8 @@ async function bootstrap(): Promise<void> {
     path:       '/socket.io',
   });
 
-  io.on('connection', socket => {
-    socket.on('auth:join',  ({ userId, role }: { userId?: string; role?: string } = {}) => {
-      if (userId) socket.join(`user:${userId}`);
-      if (role)   socket.join(`role:${role}`);
-    });
-
-    socket.on('auth:logout', ({ userId }: { userId?: string } = {}) => {
-      if (userId) socket.leave(`user:${userId}`);
-    });
-
-    socket.on('conversation:join',  ({ conversationId }: { conversationId?: string } = {}) => {
-      if (conversationId) socket.join(conversationId);
-    });
-
-    socket.on('conversation:leave', ({ conversationId }: { conversationId?: string } = {}) => {
-      if (conversationId) socket.leave(conversationId);
-    });
-
-    socket.on('message:send', (data: { conversationId?: string } = {}) => {
-      if (data.conversationId) socket.to(data.conversationId).emit('message:receive', data);
-    });
-  });
+  // Chat real-time gateway (replaces stub socket handlers)
+  ChatGateway.init(io);
 
   // Make io available to modules that need to push real-time updates
   app.set('io', io);
@@ -48,7 +29,7 @@ async function bootstrap(): Promise<void> {
   // ——— Start ————————————————————————————————————————————————————————————————
   httpServer.listen(PORT, () => {
     console.log(`[JOBFAST] Server running on port ${PORT} (${process.env['NODE_ENV'] ?? 'development'})`);
-    console.log(`[JOBFAST] Modular Monolith — 18 domain modules loaded`);
+    console.log(`[JOBFAST] Modular Monolith — 19 domain modules loaded`);
   });
 
   process.on('SIGTERM', () => {
