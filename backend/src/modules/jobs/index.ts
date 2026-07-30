@@ -1,8 +1,10 @@
 import type { Express } from 'express';
-import { createJobsRouter } from './routes/jobs.routes.js';
+import { createJobsRouter }       from './routes/jobs.routes.js';
+import { createEmploymentRouter } from './routes/employment.routes.js';
 
 export function registerJobsModule(app: Express): void {
   app.use('/api/jobs', createJobsRouter());
+  app.use('/api/employment', createEmploymentRouter());
 }
 
 export { JobService }             from './services/JobService.js';
