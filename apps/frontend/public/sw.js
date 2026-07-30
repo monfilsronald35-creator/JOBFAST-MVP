@@ -179,9 +179,78 @@ self.addEventListener('notificationclick', (e) => {
 // ── BACKGROUND SYNC ───────────────────────────────────────────────────────────
 self.addEventListener('sync', (e) => {
   if (e.tag === 'retry-api') {
-    // Pou lavni: rejoue mutations ki te rate pandan offline
+    e.waitUntil(replayOfflineQueue());
+  }
+  if (e.tag === 'retry-uploads') {
+    e.waitUntil(replayUploadQueue());
   }
 });
+
+async function replayOfflineQueue() {
+  let db;
+  try {
+    db = await openIDB('jobfast_db', 2);
+  } catch { return; }
+
+  const tx    = db.transaction('offline_queue', 'readonly');
+  const store = tx.objectStore('offline_queue');
+  const items = await idbGetAll(store);
+  const now   = Date.now();
+  const due   = items.filter(i => i.nextRetryAt <= now && i.retryCount < i.maxRetries);
+
+  for (const item of due) {
+    const { endpoint, method, body, headers } = item.payload ?? {};
+    if (!endpoint || !method) continue;
+    try {
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json', ...(headers ?? {}) },
+        ...(body ? { body } : {}),
+      });
+      if (res.ok) {
+        const wtx = db.transaction('offline_queue', 'readwrite');
+        wtx.objectStore('offline_queue').delete(item.id);
+      }
+    } catch { /* remain in queue for next sync */ }
+  }
+}
+
+async function replayUploadQueue() {
+  let db;
+  try {
+    db = await openIDB('jobfast_offline', 1);
+  } catch { return; }
+
+  const tx    = db.transaction('upload_queue', 'readonly');
+  const store = tx.objectStore('upload_queue');
+  const items = await idbGetAll(store);
+  const pending = items.filter(i => i.status === 'pending' && i.attempts < i.maxAttempts);
+
+  for (const item of pending) {
+    if (!item.uploadUrl) continue;
+    try {
+      const wtx = db.transaction('upload_queue', 'readwrite');
+      wtx.objectStore('upload_queue').put({ ...item, status: 'uploading', attempts: item.attempts + 1 });
+    } catch { /* ignore */ }
+  }
+}
+
+// ── IDB helpers (SW context — no shared module) ───────────────────────────────
+function openIDB(name, version) {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(name, version);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+function idbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result ?? []);
+    req.onerror   = () => reject(req.error);
+  });
+}
 
 // ── MESSAGE (depi main thread) ────────────────────────────────────────────────
 self.addEventListener('message', (e) => {
