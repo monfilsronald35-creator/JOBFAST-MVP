@@ -1,36 +1,43 @@
 import type { Request, Response, NextFunction } from 'express';
-import { BaseController } from '../../_base/BaseController.js';
-import type { NotificationService } from '../services/NotificationService.js';
+import { NotificationOrchestratorService }       from '../services/NotificationOrchestratorService.js';
 
-export class NotificationController extends BaseController {
-  constructor(private readonly _service: NotificationService) { super(); }
-
-  list = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const NotificationController = {
+  async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { cursor, limit } = req.query as { cursor?: string; limit?: string };
-      const result = await this._service.listForUser(req.user!.sub, cursor, Number(limit ?? 20));
-      this.paginated(res, result.items as never[], result.nextCursor);
+      const userId     = req.user!.sub;
+      const limit      = Number(req.query['limit']  ?? 20);
+      const cursor     = req.query['cursor'] ? String(req.query['cursor']) : undefined;
+      const unreadOnly = req.query['unread'] === 'true';
+      const items = await NotificationOrchestratorService.list(userId, { limit, cursor, unreadOnly });
+      res.json({ data: items });
     } catch (err) { next(err); }
-  };
+  },
 
-  unreadCount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async getUnreadCount(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const count = await this._service.getUnreadCount(req.user!.sub);
-      this.ok(res, { count });
+      const count = await NotificationOrchestratorService.getUnreadCount(req.user!.sub);
+      res.json({ count });
     } catch (err) { next(err); }
-  };
+  },
 
-  markRead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async markRead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      await this._service.markRead(req.user!.sub, req.params['id']!);
-      this.noContent(res);
+      await NotificationOrchestratorService.markRead(String(req.params['id']), req.user!.sub);
+      res.json({ success: true });
     } catch (err) { next(err); }
-  };
+  },
 
-  markAllRead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async markAllRead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      await this._service.markAllRead(req.user!.sub);
-      this.noContent(res);
+      await NotificationOrchestratorService.markAllRead(req.user!.sub);
+      res.json({ success: true });
     } catch (err) { next(err); }
-  };
-}
+  },
+
+  async cancel(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await NotificationOrchestratorService.cancel(String(req.params['id']), req.user!.sub);
+      res.json({ success: true });
+    } catch (err) { next(err); }
+  },
+};
