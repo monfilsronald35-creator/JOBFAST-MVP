@@ -1,198 +1,528 @@
+/* ═══════════════════════════════════════════════════════════════
+   JOBFAST — Global Design System
+   FAZ 4: Global Brand Identity & Design Language
+   ═══════════════════════════════════════════════════════════════ */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  @font-face {
-    font-family: "Inter";
-    /* Ranje chemen an pou Vercel ka jwenn font lan san mank */
-    src: url("../assets/fonts/Inter_24pt-Regular.ttf") format("truetype");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
-
-  :root {
-    --color-bg: #020617; /* Sync ak nwa pwofon MainLayout la */
-    --color-surface: #0f172a; /* Sync ak gri/ble fonse a */
-    --color-surface-soft: #1e293b;
-    --color-border: rgba(255, 255, 255, 0.08);
-
-    --color-text: #f8fafc;
-    --color-text-soft: #cbd5e1;
-    --color-text-muted: #64748b;
-
-    --color-primary: #f59e0b; /* Bèl jòn/amber an */
-    --color-primary-hover: #d97706;
-    --color-primary-contrast: #020617;
-
-    --color-status-available: #10b981;
-    --color-status-busy: #f59e0b;
-    --color-status-working: #3b82f6;
-    --color-status-unavailable: #ef4444;
-
-    --text-xs: 0.75rem;
-    --text-sm: 0.875rem;
-    --text-md: 1rem;
-    --text-lg: 1.125rem;
-    --text-xl: 1.25rem;
-
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-5: 20px;
-    --space-6: 24px;
-
-    --radius-screen: 32px;
-    --radius-card: 16px;
-    --radius-button: 12px;
-
-    --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  html,
-  body,
-  #root {
-    min-height: 100vh;
-    width: 100%;
-  }
-
-  html {
-    scroll-behavior: smooth;
-    color-scheme: dark;
-  }
-
-  body {
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-family: Inter, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    margin: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-
-  #root {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 📐 GARANTI ABSOLI POU LOGO, IMAJ AK SVG YO PA DEFOÒME */
-  img,
-  svg {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain; /* Anpeche yo kraze oswa plat */
-    flex-shrink: 0;      /* Bloke yo pou Flexbox pa fòse yo vin piti */
-  }
-
-  button {
-    font-family: inherit;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+/* ── 1. FONTS ──────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter_24pt-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter_24pt-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter_24pt-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* KAD YO (CARDS) */
-.jf-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  padding: var(--space-5);
-  transition: var(--transition-fast);
+/* ── 2. DESIGN TOKENS ──────────────────────────────────────────── */
+:root {
+
+  /* BRAND */
+  --jf-brand:           #F0B429;
+  --jf-brand-light:     #F5C842;
+  --jf-brand-dark:      #D4961A;
+  --jf-brand-muted:     rgba(240,180,41,0.12);
+  --jf-brand-border:    rgba(240,180,41,0.22);
+  --jf-brand-ring:      rgba(240,180,41,0.35);
+  --jf-brand-glow:      rgba(240,180,41,0.18);
+
+  /* BACKGROUNDS */
+  --jf-midnight:    #030C19;
+  --jf-bg:          #050F1E;
+  --jf-surface-1:   #0A1628;
+  --jf-surface-2:   #0F1E35;
+  --jf-surface-3:   #162540;
+  --jf-surface-4:   #1C2E4A;
+
+  /* TEXT */
+  --jf-text:           #F8FAFC;
+  --jf-text-2:         #CBD5E1;
+  --jf-text-3:         #94A3B8;
+  --jf-text-4:         #64748B;
+  --jf-text-disabled:  #334155;
+  --jf-text-inverse:   #030C19;
+
+  /* BORDERS */
+  --jf-border-subtle: rgba(255,255,255,0.05);
+  --jf-border:        rgba(255,255,255,0.09);
+  --jf-border-medium: rgba(255,255,255,0.15);
+  --jf-border-strong: rgba(255,255,255,0.24);
+
+  /* SEMANTIC */
+  --jf-success:        #10B981;
+  --jf-success-bg:     rgba(16,185,129,0.10);
+  --jf-success-border: rgba(16,185,129,0.24);
+  --jf-warning:        #F59E0B;
+  --jf-warning-bg:     rgba(245,158,11,0.10);
+  --jf-warning-border: rgba(245,158,11,0.24);
+  --jf-error:          #EF4444;
+  --jf-error-bg:       rgba(239,68,68,0.10);
+  --jf-error-border:   rgba(239,68,68,0.24);
+  --jf-info:           #3B82F6;
+  --jf-info-bg:        rgba(59,130,246,0.10);
+  --jf-info-border:    rgba(59,130,246,0.24);
+
+  /* STATUS */
+  --jf-available:   #10B981;
+  --jf-busy:        #F59E0B;
+  --jf-working:     #3B82F6;
+  --jf-unavailable: #EF4444;
+  --jf-offline:     #64748B;
+
+  /* FINANCE */
+  --jf-gold-premium:  #D4AF37;
+  --jf-gold-luxury:   #C9A227;
+  --jf-finance-green: #059669;
+  --jf-finance-blue:  #0284C7;
+  --jf-platinum:      #E8EDF3;
+
+  /* GLASS */
+  --jf-glass:               rgba(255,255,255,0.055);
+  --jf-glass-medium:        rgba(255,255,255,0.09);
+  --jf-glass-strong:        rgba(255,255,255,0.13);
+  --jf-glass-border:        rgba(255,255,255,0.10);
+  --jf-glass-border-strong: rgba(255,255,255,0.18);
+  --jf-blur:                20px;
+  --jf-blur-heavy:          40px;
+  --jf-blur-light:          8px;
+
+  /* GRADIENTS */
+  --jf-gradient-brand:   linear-gradient(135deg,#D4961A 0%,#F0B429 50%,#F5C842 100%);
+  --jf-gradient-brand-h: linear-gradient(90deg,#D4961A 0%,#F5C842 100%);
+  --jf-gradient-premium: linear-gradient(135deg,#C9A227 0%,#D4AF37 50%,#F5C842 100%);
+  --jf-gradient-dark:    linear-gradient(180deg,#0A1628 0%,#050F1E 100%);
+  --jf-gradient-surface: linear-gradient(180deg,#0F1E35 0%,#0A1628 100%);
+  --jf-gradient-glass:   linear-gradient(135deg,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0.02) 100%);
+  --jf-gradient-shimmer: linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 50%,transparent 100%);
+  --jf-gradient-wallet:  linear-gradient(135deg,#162540 0%,#0F1E35 100%);
+
+  /* SHADOWS */
+  --jf-shadow-xs:     0 1px 2px rgba(0,0,0,0.50);
+  --jf-shadow-sm:     0 2px 4px rgba(0,0,0,0.45),0 1px 2px rgba(0,0,0,0.30);
+  --jf-shadow-md:     0 4px 12px rgba(0,0,0,0.50),0 2px 4px rgba(0,0,0,0.35);
+  --jf-shadow-lg:     0 8px 24px rgba(0,0,0,0.55),0 4px 8px rgba(0,0,0,0.40);
+  --jf-shadow-xl:     0 16px 40px rgba(0,0,0,0.60),0 8px 16px rgba(0,0,0,0.45);
+  --jf-shadow-2xl:    0 24px 60px rgba(0,0,0,0.65),0 12px 24px rgba(0,0,0,0.50);
+  --jf-shadow-brand:  0 4px 20px rgba(240,180,41,0.28),0 0 0 1px rgba(240,180,41,0.14);
+  --jf-shadow-card:   0 2px 8px rgba(0,0,0,0.40),0 0 0 1px rgba(255,255,255,0.06);
+  --jf-shadow-glass:  0 4px 24px rgba(0,0,0,0.30),0 0 0 1px rgba(255,255,255,0.08),inset 0 1px 0 rgba(255,255,255,0.10);
+  --jf-shadow-premium:0 8px 32px rgba(0,0,0,0.50),0 0 0 1px rgba(240,180,41,0.18),inset 0 1px 0 rgba(240,180,41,0.08);
+  --jf-glow-brand:    0 0 28px rgba(240,180,41,0.20),0 0 10px rgba(240,180,41,0.08);
+  --jf-glow-success:  0 0 28px rgba(16,185,129,0.18);
+  --jf-glow-error:    0 0 28px rgba(239,68,68,0.18);
+
+  /* MOTION */
+  --jf-dur-micro:      50ms;
+  --jf-dur-fast:       120ms;
+  --jf-dur-normal:     220ms;
+  --jf-dur-moderate:   350ms;
+  --jf-dur-slow:       500ms;
+  --jf-dur-deliberate: 700ms;
+  --jf-ease-standard:  cubic-bezier(0.20,0.00,0.00,1.00);
+  --jf-ease-decel:     cubic-bezier(0.00,0.00,0.20,1.00);
+  --jf-ease-accel:     cubic-bezier(0.30,0.00,1.00,1.00);
+  --jf-ease-spring:    cubic-bezier(0.16,1.00,0.30,1.00);
+  --jf-ease-overshoot: cubic-bezier(0.34,1.56,0.64,1.00);
+
+  /* RADII */
+  --jf-radius-xs:   4px;
+  --jf-radius-sm:   8px;
+  --jf-radius-md:   12px;
+  --jf-radius-lg:   16px;
+  --jf-radius-xl:   20px;
+  --jf-radius-2xl:  24px;
+  --jf-radius-3xl:  32px;
+  --jf-radius-4xl:  40px;
+  --jf-radius-pill: 9999px;
+
+  /* SPACING */
+  --jf-space-1:  4px;  --jf-space-2:  8px;  --jf-space-3:  12px;
+  --jf-space-4:  16px; --jf-space-5:  20px; --jf-space-6:  24px;
+  --jf-space-8:  32px; --jf-space-10: 40px; --jf-space-12: 48px;
+  --jf-space-16: 64px; --jf-space-20: 80px;
+
+  /* LAYOUT */
+  --jf-nav-height:     56px;
+  --jf-tab-bar-height: 80px;
+  --jf-header-height:  64px;
+  --jf-touch-target:   44px;
+  --jf-max-content:    720px;
+  --jf-max-page:       1440px;
+
+  /* Z-INDEX */
+  --jf-z-base:    1; --jf-z-raised: 10; --jf-z-overlay: 100;
+  --jf-z-sheet: 150; --jf-z-modal: 200; --jf-z-toast:   300;
+  --jf-z-tooltip: 400; --jf-z-shell: 9999;
+
+  /* TYPOGRAPHY SCALE */
+  --jf-text-display-2xl: clamp(3.5rem,8vw,6rem);
+  --jf-text-display-xl:  clamp(2.5rem,6vw,4rem);
+  --jf-text-display-lg:  clamp(2rem,4vw,3rem);
+  --jf-text-display-md:  clamp(1.75rem,3vw,2.25rem);
+  --jf-text-headline:    clamp(1.25rem,2vw,1.75rem);
+  --jf-text-title-lg:    1.25rem;
+  --jf-text-title-md:    1.125rem;
+  --jf-text-body-lg:     1.125rem;
+  --jf-text-body-md:     1rem;
+  --jf-text-body-sm:     0.875rem;
+  --jf-text-label:       0.875rem;
+  --jf-text-caption:     0.75rem;
+  --jf-text-overline:    0.6875rem;
+  --jf-text-micro:       0.625rem;
+
+  /* LEGACY COMPAT — keeps old classes working without changes */
+  --color-bg:            var(--jf-bg);
+  --color-surface:       var(--jf-surface-1);
+  --color-surface-soft:  var(--jf-surface-2);
+  --color-border:        var(--jf-border);
+  --color-text:          var(--jf-text);
+  --color-text-soft:     var(--jf-text-2);
+  --color-text-muted:    var(--jf-text-4);
+  --color-primary:       var(--jf-brand);
+  --color-primary-hover: var(--jf-brand-light);
+  --color-primary-contrast: var(--jf-midnight);
+  --radius-screen:       var(--jf-radius-3xl);
+  --radius-card:         var(--jf-radius-xl);
+  --radius-button:       var(--jf-radius-md);
+  --transition-fast:     var(--jf-dur-fast) var(--jf-ease-standard);
+  --transition-normal:   var(--jf-dur-normal) var(--jf-ease-standard);
 }
 
-.jf-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(245, 158, 11, 0.25);
+/* ── 3. BASE RESET ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  tab-size: 2;
 }
 
-/* ANTRE YO (INPUTS) */
-.jf-input {
-  background: rgba(2, 6, 23, 0.6);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  border-radius: var(--radius-button);
-  padding: 14px 16px;
-  width: 100%;
-  font-size: var(--text-sm);
+body {
+  background-color: var(--jf-bg);
+  color: var(--jf-text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  font-feature-settings: 'cv02','cv03','cv04','cv11';
 }
 
-.jf-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.08);
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
 }
 
-/* BOUTON YO */
-.btn-primary {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
-  font-weight: 900;
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.075em;
-  border-radius: var(--radius-button);
-  padding: 14px 28px;
-  border: none;
+img, svg, video, canvas { display: block; max-width: 100%; }
+
+button {
+  font-family: inherit;
   cursor: pointer;
-  transition: var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.btn-primary:hover {
-  background: var(--color-primary-hover);
+input, textarea, select { font-family: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+
+/* ── 4. SCROLLBAR ──────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 5px; height: 5px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: rgba(255,255,255,0.11); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.20); }
+*                           { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.11) transparent; }
+
+/* ── 5. SELECTION & FOCUS ──────────────────────────────────────── */
+::selection { background: rgba(240,180,41,0.22); color: var(--jf-text); }
+
+:focus-visible {
+  outline: 2px solid var(--jf-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
-}
+/* ── 6. UTILITY CLASSES ────────────────────────────────────────── */
+@layer components {
 
-.glass {
-  background: rgba(2, 6, 23, 0.65);
-  border: 1px solid var(--color-border);
-  backdrop-filter: blur(20px);
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-surface-soft);
-  border-radius: 10px;
-}
-
-@media (max-width: 768px) {
+  /* Cards */
   .jf-card {
-    padding: 16px;
+    background: var(--jf-surface-1);
+    border: 1px solid var(--jf-border);
+    border-radius: var(--jf-radius-2xl);
+    padding: 20px;
+    transition: box-shadow var(--jf-dur-normal) var(--jf-ease-standard),
+                border-color var(--jf-dur-normal) var(--jf-ease-standard);
+  }
+  .jf-card:hover { box-shadow: var(--jf-shadow-lg); border-color: var(--jf-border-medium); }
+
+  .jf-card-glass {
+    background: var(--jf-glass);
+    backdrop-filter: blur(var(--jf-blur));
+    -webkit-backdrop-filter: blur(var(--jf-blur));
+    border: 1px solid var(--jf-glass-border);
+    border-radius: var(--jf-radius-2xl);
+    box-shadow: var(--jf-shadow-glass);
   }
 
-  .btn-primary {
+  .jf-card-premium {
+    background: var(--jf-surface-1);
+    border: 1px solid var(--jf-brand-border);
+    border-radius: var(--jf-radius-2xl);
+    box-shadow: var(--jf-shadow-premium);
+    position: relative; overflow: hidden;
+  }
+  .jf-card-premium::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, var(--jf-brand-muted), transparent);
+    pointer-events: none;
+  }
+
+  /* Inputs */
+  .jf-input {
     width: 100%;
+    background: var(--jf-surface-1);
+    border: 1px solid var(--jf-border-medium);
+    border-radius: var(--jf-radius-lg);
+    padding: 13px 16px;
+    color: var(--jf-text);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color var(--jf-dur-fast) var(--jf-ease-standard),
+                box-shadow var(--jf-dur-fast) var(--jf-ease-standard),
+                background var(--jf-dur-fast) var(--jf-ease-standard);
+    -webkit-appearance: none;
   }
+  .jf-input::placeholder { color: var(--jf-text-4); }
+  .jf-input:focus {
+    border-color: var(--jf-brand);
+    box-shadow: 0 0 0 3px var(--jf-brand-muted);
+    background: var(--jf-surface-2);
+  }
+  .jf-input:disabled { opacity: 0.48; cursor: not-allowed; }
+  .jf-input[aria-invalid="true"], .jf-input.error {
+    border-color: var(--jf-error);
+    box-shadow: 0 0 0 3px var(--jf-error-bg);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--jf-brand); color: var(--jf-midnight);
+    font-family: inherit; font-weight: 700; font-size: 0.9375rem; line-height: 1;
+    padding: 13px 24px; border-radius: var(--jf-radius-lg); border: none;
+    cursor: pointer; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: background var(--jf-dur-fast) var(--jf-ease-standard),
+                box-shadow  var(--jf-dur-fast) var(--jf-ease-standard),
+                transform   var(--jf-dur-fast) var(--jf-ease-standard);
+  }
+  .btn-primary:hover {
+    background: var(--jf-brand-light);
+    box-shadow: var(--jf-shadow-brand);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active  { transform: scale(0.97); box-shadow: none; }
+  .btn-primary:disabled { opacity: 0.42; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--jf-surface-2); color: var(--jf-text);
+    font-family: inherit; font-weight: 600; font-size: 0.9375rem; line-height: 1;
+    padding: 13px 24px; border-radius: var(--jf-radius-lg);
+    border: 1px solid var(--jf-border-medium); cursor: pointer; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: background var(--jf-dur-fast) var(--jf-ease-standard),
+                border-color var(--jf-dur-fast) var(--jf-ease-standard),
+                transform    var(--jf-dur-fast) var(--jf-ease-standard);
+  }
+  .btn-secondary:hover { background: var(--jf-surface-3); border-color: var(--jf-border-strong); }
+  .btn-secondary:active { transform: scale(0.97); }
+  .btn-secondary:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: transparent; color: var(--jf-text-2);
+    font-family: inherit; font-weight: 600; font-size: 0.9375rem; line-height: 1;
+    padding: 13px 20px; border-radius: var(--jf-radius-lg); border: 1px solid transparent;
+    cursor: pointer; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: all var(--jf-dur-fast) var(--jf-ease-standard);
+  }
+  .btn-ghost:hover { background: var(--jf-glass-medium); border-color: var(--jf-border); color: var(--jf-text); }
+  .btn-ghost:active { transform: scale(0.97); }
+
+  .btn-danger {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--jf-error-bg); color: var(--jf-error);
+    font-family: inherit; font-weight: 600; font-size: 0.9375rem; line-height: 1;
+    padding: 13px 24px; border-radius: var(--jf-radius-lg);
+    border: 1px solid var(--jf-error-border); cursor: pointer;
+    transition: all var(--jf-dur-fast) var(--jf-ease-standard);
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.18); }
+
+  .btn-success {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--jf-success-bg); color: var(--jf-success);
+    font-family: inherit; font-weight: 600; font-size: 0.9375rem; line-height: 1;
+    padding: 13px 24px; border-radius: var(--jf-radius-lg);
+    border: 1px solid var(--jf-success-border); cursor: pointer;
+    transition: all var(--jf-dur-fast) var(--jf-ease-standard);
+  }
+  .btn-success:hover { background: rgba(16,185,129,0.18); }
+
+  /* Glass */
+  .glass {
+    background: var(--jf-glass);
+    backdrop-filter: blur(var(--jf-blur));
+    -webkit-backdrop-filter: blur(var(--jf-blur));
+    border: 1px solid var(--jf-glass-border);
+  }
+  .glass-medium {
+    background: var(--jf-glass-medium);
+    backdrop-filter: blur(var(--jf-blur));
+    -webkit-backdrop-filter: blur(var(--jf-blur));
+    border: 1px solid var(--jf-glass-border);
+  }
+  .glass-strong {
+    background: var(--jf-glass-strong);
+    backdrop-filter: blur(var(--jf-blur-heavy));
+    -webkit-backdrop-filter: blur(var(--jf-blur-heavy));
+    border: 1px solid var(--jf-glass-border-strong);
+  }
+  .glass-card {
+    background: var(--jf-glass);
+    backdrop-filter: blur(var(--jf-blur));
+    -webkit-backdrop-filter: blur(var(--jf-blur));
+    border: 1px solid var(--jf-glass-border);
+    border-radius: var(--jf-radius-2xl);
+    box-shadow: var(--jf-shadow-glass);
+  }
+
+  /* Text gradients */
+  .text-gradient-brand   { background: var(--jf-gradient-brand);   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .text-gradient-premium { background: var(--jf-gradient-premium); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* Badges */
+  .jf-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: var(--jf-radius-pill);
+    font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em;
+    line-height: 1.4; white-space: nowrap;
+  }
+  .jf-badge-brand   { background: var(--jf-brand-muted);   color: var(--jf-brand);   border: 1px solid var(--jf-brand-border); }
+  .jf-badge-success { background: var(--jf-success-bg);    color: var(--jf-success); border: 1px solid var(--jf-success-border); }
+  .jf-badge-warning { background: var(--jf-warning-bg);    color: var(--jf-warning); border: 1px solid var(--jf-warning-border); }
+  .jf-badge-error   { background: var(--jf-error-bg);      color: var(--jf-error);   border: 1px solid var(--jf-error-border); }
+  .jf-badge-info    { background: var(--jf-info-bg);       color: var(--jf-info);    border: 1px solid var(--jf-info-border); }
+  .jf-badge-muted   { background: rgba(255,255,255,0.07);  color: var(--jf-text-3);  border: 1px solid var(--jf-border); }
+
+  /* Status dots */
+  .jf-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 9999px; flex-shrink: 0; }
+  .jf-status-available   { background: var(--jf-available);   box-shadow: 0 0 6px var(--jf-available); }
+  .jf-status-busy        { background: var(--jf-busy); }
+  .jf-status-working     { background: var(--jf-working); }
+  .jf-status-unavailable { background: var(--jf-unavailable); }
+  .jf-status-offline     { background: var(--jf-offline); }
+
+  /* Skeleton */
+  .jf-skeleton {
+    background: linear-gradient(90deg, var(--jf-surface-1) 0%, var(--jf-surface-3) 50%, var(--jf-surface-1) 100%);
+    background-size: 200% 100%;
+    animation: jf-shimmer 1.8s ease-in-out infinite;
+    border-radius: var(--jf-radius-md);
+  }
+
+  /* Surfaces */
+  .jf-surface-1 { background: var(--jf-surface-1); }
+  .jf-surface-2 { background: var(--jf-surface-2); }
+  .jf-surface-3 { background: var(--jf-surface-3); }
+
+  /* Dividers */
+  .jf-divider       { height: 1px; background: var(--jf-border); border: none; }
+  .jf-divider-brand { height: 2px; background: var(--jf-gradient-brand-h); border: none; border-radius: 1px; }
+
+  /* Backdrop */
+  .jf-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(3,12,25,0.85);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--jf-z-overlay);
+  }
+
+  /* Numeric */
+  .jf-numeric { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+  /* Safe areas */
+  .safe-top    { padding-top:    env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-left   { padding-left:   env(safe-area-inset-left); }
+  .safe-right  { padding-right:  env(safe-area-inset-right); }
+
+} /* /components */
+
+/* ── 7. ANIMATIONS ──────────────────────────────────────────────── */
+@keyframes jf-fade-in       { from{opacity:0} to{opacity:1} }
+@keyframes jf-slide-up      { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes jf-slide-down    { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes jf-slide-left    { from{opacity:0;transform:translateX(24px)} to{opacity:1;transform:translateX(0)} }
+@keyframes jf-slide-right   { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:translateX(0)} }
+@keyframes jf-scale-in      { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+@keyframes jf-bounce-in     { from{opacity:0;transform:scale(0.68)} 60%{transform:scale(1.09)} 80%{transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
+@keyframes jf-sheet-in      { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes jf-float         { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes jf-spin          { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes jf-shimmer       { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@keyframes jf-pulse         { 0%,100%{opacity:1;transform:scaleX(1)} 50%{opacity:.32;transform:scaleX(.55)} }
+@keyframes jf-pulse-brand   { 0%,100%{box-shadow:0 0 0 0 rgba(240,180,41,0)} 50%{box-shadow:0 0 0 8px rgba(240,180,41,.14)} }
+@keyframes jf-scale-spring  { from{opacity:0;transform:scale(0.84)} 60%{transform:scale(1.04)} 80%{transform:scale(0.98)} to{opacity:1;transform:scale(1)} }
+
+@layer utilities {
+  .animate-fade-in    { animation: jf-fade-in    var(--jf-dur-moderate) var(--jf-ease-decel)     both; }
+  .animate-slide-up   { animation: jf-slide-up   var(--jf-dur-moderate) var(--jf-ease-decel)     both; }
+  .animate-slide-down { animation: jf-slide-down var(--jf-dur-moderate) var(--jf-ease-decel)     both; }
+  .animate-slide-left { animation: jf-slide-left var(--jf-dur-moderate) var(--jf-ease-decel)     both; }
+  .animate-scale-in   { animation: jf-scale-in   var(--jf-dur-moderate) var(--jf-ease-spring)    both; }
+  .animate-bounce-in  { animation: jf-bounce-in  var(--jf-dur-slow)     var(--jf-ease-overshoot) both; }
+  .animate-sheet-in   { animation: jf-sheet-in   380ms                  var(--jf-ease-spring)    both; }
+  .animate-float      { animation: jf-float 3s ease-in-out infinite; }
+  .animate-spin-slow  { animation: jf-spin  1.4s linear infinite; }
+  .animate-pulse-brand{ animation: jf-pulse-brand 2s ease-in-out infinite; }
 }
 
-@keyframes slide-up {
-  from { transform: translateY(20px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+/* ── 8. REDUCED MOTION ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

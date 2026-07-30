@@ -118,9 +118,9 @@
          ANDROID / CHROME / EDGE / WINDOWS
     ═══════════════════════════════════════════════════════ -->
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#050B18" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050B18" />
-    <meta name="msapplication-TileColor" content="#050B18" />
+    <meta name="theme-color" content="#050F1E" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030C19" />
+    <meta name="msapplication-TileColor" content="#050F1E" />
     <meta name="msapplication-TileImage" content="/icons/icon-192x192.png" />
     <meta name="msapplication-config" content="none" />
 
@@ -151,22 +151,43 @@
   </head>
   <body>
     <div id="root">
-      <!-- Splash shell: visibl imedyatman pandan JS chaje. #050B18 = zero white flash -->
+      <!-- Splash shell — renders before JS hydrates. #050F1E = zero white flash -->
       <div id="jf-shell" style="
         position:fixed;inset:0;display:flex;flex-direction:column;
-        align-items:center;justify-content:center;background:#050B18;z-index:9999;
+        align-items:center;justify-content:center;
+        background:#050F1E;z-index:9999;font-family:system-ui,-apple-system,sans-serif;
       ">
-        <img src="/icons/icon-192x192.png" alt="JOBFAST" width="80" height="80"
-          style="border-radius:20px;margin-bottom:20px;"
-          onerror="this.style.display='none'" />
-        <div style="font-size:2rem;font-weight:900;letter-spacing:-0.02em;line-height:1;">
-          <span style="color:#FACC15;">JOB</span><span style="color:#fff;">FAST</span>
+        <!-- App icon: lightning bolt in rounded square -->
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"
+          style="margin-bottom:20px;border-radius:18px;">
+          <rect width="80" height="80" rx="18" fill="#030C19"/>
+          <defs>
+            <linearGradient id="sg" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#F5C842"/>
+              <stop offset="100%" stop-color="#D4961A"/>
+            </linearGradient>
+          </defs>
+          <!-- lightning bolt scaled to 80x80 from 24x24 base -->
+          <path d="M43.3 6.7 L16.7 46.7 H36.7 L30 73.3 L63.3 33.3 H43.3 Z" fill="url(#sg)"/>
+        </svg>
+        <!-- Wordmark -->
+        <div style="font-size:2.25rem;font-weight:900;letter-spacing:-0.035em;line-height:1;">
+          <span style="color:#F0B429;">JOB</span><span style="color:#F8FAFC;">FAST</span>
         </div>
-        <div style="width:48px;height:3px;background:#FACC15;border-radius:2px;
-          margin-top:20px;animation:jf-pulse 1.4s ease-in-out infinite;"></div>
+        <!-- Loading bar -->
+        <div style="
+          width:52px;height:3px;border-radius:9999px;overflow:hidden;
+          background:rgba(255,255,255,0.08);margin-top:24px;
+        ">
+          <div id="jf-bar" style="
+            width:100%;height:100%;border-radius:9999px;
+            background:linear-gradient(90deg,#D4961A,#F5C842);
+            animation:jf-load 1.6s cubic-bezier(0.4,0,0.6,1) infinite;
+          "></div>
+        </div>
         <style>
-          @keyframes jf-pulse{0%,100%{opacity:1;transform:scaleX(1)}50%{opacity:.35;transform:scaleX(.55)}}
-          body{margin:0;background:#050B18;}
+          @keyframes jf-load{0%,100%{opacity:1;transform:scaleX(1)}50%{opacity:.3;transform:scaleX(.4)}}
+          body{margin:0;background:#050F1E;}
         </style>
       </div>
     </div>
