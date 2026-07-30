@@ -1,83 +1,45 @@
 /**
- * Payments Module
- * Owns: payment intents, transactions, escrow, refunds, webhooks
- * Delegates provider logic to: Stripe (US/global), MoncashProvider (HT), PayPal, etc.
- * All amounts in integer minor units. ACID via Supabase RPC.
- * Listens to: job.completed (release escrow)
- * Emits: payment.completed, payment.failed, escrow.locked, escrow.released
+ * Payments Module — FAZ 18
+ * Global Payment Intelligence Engine
+ * Owns: intents, transactions, routing, failover, fraud, 3DS, split, refunds, subscriptions, analytics, webhooks
+ * Providers: Stripe, PayPal, Adyen, Braintree, MonCash, NatCash, M-Pesa, MTN MoMo, Orange Money, ...
+ * All amounts in integer minor units. Routes to best provider per country/currency/method.
+ * Listens to: JOB_COMPLETED → release_escrow
+ * Emits: ESCROW_LOCKED, ESCROW_RELEASED, PAYMENT_COMPLETED, PAYMENT_FAILED
  */
-import type { Express } from 'express';
-import { Router } from 'express';
-import { db } from '../../core/database/SupabaseClient.js';
-import { requireAuth } from '../../core/middleware/auth.middleware.js';
-import { DomainEvent } from '../../core/events/DomainEvent.js';
-import { TypedEventBus } from '../../core/events/TypedEventBus.js';
-import { EVENT_NAMES } from '@shared-events';
+import type { Express }    from 'express';
+import { DomainEvent }     from '../../core/events/DomainEvent.js';
+import { TypedEventBus }   from '../../core/events/TypedEventBus.js';
+import { EVENT_NAMES }     from '@shared-events';
 import type { UUID, MinorUnits, Currency } from '@shared-types';
+import paymentRoutes       from './routes/payment.routes.js';
 
-class EscrowLockedEvent extends DomainEvent {
+// Domain events (re-exported for other modules to use)
+export class EscrowLockedEvent extends DomainEvent {
   constructor(public readonly jobId: UUID, public readonly amount: MinorUnits, public readonly currency: Currency) {
     super(EVENT_NAMES.ESCROW_LOCKED);
   }
 }
 
-class EscrowReleasedEvent extends DomainEvent {
+export class EscrowReleasedEvent extends DomainEvent {
   constructor(public readonly jobId: UUID, public readonly userId: UUID, public readonly amount: MinorUnits, public readonly currency: Currency) {
     super(EVENT_NAMES.ESCROW_RELEASED);
   }
 }
 
-export { EscrowLockedEvent, EscrowReleasedEvent };
-
 export function registerPaymentsModule(app: Express): void {
-  const router = Router();
+  // Mount all payment routes under /api/payments
+  app.use('/api/payments', paymentRoutes);
 
-  // Payment intent creation — backend calls relevant provider API
-  router.post('/intent',         requireAuth, async (req, res, next) => {
-    try {
-      const { amount, currency, provider, metadata } = req.body as { amount: number; currency: string; provider: string; metadata?: object };
-      // Route to provider-specific handler via internal service
-      const { data, error } = await db.client().from('payment_intents').insert({
-        amount, currency, provider, metadata, status: 'pending',
-        user_id: req.user!.sub, created_at: new Date().toISOString(),
-      }).select().single();
-      if (error) throw error;
-      res.status(201).json({ success: true, data });
-    } catch (err) { next(err); }
-  });
-
-  // Confirm a payment intent (provider callback or client-side confirmation)
-  router.post('/confirm/:id',    requireAuth, async (req, res, next) => {
-    try {
-      res.json({ success: true, data: { message: 'Peman konfime' } });
-    } catch (err) { next(err); }
-  });
-
-  // Stripe webhook (public — no auth, but HMAC-verified by the handler)
-  router.post('/webhook/stripe', async (req, res, next) => {
-    try {
-      // Verify Stripe signature here in production
-      res.json({ received: true });
-    } catch (err) { next(err); }
-  });
-
-  router.get('/transactions',    requireAuth, async (req, res, next) => {
-    try {
-      const { data, error } = await db.client().from('payment_intents')
-        .select('*').eq('user_id', req.user!.sub).order('created_at', { ascending: false }).limit(20);
-      if (error) throw error;
-      res.json({ success: true, data });
-    } catch (err) { next(err); }
-  });
-
-  app.use('/api/payments', router);
-
-  // Release escrow when job completes
+  // Release escrow when job completes (cross-module event)
   TypedEventBus.subscribe(EVENT_NAMES.JOB_COMPLETED, async (envelope) => {
-    const { jobId, workerId, budget, currency } = envelope.payload as {
-      jobId: UUID; workerId: UUID; budget: MinorUnits; currency: Currency;
-    };
-    await db.client().rpc('release_escrow', { p_job_id: jobId }).throwOnError();
-    TypedEventBus.publish(new EscrowReleasedEvent(jobId, workerId, budget, currency));
+    try {
+      const payload = envelope.payload as unknown as { jobId: UUID; workerId: UUID; budget: MinorUnits; currency: Currency };
+      const { db }  = await import('../../core/database/SupabaseClient.js');
+      await db.client().rpc('release_escrow', { p_job_id: payload.jobId }).throwOnError();
+      TypedEventBus.publish(new EscrowReleasedEvent(payload.jobId, payload.workerId, payload.budget, payload.currency));
+    } catch (err) {
+      console.error('[payments] JOB_COMPLETED escrow release failed:', err);
+    }
   });
 }
