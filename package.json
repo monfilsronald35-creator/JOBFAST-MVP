@@ -18,5 +18,14 @@
     "@commitlint/config-conventional": "^19.0.0",
     "husky": "^9.0.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "workspaces": [
+    "apps/frontend",
+    "backend",
+    "packages/shared-types",
+    "packages/shared-events",
+    "packages/shared-utils",
+    "packages/shared-config",
+    "packages/shared-validation"
+  ]
 }
