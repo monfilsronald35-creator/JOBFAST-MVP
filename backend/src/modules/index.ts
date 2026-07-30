@@ -28,8 +28,12 @@ import { registerTelecomModule }       from './telecom/index.js';
 import { registerEnterpriseModule }    from './enterprise/index.js';
 import { registerAdminModule }         from './admin/index.js';
 import { registerAIModule }            from './ai/index.js';
+import { registerIdentityModule }      from './identity/index.js';
 
 export function registerAllModules(app: Express): void {
+  // Identity Platform (must be first — other modules may depend on auth context)
+  registerIdentityModule(app);
+
   // Infrastructure modules (no cross-module deps)
   registerAuthModule(app);
   registerUsersModule(app);
