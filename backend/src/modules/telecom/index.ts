@@ -1,38 +1,19 @@
 /**
- * Telecom Module
- * Owns: airtime top-up, mobile money integration, phone number validation
- * Providers: Digicel Haiti, Natcom, local carriers
- * Emits: payment.completed (for top-up charges)
+ * Telecom Module (Backend)
+ * Owns: Operator Registry, Recharge Engine (8 types), Bundle Engine (13 types),
+ *       SIM Management (physical/eSIM + KYC), Bill Payment, Dealer Management,
+ *       Commission Engine, API Connector (circuit breaker + retry queue),
+ *       Fraud Protection, Analytics, AI Insights
+ * Tables: tel_operators, tel_operator_configs, tel_bundles, tel_recharges, tel_sims,
+ *         tel_bills, tel_dealers, tel_commissions, tel_commission_rules,
+ *         tel_fraud_events, tel_retry_queue
+ * Prefix: tel_
+ * Migration: 020_telecom_service.sql (run manually in Supabase SQL Editor)
+ * Supports: Digicel, Claro, Altice, Orange, Vodafone, MTN, Safaricom + any operator
  */
 import type { Express } from 'express';
-import { Router } from 'express';
-import { requireAuth } from '../../core/middleware/auth.middleware.js';
+import { telecomRouter } from './routes/telecom.routes.js';
 
 export function registerTelecomModule(app: Express): void {
-  const router = Router();
-
-  router.get('/providers',   async (_req, res) => {
-    res.json({ success: true, data: [
-      { id: 'digicel',  name: 'Digicel Haiti',  country: 'HT', currency: 'HTG' },
-      { id: 'natcom',   name: 'Natcom',          country: 'HT', currency: 'HTG' },
-    ]});
-  });
-
-  router.post('/topup',      requireAuth, async (req, res, next) => {
-    try {
-      const { phone, amount, provider } = req.body as { phone: string; amount: number; provider: string };
-      // Delegate to provider-specific API (env-configured)
-      res.json({ success: true, data: { message: 'Rechaj an trete', phone, amount, provider } });
-    } catch (err) { next(err); }
-  });
-
-  router.post('/validate-number', async (req, res, next) => {
-    try {
-      const { phone } = req.body as { phone: string };
-      const isHaitian = /^\+509/.test(phone) || /^509/.test(phone);
-      res.json({ success: true, data: { phone, valid: !!phone, country: isHaitian ? 'HT' : null } });
-    } catch (err) { next(err); }
-  });
-
-  app.use('/api/telecom', router);
+  app.use('/api/telecom', telecomRouter);
 }
