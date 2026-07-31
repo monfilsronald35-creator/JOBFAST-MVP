@@ -1,15 +1,19 @@
 /**
  * AI Module (Backend)
  * Owns: AI request routing, provider selection, usage tracking, response caching
+ *       + AI Experience Platform (Daily Briefing, Smart Home, Opportunities, City Intel,
+ *         Travel Concierge, Business Concierge, Personalization, Experience Score)
  * All API keys stay server-side — frontend calls /api/ai/* never see credentials
  * Providers: OpenAI, Anthropic, Gemini, Mistral, DeepSeek, Ollama
  * Rate limits enforced per user, per provider
  * Emits: nothing
  */
 import type { Express } from 'express';
-import { Router } from 'express';
-import { requireAuth, optionalAuth } from '../../core/middleware/auth.middleware.js';
-import { Cache } from '../../core/cache/Cache.js';
+import { Router }       from 'express';
+import { optionalAuth } from '../../core/middleware/auth.middleware.js';
+import { Cache }        from '../../core/cache/Cache.js';
+import { aiExperienceRouter }           from './routes/ai.routes.js';
+import { registerRecommendationPipeline } from './services/RecommendationPipeline.js';
 
 type AIProvider = 'openai' | 'anthropic' | 'gemini' | 'mistral' | 'deepseek' | 'ollama';
 
@@ -23,7 +27,7 @@ const PROVIDER_ENDPOINTS: Record<AIProvider, string> = {
 };
 
 async function callProvider(provider: AIProvider, path: string, body: unknown): Promise<unknown> {
-  const key = process.env[`${provider.toUpperCase()}_API_KEY`];
+  const key     = process.env[`${provider.toUpperCase()}_API_KEY`];
   const baseUrl = PROVIDER_ENDPOINTS[provider];
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -38,6 +42,13 @@ async function callProvider(provider: AIProvider, path: string, body: unknown): 
 }
 
 export function registerAIModule(app: Express): void {
+  // ── Experience Platform routes (/api/ai/experience/*) ─────────────────────
+  app.use('/api/ai', aiExperienceRouter);
+
+  // ── Register cross-service recommendation pipeline ─────────────────────────
+  registerRecommendationPipeline();
+
+  // ── LLM Proxy router ──────────────────────────────────────────────────────
   const router = Router();
 
   // Chat completions — routes to specified provider
@@ -46,14 +57,13 @@ export function registerAIModule(app: Express): void {
       const provider = req.params['provider'] as AIProvider;
       if (!PROVIDER_ENDPOINTS[provider]) { res.status(400).json({ code: 'UNKNOWN_PROVIDER' }); return; }
 
-      // Cache semantic-equivalent prompts (simplified key — use embedding similarity in production)
-      const body      = req.body as { messages?: unknown[]; model?: string };
-      const cacheKey  = `ai:chat:${provider}:${JSON.stringify(body.messages).slice(0, 200)}`;
-      const cached    = Cache.get<unknown>(cacheKey);
+      const body     = req.body as { messages?: unknown[]; model?: string };
+      const cacheKey = `ai:chat:${provider}:${JSON.stringify(body.messages).slice(0, 200)}`;
+      const cached   = Cache.get<unknown>(cacheKey);
       if (cached) { res.json(cached); return; }
 
       const result = await callProvider(provider, '/chat/completions', body);
-      Cache.set(cacheKey, result, 300);  // cache 5 min
+      Cache.set(cacheKey, result, 300);
       res.json(result);
     } catch (err) { next(err); }
   });
