@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 
 import { registerAllModules }    from './modules/index.js';
+import { securityMiddleware }   from './modules/security/middleware/securityMiddleware.js';
 import { errorHandler, notFoundHandler } from './core/middleware/errorHandler.middleware.js';
 
 export function createApp(): Express {
@@ -66,7 +67,10 @@ export function createApp(): Express {
     res.json({ status: 'ok', version: '1.0.0', timestamp: Date.now(), env: process.env['NODE_ENV'] });
   });
 
-  // ——— Domain Modules ———————————————————————————————————————————————————————
+  // ——— Security Platform (runs before ALL domain modules) ─────────────────
+  app.use(securityMiddleware);
+
+  // ——— Domain Modules ———————————————————————————————————————————————————────
   registerAllModules(app);
 
   // ——— Error handling ———————————————————————————————————————————————————————

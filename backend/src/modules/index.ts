@@ -30,6 +30,7 @@ import { registerAdminModule }         from './admin/index.js';
 import { registerAIModule }            from './ai/index.js';
 import { registerIdentityModule }      from './identity/index.js';
 import { registerGovernmentModule }    from './government/index.js';
+import { registerSecurityModule }     from './security/index.js';
 
 export function registerAllModules(app: Express): void {
   // Identity Platform (must be first — other modules may depend on auth context)
@@ -67,6 +68,7 @@ export function registerAllModules(app: Express): void {
 
   // Platform
   registerAnalyticsModule(app);   // must come AFTER other modules (wildcard subscriber)
+  registerSecurityModule(app);    // subscribes to all events for threat detection
   registerAIModule(app);
   registerAdminModule(app);
 }
