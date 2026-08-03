@@ -31,6 +31,7 @@ import { registerAIModule }            from './ai/index.js';
 import { registerIdentityModule }      from './identity/index.js';
 import { registerGovernmentModule }    from './government/index.js';
 import { registerSecurityModule }     from './security/index.js';
+import { registerStorageModule }     from './storage/index.js';
 
 export function registerAllModules(app: Express): void {
   // Identity Platform (must be first — other modules may depend on auth context)
@@ -55,6 +56,7 @@ export function registerAllModules(app: Express): void {
   // Discovery & Content
   registerSearchModule(app);
   registerMediaModule(app);
+  registerStorageModule(app);   // full storage platform (extends media)
   registerMapsModule(app);
 
   // Verticals
