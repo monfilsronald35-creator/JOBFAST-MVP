@@ -1,5 +1,6 @@
 import { db }         from '../../../core/database/SupabaseClient.js';
 import { TypedEventBus } from '../../../core/events/TypedEventBus.js';
+import { FeatureFlagService } from './FeatureFlagService.js';
 import type { PlatformStats, AuditAction, ModerationStatus } from '../types/admin.types.js';
 
 async function audit(actorId: string, action: AuditAction, targetId?: string, targetType?: string, metadata: Record<string, unknown> = {}): Promise<void> {
@@ -48,13 +49,13 @@ export const AdminService = {
 
   async suspendUser(actorId: string, userId: string, reason: string): Promise<void> {
     await db.client().from('profiles').update({ status: 'suspended' }).eq('id', userId);
-    TypedEventBus.publish({ eventName: 'user.suspended', payload: { userId, reason } });
+    TypedEventBus.publish({ eventId: crypto.randomUUID(), eventName: 'user.suspended', occurredAt: Date.now(), version: 1, userId, reason } as unknown as import('../../../core/events/DomainEvent.js').DomainEvent);
     await audit(actorId, 'user.suspended', userId, 'profile', { reason });
   },
 
   async activateUser(actorId: string, userId: string): Promise<void> {
     await db.client().from('profiles').update({ status: 'active' }).eq('id', userId);
-    TypedEventBus.publish({ eventName: 'user.activated', payload: { userId } });
+    TypedEventBus.publish({ eventId: crypto.randomUUID(), eventName: 'user.activated', occurredAt: Date.now(), version: 1, userId } as unknown as import('../../../core/events/DomainEvent.js').DomainEvent);
     await audit(actorId, 'user.activated', userId, 'profile');
   },
 
@@ -94,7 +95,23 @@ export const AdminService = {
     const row: Record<string, unknown> = { key, enabled, updated_by: actorId, updated_at: new Date().toISOString() };
     if (rolloutPct !== undefined) row['rollout_pct'] = rolloutPct;
     await db.client().from('feature_flags').upsert(row, { onConflict: 'key' });
+    FeatureFlagService.invalidateCache();
     await audit(actorId, 'flag.toggled', undefined, 'feature_flags', { key, enabled, rolloutPct });
+  },
+
+  async setFlagConditions(actorId: string, key: string, conditions: Record<string, unknown>): Promise<void> {
+    await FeatureFlagService.setConditions(actorId, key, conditions as Parameters<typeof FeatureFlagService.setConditions>[2]);
+    await audit(actorId, 'flag.conditions_updated', undefined, 'feature_flags', { key, conditions });
+  },
+
+  async emergencyDisableFlag(actorId: string, key: string): Promise<void> {
+    await FeatureFlagService.emergencyDisable(actorId, key);
+    await audit(actorId, 'flag.emergency_disabled', undefined, 'feature_flags', { key });
+  },
+
+  async restoreFlag(actorId: string, key: string): Promise<void> {
+    await FeatureFlagService.restore(actorId, key);
+    await audit(actorId, 'flag.restored', undefined, 'feature_flags', { key });
   },
 
   // ── System config ────────────────────────────────────────────────────────────

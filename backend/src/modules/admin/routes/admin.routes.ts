@@ -29,6 +29,9 @@ adminRouter.post ('/moderation/:id/resolve',      C.resolveModeration);
 // ── Feature flags ─────────────────────────────────────────────────────────────
 adminRouter.get  ('/flags',                       C.getFlags);
 adminRouter.patch('/flags/:key',                  S, C.setFlag);
+adminRouter.patch('/flags/:key/conditions',       S, C.setFlagConditions);
+adminRouter.post ('/flags/:key/kill',             S, C.emergencyDisableFlag);
+adminRouter.post ('/flags/:key/restore',          S, C.restoreFlag);
 
 // ── System config ─────────────────────────────────────────────────────────────
 adminRouter.get  ('/config',                      S, C.getConfig);

@@ -57,7 +57,7 @@ export const TelecomAPIConnector = {
       return {
         success:     true,
         externalRef: `MOCK-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
-        message:     'Sandbox recharge successful',
+        message:     'Test recharge successful',
         retryCount:  0,
       };
     }
@@ -112,7 +112,7 @@ export const TelecomAPIConnector = {
 
   async checkStatus(operatorId: string, externalRef: string): Promise<{ active: boolean; message: string }> {
     const cfg = await TelecomRepository.getConfig(operatorId);
-    if (!cfg || cfg.sandboxMode) return { active: true, message: 'Sandbox — always active' };
+    if (!cfg || cfg.sandboxMode) return { active: true, message: 'Test mode — always active' };
 
     try {
       const res = await fetch(`${cfg.apiBaseUrl}/status/${externalRef}`, {

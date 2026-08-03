@@ -22,7 +22,7 @@ export function createApp(): Express {
         scriptSrc:  ["'self'"],
         styleSrc:   ["'self'", "'unsafe-inline'"],
         imgSrc:     ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'", 'wss://api.jobfast.com', 'https://*.supabase.co'],
+        connectSrc: ["'self'", 'wss://api.jobfasthq.com', 'https://*.supabase.co'],
         frameAncestors: ["'none'"],
       },
     },
@@ -31,7 +31,7 @@ export function createApp(): Express {
   }));
 
   const ALLOWED_ORIGINS_DEFAULT = isProd
-    ? 'https://jobfast.com,https://app.jobfast.com,https://www.jobfast.com'
+    ? 'https://jobfasthq.com,https://app.jobfasthq.com,https://www.jobfasthq.com'
     : 'http://localhost:5173';
 
   app.use(cors({

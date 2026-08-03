@@ -83,6 +83,26 @@ export const AdminController = {
     res.json({ success: true });
   },
 
+  async setFlagConditions(req: Request, res: Response): Promise<void> {
+    const key        = String(req.params['key'] ?? '');
+    const { conditions } = req.body as { conditions?: Record<string, unknown> };
+    if (!conditions) { res.status(400).json({ error: 'conditions obligatwa' }); return; }
+    await AdminService.setFlagConditions(actorId(req), key, conditions);
+    res.json({ success: true });
+  },
+
+  async emergencyDisableFlag(req: Request, res: Response): Promise<void> {
+    const key = String(req.params['key'] ?? '');
+    await AdminService.emergencyDisableFlag(actorId(req), key);
+    res.json({ success: true, message: `Flag "${key}" dezaktive nan ijans.` });
+  },
+
+  async restoreFlag(req: Request, res: Response): Promise<void> {
+    const key = String(req.params['key'] ?? '');
+    await AdminService.restoreFlag(actorId(req), key);
+    res.json({ success: true, message: `Flag "${key}" restore.` });
+  },
+
   // ── System config ────────────────────────────────────────────────────────────
   async getConfig(_req: Request, res: Response): Promise<void> {
     const config = await AdminService.getSystemConfig();

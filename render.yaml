@@ -14,8 +14,8 @@ services:
         value: production
       - key: PORT
         value: "10000"
-      - key: CORS_ORIGIN
-        value: "https://jobfast-mvp.vercel.app,https://jobfast-mvp-git-main-monfilsronald35-creators.vercel.app,http://localhost:5173"
+      - key: ALLOWED_ORIGINS
+        value: "https://jobfasthq.com,https://app.jobfasthq.com,https://www.jobfasthq.com"
       # ── Secrets: set these in Render Dashboard → Environment (never commit) ──
       - key: JWT_SECRET
         sync: false
