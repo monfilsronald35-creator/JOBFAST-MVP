@@ -32,7 +32,8 @@ import { registerIdentityModule }      from './identity/index.js';
 import { registerGovernmentModule }    from './government/index.js';
 import { registerSecurityModule }     from './security/index.js';
 import { registerStorageModule }     from './storage/index.js';
-import { registerRealtimeModule }   from './realtime/index.js';
+import { registerRealtimeModule }      from './realtime/index.js';
+import { registerLocalizationModule } from './localization/index.js';
 
 export function registerAllModules(app: Express): void {
   // Identity Platform (must be first — other modules may depend on auth context)
@@ -74,5 +75,6 @@ export function registerAllModules(app: Express): void {
   registerSecurityModule(app);    // subscribes to all events for threat detection
   registerAIModule(app);
   registerAdminModule(app);
-  registerRealtimeModule(app);    // REST endpoints for sync/presence; gateway is in server.ts
+  registerRealtimeModule(app);      // REST endpoints for sync/presence; gateway is in server.ts
+  registerLocalizationModule(app);  // Country context, feature flags, cross-border, analytics
 }
