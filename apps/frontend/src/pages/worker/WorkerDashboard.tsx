@@ -668,7 +668,7 @@ function IncomeTab({ user, jobs }: { user: UserRecord; jobs: JobItem[] }) {
   return (
     <div className="space-y-4">
       <Section icon="💰" title="Estimasyon Revni">
-        <p className="text-[10px] text-slate-500 mb-3">✱ Estimasyon MVP — yo pral mete ajou ak done reyèl yo.</p>
+        <p className="text-[10px] text-slate-500 mb-3">✱ Estimasyon — yo pral mete ajou ak done reyèl yo.</p>
         <div className="grid grid-cols-3 gap-3">
           <StatCard value={`$${totalEst}`} label="Total"  color="amber" />
           <StatCard value={`$${monthEst}`} label="Mwa sa" color="green" />

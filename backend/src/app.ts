@@ -12,6 +12,8 @@ import { errorHandler, notFoundHandler } from './core/middleware/errorHandler.mi
 export function createApp(): Express {
   const app = express();
 
+  const isProd = process.env['NODE_ENV'] === 'production';
+
   // ——— Security ——————————————————————————————————————————————————————————————
   app.use(helmet({
     contentSecurityPolicy: {
@@ -20,14 +22,20 @@ export function createApp(): Express {
         scriptSrc:  ["'self'"],
         styleSrc:   ["'self'", "'unsafe-inline'"],
         imgSrc:     ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", 'wss://api.jobfast.com', 'https://*.supabase.co'],
+        frameAncestors: ["'none'"],
       },
     },
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    hsts: isProd ? { maxAge: 31_536_000, includeSubDomains: true, preload: true } : false,
   }));
 
+  const ALLOWED_ORIGINS_DEFAULT = isProd
+    ? 'https://jobfast.com,https://app.jobfast.com,https://www.jobfast.com'
+    : 'http://localhost:5173';
+
   app.use(cors({
-    origin: (process.env['ALLOWED_ORIGINS'] ?? 'http://localhost:5173').split(','),
+    origin: (process.env['ALLOWED_ORIGINS'] ?? ALLOWED_ORIGINS_DEFAULT).split(','),
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-internal'],
     credentials: true,

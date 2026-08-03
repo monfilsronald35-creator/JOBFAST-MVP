@@ -1,5 +1,5 @@
 {
-  "name": "jobfast-mvp",
+  "name": "jobfast",
   "version": "1.0.0",
   "private": true,
   "description": "JOBFAST GLOBAL — Enterprise monorepo. Frontend: apps/frontend, Backend: backend/.",

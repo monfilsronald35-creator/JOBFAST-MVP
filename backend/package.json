@@ -1,7 +1,7 @@
 {
-  "name": "jobfast-global-mvp",
+  "name": "jobfast-api",
   "version": "1.0.0",
-  "description": "JOBFAST GLOBAL MVP API - ENTERPRISE PRODUCTION READY",
+  "description": "JOBFAST GLOBAL API — Enterprise Production",
   "private": true,
   "type": "module",
   "main": "server.js",

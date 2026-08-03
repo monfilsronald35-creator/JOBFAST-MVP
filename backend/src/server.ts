@@ -2,7 +2,8 @@ import 'dotenv/config';
 import http from 'http';
 import { Server as SocketIO } from 'socket.io';
 import { createApp }     from './app.js';
-import { ChatGateway }   from './modules/chat/gateway/ChatGateway.js';
+import { ChatGateway }      from './modules/chat/gateway/ChatGateway.js';
+import { RealtimeGateway } from './modules/realtime/index.js';
 
 const PORT = Number(process.env['PORT'] ?? 5000);
 
@@ -20,8 +21,9 @@ async function bootstrap(): Promise<void> {
     path:       '/socket.io',
   });
 
-  // Chat real-time gateway (replaces stub socket handlers)
+  // Real-time gateways
   ChatGateway.init(io);
+  RealtimeGateway.init(io);
 
   // Make io available to modules that need to push real-time updates
   app.set('io', io);
@@ -29,7 +31,7 @@ async function bootstrap(): Promise<void> {
   // ——— Start ————————————————————————————————————————————————————————————————
   httpServer.listen(PORT, () => {
     console.log(`[JOBFAST] Server running on port ${PORT} (${process.env['NODE_ENV'] ?? 'development'})`);
-    console.log(`[JOBFAST] Modular Monolith — 32 domain modules loaded`);
+    console.log(`[JOBFAST] Modular Monolith — 33 domain modules loaded`);
   });
 
   process.on('SIGTERM', () => {

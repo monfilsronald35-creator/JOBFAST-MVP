@@ -1,4 +1,4 @@
-// Cache abstraction — backed by in-memory LRU for MVP; swap for Redis when needed
+// Cache abstraction — backed by in-memory LRU; swap for Redis when needed
 
 interface CacheEntry<T> { value: T; expiresAt: number }
 
