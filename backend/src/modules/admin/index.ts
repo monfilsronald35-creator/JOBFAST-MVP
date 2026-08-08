@@ -14,13 +14,19 @@
  * Admin routes: /api/admin/* — require role: admin or superadmin
  */
 import type { Express, Request, Response } from 'express';
-import { adminRouter }       from './routes/admin.routes.js';
-import { FeatureFlagService } from './services/FeatureFlagService.js';
-import { db }                from '../../core/database/SupabaseClient.js';
+import { adminRouter }          from './routes/admin.routes.js';
+import { adminOSRouter }        from './routes/admin.os.routes.js';
+import { FeatureFlagService }   from './services/FeatureFlagService.js';
+import { requireAuth, requireRole } from '../../core/middleware/auth.middleware.js';
+import { db }                   from '../../core/database/SupabaseClient.js';
 
 export function registerAdminModule(app: Express): void {
-  // ── Admin routes (require auth + admin role) ──────────────────────────────
+  // ── Admin routes ──────────────────────────────────────────────────────────
   app.use('/api/admin', adminRouter);
+  // ── Admin OS routes (FAZ 23 — Command Center) ─────────────────────────────
+  // All OS routes require auth + admin role; individual endpoints may further
+  // restrict to superadmin via requireRole('superadmin') inside the router.
+  app.use('/api/admin/os', requireAuth, requireRole('admin', 'superadmin'), adminOSRouter);
 
   // ── Public: Feature Flag Platform ─────────────────────────────────────────
   // GET /api/flags?country=HT&city=Port-au-Prince&role=worker&userId=...
@@ -28,11 +34,11 @@ export function registerAdminModule(app: Express): void {
   // No auth required — only enabled flag names are exposed, no sensitive data.
   app.get('/api/flags', async (req: Request, res: Response) => {
     const flags = await FeatureFlagService.evaluateAll({
-      userId:     req.query['userId']  ? String(req.query['userId'])  : undefined,
-      country:    req.query['country'] ? String(req.query['country']) : undefined,
-      city:       req.query['city']    ? String(req.query['city'])    : undefined,
-      role:       req.query['role']    ? String(req.query['role'])    : undefined,
-      userGroups: req.query['groups']  ? String(req.query['groups']).split(',') : undefined,
+      ...(req.query['userId']  ? { userId:     String(req.query['userId'])  }         : {}),
+      ...(req.query['country'] ? { country:    String(req.query['country']) }         : {}),
+      ...(req.query['city']    ? { city:       String(req.query['city'])    }         : {}),
+      ...(req.query['role']    ? { role:       String(req.query['role'])    }         : {}),
+      ...(req.query['groups']  ? { userGroups: String(req.query['groups']).split(',') } : {}),
     });
     res.json({ success: true, data: flags });
   });
