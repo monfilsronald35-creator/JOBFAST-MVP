@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/UserController.js';
+import { SettingsController } from '../controllers/SettingsController.js';
 import { UserService } from '../services/UserService.js';
 import { SupabaseUserRepository } from '../repositories/SupabaseUserRepository.js';
 import { requireAuth, requireRole } from '../../../core/middleware/auth.middleware.js';
@@ -22,6 +23,15 @@ export function createUsersRouter(): Router {
 
   router.post('/:id/suspend',  requireAuth, requireRole('admin', 'superadmin'),   controller.suspend);
   router.post('/:id/activate', requireAuth, requireRole('admin', 'superadmin'),   controller.activate);
+
+  // ── Settings ──────────────────────────────────────────────────────────────────
+  router.get(   '/settings',                requireAuth, SettingsController.getSettings);
+  router.patch( '/settings',                requireAuth, SettingsController.updateSettings);
+  router.get(   '/sessions',                requireAuth, SettingsController.getSessions);
+  router.delete('/sessions/:sessionId',     requireAuth, SettingsController.revokeSession);
+  router.get(   '/devices',                 requireAuth, SettingsController.getDevices);
+  router.delete('/devices/:deviceId',       requireAuth, SettingsController.revokeDevice);
+  router.post(  '/delete-account',          requireAuth, SettingsController.deleteAccount);
 
   return router;
 }

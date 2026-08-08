@@ -119,6 +119,12 @@ class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, AppErrorBo
 const lazyWithRetry = (importFn: () => Promise<{ default: React.ComponentType }>) =>
   lazy(() => importFn().catch(() => importFn()));
 
+// Phase 14–17 pages (lazy-loaded)
+const SettingsPage    = lazyWithRetry(() => import("@/pages/Settings/index.tsx"));
+const AnalyticsPage   = lazyWithRetry(() => import("@/pages/Analytics/index.tsx"));
+const AIHubPage       = lazyWithRetry(() => import("@/pages/AIHub/index.tsx"));
+const SuperAdminPage  = lazyWithRetry(() => import("@/pages/SuperAdmin/index.tsx"));
+
 // Admin Pages (Lazy Loaded for better performance — with auto-retry on network failure)
 const AdminDashboard  = lazyWithRetry(() => import("@/pages/admin/AdminDashboard.jsx"));
 const AdminUsers      = lazyWithRetry(() => import("@/pages/admin/AdminUsers.jsx"));
@@ -163,6 +169,15 @@ const AdminGate = ({ children }: GateProps) => {
   return <AdminLayout>{children}</AdminLayout>;
 };
 
+// SuperAdminGate: super_admin only — no layout wrapper (SuperAdminPage has its own)
+const SuperAdminGate = ({ children }: GateProps) => {
+  const { user, isAuthenticated, loading } = useAuth();
+  if (loading) return <Loader text="Loading..." />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== "super_admin") return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+};
+
 // SmartRoot: authenticated users go straight to their dashboard; others see Splash
 const SmartRoot = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -174,7 +189,7 @@ const SmartRoot = () => {
 // Standalone wrappers for role-specific dashboard components that expect props
 const WorkerDashboardPage = () => {
   const { user } = useAuth();
-  const [tab, setTab] = React.useState('profile');
+  const [tab] = React.useState('profile');
   return <WorkerContent tab={tab} user={user} jobs={[]} />;
 };
 
@@ -213,7 +228,9 @@ function AppRoutes() {
 
             {/* Additional Protected Routes */}
             <Route path="/edit-profile" element={<AuthGate><ProfileScreen /></AuthGate>} />
-            <Route path="/settings" element={<AuthGate><ProfileScreen /></AuthGate>} />
+            <Route path="/settings"    element={<AuthGate><SettingsPage  /></AuthGate>} />
+            <Route path="/analytics"   element={<AuthGate><AnalyticsPage /></AuthGate>} />
+            <Route path="/ai"          element={<AuthGate><AIHubPage     /></AuthGate>} />
             <Route path="/job-history" element={<AuthGate><Dashboard /></AuthGate>} />
             <Route path="/notifications"       element={<AuthGate><SmartNotifications  /></AuthGate>} />
             <Route path="/smart-notifications" element={<AuthGate><SmartNotifications  /></AuthGate>} />
@@ -255,6 +272,10 @@ function AppRoutes() {
             <Route path="/admin/support"    element={<AdminGate><AdminSupport    /></AdminGate>} />
             <Route path="/admin/settings"   element={<AdminGate><AdminSettings   /></AdminGate>} />
             <Route path="/admin/governance" element={<AdminGate><AdminGovernance /></AdminGate>} />
+
+            {/* Super Admin — separate from /admin, super_admin role only */}
+            <Route path="/super-admin"   element={<SuperAdminGate><SuperAdminPage /></SuperAdminGate>} />
+            <Route path="/super-admin/*" element={<SuperAdminGate><SuperAdminPage /></SuperAdminGate>} />
 
             {/* Fallback Route */}
             <Route path="*" element={<Navigate to="/" replace />} />
