@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
   // ——— Start ————————————————————————————————————————————————————————————————
   httpServer.listen(PORT, () => {
     console.log(`[JOBFAST] Server running on port ${PORT} (${process.env['NODE_ENV'] ?? 'development'})`);
-    console.log(`[JOBFAST] Modular Monolith — 35 domain modules loaded`);
+    console.log(`[JOBFAST] Modular Monolith — 36 domain modules loaded`);
   });
 
   process.on('SIGTERM', () => {
