@@ -69,12 +69,12 @@ export const SettingsService = {
     if (!data) return DEFAULTS;
     const meta     = (data as Record<string, unknown>)['metadata'] as Record<string, unknown> | null;
     const settings = (meta?.['settings'] as Partial<UserSettings>) ?? {};
-    return _merge(DEFAULTS, settings);
+    return _merge(DEFAULTS, settings) as unknown as UserSettings;
   },
 
   async updateSettings(userId: string, patch: Partial<UserSettings>): Promise<UserSettings> {
     const current = await SettingsService.getSettings(userId);
-    const merged  = _merge(current, patch);
+    const merged  = _merge(current, patch) as unknown as UserSettings;
 
     const { data: profileRow } = await db.client()
       .from('profiles')
@@ -138,14 +138,17 @@ export const SettingsService = {
   },
 };
 
-function _merge<T extends object>(base: T, patch: Partial<T>): T {
-  const result: Record<string, unknown> = { ...base };
-  for (const [k, v] of Object.entries(patch)) {
+function _merge(base: unknown, patch: unknown): unknown {
+  if (typeof patch !== 'object' || patch === null) return base;
+  const b = (typeof base === 'object' && base !== null ? base : {}) as Record<string, unknown>;
+  const p = patch as Record<string, unknown>;
+  const result: Record<string, unknown> = { ...b };
+  for (const [k, v] of Object.entries(p)) {
     if (v !== null && v !== undefined && typeof v === 'object' && !Array.isArray(v)) {
-      result[k] = _merge((base as Record<string, unknown>)[k] as object ?? {}, v as Partial<object>);
+      result[k] = _merge(result[k], v);
     } else if (v !== undefined) {
       result[k] = v;
     }
   }
-  return result as T;
+  return result;
 }

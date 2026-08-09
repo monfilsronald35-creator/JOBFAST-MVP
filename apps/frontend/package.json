@@ -27,6 +27,7 @@
     "build:storybook": "storybook build"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.2",
     "@tanstack/react-query": "^5.51.0",
     "@tanstack/react-virtual": "^3.8.0",
     "axios": "^1.7.2",
