@@ -15,7 +15,7 @@ services:
       - key: PORT
         value: "10000"
       - key: ALLOWED_ORIGINS
-        value: "https://jobfasthq.com,https://app.jobfasthq.com,https://www.jobfasthq.com"
+        value: "https://jobfast-mvp-spzy.vercel.app,https://jobfasthq.com,https://app.jobfasthq.com,https://www.jobfasthq.com"
       # ── Secrets: set these in Render Dashboard → Environment (never commit) ──
       - key: JWT_SECRET
         sync: false

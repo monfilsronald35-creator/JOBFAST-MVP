@@ -364,13 +364,14 @@ function HelpPane() {
   const FAQ = [
     { q: 'Kijan mwen ka jwenn yon travay?', a: 'Ale nan Chèche → Travay epi filtre pa kategori oswa lokalizasyon.' },
     { q: 'Kijan mwen ka voye lajan?', a: 'Ale nan Pòfèy → Transfere epi rantre ID destinatè a.' },
-    { q: 'Kijan mwen ka kontakte sipò?', a: 'Imèl: support@jobfasthq.com oswa chat nan aplikasyon an.' },
+    { q: 'Kijan mwen ka kontakte sipò?', a: 'Imèl: support@jobfasthq.com oswa itilize chat nan aplikasyon an.' },
     { q: 'Kijan mwen ka chanje lang?', a: 'Paramèt → Lang → Chwazi lang ou vle.' },
   ];
   return (
     <div style={paneStyle}>
       <h2 style={h2}>Èd & Sipò</h2>
       <p style={{ color: '#94A3B8', marginBottom: 16 }}>support@jobfasthq.com</p>
+      <a href="https://jobfast-mvp-spzy.vercel.app" style={{ display: 'block', color: '#FACC15', fontSize: 13, marginBottom: 16 }}>jobfast-mvp-spzy.vercel.app</a>
       {FAQ.map((f, i) => (
         <div key={i} style={{ marginBottom: 16, padding: '12px 16px', background: '#0F172A', borderRadius: 10 }}>
           <p style={{ fontWeight: 700, color: '#FACC15', margin: '0 0 4px' }}>{f.q}</p>
@@ -387,10 +388,10 @@ function AboutPane() {
       <h2 style={h2}>À propos de JOBFAST</h2>
       <div style={infoBlock}><label style={labelStyle}>Vèsyon</label><span style={valueStyle}>4.0.0</span></div>
       <div style={infoBlock}><label style={labelStyle}>Platfòm</label><span style={valueStyle}>JOBFAST HQ Global</span></div>
-      <div style={infoBlock}><label style={labelStyle}>Sit wèb</label><a href="https://jobfasthq.com" style={{ color: '#FACC15' }}>jobfasthq.com</a></div>
+      <div style={infoBlock}><label style={labelStyle}>Sit wèb</label><a href="https://jobfast-mvp-spzy.vercel.app" style={{ color: '#FACC15' }}>jobfast-mvp-spzy.vercel.app</a></div>
       <div style={infoBlock}><label style={labelStyle}>Imèl</label><span style={valueStyle}>hello@jobfasthq.com</span></div>
       <div style={{ ...infoBlock, marginTop: 20 }}>
-        <p style={{ color: '#94A3B8', fontSize: 12 }}>© 2024 JOBFAST HQ. Tout dwa rezève.</p>
+        <p style={{ color: '#94A3B8', fontSize: 12 }}>© 2025 JOBFAST. Tout dwa rezève.</p>
       </div>
     </div>
   );
