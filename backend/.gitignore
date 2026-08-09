@@ -3,17 +3,9 @@ node_modules/
 logs/
 package-lock.json
 
-# Legacy pre-compiled JS files (replaced by src/*.ts)
-src/app.js
-src/ErrorHandler.js
-src/routes/
-src/features/
-src/repositories/
-src/gateway/
-src/config/env.js
-src/config/supabaseClient.js
-src/core/cache.js
-src/core/analytics.js
-src/core/logger.js
-src/core/monitoring.js
-src/core/notificationEngine.js
+# All legacy pre-compiled JS files — TypeScript backend (src/*.ts) replaces them.
+# Only src/infrastructure/*.js stays tracked (no TS equivalent).
+src/**/*.js
+!src/infrastructure/jobs.js
+!src/infrastructure/queue.js
+!src/infrastructure/storage.js
