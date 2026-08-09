@@ -6,7 +6,6 @@ package-lock.json
 # Legacy pre-compiled JS files (replaced by src/*.ts)
 src/app.js
 src/ErrorHandler.js
-src/infrastructure/
 src/routes/
 src/features/
 src/repositories/
