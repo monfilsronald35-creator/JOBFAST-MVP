@@ -3,8 +3,8 @@ services:
     name: jobfast-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install
-    startCommand: node server.js
+    buildCommand: npm install --include=dev
+    startCommand: npx tsx src/server.ts
     healthCheckPath: /health
     autoDeploy: true
     envVars:

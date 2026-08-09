@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import * as SettingsAPI from '@/services/settings';
 import type { UserSettings } from '@/services/settings';
+import { changeLanguage } from '@/i18n';
 
 // ─── Icons (inline SVG) ──────────────────────────────────────────────────────
 const icons: Record<string, React.ReactNode> = {
@@ -270,7 +271,7 @@ function LanguagesPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<U
         {LANGS.map(l => (
           <button
             key={l.code}
-            onClick={() => onPatch({ language: l.code })}
+            onClick={() => { void changeLanguage(l.code); onPatch({ language: l.code }); }}
             style={{
               padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left',
               background: s.language === l.code ? '#FACC15' : '#1E293B',
