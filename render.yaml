@@ -3,7 +3,7 @@ services:
     name: jobfast-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install && (npm run build || true)
+    buildCommand: npm install --include=dev && (npm run build || true)
     startCommand: node dist/server.js
     healthCheckPath: /health
     autoDeploy: true

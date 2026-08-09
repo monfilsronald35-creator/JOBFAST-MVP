@@ -10,11 +10,12 @@
     "dev": "tsx watch src/server.ts",
     "dev:ts": "tsx watch src/server.ts",
     "start:ts": "node dist/server.js",
-    "build": "tsc --project tsconfig.json",
+    "build": "node build.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.2",
+    "esbuild": "^0.28.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
