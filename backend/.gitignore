@@ -2,6 +2,7 @@ node_modules/
 .env
 logs/
 package-lock.json
+server.js
 
 # All legacy pre-compiled JS files — TypeScript backend (src/*.ts) replaces them.
 # Only src/infrastructure/*.js stays tracked (no TS equivalent).
