@@ -10,6 +10,7 @@
  */
 import type { Express } from 'express';
 
+import { registerFoundationModule }    from './foundation/index.js';
 import { registerAuthModule }          from './auth/index.js';
 import { registerUsersModule }         from './users/index.js';
 import { registerJobsModule }          from './jobs/index.js';
@@ -38,6 +39,9 @@ import { registerMonetizationModule }  from './monetization/index.js';
 import { registerIntegrationModule }  from './integration/index.js';
 
 export function registerAllModules(app: Express): void {
+  // Foundation — database infrastructure verification (must be before all business modules)
+  registerFoundationModule(app);
+
   // Identity Platform (must be first — other modules may depend on auth context)
   registerIdentityModule(app);
 
