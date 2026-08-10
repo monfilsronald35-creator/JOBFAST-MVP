@@ -70,7 +70,7 @@ export function computeMarketplaceReputation(user: AnyUser, marketplaceData: Mar
 
 export interface BookingConfig {
   type:               string;
-  label:              string;
+  labelKey:           string;
   requiresDate:       boolean;
   requiresTime:       boolean;
   requiresPartySize:  boolean;
@@ -82,9 +82,9 @@ export interface BookingConfig {
 }
 
 export interface MarketplaceTab {
-  id: string;
-  label: string;
-  icon: string;
+  id:       string;
+  labelKey: string;
+  icon:     string;
 }
 
 export interface PricingConfig {
@@ -94,105 +94,189 @@ export interface PricingConfig {
 }
 
 export interface MarketplaceRoleConfig {
-  listingType:        string;
-  label:              string;
-  icon:               string;
-  accentColor:        string;
-  browseTitle:        string;
-  browsePlaceholder:  string;
-  gpsLabel:           string;
-  showDistance:       boolean;
-  tabs:               MarketplaceTab[];
-  booking:            BookingConfig;
-  availabilityStates: string[];
-  cardFields:         string[];
-  reviewCriteria:     string[];
-  pricing:            PricingConfig;
-  contactOptions:     string[];
-  galleryType:        string;
-  manageLabel:        string;
-  manageTabs:         string[];
+  listingType:          string;
+  label:                string;
+  icon:                 string;
+  accentColor:          string;
+  browseTitleKey:       string;
+  browsePlaceholderKey: string;
+  gpsLabelKey:          string;
+  showDistance:         boolean;
+  tabs:                 MarketplaceTab[];
+  booking:              BookingConfig;
+  availabilityStates:   string[];
+  cardFields:           string[];
+  reviewCriteriaKeys:   string[];
+  pricing:              PricingConfig;
+  contactOptions:       string[];
+  galleryType:          string;
+  manageLabel:          string;
+  manageTabs:           string[];
 }
 
 const MARKETPLACE_ROLE_CONFIGS: Record<string, MarketplaceRoleConfig> = {
   restaurant: {
     listingType: 'restaurant', label: 'Restoran', icon: '🍽️', accentColor: 'amber',
-    browseTitle: 'Restoran ak Manje', browsePlaceholder: 'Chèche restoran, manje, livrezon...', gpsLabel: 'Restoran Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'menu', label: 'Meni', icon: '🍽️' }, { id: 'delivery', label: 'Livrezon', icon: '🛵' }, { id: 'pickup', label: 'Pick-up', icon: '🥡' }],
-    booking: { type: 'reservation', label: 'Rezève Tab', requiresDate: true, requiresTime: true, requiresPartySize: true, requiresDuration: false, requiresNotes: true, partySizeLabel: 'Kantite Moun', notesLabel: 'Demann Espesyal' },
+    browseTitleKey: 'marketplace.browse.restaurant',
+    browsePlaceholderKey: 'marketplace.search.restaurant',
+    gpsLabelKey: 'marketplace.gps.restaurant',
+    showDistance: true,
+    tabs: [
+      { id: 'all',      labelKey: 'marketplace.tab.all',      icon: '🔍' },
+      { id: 'menu',     labelKey: 'marketplace.tab.menu',     icon: '🍽️' },
+      { id: 'delivery', labelKey: 'marketplace.tab.delivery', icon: '🛵' },
+      { id: 'pickup',   labelKey: 'marketplace.tab.pickup',   icon: '🥡' },
+    ],
+    booking: { type: 'reservation', labelKey: 'marketplace.booking.restaurant', requiresDate: true, requiresTime: true, requiresPartySize: true, requiresDuration: false, requiresNotes: true, partySizeLabel: 'Kantite Moun', notesLabel: 'Demann Espesyal' },
     availabilityStates: ['available', 'busy', 'fully_booked', 'closed'],
-    cardFields: ['cuisine', 'rating', 'distance', 'availability'], reviewCriteria: ['manje', 'sèvis', 'atmosfè', 'pri'],
-    pricing: { type: 'per_person', label: 'Pou chak moun', showRange: true }, contactOptions: ['call', 'book', 'directions', 'chat'],
+    cardFields: ['cuisine', 'rating', 'distance', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.food', 'marketplace.criteria.service', 'marketplace.criteria.atmosphere', 'marketplace.criteria.price'],
+    pricing: { type: 'per_person', label: 'Pou chak moun', showRange: true },
+    contactOptions: ['call', 'book', 'directions', 'chat'],
     galleryType: 'food_photos', manageLabel: 'Jere Restoran Ou', manageTabs: ['orders', 'reservations', 'menu', 'reviews'],
   },
   hotel: {
     listingType: 'hotel', label: 'Hotel', icon: '🏨', accentColor: 'cyan',
-    browseTitle: 'Hotel ak Lodman', browsePlaceholder: 'Chèche hotel, chanm, swit...', gpsLabel: 'Hotel Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'rooms', label: 'Chanm', icon: '🛏️' }, { id: 'suites', label: 'Swit', icon: '⭐' }, { id: 'villas', label: 'Vila', icon: '🏡' }],
-    booking: { type: 'room_booking', label: 'Rezève Chanm', requiresDate: true, requiresTime: false, requiresPartySize: true, requiresDuration: true, requiresNotes: true, durationLabel: 'Kantite Nwit', partySizeLabel: 'Kantite Moun', notesLabel: 'Demann Espesyal' },
+    browseTitleKey: 'marketplace.browse.hotel',
+    browsePlaceholderKey: 'marketplace.search.hotel',
+    gpsLabelKey: 'marketplace.gps.hotel',
+    showDistance: true,
+    tabs: [
+      { id: 'all',    labelKey: 'marketplace.tab.all',    icon: '🔍' },
+      { id: 'rooms',  labelKey: 'marketplace.tab.rooms',  icon: '🛏️' },
+      { id: 'suites', labelKey: 'marketplace.tab.suites', icon: '⭐' },
+      { id: 'villas', labelKey: 'marketplace.tab.villas', icon: '🏡' },
+    ],
+    booking: { type: 'room_booking', labelKey: 'marketplace.booking.hotel', requiresDate: true, requiresTime: false, requiresPartySize: true, requiresDuration: true, requiresNotes: true, durationLabel: 'Kantite Nwit', partySizeLabel: 'Kantite Moun', notesLabel: 'Demann Espesyal' },
     availabilityStates: ['available', 'busy', 'fully_booked', 'closed'],
-    cardFields: ['room_type', 'rating', 'distance', 'amenities', 'availability'], reviewCriteria: ['pwòpte', 'konfò', 'sèvis', 'lokalizasyon'],
-    pricing: { type: 'per_night', label: 'Pou chak nwit', showRange: false }, contactOptions: ['call', 'book', 'directions', 'chat'],
+    cardFields: ['room_type', 'rating', 'distance', 'amenities', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.cleanliness', 'marketplace.criteria.comfort', 'marketplace.criteria.service', 'marketplace.criteria.location'],
+    pricing: { type: 'per_night', label: 'Pou chak nwit', showRange: false },
+    contactOptions: ['call', 'book', 'directions', 'chat'],
     galleryType: 'room_photos', manageLabel: 'Jere Hotel Ou', manageTabs: ['rooms', 'reservations', 'guests', 'reviews'],
   },
   rental: {
     listingType: 'rental', label: 'Lwaye', icon: '🏠', accentColor: 'emerald',
-    browseTitle: 'Pwopriyete ak Lwaye', browsePlaceholder: 'Chèche kay, apàtman, machin, ekipman...', gpsLabel: 'Pwopriyete Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'house', label: 'Kay', icon: '🏠' }, { id: 'apartment', label: 'Apàtman', icon: '🏢' }, { id: 'vehicle', label: 'Machin', icon: '🚗' }, { id: 'equipment', label: 'Ekipman', icon: '⚙️' }, { id: 'office', label: 'Biwo Lwaye', icon: '🏛️' }],
-    booking: { type: 'rental_period', label: 'Loue', requiresDate: true, requiresTime: false, requiresPartySize: false, requiresDuration: true, requiresNotes: true, durationLabel: 'Kantite Jou', notesLabel: 'Rezon Lwaye / Nòt' },
+    browseTitleKey: 'marketplace.browse.rental',
+    browsePlaceholderKey: 'marketplace.search.rental',
+    gpsLabelKey: 'marketplace.gps.rental',
+    showDistance: true,
+    tabs: [
+      { id: 'all',       labelKey: 'marketplace.tab.all',           icon: '🔍' },
+      { id: 'house',     labelKey: 'marketplace.tab.house',         icon: '🏠' },
+      { id: 'apartment', labelKey: 'marketplace.tab.apartment',     icon: '🏢' },
+      { id: 'vehicle',   labelKey: 'marketplace.tab.vehicle',       icon: '🚗' },
+      { id: 'equipment', labelKey: 'marketplace.tab.equipment',     icon: '⚙️' },
+      { id: 'office',    labelKey: 'marketplace.tab.office_rental', icon: '🏛️' },
+    ],
+    booking: { type: 'rental_period', labelKey: 'marketplace.booking.rental', requiresDate: true, requiresTime: false, requiresPartySize: false, requiresDuration: true, requiresNotes: true, durationLabel: 'Kantite Jou', notesLabel: 'Rezon Lwaye / Nòt' },
     availabilityStates: ['available', 'rented', 'maintenance', 'unavailable'],
-    cardFields: ['property_type', 'rating', 'distance', 'availability'], reviewCriteria: ['kondisyon', 'pwòpte', 'korespondans', 'valè'],
-    pricing: { type: 'per_day', label: 'Pou chak jou', showRange: true }, contactOptions: ['call', 'book', 'chat', 'directions'],
+    cardFields: ['property_type', 'rating', 'distance', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.condition', 'marketplace.criteria.cleanliness', 'marketplace.criteria.correspondence', 'marketplace.criteria.value'],
+    pricing: { type: 'per_day', label: 'Pou chak jou', showRange: true },
+    contactOptions: ['call', 'book', 'chat', 'directions'],
     galleryType: 'property_photos', manageLabel: 'Jere Pwopriyete Ou', manageTabs: ['properties', 'bookings', 'tenants', 'reviews'],
   },
   office: {
     listingType: 'office', label: 'Biwo', icon: '🏛️', accentColor: 'slate',
-    browseTitle: 'Biwo ak Espas Travay', browsePlaceholder: 'Chèche biwo, sal reyinyon, ko-travay...', gpsLabel: 'Biwo Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'workspace', label: 'Espas Travay', icon: '💼' }, { id: 'meeting', label: 'Sal Reyinyon', icon: '🤝' }, { id: 'shared', label: 'Ko-Travay', icon: '👥' }],
-    booking: { type: 'workspace_booking', label: 'Rezève Espas', requiresDate: true, requiresTime: true, requiresPartySize: true, requiresDuration: true, requiresNotes: false, durationLabel: 'Kantite È', partySizeLabel: 'Kantite Moun', notesLabel: 'Nòt' },
+    browseTitleKey: 'marketplace.browse.office',
+    browsePlaceholderKey: 'marketplace.search.office',
+    gpsLabelKey: 'marketplace.gps.office',
+    showDistance: true,
+    tabs: [
+      { id: 'all',       labelKey: 'marketplace.tab.all',          icon: '🔍' },
+      { id: 'workspace', labelKey: 'marketplace.tab.workspace',    icon: '💼' },
+      { id: 'meeting',   labelKey: 'marketplace.tab.meeting_room', icon: '🤝' },
+      { id: 'shared',    labelKey: 'marketplace.tab.coworking',    icon: '👥' },
+    ],
+    booking: { type: 'workspace_booking', labelKey: 'marketplace.booking.office', requiresDate: true, requiresTime: true, requiresPartySize: true, requiresDuration: true, requiresNotes: false, durationLabel: 'Kantite È', partySizeLabel: 'Kantite Moun', notesLabel: 'Nòt' },
     availabilityStates: ['available', 'busy', 'fully_booked', 'closed'],
-    cardFields: ['workspace_type', 'rating', 'distance', 'availability'], reviewCriteria: ['espas', 'ekipman', 'lokalizasyon', 'pri'],
-    pricing: { type: 'per_hour', label: 'Pou chak è', showRange: true }, contactOptions: ['call', 'book', 'directions', 'chat'],
+    cardFields: ['workspace_type', 'rating', 'distance', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.space', 'marketplace.criteria.equipment', 'marketplace.criteria.location', 'marketplace.criteria.price'],
+    pricing: { type: 'per_hour', label: 'Pou chak è', showRange: true },
+    contactOptions: ['call', 'book', 'directions', 'chat'],
     galleryType: 'office_photos', manageLabel: 'Jere Biwo Ou', manageTabs: ['workspaces', 'bookings', 'clients', 'reviews'],
   },
   tourism: {
     listingType: 'tourism', label: 'Turizm', icon: '✈️', accentColor: 'purple',
-    browseTitle: 'Tou ak Aktivite Touristik', browsePlaceholder: 'Chèche tou, plaj, aktivite, transpò...', gpsLabel: 'Aktivite Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'tours', label: 'Tou', icon: '🗺️' }, { id: 'attractions', label: 'Atrakson', icon: '🏖️' }, { id: 'transport', label: 'Transpò', icon: '🚌' }, { id: 'packages', label: 'Pakèt', icon: '🎁' }],
-    booking: { type: 'tour_booking', label: 'Rezève Tou', requiresDate: true, requiresTime: true, requiresPartySize: true, requiresDuration: false, requiresNotes: true, partySizeLabel: 'Kantite Touris', notesLabel: 'Preferans / Demann' },
+    browseTitleKey: 'marketplace.browse.tourism',
+    browsePlaceholderKey: 'marketplace.search.tourism',
+    gpsLabelKey: 'marketplace.gps.tourism',
+    showDistance: true,
+    tabs: [
+      { id: 'all',         labelKey: 'marketplace.tab.all',         icon: '🔍' },
+      { id: 'tours',       labelKey: 'marketplace.tab.tours',       icon: '🗺️' },
+      { id: 'attractions', labelKey: 'marketplace.tab.attractions', icon: '🏖️' },
+      { id: 'transport',   labelKey: 'marketplace.tab.transport',   icon: '🚌' },
+      { id: 'packages',    labelKey: 'marketplace.tab.packages',    icon: '🎁' },
+    ],
+    booking: { type: 'tour_booking', labelKey: 'marketplace.booking.tourism', requiresDate: true, requiresTime: true, requiresPartySize: true, requiresDuration: false, requiresNotes: true, partySizeLabel: 'Kantite Touris', notesLabel: 'Preferans / Demann' },
     availabilityStates: ['available', 'busy', 'fully_booked', 'closed'],
-    cardFields: ['tour_type', 'rating', 'distance', 'language', 'availability'], reviewCriteria: ['gid', 'eksperyans', 'sekirite', 'valè'],
-    pricing: { type: 'per_person', label: 'Pou chak touris', showRange: false }, contactOptions: ['call', 'book', 'chat', 'directions'],
+    cardFields: ['tour_type', 'rating', 'distance', 'language', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.guide', 'marketplace.criteria.experience', 'marketplace.criteria.security', 'marketplace.criteria.value'],
+    pricing: { type: 'per_person', label: 'Pou chak touris', showRange: false },
+    contactOptions: ['call', 'book', 'chat', 'directions'],
     galleryType: 'tour_photos', manageLabel: 'Jere Sèvis Turizm Ou', manageTabs: ['tours', 'bookings', 'tourists', 'reviews'],
   },
   hospital: {
     listingType: 'hospital', label: 'Lopital', icon: '🏥', accentColor: 'red',
-    browseTitle: 'Lopital ak Sèvis Medikal', browsePlaceholder: 'Chèche lopital, doktè, dijans...', gpsLabel: 'Lopital Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'doctors', label: 'Doktè', icon: '👨‍⚕️' }, { id: 'departments', label: 'Depatman', icon: '🏥' }, { id: 'emergency', label: 'Dijans', icon: '🚨' }],
-    booking: { type: 'appointment', label: 'Pran Randevou', requiresDate: true, requiresTime: true, requiresPartySize: false, requiresDuration: false, requiresNotes: true, notesLabel: 'Senpòm / Rezon Vizit' },
+    browseTitleKey: 'marketplace.browse.hospital',
+    browsePlaceholderKey: 'marketplace.search.hospital',
+    gpsLabelKey: 'marketplace.gps.hospital',
+    showDistance: true,
+    tabs: [
+      { id: 'all',         labelKey: 'marketplace.tab.all',         icon: '🔍' },
+      { id: 'doctors',     labelKey: 'marketplace.tab.doctors',     icon: '👨‍⚕️' },
+      { id: 'departments', labelKey: 'marketplace.tab.departments', icon: '🏥' },
+      { id: 'emergency',   labelKey: 'marketplace.tab.emergency',   icon: '🚨' },
+    ],
+    booking: { type: 'appointment', labelKey: 'marketplace.booking.hospital', requiresDate: true, requiresTime: true, requiresPartySize: false, requiresDuration: false, requiresNotes: true, notesLabel: 'Senpòm / Rezon Vizit' },
     availabilityStates: ['available', 'busy', 'emergency_only', 'closed'],
-    cardFields: ['specialty', 'rating', 'verified', 'distance', 'availability'], reviewCriteria: ['sèvis', 'doktè', 'pwòpte', 'vitès'],
-    pricing: { type: 'per_session', label: 'Pou chak vizit', showRange: false }, contactOptions: ['call', 'book', 'directions', 'emergency'],
+    cardFields: ['specialty', 'rating', 'verified', 'distance', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.service', 'marketplace.criteria.doctor', 'marketplace.criteria.cleanliness', 'marketplace.criteria.speed'],
+    pricing: { type: 'per_session', label: 'Pou chak vizit', showRange: false },
+    contactOptions: ['call', 'book', 'directions', 'emergency'],
     galleryType: 'facility_photos', manageLabel: 'Jere Lopital Ou', manageTabs: ['doctors', 'appointments', 'patients', 'reviews'],
   },
   clinic: {
     listingType: 'clinic', label: 'Klinik', icon: '⚕️', accentColor: 'teal',
-    browseTitle: 'Klinik ak Doktè', browsePlaceholder: 'Chèche klinik, doktè, espesyalis...', gpsLabel: 'Klinik Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'doctors', label: 'Doktè', icon: '👨‍⚕️' }, { id: 'services', label: 'Sèvis', icon: '⚕️' }],
-    booking: { type: 'appointment', label: 'Pran Randevou', requiresDate: true, requiresTime: true, requiresPartySize: false, requiresDuration: false, requiresNotes: true, notesLabel: 'Senpòm / Rezon' },
+    browseTitleKey: 'marketplace.browse.clinic',
+    browsePlaceholderKey: 'marketplace.search.clinic',
+    gpsLabelKey: 'marketplace.gps.clinic',
+    showDistance: true,
+    tabs: [
+      { id: 'all',     labelKey: 'marketplace.tab.all',     icon: '🔍' },
+      { id: 'doctors', labelKey: 'marketplace.tab.doctors', icon: '👨‍⚕️' },
+      { id: 'services',labelKey: 'marketplace.tab.services',icon: '⚕️' },
+    ],
+    booking: { type: 'appointment', labelKey: 'marketplace.booking.clinic', requiresDate: true, requiresTime: true, requiresPartySize: false, requiresDuration: false, requiresNotes: true, notesLabel: 'Senpòm / Rezon' },
     availabilityStates: ['available', 'busy', 'fully_booked', 'closed'],
-    cardFields: ['specialty', 'rating', 'verified', 'distance', 'availability'], reviewCriteria: ['sèvis', 'doktè', 'pwòpte', 'vitès'],
-    pricing: { type: 'per_session', label: 'Pou chak konsiltasyon', showRange: false }, contactOptions: ['call', 'book', 'directions', 'chat'],
+    cardFields: ['specialty', 'rating', 'verified', 'distance', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.service', 'marketplace.criteria.doctor', 'marketplace.criteria.cleanliness', 'marketplace.criteria.speed'],
+    pricing: { type: 'per_session', label: 'Pou chak konsiltasyon', showRange: false },
+    contactOptions: ['call', 'book', 'directions', 'chat'],
     galleryType: 'facility_photos', manageLabel: 'Jere Klinik Ou', manageTabs: ['doctors', 'appointments', 'patients', 'reviews'],
   },
   service_provider: {
     listingType: 'service', label: 'Founisè Sèvis', icon: '🔧', accentColor: 'yellow',
-    browseTitle: 'Sèvis sou Demann', browsePlaceholder: 'Chèche elektrisyen, plombye, nèt, mekaniyen...', gpsLabel: 'Founisè Pre w', showDistance: true,
-    tabs: [{ id: 'all', label: 'Tout', icon: '🔍' }, { id: 'home', label: 'Sèvis Kay', icon: '🏠' }, { id: 'technical', label: 'Teknik', icon: '⚙️' }, { id: 'transport', label: 'Transpò', icon: '🚗' }, { id: 'health', label: 'Sante', icon: '⚕️' }, { id: 'creative', label: 'Kreyatif', icon: '🎨' }],
-    booking: { type: 'service_request', label: 'Kontakte', requiresDate: true, requiresTime: true, requiresPartySize: false, requiresDuration: false, requiresNotes: true, notesLabel: 'Deskripsyon Pwoblèm lan' },
+    browseTitleKey: 'marketplace.browse.services',
+    browsePlaceholderKey: 'marketplace.search.services',
+    gpsLabelKey: 'marketplace.gps.services',
+    showDistance: true,
+    tabs: [
+      { id: 'all',       labelKey: 'marketplace.tab.all',           icon: '🔍' },
+      { id: 'home',      labelKey: 'marketplace.tab.home_services', icon: '🏠' },
+      { id: 'technical', labelKey: 'marketplace.tab.technical',     icon: '⚙️' },
+      { id: 'transport', labelKey: 'marketplace.tab.transport',     icon: '🚗' },
+      { id: 'health',    labelKey: 'marketplace.tab.health',        icon: '⚕️' },
+      { id: 'creative',  labelKey: 'marketplace.tab.creative',      icon: '🎨' },
+    ],
+    booking: { type: 'service_request', labelKey: 'marketplace.booking.services', requiresDate: true, requiresTime: true, requiresPartySize: false, requiresDuration: false, requiresNotes: true, notesLabel: 'Deskripsyon Pwoblèm lan' },
     availabilityStates: ['available', 'busy', 'unavailable', 'vacation'],
-    cardFields: ['service_type', 'trust_score', 'rating', 'experience', 'distance', 'availability'], reviewCriteria: ['kalite', 'vitès', 'pri', 'pwofesyonalis'],
-    pricing: { type: 'per_service', label: 'Pou chak sèvis', showRange: true }, contactOptions: ['call', 'chat', 'book', 'directions'],
+    cardFields: ['service_type', 'trust_score', 'rating', 'experience', 'distance', 'availability'],
+    reviewCriteriaKeys: ['marketplace.criteria.quality', 'marketplace.criteria.speed', 'marketplace.criteria.price', 'marketplace.criteria.professionalism'],
+    pricing: { type: 'per_service', label: 'Pou chak sèvis', showRange: true },
+    contactOptions: ['call', 'chat', 'book', 'directions'],
     galleryType: 'portfolio_photos', manageLabel: 'Jere Sèvis Ou', manageTabs: ['services', 'bookings', 'clients', 'reviews'],
   },
 };

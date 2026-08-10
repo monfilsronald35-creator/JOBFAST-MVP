@@ -8,7 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Share2, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import MarketplaceCore from "../components/marketplace/MarketplaceCore";
-import { getMarketplaceConfig } from "../config/marketplaceConfig";
+import { getMarketplaceConfig, MarketplaceRoleConfig } from "../config/marketplaceConfig";
 import { useQueryClient } from "@tanstack/react-query";
 import { MediaQuery } from "react-responsive";
 import { useNotificationSocket } from "../hooks/useNotificationSocket";
@@ -51,11 +51,6 @@ interface AIContextData {
   [key: string]: unknown;
 }
 
-interface MarketplaceConfig {
-  browseTitle: string;
-  icon:        string;
-  [key: string]: unknown;
-}
 
 interface AnalyticsPayload {
   categoryId?: string;
@@ -347,7 +342,7 @@ function NotificationHub({ t }: NotificationHubProps) {
 // ---- AI GLOBAL DASHBOARD ---------------------------------------------------
 
 interface AIGlobalDashboardProps {
-  config:    MarketplaceConfig;
+  config:    MarketplaceRoleConfig;
   aiContext: AIContextData;
   t:         ReturnType<typeof useTranslation>["t"];
 }
@@ -411,7 +406,7 @@ const DashboardTile = memo(function DashboardTile({ tile }: DashboardTileProps) 
 // ---- CATEGORY NAV BAR ------------------------------------------------------
 
 interface CategoryNavBarProps {
-  config:   MarketplaceConfig;
+  config:   MarketplaceRoleConfig;
   onBack:   () => void;
   onShare:  () => void;
   t:        ReturnType<typeof useTranslation>["t"];
@@ -438,12 +433,12 @@ const CategoryNavBar = memo(function CategoryNavBar({ config, onBack, onShare, t
             <nav aria-label={t("marketplace.breadcrumbLabel")} className="flex items-center gap-1 leading-none">
               <span className="text-[9px] text-slate-500 shrink-0">{t("marketplace.breadcrumbLabel")}</span>
               <ChevronRight className="w-2.5 h-2.5 text-slate-600 shrink-0" aria-hidden="true" />
-              <span className="text-[9px] text-amber-400/75 truncate" aria-current="page">{config.browseTitle}</span>
+              <span className="text-[9px] text-amber-400/75 truncate" aria-current="page">{t(config.browseTitleKey)}</span>
             </nav>
           )}
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-base leading-none shrink-0" aria-hidden="true">{config.icon}</span>
-            <h1 className="text-sm font-bold text-white truncate leading-tight">{config.browseTitle}</h1>
+            <h1 className="text-sm font-bold text-white truncate leading-tight">{t(config.browseTitleKey)}</h1>
           </div>
         </div>
 
@@ -496,7 +491,7 @@ export default function CategoryMarketplace() {
   const { t }           = useTranslation();
 
   const safeId = sanitizeCategoryId(categoryId);
-  const config = getMarketplaceConfig(safeId) as MarketplaceConfig;
+  const config: MarketplaceRoleConfig = getMarketplaceConfig(safeId);
 
   usePerformanceMonitor(safeId);
   useEnterpriseSecurity();
@@ -516,15 +511,15 @@ export default function CategoryMarketplace() {
 
   useEffect(() => {
     const previous = document.title;
-    document.title = `${config.browseTitle} — JOBFAST`;
+    document.title = `${t(config.browseTitleKey)} — JOBFAST`;
     return () => { document.title = previous; };
-  }, [config.browseTitle]);
+  }, [config.browseTitleKey, t]);
 
   const handleBack  = useCallback(() => navigate(-1), [navigate]);
   const handleShare = useCallback(async () => {
     if (!CATEGORY_FEATURE_FLAGS.SHARE) return;
-    await shareCategoryUrl(safeId, config.browseTitle);
-  }, [safeId, config.browseTitle]);
+    await shareCategoryUrl(safeId, t(config.browseTitleKey));
+  }, [safeId, config.browseTitleKey, t]);
 
   const showMissionControl = CATEGORY_FEATURE_FLAGS.AI_GLOBAL_DASH;
 
@@ -552,7 +547,7 @@ export default function CategoryMarketplace() {
           <MarketplaceMobile>
             {missionControl}
             <NotificationHub t={t} />
-            <main id="marketplace-content" role="main" aria-label={config.browseTitle} className="mt-3">
+            <main id="marketplace-content" role="main" aria-label={t(config.browseTitleKey)} className="mt-3">
               <MarketplaceCore {...coreProps} />
             </main>
           </MarketplaceMobile>
@@ -561,7 +556,7 @@ export default function CategoryMarketplace() {
           <MarketplaceTablet>
             {missionControl}
             <NotificationHub t={t} />
-            <main id="marketplace-content" role="main" aria-label={config.browseTitle} className="mt-4">
+            <main id="marketplace-content" role="main" aria-label={t(config.browseTitleKey)} className="mt-4">
               <MarketplaceCore {...coreProps} />
             </main>
           </MarketplaceTablet>
@@ -570,7 +565,7 @@ export default function CategoryMarketplace() {
           <MarketplaceDesktop>
             {missionControl}
             <NotificationHub t={t} />
-            <main id="marketplace-content" role="main" aria-label={config.browseTitle} className="mt-5">
+            <main id="marketplace-content" role="main" aria-label={t(config.browseTitleKey)} className="mt-5">
               <MarketplaceCore {...coreProps} />
             </main>
           </MarketplaceDesktop>
@@ -579,7 +574,7 @@ export default function CategoryMarketplace() {
           <MarketplaceVision>
             {missionControl}
             <NotificationHub t={t} />
-            <main id="marketplace-content" role="main" aria-label={config.browseTitle} className="mt-6">
+            <main id="marketplace-content" role="main" aria-label={t(config.browseTitleKey)} className="mt-6">
               <MarketplaceCore {...coreProps} />
             </main>
           </MarketplaceVision>

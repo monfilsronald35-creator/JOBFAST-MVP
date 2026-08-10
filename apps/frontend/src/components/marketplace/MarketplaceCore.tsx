@@ -58,16 +58,16 @@ interface ListingItem {
 type ConfigShape = Record<string, unknown> & {
   icon?: string;
   label?: string;
-  browseTitle?: string;
-  gpsLabel?: string;
-  browsePlaceholder?: string;
+  browseTitleKey?: string;
+  gpsLabelKey?: string;
+  browsePlaceholderKey?: string;
   galleryType?: string;
   cardFields?: string[];
   contactOptions?: string[];
-  tabs?: { id: string; icon?: string; label: string }[];
-  reviewCriteria?: string[];
+  tabs?: { id: string; icon?: string; labelKey: string }[];
+  reviewCriteriaKeys?: string[];
   booking: {
-    label: string;
+    labelKey: string;
     type?: string;
     requiresDate?: boolean;
     requiresTime?: boolean;
@@ -209,7 +209,7 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
   const OPTION_LABELS: Record<string, { icon: string; label: string; color: string }> = {
     call:       { icon: '📞', label: t('marketplace.call', 'Rele'),            color: 'bg-green-500 text-black'   },
     chat:       { icon: '💬', label: t('marketplace.chat', 'Chat'),            color: 'bg-blue-500 text-white'    },
-    book:       { icon: '📅', label: config.booking.label,                     color: 'bg-indigo-500 text-white'  },
+    book:       { icon: '📅', label: t(config.booking.labelKey),               color: 'bg-indigo-500 text-white'  },
     directions: { icon: '🗺️', label: t('marketplace.directions', 'Direksyon'), color: 'bg-slate-700 text-white'   },
     emergency:  { icon: '🚨', label: t('marketplace.emergency', 'Dijans'),     color: 'bg-red-600 text-white'     },
   };
@@ -299,7 +299,7 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
 
   return (
     <div className="p-5 space-y-4">
-      <h3 className="text-sm font-bold text-white">📅 {bc.label} — {listing.name}</h3>
+      <h3 className="text-sm font-bold text-white">📅 {t(bc.labelKey)} — {listing.name}</h3>
       {bc.requiresDate && (
         <div>
           <label className="text-[10px] text-slate-400 block mb-1">{t('marketplace.date_label', 'Dat')}</label>
@@ -348,7 +348,7 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
         <button onClick={handleSubmit}
           disabled={submitting || formInvalid}
           className="flex-1 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold disabled:opacity-40">
-          {submitting ? t('marketplace.sending', 'Ap anvwaye...') : bc.label}
+          {submitting ? t('marketplace.sending', 'Ap anvwaye...') : t(bc.labelKey)}
         </button>
         <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">{t('marketplace.cancel', 'Anile')}</button>
       </div>
@@ -370,7 +370,7 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
   const { t } = useTranslation();
   const [overallRating, setOverallRating] = useState(0);
   const [criteria, setCriteria] = useState<Record<string, number>>(
-    Object.fromEntries((config.reviewCriteria ?? []).map(c => [c, 0])),
+    Object.fromEntries((config.reviewCriteriaKeys ?? []).map(c => [c, 0])),
   );
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -424,12 +424,12 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
         <label className="text-[10px] text-slate-400 block mb-2">{t('marketplace.rating_global', 'Rating Global')}</label>
         <StarPicker value={overallRating} onChange={setOverallRating} />
       </div>
-      {(config.reviewCriteria ?? []).length > 0 && (
+      {(config.reviewCriteriaKeys ?? []).length > 0 && (
         <div className="space-y-2.5">
           <label className="text-[10px] text-slate-400 block">{t('marketplace.rating_detail', 'Detay')}</label>
-          {config.reviewCriteria!.map(criterion => (
+          {config.reviewCriteriaKeys!.map(criterion => (
             <div key={criterion} className="flex items-center justify-between">
-              <span className="text-xs text-slate-300 capitalize">{criterion}</span>
+              <span className="text-xs text-slate-300 capitalize">{t(criterion)}</span>
               <StarPicker value={criteria[criterion] ?? 0} onChange={v => setCriterion(criterion, v)} />
             </div>
           ))}
@@ -545,7 +545,7 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
         <button
           onClick={e => { e.stopPropagation(); onBook?.(item); }}
           className="py-2 rounded-xl bg-indigo-500 text-white text-[10px] font-bold">
-          {config.booking.label}
+          {t(config.booking.labelKey)}
         </button>
         <button
           onClick={e => { e.stopPropagation(); onContact?.(item); }}
@@ -614,7 +614,7 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
 
         <div className="grid grid-cols-3 gap-2">
           <button onClick={() => setPanel('book')} className="py-2.5 rounded-xl bg-indigo-500 text-white text-xs font-bold">
-            📅 {config.booking.label}
+            📅 {t(config.booking.labelKey)}
           </button>
           <button onClick={() => setPanel('contact')} className="py-2.5 rounded-xl bg-slate-800 text-slate-200 text-xs">
             📞 {t('marketplace.contact', 'Kontakte')}
@@ -821,8 +821,8 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">{config.icon}</span>
           <div>
-            <h1 className="text-sm font-bold text-white">{config.browseTitle}</h1>
-            {coords !== null && <p className="text-[10px] text-green-400">📡 {config.gpsLabel}</p>}
+            <h1 className="text-sm font-bold text-white">{t(config.browseTitleKey ?? '')}</h1>
+            {coords !== null && <p className="text-[10px] text-green-400">📡 {t(config.gpsLabelKey ?? '')}</p>}
             {gpsAcquiring && <p className="text-[10px] text-slate-400">📡 {t('marketplace.gps_searching', 'Ap jwenn lokasyon...')}</p>}
             {gpsBlocked   && <p className="text-[10px] text-amber-400">📍 {t('marketplace.gps_no_distance', 'Chèche san distans')}</p>}
           </div>
@@ -831,7 +831,7 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
         <input
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
-          placeholder={config.browsePlaceholder}
+          placeholder={t(config.browsePlaceholderKey ?? '')}
           className="w-full px-4 py-3 bg-[#162238] rounded-xl text-sm text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-indigo-400/40"
         />
       </div>
@@ -843,7 +843,7 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
               className={`shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-bold transition ${
                 activeTab === tab.id ? 'bg-indigo-500 text-white' : 'bg-[#1e2d45] text-slate-400 hover:text-white'
               }`}>
-              {tab.icon} {tab.label}
+              {tab.icon} {t(tab.labelKey)}
               {tab.id === 'all' && tabCounts.all > 0 && (
                 <span className="ml-1 text-[9px] text-indigo-300">({tabCounts.all})</span>
               )}
