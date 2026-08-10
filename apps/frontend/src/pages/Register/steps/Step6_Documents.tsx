@@ -1,12 +1,6 @@
 import { memo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-
-const DOC_TYPES = [
-  { id: 'national_id', label: 'Kat Nasyonal',          required: true  },
-  { id: 'passport',    label: 'Paspot (opsyonèl)',      required: false },
-  { id: 'diploma',     label: 'Diplòm / Sètifika',     required: false },
-  { id: 'license',     label: 'Lisans Pwofesyonèl',    required: false },
-];
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   defaultValues?: Record<string, File>;
@@ -15,7 +9,16 @@ interface Props {
 }
 
 const Step6_Documents = memo(function Step6_Documents({ defaultValues, onNext, onBack }: Props) {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<Record<string, File>>(defaultValues ?? {});
+
+  const DOC_TYPES = [
+    { id: 'national_id', label: t('registration.step6.national_id', 'National ID'),          required: true  },
+    { id: 'passport',    label: t('registration.step6.passport',    'Passport (optional)'),   required: false },
+    { id: 'diploma',     label: t('registration.step6.diploma',     'Diploma / Certificate'), required: false },
+    { id: 'license',     label: t('registration.step6.license',     'Professional License'),  required: false },
+  ];
+
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>(
     Object.fromEntries(DOC_TYPES.map((d) => [d.id, null]))
   );
@@ -27,7 +30,9 @@ const Step6_Documents = memo(function Step6_Documents({ defaultValues, onNext, o
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-      <p className="text-[13px] text-slate-300 mb-6">Telechaje dokiman nesese yo (PDF oswa imaj).</p>
+      <p className="text-[13px] text-slate-300 mb-6">
+        {t('registration.step6.prompt', 'Upload necessary documents (PDF or image).')}
+      </p>
       <form onSubmit={(e) => { e.preventDefault(); onNext?.(files); }} className="space-y-3">
         {DOC_TYPES.map(({ id, label, required }) => (
           <div key={id}>
@@ -37,15 +42,23 @@ const Step6_Documents = memo(function Step6_Documents({ defaultValues, onNext, o
             <div onClick={() => inputRefs.current[id]?.click()}
               className="flex items-center gap-3 rounded-2xl border border-dashed border-slate-600 bg-slate-900/40 px-4 py-3 cursor-pointer hover:border-amber-400/60">
               <span className="text-xl">{files[id] ? '✅' : '📄'}</span>
-              <span className="text-[11px] text-slate-300">{files[id] ? files[id]!.name : 'Klike pou chwazi fichye'}</span>
+              <span className="text-[11px] text-slate-300">
+                {files[id] ? files[id]!.name : t('registration.step6.click_to_choose', 'Click to choose a file')}
+              </span>
               <input ref={(el) => { inputRefs.current[id] = el; }} type="file" accept="image/*,.pdf"
                 className="hidden" onChange={(e) => handleFile(id, e)} />
             </div>
           </div>
         ))}
         <div className="flex gap-3 pt-4">
-          <button type="button" onClick={onBack} className="flex-1 rounded-2xl border border-slate-600 py-3 text-[12px] text-slate-300">Retounen</button>
-          <button type="submit" className="flex-1 rounded-2xl bg-amber-400 py-3 text-[12px] font-black text-black">Kontinye</button>
+          <button type="button" onClick={onBack}
+            className="flex-1 rounded-2xl border border-slate-600 py-3 text-[12px] text-slate-300">
+            {t('common.back', 'Back')}
+          </button>
+          <button type="submit"
+            className="flex-1 rounded-2xl bg-amber-400 py-3 text-[12px] font-black text-black">
+            {t('common.continue', 'Continue')}
+          </button>
         </div>
       </form>
     </motion.div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import * as SettingsAPI from '@/services/settings';
 import type { UserSettings } from '@/services/settings';
@@ -30,12 +31,7 @@ const SECTIONS = [
 ] as const;
 type Section = (typeof SECTIONS)[number];
 
-const LABELS: Record<Section, string> = {
-  general:'Jeneral', account:'Kont', privacy:'Konfidansyalite', security:'Sekirite',
-  password:'Modpas', devices:'Aparèy', notifications:'Notifikasyon', languages:'Lang',
-  theme:'Tèm', accessibility:'Aksesiblite', storage:'Stockage', downloads:'Téléchargements',
-  help:'Èd', about:'À propos', developer:'Devlopè',
-};
+// LABELS now resolved at render time via t() — see SettingsPage
 
 // ─── Toggle component ─────────────────────────────────────────────────────────
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
@@ -61,22 +57,23 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 
 // ─── Section panes ─────────────────────────────────────────────────────────────
 function GeneralPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserSettings>) => void }) {
+  const { t } = useTranslation();
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Paramèt Jeneral</h2>
-      <Row label="Zòn lè (Timezone)">
+      <h2 style={h2}>{t('settings.general.title', 'General Settings')}</h2>
+      <Row label={t('settings.general.timezone', 'Timezone')}>
         <select style={selectStyle} value={s.timezone} onChange={e => onPatch({ timezone: e.target.value })}>
           {['America/Port-au-Prince','America/New_York','America/Chicago','Europe/Paris','Africa/Abidjan'].map(tz =>
             <option key={tz} value={tz}>{tz}</option>
           )}
         </select>
       </Row>
-      <Row label="Fòma dat">
+      <Row label={t('settings.general.dateFormat', 'Date format')}>
         <select style={selectStyle} value={s.dateFormat} onChange={e => onPatch({ dateFormat: e.target.value })}>
           {['DD/MM/YYYY','MM/DD/YYYY','YYYY-MM-DD'].map(f => <option key={f} value={f}>{f}</option>)}
         </select>
       </Row>
-      <Row label="Monè">
+      <Row label={t('settings.general.currency', 'Currency')}>
         <select style={selectStyle} value={s.currency} onChange={e => onPatch({ currency: e.target.value })}>
           {['HTG','USD','EUR','CAD'].map(c => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -86,51 +83,54 @@ function GeneralPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<Use
 }
 
 function AccountPane({ user }: { user: ReturnType<typeof useAuth>['user'] }) {
+  const { t } = useTranslation();
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Enfòmasyon Kont</h2>
+      <h2 style={h2}>{t('settings.account.title', 'User Account')}</h2>
       <div style={infoBlock}>
-        <label style={labelStyle}>ID</label>
+        <label style={labelStyle}>{t('settings.account.id', 'ID')}</label>
         <span style={valueStyle}>{user?._id || '—'}</span>
       </div>
       <div style={infoBlock}>
-        <label style={labelStyle}>Wòl</label>
+        <label style={labelStyle}>{t('settings.account.role', 'Role')}</label>
         <span style={{ ...valueStyle, ...badge }}>{String(user?.role || 'user')}</span>
       </div>
       <div style={infoBlock}>
-        <label style={labelStyle}>Estati</label>
+        <label style={labelStyle}>{t('common.status', 'Status')}</label>
         <span style={{ ...valueStyle, color: '#4ADE80' }}>{String(user?.status || 'active')}</span>
       </div>
       <p style={{ color: '#94A3B8', fontSize: 13, marginTop: 16 }}>
-        Pou modifye non, imèl, ak foto pwofil ou — ale nan Pwofil → Edite Pwofil.
+        {t('settings.account.editHint', 'To edit name, email and photo — go to Profile → Edit Profile.')}
       </p>
     </div>
   );
 }
 
 function PrivacyPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserSettings>) => void }) {
+  const { t } = useTranslation();
   const pr = s.privacy;
   const set = (k: keyof UserSettings['privacy'], v: unknown) => onPatch({ privacy: { ...pr, [k]: v } });
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Konfidansyalite</h2>
-      <Row label="Pwofil piblik"><Toggle value={pr.profilePublic} onChange={v => set('profilePublic', v)} /></Row>
-      <Row label="Montre imèl"><Toggle value={pr.showEmail} onChange={v => set('showEmail', v)} /></Row>
-      <Row label="Montre nimewo telefòn"><Toggle value={pr.showPhone} onChange={v => set('showPhone', v)} /></Row>
-      <Row label="Montre lokalizasyon"><Toggle value={pr.showLocation} onChange={v => set('showLocation', v)} /></Row>
-      <Row label="Pèmèt mesaj de">
+      <h2 style={h2}>{t('settings.privacy.title', 'Privacy')}</h2>
+      <Row label={t('settings.privacy.publicProfile', 'Public profile')}><Toggle value={pr.profilePublic} onChange={v => set('profilePublic', v)} /></Row>
+      <Row label={t('settings.privacy.showEmail', 'Show email')}><Toggle value={pr.showEmail} onChange={v => set('showEmail', v)} /></Row>
+      <Row label={t('settings.privacy.showPhone', 'Show phone')}><Toggle value={pr.showPhone} onChange={v => set('showPhone', v)} /></Row>
+      <Row label={t('settings.privacy.showLocation', 'Show location')}><Toggle value={pr.showLocation} onChange={v => set('showLocation', v)} /></Row>
+      <Row label={t('settings.privacy.messaging', 'Who can message you?')}>
         <select style={selectStyle} value={pr.allowMessaging} onChange={e => set('allowMessaging', e.target.value)}>
-          <option value="everyone">Tout moun</option>
-          <option value="connections">Koneksyon sèlman</option>
-          <option value="none">Pesonn</option>
+          <option value="everyone">{t('common.everyone', 'Everyone')}</option>
+          <option value="connections">{t('common.connectionsOnly', 'Connections only')}</option>
+          <option value="none">{t('common.nobody', 'Nobody')}</option>
         </select>
       </Row>
-      <Row label="Pataj done ak patenè"><Toggle value={pr.dataSharing} onChange={v => set('dataSharing', v)} /></Row>
+      <Row label={t('settings.privacy.dataSharing', 'Data sharing')}><Toggle value={pr.dataSharing} onChange={v => set('dataSharing', v)} /></Row>
     </div>
   );
 }
 
 function SecurityPane() {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -148,17 +148,17 @@ function SecurityPane() {
 
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Sekirite</h2>
-      <p style={{ color: '#94A3B8', fontSize: 13, marginBottom: 16 }}>Sesyon aktif yo</p>
-      {loading && <p style={{ color: '#64748B' }}>Chajman...</p>}
-      {!loading && sessions.length === 0 && <p style={{ color: '#64748B' }}>Pa gen sesyon aktif</p>}
+      <h2 style={h2}>{t('settings.security.title', 'Security')}</h2>
+      <p style={{ color: '#94A3B8', fontSize: 13, marginBottom: 16 }}>{t('settings.security.sessions', 'Active sessions')}</p>
+      {loading && <p style={{ color: '#64748B' }}>{t('settings.security.loading', 'Loading...')}</p>}
+      {!loading && sessions.length === 0 && <p style={{ color: '#64748B' }}>{t('common.noData', 'No active sessions')}</p>}
       {(sessions as Array<Record<string,unknown>>).map(s => (
         <div key={String(s['id'])} style={sessionCard}>
           <div>
-            <p style={{ fontWeight: 600, color: '#F1F5F9', margin: 0 }}>{String(s['device_name'] || 'Aparèy enkoni')}</p>
+            <p style={{ fontWeight: 600, color: '#F1F5F9', margin: 0 }}>{String(s['device_name'] || t('common.unknownDevice', 'Unknown device'))}</p>
             <p style={{ color: '#64748B', fontSize: 12, margin: '2px 0 0' }}>{String(s['ip_address'] || '')}</p>
           </div>
-          <button onClick={() => revoke(String(s['id']))} style={dangerBtn}>Voye deyò</button>
+          <button onClick={() => revoke(String(s['id']))} style={dangerBtn}>{t('settings.security.revoke', 'Revoke')}</button>
         </div>
       ))}
     </div>
@@ -166,6 +166,7 @@ function SecurityPane() {
 }
 
 function PasswordPane() {
+  const { t } = useTranslation();
   const [old_password, setOld] = useState('');
   const [new_password, setNew] = useState('');
   const [confirm, setConfirm]  = useState('');
@@ -175,33 +176,34 @@ function PasswordPane() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMsg('');
-    if (new_password !== confirm) { setMsg('Modpas yo pa menm'); return; }
-    if (new_password.length < 8)  { setMsg('Modpas dwe gen omwen 8 karaktè'); return; }
+    if (new_password !== confirm) { setMsg(t('errors.passwordMismatch', 'Passwords do not match')); return; }
+    if (new_password.length < 8)  { setMsg(t('errors.passwordTooShort', 'Password must be at least 8 characters')); return; }
     try {
       await SettingsAPI.changePassword(old_password, new_password);
       setOk(true);
-      setMsg('Modpas chanje avèk siksè!');
+      setMsg(t('settings.password.success', 'Password changed!'));
       setOld(''); setNew(''); setConfirm('');
     } catch {
-      setMsg('Echèk chanjman modpas. Verifye vye modpas la.');
+      setMsg(t('settings.password.error', 'Error. Please try again.'));
     }
   };
 
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Chanje Modpas</h2>
+      <h2 style={h2}>{t('settings.password.title', 'Change Password')}</h2>
       <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 360 }}>
-        <input type="password" placeholder="Vye modpas" value={old_password} onChange={e => setOld(e.target.value)} style={inputStyle} required />
-        <input type="password" placeholder="Nouvo modpas" value={new_password} onChange={e => setNew(e.target.value)} style={inputStyle} required />
-        <input type="password" placeholder="Konfime nouvo modpas" value={confirm} onChange={e => setConfirm(e.target.value)} style={inputStyle} required />
+        <input type="password" placeholder={t('settings.password.current', 'Current password')} value={old_password} onChange={e => setOld(e.target.value)} style={inputStyle} required />
+        <input type="password" placeholder={t('settings.password.new', 'New password')} value={new_password} onChange={e => setNew(e.target.value)} style={inputStyle} required />
+        <input type="password" placeholder={t('settings.password.confirm', 'Confirm password')} value={confirm} onChange={e => setConfirm(e.target.value)} style={inputStyle} required />
         {msg && <p style={{ color: ok ? '#4ADE80' : '#F87171', fontSize: 13 }}>{msg}</p>}
-        <button type="submit" style={primaryBtn}>Chanje Modpas</button>
+        <button type="submit" style={primaryBtn}>{t('settings.password.submit', 'Change')}</button>
       </form>
     </div>
   );
 }
 
 function DevicesPane() {
+  const { t } = useTranslation();
   const [devices, setDevices] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -219,18 +221,18 @@ function DevicesPane() {
 
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Aparèy yo</h2>
-      {loading && <p style={{ color: '#64748B' }}>Chajman...</p>}
-      {!loading && devices.length === 0 && <p style={{ color: '#64748B' }}>Pa gen aparèy anrejistre</p>}
+      <h2 style={h2}>{t('settings.devices.title', 'Connected Devices')}</h2>
+      {loading && <p style={{ color: '#64748B' }}>{t('common.loading', 'Loading...')}</p>}
+      {!loading && devices.length === 0 && <p style={{ color: '#64748B' }}>{t('common.noData', 'No registered devices')}</p>}
       {(devices as Array<Record<string,unknown>>).map(d => (
         <div key={String(d['id'])} style={sessionCard}>
           <div>
-            <p style={{ fontWeight: 600, color: '#F1F5F9', margin: 0 }}>{String(d['device_name'] || 'Aparèy')}</p>
+            <p style={{ fontWeight: 600, color: '#F1F5F9', margin: 0 }}>{String(d['device_name'] || t('common.device', 'Device'))}</p>
             <p style={{ color: '#64748B', fontSize: 12, margin: '2px 0 0' }}>{String(d['platform'] || '')} · {String(d['device_type'] || '')}</p>
           </div>
           {d['is_trusted']
-            ? <button onClick={() => revoke(String(d['id']))} style={dangerBtn}>Retire konfyans</button>
-            : <span style={{ color: '#64748B', fontSize: 12 }}>Pa konfye</span>
+            ? <button onClick={() => revoke(String(d['id']))} style={dangerBtn}>{t('settings.devices.revoke', 'Disconnect')}</button>
+            : <span style={{ color: '#64748B', fontSize: 12 }}>{t('common.untrusted', 'Untrusted')}</span>
           }
         </div>
       ))}
@@ -239,34 +241,36 @@ function DevicesPane() {
 }
 
 function NotificationsPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserSettings>) => void }) {
+  const { t } = useTranslation();
   const n = s.notifications;
   const set = (k: keyof UserSettings['notifications'], v: boolean) => onPatch({ notifications: { ...n, [k]: v } });
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Notifikasyon</h2>
-      <p style={sectionLabel}>Imèl</p>
-      <Row label="Travay nouvo"><Toggle value={n.emailJobs} onChange={v => set('emailJobs', v)} /></Row>
-      <Row label="Pèman"><Toggle value={n.emailPayments} onChange={v => set('emailPayments', v)} /></Row>
-      <Row label="Pwomasyon"><Toggle value={n.emailMarketing} onChange={v => set('emailMarketing', v)} /></Row>
-      <p style={{ ...sectionLabel, marginTop: 16 }}>Pousèv (Push)</p>
-      <Row label="Aktive push"><Toggle value={n.pushEnabled} onChange={v => set('pushEnabled', v)} /></Row>
-      <Row label="Travay"><Toggle value={n.pushJobs} onChange={v => set('pushJobs', v)} /></Row>
-      <Row label="Mesaj"><Toggle value={n.pushMessages} onChange={v => set('pushMessages', v)} /></Row>
-      <Row label="Pèman"><Toggle value={n.pushPayments} onChange={v => set('pushPayments', v)} /></Row>
-      <p style={{ ...sectionLabel, marginTop: 16 }}>SMS</p>
-      <Row label="Aktive SMS"><Toggle value={n.smsEnabled} onChange={v => set('smsEnabled', v)} /></Row>
+      <h2 style={h2}>{t('settings.notifications.title', 'Notifications')}</h2>
+      <p style={sectionLabel}>{t('settings.notifications.emailSection', 'Email')}</p>
+      <Row label={t('settings.notifications.jobs', 'Jobs')}><Toggle value={n.emailJobs} onChange={v => set('emailJobs', v)} /></Row>
+      <Row label={t('settings.notifications.payments', 'Payments')}><Toggle value={n.emailPayments} onChange={v => set('emailPayments', v)} /></Row>
+      <Row label={t('settings.notifications.marketing', 'Promotions')}><Toggle value={n.emailMarketing} onChange={v => set('emailMarketing', v)} /></Row>
+      <p style={{ ...sectionLabel, marginTop: 16 }}>{t('settings.notifications.pushSection', 'Push Notifications')}</p>
+      <Row label={t('settings.notifications.enablePush', 'Enable push')}><Toggle value={n.pushEnabled} onChange={v => set('pushEnabled', v)} /></Row>
+      <Row label={t('settings.notifications.jobs', 'Jobs')}><Toggle value={n.pushJobs} onChange={v => set('pushJobs', v)} /></Row>
+      <Row label={t('settings.notifications.messages', 'Messages')}><Toggle value={n.pushMessages} onChange={v => set('pushMessages', v)} /></Row>
+      <Row label={t('settings.notifications.payments', 'Payments')}><Toggle value={n.pushPayments} onChange={v => set('pushPayments', v)} /></Row>
+      <p style={{ ...sectionLabel, marginTop: 16 }}>{t('settings.notifications.smsSection', 'SMS')}</p>
+      <Row label={t('settings.notifications.enableSms', 'Enable SMS')}><Toggle value={n.smsEnabled} onChange={v => set('smsEnabled', v)} /></Row>
     </div>
   );
 }
 
 function LanguagesPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserSettings>) => void }) {
+  const { t } = useTranslation();
   const LANGS = [
     { code: 'ht', name: 'Kreyòl Ayisyen' }, { code: 'fr', name: 'Français' },
     { code: 'en', name: 'English' }, { code: 'es', name: 'Español' },
   ];
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Lang Aplikasyon</h2>
+      <h2 style={h2}>{t('settings.languages.title', 'App Language')}</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 320 }}>
         {LANGS.map(l => (
           <button
@@ -285,26 +289,27 @@ function LanguagesPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<U
 }
 
 function ThemePane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserSettings>) => void }) {
-  const THEMES: Array<{ val: UserSettings['theme']; label: string; icon: string }> = [
-    { val: 'light', label: 'Klè', icon: '☀️' },
-    { val: 'dark', label: 'Nwa', icon: '🌙' },
-    { val: 'system', label: 'Sistèm', icon: '💻' },
+  const { t } = useTranslation();
+  const THEMES = [
+    { val: 'light' as const, labelKey: 'settings.theme.light', fallback: 'Light', icon: '☀️' },
+    { val: 'dark'  as const, labelKey: 'settings.theme.dark',  fallback: 'Dark',  icon: '🌙' },
+    { val: 'system'as const, labelKey: 'settings.theme.system',fallback: 'System',icon: '💻' },
   ];
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Tèm</h2>
+      <h2 style={h2}>{t('settings.theme.title', 'Theme')}</h2>
       <div style={{ display: 'flex', gap: 12 }}>
-        {THEMES.map(t => (
+        {THEMES.map(th => (
           <button
-            key={t.val}
-            onClick={() => onPatch({ theme: t.val })}
+            key={th.val}
+            onClick={() => onPatch({ theme: th.val })}
             style={{
-              flex: 1, padding: '20px 8px', borderRadius: 12, border: s.theme === t.val ? '2px solid #FACC15' : '2px solid #1E293B',
+              flex: 1, padding: '20px 8px', borderRadius: 12, border: s.theme === th.val ? '2px solid #FACC15' : '2px solid #1E293B',
               background: '#0F172A', color: '#F1F5F9', cursor: 'pointer', fontSize: 13, fontWeight: 600,
             }}
           >
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{t.icon}</div>
-            {t.label}
+            <div style={{ fontSize: 28, marginBottom: 8 }}>{th.icon}</div>
+            {t(th.labelKey, th.fallback)}
           </button>
         ))}
       </div>
@@ -313,12 +318,13 @@ function ThemePane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserS
 }
 
 function AccessibilityPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Partial<UserSettings>) => void }) {
+  const { t } = useTranslation();
   const a = s.accessibility;
   const set = (k: keyof UserSettings['accessibility'], v: unknown) => onPatch({ accessibility: { ...a, [k]: v } });
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Aksesiblite</h2>
-      <Row label="Gwosè tèks">
+      <h2 style={h2}>{t('settings.accessibility.title', 'Accessibility')}</h2>
+      <Row label={t('settings.accessibility.fontSize', 'Text size')}>
         <div style={{ display: 'flex', gap: 6 }}>
           {(['sm','md','lg','xl'] as const).map(sz => (
             <button key={sz} onClick={() => set('fontSize', sz)} style={{
@@ -329,51 +335,49 @@ function AccessibilityPane({ s, onPatch }: { s: UserSettings; onPatch: (p: Parti
           ))}
         </div>
       </Row>
-      <Row label="Gwo kontrast"><Toggle value={a.highContrast} onChange={v => set('highContrast', v)} /></Row>
-      <Row label="Redwi animasyon"><Toggle value={a.reduceMotion} onChange={v => set('reduceMotion', v)} /></Row>
-      <Row label="Lecteur d'écran"><Toggle value={a.screenReader} onChange={v => set('screenReader', v)} /></Row>
+      <Row label={t('settings.accessibility.highContrast', 'High contrast')}><Toggle value={a.highContrast} onChange={v => set('highContrast', v)} /></Row>
+      <Row label={t('settings.accessibility.reduceMotion', 'Reduce motion')}><Toggle value={a.reduceMotion} onChange={v => set('reduceMotion', v)} /></Row>
+      <Row label={t('settings.accessibility.screenReader', 'Screen reader')}><Toggle value={a.screenReader} onChange={v => set('screenReader', v)} /></Row>
     </div>
   );
 }
 
 function StoragePane() {
+  const { t } = useTranslation();
   const keys = Object.keys(localStorage);
   const size = keys.reduce((acc, k) => acc + (localStorage.getItem(k) ?? '').length, 0);
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Stockage lokal</h2>
-      <div style={infoBlock}><label style={labelStyle}>Kle yo</label><span style={valueStyle}>{keys.length}</span></div>
-      <div style={infoBlock}><label style={labelStyle}>Gwosè</label><span style={valueStyle}>{(size / 1024).toFixed(1)} KB</span></div>
+      <h2 style={h2}>{t('settings.storage.title', 'Local Storage')}</h2>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.storage.keys', 'Keys')}</label><span style={valueStyle}>{keys.length}</span></div>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.storage.size', 'Size')}</label><span style={valueStyle}>{(size / 1024).toFixed(1)} KB</span></div>
       <button onClick={() => { const k = 'jobfast_user'; const u = localStorage.getItem(k); localStorage.clear(); if (u) localStorage.setItem(k, u); }} style={{ ...dangerBtn, marginTop: 16 }}>
-        Netwaye kach (sòf sesyon)
+        {t('settings.storage.clearBtn', 'Clear cache (keep session)')}
       </button>
     </div>
   );
 }
 
 function DownloadsPane() {
+  const { t } = useTranslation();
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Téléchargements</h2>
-      <p style={{ color: '#94A3B8' }}>Jere fichye ou te telechaje yo nan aplikasyon an.</p>
-      <p style={{ color: '#64748B', fontSize: 13, marginTop: 8 }}>Fonksyon sa a pral disponib nan yon pwochen vèsyon.</p>
+      <h2 style={h2}>{t('settings.downloads.title', 'Downloads')}</h2>
+      <p style={{ color: '#94A3B8' }}>{t('settings.downloads.desc', 'Manage files downloaded in the app.')}</p>
+      <p style={{ color: '#64748B', fontSize: 13, marginTop: 8 }}>{t('settings.downloads.soon', 'This feature will be available in a future version.')}</p>
     </div>
   );
 }
 
 function HelpPane() {
-  const FAQ = [
-    { q: 'Kijan mwen ka jwenn yon travay?', a: 'Ale nan Chèche → Travay epi filtre pa kategori oswa lokalizasyon.' },
-    { q: 'Kijan mwen ka voye lajan?', a: 'Ale nan Pòfèy → Transfere epi rantre ID destinatè a.' },
-    { q: 'Kijan mwen ka kontakte sipò?', a: 'Imèl: support@jobfasthq.com oswa itilize chat nan aplikasyon an.' },
-    { q: 'Kijan mwen ka chanje lang?', a: 'Paramèt → Lang → Chwazi lang ou vle.' },
-  ];
+  const { t } = useTranslation();
+  const FAQ = t('settings.help.faq', { returnObjects: true }) as Array<{ q: string; a: string }>;
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Èd & Sipò</h2>
-      <p style={{ color: '#94A3B8', marginBottom: 16 }}>support@jobfasthq.com</p>
+      <h2 style={h2}>{t('settings.help.title', 'Help & Support')}</h2>
+      <p style={{ color: '#94A3B8', marginBottom: 16 }}>{t('settings.help.email', 'support@jobfasthq.com')}</p>
       <a href="https://jobfast-mvp-spzy.vercel.app" style={{ display: 'block', color: '#FACC15', fontSize: 13, marginBottom: 16 }}>jobfast-mvp-spzy.vercel.app</a>
-      {FAQ.map((f, i) => (
+      {Array.isArray(FAQ) && FAQ.map((f, i) => (
         <div key={i} style={{ marginBottom: 16, padding: '12px 16px', background: '#0F172A', borderRadius: 10 }}>
           <p style={{ fontWeight: 700, color: '#FACC15', margin: '0 0 4px' }}>{f.q}</p>
           <p style={{ color: '#94A3B8', fontSize: 13, margin: 0 }}>{f.a}</p>
@@ -384,31 +388,33 @@ function HelpPane() {
 }
 
 function AboutPane() {
+  const { t } = useTranslation();
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>À propos de JOBFAST</h2>
-      <div style={infoBlock}><label style={labelStyle}>Vèsyon</label><span style={valueStyle}>4.0.0</span></div>
-      <div style={infoBlock}><label style={labelStyle}>Platfòm</label><span style={valueStyle}>JOBFAST HQ Global</span></div>
-      <div style={infoBlock}><label style={labelStyle}>Sit wèb</label><a href="https://jobfast-mvp-spzy.vercel.app" style={{ color: '#FACC15' }}>jobfast-mvp-spzy.vercel.app</a></div>
-      <div style={infoBlock}><label style={labelStyle}>Imèl</label><span style={valueStyle}>hello@jobfasthq.com</span></div>
+      <h2 style={h2}>{t('settings.about.title', 'About JOBFAST')}</h2>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.about.version', 'Version')}</label><span style={valueStyle}>4.0.0</span></div>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.about.platform', 'Platform')}</label><span style={valueStyle}>JOBFAST HQ Global</span></div>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.about.website', 'Website')}</label><a href="https://jobfast-mvp-spzy.vercel.app" style={{ color: '#FACC15' }}>jobfast-mvp-spzy.vercel.app</a></div>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.about.email', 'Email')}</label><span style={valueStyle}>hello@jobfasthq.com</span></div>
       <div style={{ ...infoBlock, marginTop: 20 }}>
-        <p style={{ color: '#94A3B8', fontSize: 12 }}>© 2025 JOBFAST. Tout dwa rezève.</p>
+        <p style={{ color: '#94A3B8', fontSize: 12 }}>{t('settings.about.copyright', '© 2025 JOBFAST. All rights reserved.')}</p>
       </div>
     </div>
   );
 }
 
 function DeveloperPane() {
+  const { t } = useTranslation();
   const env = import.meta.env;
   return (
     <div style={paneStyle}>
-      <h2 style={h2}>Zouti Devlopè</h2>
-      <div style={infoBlock}><label style={labelStyle}>API URL</label><span style={valueStyle}>{String(env['VITE_API_URL'] || '/api/v1')}</span></div>
-      <div style={infoBlock}><label style={labelStyle}>Anviwonman</label><span style={valueStyle}>{String(env['MODE'] || 'development')}</span></div>
+      <h2 style={h2}>{t('settings.developer.title', 'Developer Tools')}</h2>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.developer.apiUrl', 'API URL')}</label><span style={valueStyle}>{String(env['VITE_API_URL'] || '/api/v1')}</span></div>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.developer.environment', 'Environment')}</label><span style={valueStyle}>{String(env['MODE'] || 'development')}</span></div>
       <div style={infoBlock}><label style={labelStyle}>React</label><span style={valueStyle}>18.x</span></div>
-      <div style={infoBlock}><label style={labelStyle}>Build</label><span style={valueStyle}>{String(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '—')}</span></div>
-      <button onClick={() => { console.log('[JOBFAST DEBUG]', { localStorage: { ...localStorage }, env }); alert('Konsole ouvri — wè devtools'); }} style={{ ...primaryBtn, marginTop: 16 }}>
-        Ekri debug nan konsole
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.developer.build', 'Build')}</label><span style={valueStyle}>{String(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '—')}</span></div>
+      <button onClick={() => { console.log('[JOBFAST DEBUG]', { localStorage: { ...localStorage }, env }); alert(t('settings.developer.debugAlert', 'Console open — see devtools')); }} style={{ ...primaryBtn, marginTop: 16 }}>
+        {t('settings.developer.debugBtn', 'Write debug to console')}
       </button>
     </div>
   );
@@ -439,6 +445,7 @@ const sessionCard: React.CSSProperties = { display: 'flex', justifyContent: 'spa
 
 // ─── Main Settings page ────────────────────────────────────────────────────────
 export default function SettingsPage() {
+  const { t }     = useTranslation();
   const { user }  = useAuth();
   const [section, setSection]   = useState<Section>('general');
   const [settings, setSettings] = useState<UserSettings | null>(null);
@@ -469,7 +476,7 @@ export default function SettingsPage() {
   }, [settings]);
 
   const renderPane = () => {
-    if (!settings) return <p style={{ color: '#64748B' }}>Chajman paramèt...</p>;
+    if (!settings) return <p style={{ color: '#64748B' }}>{t('settings.loading', 'Loading settings...')}</p>;
     switch (section) {
       case 'general':       return <GeneralPane s={settings} onPatch={onPatch} />;
       case 'account':       return <AccountPane user={user} />;
@@ -494,7 +501,7 @@ export default function SettingsPage() {
       {/* Sidebar */}
       <nav style={{ width: 220, background: '#0A1628', borderRight: '1px solid #1E293B', padding: '24px 0', flexShrink: 0 }}>
         <h1 style={{ color: '#F1F5F9', fontSize: 16, fontWeight: 800, padding: '0 16px 20px', margin: 0, borderBottom: '1px solid #1E293B' }}>
-          Paramèt
+          {t('settings.title', 'Settings')}
         </h1>
         {SECTIONS.map(s => (
           <button
@@ -509,7 +516,7 @@ export default function SettingsPage() {
             }}
           >
             <span style={{ width: 16, height: 16, flexShrink: 0 }}>{icons[s]}</span>
-            {LABELS[s]}
+            {t(`settings.sections.${s}`, s)}
           </button>
         ))}
       </nav>
@@ -518,8 +525,8 @@ export default function SettingsPage() {
       <main style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div />
-          {saving && <span style={{ color: '#64748B', fontSize: 12 }}>Sap sove...</span>}
-          {saved  && <span style={{ color: '#4ADE80', fontSize: 12 }}>✓ Sove</span>}
+          {saving && <span style={{ color: '#64748B', fontSize: 12 }}>{t('settings.saving', 'Saving...')}</span>}
+          {saved  && <span style={{ color: '#4ADE80', fontSize: 12 }}>{t('settings.saved', '✓ Saved')}</span>}
         </div>
         {renderPane()}
       </main>

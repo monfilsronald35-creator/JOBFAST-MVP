@@ -625,7 +625,53 @@
       "service_provider_desc": "Mwen ofri sèvis mwen"
     },
     "stepOf": "Etap {{cur}} sou {{tot}}",
-    "stepN": "Etap {{step}}"
+    "stepN": "Etap {{step}}",
+    "step0": {
+      "prompt": "Ki kalite kont ou vle kreye?",
+      "personal_label": "Kont Pèsonèl",
+      "personal_desc": "Pou travayè endividyèl, pwofesyonèl ak konsomatè.",
+      "business_label": "Kont Biznis",
+      "business_desc": "Pou antrepriz, restoran, otèl ak lòt òganizasyon."
+    },
+    "step1": {
+      "prompt": "Ki wòl ou pral jwe sou JOBFAST?",
+      "worker_label": "Travayè",
+      "worker_desc": "Ofri sèvis pwofesyonèl",
+      "client_label": "Kliyan",
+      "client_desc": "Chèche sèvis ak travay",
+      "tourist_label": "Touris",
+      "tourist_desc": "Vizitè chèche sèvis touristik",
+      "company_label": "Konpayi",
+      "company_desc": "Antrepriz ki ofri sèvis",
+      "enterprise_label": "Antrepriz",
+      "enterprise_desc": "Gwo antrepriz ak plizyè sèvis"
+    },
+    "step6": {
+      "prompt": "Telechaje dokiman nesese yo (PDF oswa imaj).",
+      "national_id": "Kat Nasyonal",
+      "passport": "Paspot (opsyonèl)",
+      "diploma": "Diplòm / Sètifika",
+      "license": "Lisans Pwofesyonèl",
+      "click_to_choose": "Klike pou chwazi fichye"
+    },
+    "step7": {
+      "prompt": "Chwazi preferans komunikasyon ou yo.",
+      "preferred_language": "Lang Pwefere",
+      "lang_ht": "Kreyòl Ayisyen",
+      "lang_fr": "Fransè",
+      "lang_en": "Anglè",
+      "lang_es": "Panyòl",
+      "push_notifications": "Notifikasyon Push",
+      "sms_alerts": "Alèt SMS",
+      "marketing_emails": "Imèl Maketing"
+    },
+    "step9": {
+      "title": "Kont Ou Kreye!",
+      "subtitle": "Byenveni sou JOBFAST. Pwofil ou a prèt. Ou ka kòmanse chèche travay oswa ofri sèvis kounye a.",
+      "account_created": "Kont kreye avèk siksè",
+      "email_sent": "Imèl konfimasyon voye",
+      "doc_verification": "Verifikasyon dokiman an kou (1-24 èdtan)"
+    }
   },
   "professionFields": {
     "businessName": "Non biznis",
@@ -817,7 +863,19 @@
     "actions": {
       "markAll": "Make tout kòm li",
       "clearAll": "Efase tout"
-    }
+    },
+    "tabs": {
+      "unread": "Pa li",
+      "message": "Mesaj",
+      "payment": "Peman",
+      "booking": "Rezèvasyon",
+      "alert": "Alèt",
+      "system": "Sistèm"
+    },
+    "newCount": "{{count}} nouvo",
+    "empty": "Pa gen notifikasyon",
+    "emptySubtitle": "Ou pral wè aktivite ou yo isit la",
+    "retry": "Refè"
   },
   "jobs": {
     "title": "Travay",
@@ -1477,7 +1535,119 @@
       "portfolio": "Portfolio",
       "experience": "Eksperyans",
       "documents": "Dokiman",
-      "saved": "Sove"
+      "saved": "Sove",
+      "overview": "Akeyi",
+      "schedule": "Orè",
+      "income": "Revni",
+      "trust": "Konfyans"
+    },
+    "defaultName": "Travayè",
+    "heroGreeting": "Bonjou {{name}}",
+    "heroDashboardTitle": "Dashboard Travayè JOBFAST",
+    "heroSubtitle": "AI ap ede w jwenn pi bon travay, ogmante revni, epi bati konfyans ak kliyan yo.",
+    "aiScore": "AI Score: {{score}}/100",
+    "profilePct": "Pwofil: {{pct}}%",
+    "todayRevenue": "Revni jodi a: ${{amount}}",
+    "nearbyJobsLabel": "Travay tou pre: {{count}}",
+    "trustLevel": "Nivo konfyans",
+    "profileComplete": "Konplè pwofil",
+    "today": "Jodi a",
+    "nearbyJobs": "Travay tou pre",
+    "trustLabel": "Konfyans",
+    "currentStatus": "Estati aktyèl ou",
+    "profileCompleteness": "Konplè Pwofil",
+    "completenessLevel": "Nivo konplè",
+    "toImprove": "Pou amelyore",
+    "skillPlaceholder": "Ekri yon konpetans, appuye +",
+    "portfolioTitle": "Pòtfòlyo — Foto Travay",
+    "noWorkPhotos": "Pa gen foto travay yo pou kounye a",
+    "addPhotosHint": "Ajoute foto pou atire plis kliyan",
+    "workPhotoAlt": "Travay {{n}}",
+    "professionalExp": "Eksperyans Pwofesyonèl",
+    "yearsExp": "Ane Eksperyans",
+    "trade": "Metye",
+    "category": "Kategori",
+    "accountType": "Kont",
+    "memberSince": "Manm depi",
+    "verification": "Verifikasyon",
+    "verif": {
+      "email": "Imèl",
+      "phone": "Telefòn",
+      "identity": "Identite",
+      "documents": "Dokiman"
+    },
+    "isVerified": "✓ Verifye",
+    "notVerified": "Pa verifye",
+    "availabilityStatus": "Estati Disponibilite",
+    "gpsLocation": "Lokasyon GPS",
+    "currentCity": "Vil aktyèl",
+    "lastUpdate": "Dènye mete ajou",
+    "serviceRadius": "Reyon sèvis",
+    "availableJobs": "Travay Disponib",
+    "noJobsAvailable": "Pa gen travay disponib kounye a",
+    "job": "Travay",
+    "incomeEstimate": "Estimasyon Revni",
+    "incomeEstimateNote": "✱ Estimasyon — yo pral mete ajou ak done reyèl yo.",
+    "income": {
+      "total": "Total",
+      "thisMonth": "Mwa sa",
+      "thisWeek": "Semèn",
+      "totalCompleted": "Total konplete",
+      "successRate": "To siksè",
+      "avgRating": "Rating mwayen",
+      "complaints": "Reklamasyon"
+    },
+    "completedJobs": "Travay Konplete",
+    "jobHistory": "Istwa Travay",
+    "noJobHistory": "Pa gen istwa travay pou kounye a",
+    "ratings": "Evalyasyon",
+    "ratingsCount": "{{count}} evalyasyon • 0 reklamasyon",
+    "ratingsFirstJob": "Evalyasyon yo pral parèt apre ou fini premye travay ou.",
+    "trust": {
+      "excellent": "Ekselan — Ou pami meyè yo!",
+      "good": "Bon — Kontinye amelyore",
+      "start": "Kòmanse bati konfyans ou",
+      "basePoints": "Pwen Baz",
+      "pointDetails": "Detay Pwen yo",
+      "viewAll": "Tout yo",
+      "viewAllNotif": "Wè tout notifikasyon yo →"
+    },
+    "notif": {
+      "newJob": "Nouvo travay disponib bò kote ou",
+      "profileVisible": "Pwofil ou parèt nan rechèch yo",
+      "completeProfile": "Konplete pwofil ou pou plis vizibilite",
+      "now": "Kounye a",
+      "fiveMin": "5 min",
+      "oneHr": "1 hr"
+    },
+    "gps": {
+      "notAvailable": "GPS pa disponib sou aparèy sa a",
+      "permissionDenied": "Pa ka jwenn lokasyon — pèmèt GPS",
+      "acquiring": "Ap chèche...",
+      "update": "Mete ajou",
+      "locationUpdated": "✓ Lokasyon mete ajou",
+      "locationError": "Erè mete ajou lokasyon"
+    },
+    "avail": {
+      "available": "Disponib",
+      "availableDesc": "Disponib pou travay nenpòt ki lè",
+      "busy": "Okipe",
+      "busyDesc": "Ap travay kounye a, limite",
+      "looking": "Chèche Travay",
+      "lookingDesc": "Chèche opòtinite aktivman",
+      "vacation": "Vakans",
+      "vacationDesc": "An vakans — pa disponib"
+    },
+    "completeness": {
+      "addName": "Ajoute non konplè ou",
+      "verifyEmail": "Imèl verifye",
+      "addPhone": "Ajoute nimewo telefòn ou",
+      "addBio": "Ekri yon bio pou pwofil ou",
+      "chooseProfession": "Chwazi yon metye",
+      "addLocation": "Ajoute lokasyon ou",
+      "addSkills": "Ajoute konpetans ou yo",
+      "addWorkPhotos": "Ajoute foto travay ou",
+      "addExperience": "Espesifye eksperyans ou"
     }
   },
   "provider": {
@@ -1571,5 +1741,191 @@
     "createCompany":     "Kreye Konpayi",
     "createBranch":      "Ajoute Branch",
     "createInvoice":     "Kreye Fakti"
+  },
+  "settings": {
+    "title": "Paramèt",
+    "saving": "Sap sove...",
+    "saved": "✓ Sove",
+    "loading": "Chajman paramèt...",
+    "sections": {
+      "general": "Jeneral", "account": "Kont", "privacy": "Konfidansyalite",
+      "security": "Sekirite", "password": "Modpas", "devices": "Aparèy",
+      "notifications": "Notifikasyon", "languages": "Lang", "theme": "Tèm",
+      "accessibility": "Aksesiblite", "storage": "Stockage", "downloads": "Telechajman",
+      "help": "Èd", "about": "À propos", "developer": "Devlopè"
+    },
+    "general": { "title": "Paramèt Jeneral", "timezone": "Zòn lè", "dateFormat": "Fòma dat", "currency": "Monè" },
+    "notifications": {
+      "title": "Notifikasyon", "emailSection": "Imèl", "jobs": "Travay",
+      "payments": "Pèman", "marketing": "Pwomasyon", "pushSection": "Pousèv (Push)",
+      "enablePush": "Aktive push", "messages": "Mesaj", "smsSection": "SMS", "enableSms": "Aktive SMS"
+    },
+    "languages": { "title": "Lang Aplikasyon" },
+    "theme": { "title": "Tèm", "light": "Klè", "dark": "Nwa", "system": "Sistèm" },
+    "accessibility": {
+      "title": "Aksesiblite", "fontSize": "Gwosè tèks", "highContrast": "Gwo kontrast",
+      "reduceMotion": "Redwi animasyon", "screenReader": "Lektè ekran"
+    },
+    "storage": {
+      "title": "Stockage lokal", "keys": "Kle yo", "size": "Gwosè",
+      "clearBtn": "Netwaye kach (sòf sesyon)"
+    },
+    "downloads": {
+      "title": "Telechajman", "desc": "Jere fichye ou te telechaje yo nan aplikasyon an.",
+      "soon": "Fonksyon sa a pral disponib nan yon pwochen vèsyon."
+    },
+    "help": {
+      "title": "Èd & Sipò", "email": "support@jobfasthq.com",
+      "faq": [
+        { "q": "Kijan mwen ka jwenn yon travay?", "a": "Ale nan Chèche → Travay epi filtre pa kategori." },
+        { "q": "Kijan mwen ka voye lajan?", "a": "Ale nan Pòfèy → Transfere epi rantre ID destinatè a." },
+        { "q": "Kijan mwen ka kontakte sipò?", "a": "Imèl: support@jobfasthq.com oswa chat nan aplikasyon." },
+        { "q": "Kijan mwen ka chanje lang?", "a": "Paramèt → Lang → Chwazi lang ou vle." }
+      ]
+    },
+    "about": {
+      "title": "À propos de JOBFAST", "version": "Vèsyon", "platform": "Platfòm",
+      "website": "Sit wèb", "email": "Imèl", "copyright": "© 2025 JOBFAST. Tout dwa rezève."
+    },
+    "developer": {
+      "title": "Zouti Devlopè", "apiUrl": "API URL", "environment": "Anviwonman",
+      "build": "Build", "debugBtn": "Ekri debug nan konsole", "debugAlert": "Konsole ouvri — wè devtools"
+    },
+    "account": { "title": "Kont Itilizatè", "name": "Non", "email": "Imèl", "role": "Wòl", "id": "ID" },
+    "privacy": {
+      "title": "Konfidansyalite", "publicProfile": "Pwofil piblik", "showEmail": "Montre imèl",
+      "showPhone": "Montre telefòn", "showLocation": "Montre lokalizasyon",
+      "messaging": "Ki moun ki ka voye mesaj?", "dataSharing": "Pataj done"
+    },
+    "security": { "title": "Sekirite", "sessions": "Sesyon aktif", "revoke": "Anile", "loading": "Chajman..." },
+    "password": {
+      "title": "Chanje Modpas", "current": "Modpas aktyèl", "new": "Nouvo modpas",
+      "confirm": "Konfime modpas", "submit": "Chanje", "submitting": "Ap chanje...",
+      "success": "Modpas chanje!", "error": "Erè. Eseye ankò."
+    },
+    "devices": { "title": "Aparèy Konekte", "revoke": "Dekonekte" }
+  },
+  "company": {
+    "hero": {
+      "badge": "JOBFAST Enterprise • Brifing CEO IA",
+      "greeting": "Bonjou {{name}} 👋",
+      "subtitle": "Byenvini nan JOBFAST Enterprise — {{name}}. Nivo Konfyans {{trustScore}}% • Kòmandman biznis mondyal IA.",
+      "weatherMarket": "IA Tan ak Mache",
+      "economicIndex": "Endis ekonomik: {{index}}",
+      "currencyBase": "Baz lajan: {{currency}}",
+      "companyGoal": "Bi Konpayi",
+      "todaysTargets": "Sibl jodi a",
+      "aiSuggestions": "Sijèsyon IA"
+    },
+    "kpi": {
+      "title": "Sant KPI Antrepriz",
+      "employeesOnline": "Anplwaye Anliy",
+      "activeProjects": "Pwojè Aktif",
+      "revenueToday": "Revni Jodi a",
+      "businessStatus": "Estati Biznis",
+      "revenue": "Revni",
+      "netProfit": "Pwofi Net",
+      "grossProfit": "Pwofi Brit",
+      "cashflow": "Flui Kach",
+      "burnRate": "Pousantaj Depans",
+      "employees": "Anplwaye",
+      "contracts": "Kontra",
+      "payroll": "Salè",
+      "customerSatisfaction": "Satisfaksyon Kliyan",
+      "workerSatisfaction": "Satisfaksyon Travayè",
+      "latePayments": "Peman Anreta",
+      "productivityIndex": "Endis Pwodiktivite",
+      "attendance": "Prezans",
+      "hiringSuccessRate": "Pousantaj Siksè Rekritman",
+      "aiRiskScore": "Evalyasyon Risk IA",
+      "globalRank": "Ranje Mondyal"
+    },
+    "analytics": {
+      "title": "Analitik ak Entèlijans Biznis",
+      "heatmaps": "Kat Chalè ak Konparezon Peyi",
+      "heatmapsDesc": "Konparezon peyi ak branch, sèvis/anplwayè/travayè pi bon, tandans mache.",
+      "revenue": "Revni • Flui Kach • Salè",
+      "revenueDesc": "Tan revni, evolisyon salè, nivo konfyans, konparezon mansyèl/anyèl ak grafik previzyon.",
+      "hiring": "Rekritman ak Fini Konvèsyon",
+      "hiringDesc": "Fini rekritman, konvèsyon, kwasans anplwaye, peman an reta, sijèsyon IA sou pèfòmans."
+    },
+    "notifications": {
+      "title": "Sant Notifikasyon",
+      "empty": "Pa gen notifikasyon — IA ap montre alèt sekirite, peman, GPS ak sistèm la isit.",
+      "markRead": "Make li",
+      "priority": "Priyorite",
+      "newApplicant": "Kandida nouvo",
+      "newApplicantMsg": "Kandida nouvo pou travay {{job}}"
+    },
+    "ai": {
+      "title": "Asistan IA Antrepriz",
+      "greeting": "Bonjou {{name}}. Jodi a konpayi ou a gen:",
+      "newApplicants": "{{count}} kandida nouvo",
+      "projectsDelayed": "{{count}} pwojè an reta",
+      "revenueChanged": "Revni chanje pa {{delta}}",
+      "employeesAbsent": "{{count}} anplwaye absan",
+      "recommendation": "Rekòmandasyon: {{text}}",
+      "decisionEngine": "Motè Desizyon IA"
+    },
+    "wallet": {
+      "title": "Pòtmòni • Sant Finans",
+      "balance": "Balans",
+      "escrow": "Eskwo",
+      "pending": "An atant",
+      "released": "Lage",
+      "desc": "Modil pòtmòni: Retire, Kat, Kript, Fakti, Taks, Salè — UI prè pou konekte ak API finans."
+    },
+    "search": {
+      "placeholder": "Chèche anplwaye, pwojè, fakti, travay, konpayi, kliyan, peman, tchati, branch, kòmand IA…",
+      "enter": "Antre"
+    },
+    "commandBar": {
+      "aiVoice": "Vwa IA",
+      "notifications": "Notifikasyon",
+      "messages": "Mesaj",
+      "wallet": "Pòtmòni",
+      "calendar": "Kalandriye",
+      "today": "jodi a",
+      "revenueToday": "Revni jodi a: ${{amount}}"
+    },
+    "actions": {
+      "createJob": "Kreye Travay",
+      "payEmployee": "Peye Anplwaye",
+      "openChat": "Ouvri Tchati",
+      "generateInvoice": "Jenere Fakti",
+      "addBranch": "Ajoute Branch",
+      "viewAnalytics": "Wè Analitik",
+      "scheduleInterview": "Pwograme Entèvyou",
+      "launchAI": "Lanse IA"
+    },
+    "tabs": {
+      "overview": "Apèsi",
+      "employees": "Anplwaye",
+      "hiring": "Rekritman",
+      "projects": "Pwojè",
+      "branches": "Branch",
+      "analytics": "Analitik"
+    },
+    "tabContent": {
+      "overview": "Metrik ak gidans.",
+      "employees": "Jestyon anplwaye.",
+      "hiring": "Sant Rekritman.",
+      "projects": "Jestyon Pwojè.",
+      "branches": "Kat Branch.",
+      "analytics": "Entèlijans Biznis."
+    },
+    "commandCenter": {
+      "title": "Sant Kòmandman IA",
+      "close": "Fèmen",
+      "desc": "Jenere Rapò • Prevwa Revni • Optimize Rekritman • Optimize Salè • Jwenn Travayè • Analize Mache • Jenere Kontra • Analize Risk Konpayi.",
+      "workspace": "Espas travay IA",
+      "button": "SANT KÒMANDMAN IA"
+    },
+    "jobStatus": {
+      "open": "Disponib",
+      "in_progress": "Ap pwogrese",
+      "closed": "Fèmen",
+      "cancelled": "Anile"
+    }
   }
 }

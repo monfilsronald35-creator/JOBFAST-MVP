@@ -148,6 +148,6 @@ export const AutomationEngine = {
   },
 
   // ─── Local state ──────────────────────────────────────────────────────────
-  getCachedWorkflows(): Workflow[]                           { return Array.from(_workflows.values()); }
-  getCachedRuns(workflowId: string): WorkflowRun[]          { return _runs.get(workflowId) ?? []; }
+  getCachedWorkflows(): Workflow[]                           { return Array.from(_workflows.values()); },
+  getCachedRuns(workflowId: string): WorkflowRun[]          { return _runs.get(workflowId) ?? []; },
 };

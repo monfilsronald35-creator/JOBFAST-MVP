@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/axios";
 
@@ -49,17 +50,17 @@ function getIcon(type: string | undefined): string {
   return (type ? icons[type] : undefined) ?? "🔔";
 }
 
-function getNotificationTabs(role: string): NotifTab[] {
+function getNotificationTabs(role: string, t: (key: string, fallback: string) => string): NotifTab[] {
   const base: NotifTab[] = [
-    { key: "all",     icon: "🔔", label: "Tout"       },
-    { key: "unread",  icon: "●",  label: "Pa li"      },
-    { key: "message", icon: "💬", label: "Mesaj"      },
-    { key: "payment", icon: "💰", label: "Peman"      },
-    { key: "booking", icon: "📋", label: "Rezèvasyon" },
-    { key: "alert",   icon: "🚨", label: "Alèt"       },
+    { key: "all",     icon: "🔔", label: t("common.all", "All")                            },
+    { key: "unread",  icon: "●",  label: t("notifications.tabs.unread", "Unread")          },
+    { key: "message", icon: "💬", label: t("notifications.tabs.message", "Messages")       },
+    { key: "payment", icon: "💰", label: t("notifications.tabs.payment", "Payment")        },
+    { key: "booking", icon: "📋", label: t("notifications.tabs.booking", "Booking")        },
+    { key: "alert",   icon: "🚨", label: t("notifications.tabs.alert", "Alert")            },
   ];
   if (role === "admin") {
-    base.push({ key: "system", icon: "⚙️", label: "Sistèm" });
+    base.push({ key: "system", icon: "⚙️", label: t("notifications.tabs.system", "System") });
   }
   return base;
 }
@@ -132,7 +133,7 @@ interface NotifCardProps {
   onDelete: (id: string) => void;
   onClick: (n: Notification) => void;
 }
-function NotifCard({ n, onRead, onDelete, onClick }: NotifCardProps) {
+function NotifCard({ n, onRead: _onRead, onDelete, onClick }: NotifCardProps) {
   return (
     <div
       onClick={() => onClick(n)}
@@ -231,10 +232,11 @@ function LiveToast({ toast, onClose }: LiveToastProps) {
 
 // ── Main page ─────────────────────────────────────────────────────────────
 function NotificationsCenter() {
+  const { t }    = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const role = (user as Record<string, unknown> | null)?.role as string ?? "worker";
-  const tabs = getNotificationTabs(role);
+  const tabs = getNotificationTabs(role, t);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading,       setLoading]       = useState(false);
@@ -372,9 +374,11 @@ function NotificationsCenter() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-base font-black text-white">🔔 Notifikasyon</h1>
+            <h1 className="text-base font-black text-white">🔔 {t("notifications.title", "Notifications")}</h1>
             {unreadCount > 0 && (
-              <p className="text-[11px] text-amber-400 mt-0.5">{unreadCount} nouvo</p>
+              <p className="text-[11px] text-amber-400 mt-0.5">
+                {t("notifications.newCount", { count: unreadCount, defaultValue: "{{count}} new" })}
+              </p>
             )}
           </div>
           {unreadCount > 0 && (
@@ -383,7 +387,7 @@ function NotificationsCenter() {
               className="text-[11px] font-bold px-3 py-1.5 rounded-xl transition"
               style={{ background: `${GOLD}18`, color: GOLD }}
             >
-              Make tout li
+              {t("notifications.actions.markAll", "Mark all as read")}
             </button>
           )}
         </div>
@@ -425,8 +429,8 @@ function NotificationsCenter() {
         {!loading && notifications.length === 0 && (
           <div className="text-center py-16">
             <p className="text-4xl mb-3">📭</p>
-            <p className="text-sm font-bold text-slate-400">Pa gen notifikasyon</p>
-            <p className="text-[11px] text-slate-600 mt-1">Ou pral wè aktivite ou yo isit la</p>
+            <p className="text-sm font-bold text-slate-400">{t("notifications.empty", "No notifications")}</p>
+            <p className="text-[11px] text-slate-600 mt-1">{t("notifications.emptySubtitle", "You will see your activity here")}</p>
           </div>
         )}
 

@@ -213,7 +213,19 @@
     "actions": {
       "markAll": "Tout marquer comme lu",
       "clearAll": "Tout effacer"
-    }
+    },
+    "tabs": {
+      "unread": "Non lus",
+      "message": "Messages",
+      "payment": "Paiement",
+      "booking": "Réservation",
+      "alert": "Alerte",
+      "system": "Système"
+    },
+    "newCount": "{{count}} nouveau(x)",
+    "empty": "Aucune notification",
+    "emptySubtitle": "Vous verrez votre activité ici",
+    "retry": "Réessayer"
   },
   "jobs": {
     "title": "Emplois",
@@ -682,7 +694,53 @@
       "service_provider_desc": "Je propose mes services"
     },
     "stepOf": "Étape {{cur}} sur {{tot}}",
-    "stepN": "Étape {{step}}"
+    "stepN": "Étape {{step}}",
+    "step0": {
+      "prompt": "Quel type de compte souhaitez-vous créer?",
+      "personal_label": "Compte Personnel",
+      "personal_desc": "Pour les travailleurs individuels, professionnels et consommateurs.",
+      "business_label": "Compte Entreprise",
+      "business_desc": "Pour les entreprises, restaurants, hôtels et autres organisations."
+    },
+    "step1": {
+      "prompt": "Quel rôle allez-vous jouer sur JOBFAST?",
+      "worker_label": "Travailleur",
+      "worker_desc": "Offrir des services professionnels",
+      "client_label": "Client",
+      "client_desc": "Trouver des services et du travail",
+      "tourist_label": "Touriste",
+      "tourist_desc": "Visiteur cherchant des services touristiques",
+      "company_label": "Entreprise",
+      "company_desc": "Entreprise offrant des services",
+      "enterprise_label": "Corporation",
+      "enterprise_desc": "Grande entreprise avec plusieurs services"
+    },
+    "step6": {
+      "prompt": "Téléchargez les documents nécessaires (PDF ou image).",
+      "national_id": "Carte Nationale d'Identité",
+      "passport": "Passeport (optionnel)",
+      "diploma": "Diplôme / Certificat",
+      "license": "Licence Professionnelle",
+      "click_to_choose": "Cliquez pour choisir un fichier"
+    },
+    "step7": {
+      "prompt": "Choisissez vos préférences de communication.",
+      "preferred_language": "Langue Préférée",
+      "lang_ht": "Créole Haïtien",
+      "lang_fr": "Français",
+      "lang_en": "Anglais",
+      "lang_es": "Espagnol",
+      "push_notifications": "Notifications Push",
+      "sms_alerts": "Alertes SMS",
+      "marketing_emails": "E-mails Marketing"
+    },
+    "step9": {
+      "title": "Compte Créé!",
+      "subtitle": "Bienvenue sur JOBFAST. Votre profil est prêt. Vous pouvez commencer à chercher du travail ou offrir des services maintenant.",
+      "account_created": "Compte créé avec succès",
+      "email_sent": "E-mail de confirmation envoyé",
+      "doc_verification": "Vérification des documents en cours (1-24 heures)"
+    }
   },
   "dashboard": {
     "welcome": "BIENVENUE",
@@ -1292,7 +1350,119 @@
       "portfolio": "Portfolio",
       "experience": "Expérience",
       "documents": "Documents",
-      "saved": "Sauvegardés"
+      "saved": "Sauvegardés",
+      "overview": "Accueil",
+      "schedule": "Planning",
+      "income": "Revenus",
+      "trust": "Confiance"
+    },
+    "defaultName": "Travailleur",
+    "heroGreeting": "Bonjour {{name}}",
+    "heroDashboardTitle": "Tableau de bord Travailleur JOBFAST",
+    "heroSubtitle": "L'IA vous aide à trouver les meilleurs emplois, augmenter vos revenus et bâtir la confiance avec les clients.",
+    "aiScore": "Score IA : {{score}}/100",
+    "profilePct": "Profil : {{pct}}%",
+    "todayRevenue": "Revenus aujourd'hui : ${{amount}}",
+    "nearbyJobsLabel": "Emplois à proximité : {{count}}",
+    "trustLevel": "Niveau de confiance",
+    "profileComplete": "Profil complet",
+    "today": "Aujourd'hui",
+    "nearbyJobs": "Emplois à proximité",
+    "trustLabel": "Confiance",
+    "currentStatus": "Votre statut actuel",
+    "profileCompleteness": "Complétude du profil",
+    "completenessLevel": "Niveau de complétude",
+    "toImprove": "À améliorer",
+    "skillPlaceholder": "Tapez une compétence, appuyez sur +",
+    "portfolioTitle": "Portfolio — Photos de travail",
+    "noWorkPhotos": "Aucune photo de travail pour l'instant",
+    "addPhotosHint": "Ajoutez des photos pour attirer plus de clients",
+    "workPhotoAlt": "Travail {{n}}",
+    "professionalExp": "Expérience Professionnelle",
+    "yearsExp": "Années d'expérience",
+    "trade": "Métier",
+    "category": "Catégorie",
+    "accountType": "Compte",
+    "memberSince": "Membre depuis",
+    "verification": "Vérification",
+    "verif": {
+      "email": "Email",
+      "phone": "Téléphone",
+      "identity": "Identité",
+      "documents": "Documents"
+    },
+    "isVerified": "✓ Vérifié",
+    "notVerified": "Non vérifié",
+    "availabilityStatus": "Statut de disponibilité",
+    "gpsLocation": "Localisation GPS",
+    "currentCity": "Ville actuelle",
+    "lastUpdate": "Dernière mise à jour",
+    "serviceRadius": "Rayon de service",
+    "availableJobs": "Emplois disponibles",
+    "noJobsAvailable": "Aucun emploi disponible pour l'instant",
+    "job": "Emploi",
+    "incomeEstimate": "Estimation des revenus",
+    "incomeEstimateNote": "✱ Estimation — sera mise à jour avec de vraies données.",
+    "income": {
+      "total": "Total",
+      "thisMonth": "Ce mois",
+      "thisWeek": "Cette semaine",
+      "totalCompleted": "Total complété",
+      "successRate": "Taux de succès",
+      "avgRating": "Note moyenne",
+      "complaints": "Réclamations"
+    },
+    "completedJobs": "Travaux complétés",
+    "jobHistory": "Historique des travaux",
+    "noJobHistory": "Aucun historique de travaux pour l'instant",
+    "ratings": "Évaluations",
+    "ratingsCount": "{{count}} avis • 0 réclamation",
+    "ratingsFirstJob": "Les évaluations apparaîtront après votre premier travail.",
+    "trust": {
+      "excellent": "Excellent — Vous êtes parmi les meilleurs !",
+      "good": "Bon — Continuez à vous améliorer",
+      "start": "Commencez à bâtir votre confiance",
+      "basePoints": "Points de base",
+      "pointDetails": "Détail des points",
+      "viewAll": "Voir tout",
+      "viewAllNotif": "Voir toutes les notifications →"
+    },
+    "notif": {
+      "newJob": "Nouvel emploi disponible près de vous",
+      "profileVisible": "Votre profil apparaît dans les recherches",
+      "completeProfile": "Complétez votre profil pour plus de visibilité",
+      "now": "Maintenant",
+      "fiveMin": "5 min",
+      "oneHr": "1 hr"
+    },
+    "gps": {
+      "notAvailable": "GPS non disponible sur cet appareil",
+      "permissionDenied": "Impossible de trouver la position — autorisez le GPS",
+      "acquiring": "Localisation...",
+      "update": "Mettre à jour",
+      "locationUpdated": "✓ Localisation mise à jour",
+      "locationError": "Erreur de mise à jour de la localisation"
+    },
+    "avail": {
+      "available": "Disponible",
+      "availableDesc": "Disponible pour travailler à tout moment",
+      "busy": "Occupé",
+      "busyDesc": "En cours de travail, limité",
+      "looking": "Cherche du travail",
+      "lookingDesc": "Recherche active d'opportunités",
+      "vacation": "Vacances",
+      "vacationDesc": "En vacances — non disponible"
+    },
+    "completeness": {
+      "addName": "Ajoutez votre nom complet",
+      "verifyEmail": "Email vérifié",
+      "addPhone": "Ajoutez votre numéro de téléphone",
+      "addBio": "Rédigez une bio pour votre profil",
+      "chooseProfession": "Choisissez un métier",
+      "addLocation": "Ajoutez votre localisation",
+      "addSkills": "Ajoutez vos compétences",
+      "addWorkPhotos": "Ajoutez des photos de travail",
+      "addExperience": "Précisez votre expérience"
     }
   },
   "provider": {
@@ -1386,5 +1556,191 @@
     "createCompany":     "Créer une Entreprise",
     "createBranch":      "Ajouter une Succursale",
     "createInvoice":     "Créer une Facture"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "saving": "Enregistrement...",
+    "saved": "✓ Enregistré",
+    "loading": "Chargement des paramètres...",
+    "sections": {
+      "general": "Général", "account": "Compte", "privacy": "Confidentialité",
+      "security": "Sécurité", "password": "Mot de passe", "devices": "Appareils",
+      "notifications": "Notifications", "languages": "Langue", "theme": "Thème",
+      "accessibility": "Accessibilité", "storage": "Stockage", "downloads": "Téléchargements",
+      "help": "Aide", "about": "À propos", "developer": "Développeur"
+    },
+    "general": { "title": "Paramètres Généraux", "timezone": "Fuseau horaire", "dateFormat": "Format de date", "currency": "Devise" },
+    "notifications": {
+      "title": "Notifications", "emailSection": "Email", "jobs": "Emplois",
+      "payments": "Paiements", "marketing": "Promotions", "pushSection": "Notifications Push",
+      "enablePush": "Activer push", "messages": "Messages", "smsSection": "SMS", "enableSms": "Activer SMS"
+    },
+    "languages": { "title": "Langue de l'Application" },
+    "theme": { "title": "Thème", "light": "Clair", "dark": "Sombre", "system": "Système" },
+    "accessibility": {
+      "title": "Accessibilité", "fontSize": "Taille du texte", "highContrast": "Contraste élevé",
+      "reduceMotion": "Réduire l'animation", "screenReader": "Lecteur d'écran"
+    },
+    "storage": {
+      "title": "Stockage local", "keys": "Clés", "size": "Taille",
+      "clearBtn": "Vider le cache (conserver la session)"
+    },
+    "downloads": {
+      "title": "Téléchargements", "desc": "Gérez les fichiers téléchargés dans l'application.",
+      "soon": "Cette fonctionnalité sera disponible dans une prochaine version."
+    },
+    "help": {
+      "title": "Aide et Support", "email": "support@jobfasthq.com",
+      "faq": [
+        { "q": "Comment trouver un emploi?", "a": "Allez dans Rechercher → Emplois et filtrez par catégorie ou lieu." },
+        { "q": "Comment envoyer de l'argent?", "a": "Allez dans Portefeuille → Transférer et entrez l'ID du destinataire." },
+        { "q": "Comment contacter le support?", "a": "Email: support@jobfasthq.com ou utilisez le chat dans l'app." },
+        { "q": "Comment changer la langue?", "a": "Paramètres → Langue → Choisissez votre langue." }
+      ]
+    },
+    "about": {
+      "title": "À propos de JOBFAST", "version": "Version", "platform": "Plateforme",
+      "website": "Site web", "email": "Email", "copyright": "© 2025 JOBFAST. Tous droits réservés."
+    },
+    "developer": {
+      "title": "Outils Développeur", "apiUrl": "API URL", "environment": "Environnement",
+      "build": "Build", "debugBtn": "Écrire debug dans la console", "debugAlert": "Console ouverte — voir devtools"
+    },
+    "account": { "title": "Compte Utilisateur", "name": "Nom", "email": "Email", "role": "Rôle", "id": "ID" },
+    "privacy": {
+      "title": "Confidentialité", "publicProfile": "Profil public", "showEmail": "Afficher l'email",
+      "showPhone": "Afficher le téléphone", "showLocation": "Afficher la localisation",
+      "messaging": "Qui peut vous envoyer des messages?", "dataSharing": "Partage de données"
+    },
+    "security": { "title": "Sécurité", "sessions": "Sessions actives", "revoke": "Révoquer", "loading": "Chargement..." },
+    "password": {
+      "title": "Changer le Mot de passe", "current": "Mot de passe actuel", "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le mot de passe", "submit": "Changer", "submitting": "Changement...",
+      "success": "Mot de passe changé!", "error": "Erreur. Veuillez réessayer."
+    },
+    "devices": { "title": "Appareils Connectés", "revoke": "Déconnecter" }
+  },
+  "company": {
+    "hero": {
+      "badge": "JOBFAST Enterprise • Rapport CEO IA",
+      "greeting": "Bonjour {{name}} 👋",
+      "subtitle": "Bienvenue sur JOBFAST Enterprise — {{name}}. Score de confiance {{trustScore}}% • Commandement IA mondial.",
+      "weatherMarket": "IA Météo et Marché",
+      "economicIndex": "Indice économique: {{index}}",
+      "currencyBase": "Devise de base: {{currency}}",
+      "companyGoal": "Objectif de l'Entreprise",
+      "todaysTargets": "Objectifs du jour",
+      "aiSuggestions": "Suggestions IA"
+    },
+    "kpi": {
+      "title": "Centre KPI Entreprise",
+      "employeesOnline": "Employés en Ligne",
+      "activeProjects": "Projets Actifs",
+      "revenueToday": "Revenus Aujourd'hui",
+      "businessStatus": "Statut de l'Entreprise",
+      "revenue": "Chiffre d'affaires",
+      "netProfit": "Bénéfice Net",
+      "grossProfit": "Bénéfice Brut",
+      "cashflow": "Flux de Trésorerie",
+      "burnRate": "Taux de Dépense",
+      "employees": "Employés",
+      "contracts": "Contrats",
+      "payroll": "Masse Salariale",
+      "customerSatisfaction": "Satisfaction Client",
+      "workerSatisfaction": "Satisfaction Travailleur",
+      "latePayments": "Paiements en Retard",
+      "productivityIndex": "Indice de Productivité",
+      "attendance": "Présence",
+      "hiringSuccessRate": "Taux de Succès Recrutement",
+      "aiRiskScore": "Score de Risque IA",
+      "globalRank": "Classement Mondial"
+    },
+    "analytics": {
+      "title": "Analytique et Intelligence Métier",
+      "heatmaps": "Cartes de Chaleur et Comparaison par Pays",
+      "heatmapsDesc": "Comparaison pays et branches, meilleurs services/employeurs/travailleurs, tendances du marché.",
+      "revenue": "Revenus • Trésorerie • Salaires",
+      "revenueDesc": "Chronologie des revenus, évolution des salaires, score de confiance, comparaisons mensuelles/annuelles et graphiques de prévision.",
+      "hiring": "Recrutement et Entonnoirs de Conversion",
+      "hiringDesc": "Entonnoir de recrutement, conversion, croissance des employés, retards de paiement, suggestions IA sur la performance."
+    },
+    "notifications": {
+      "title": "Centre de Notifications",
+      "empty": "Aucune notification — l'IA affichera ici les alertes de sécurité, paiements, GPS et système.",
+      "markRead": "Marquer comme lu",
+      "priority": "Priorité",
+      "newApplicant": "Nouveau candidat",
+      "newApplicantMsg": "Nouveau candidat pour l'emploi {{job}}"
+    },
+    "ai": {
+      "title": "Assistant IA Entreprise",
+      "greeting": "Bonjour {{name}}. Aujourd'hui votre entreprise a:",
+      "newApplicants": "{{count}} nouveaux candidats",
+      "projectsDelayed": "{{count}} projets en retard",
+      "revenueChanged": "Revenus modifiés de {{delta}}",
+      "employeesAbsent": "{{count}} employés absents",
+      "recommendation": "Recommandation: {{text}}",
+      "decisionEngine": "Moteur de Décision IA"
+    },
+    "wallet": {
+      "title": "Portefeuille • Centre Finance",
+      "balance": "Solde",
+      "escrow": "Séquestre",
+      "pending": "En attente",
+      "released": "Libéré",
+      "desc": "Modules portefeuille: Retrait, Cartes, Crypto, Factures, Taxes, Salaires — IU prêt à connecter aux APIs financières."
+    },
+    "search": {
+      "placeholder": "Rechercher employés, projets, factures, emplois, entreprises, clients, paiements, chats, branches, commandes IA…",
+      "enter": "Chercher"
+    },
+    "commandBar": {
+      "aiVoice": "Voix IA",
+      "notifications": "Notifications",
+      "messages": "Messages",
+      "wallet": "Portefeuille",
+      "calendar": "Calendrier",
+      "today": "aujourd'hui",
+      "revenueToday": "Revenus aujourd'hui: ${{amount}}"
+    },
+    "actions": {
+      "createJob": "Créer un Emploi",
+      "payEmployee": "Payer un Employé",
+      "openChat": "Ouvrir le Chat",
+      "generateInvoice": "Générer une Facture",
+      "addBranch": "Ajouter une Branche",
+      "viewAnalytics": "Voir l'Analytique",
+      "scheduleInterview": "Planifier un Entretien",
+      "launchAI": "Lancer l'IA"
+    },
+    "tabs": {
+      "overview": "Vue d'ensemble",
+      "employees": "Employés",
+      "hiring": "Recrutement",
+      "projects": "Projets",
+      "branches": "Branches",
+      "analytics": "Analytique"
+    },
+    "tabContent": {
+      "overview": "Métriques et orientation.",
+      "employees": "Gestion des employés.",
+      "hiring": "Centre de Recrutement.",
+      "projects": "Gestion des Projets.",
+      "branches": "Carte des Branches.",
+      "analytics": "Intelligence Métier."
+    },
+    "commandCenter": {
+      "title": "Centre de Commandement IA",
+      "close": "Fermer",
+      "desc": "Générer Rapport • Prévoir Revenus • Optimiser Recrutement • Optimiser Salaires • Trouver Travailleurs • Analyser Marché • Générer Contrats • Analyser Risque Entreprise.",
+      "workspace": "Espace de travail IA",
+      "button": "CENTRE DE COMMANDEMENT IA"
+    },
+    "jobStatus": {
+      "open": "Ouvert",
+      "in_progress": "En cours",
+      "closed": "Fermé",
+      "cancelled": "Annulé"
+    }
   }
 }

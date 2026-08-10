@@ -10,6 +10,7 @@ import {
   Calendar, Wallet, Sparkles, Globe2, LineChart, Users, BarChart3,
   FileText, MapPin, Activity, Cpu, ShieldCheck, Command,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import API from "../../api/axios";
 
@@ -46,10 +47,10 @@ interface RuntimeState {
 interface JobStatus { id: string; label: string; color: string; bg: string }
 
 const JOB_STATUSES: JobStatus[] = [
-  { id: "open",       label: "Open",       color: "text-emerald-300", bg: "bg-emerald-900/60" },
-  { id: "in_progress",label: "In Progress",color: "text-sky-300",     bg: "bg-sky-900/60"     },
-  { id: "closed",     label: "Closed",     color: "text-slate-300",   bg: "bg-slate-900/60"   },
-  { id: "cancelled",  label: "Cancelled",  color: "text-rose-300",    bg: "bg-rose-900/60"    },
+  { id: "open",        label: "open",        color: "text-emerald-300", bg: "bg-emerald-900/60" },
+  { id: "in_progress", label: "in_progress", color: "text-sky-300",     bg: "bg-sky-900/60"     },
+  { id: "closed",      label: "closed",      color: "text-slate-300",   bg: "bg-slate-900/60"   },
+  { id: "cancelled",   label: "cancelled",   color: "text-rose-300",    bg: "bg-rose-900/60"    },
 ];
 
 // ---- ROLE / PERMISSIONS ----------------------------------------------------
@@ -292,11 +293,15 @@ const AnimatedKPI = memo(function AnimatedKPI({
 interface StatusBadgeProps { status: string }
 
 function StatusBadge({ status }: StatusBadgeProps) {
+  const { t } = useTranslation();
   const s = JOB_STATUSES.find((j) => j.id === status)
     ?? { label: status, color: "text-slate-200", bg: "bg-slate-900/60" };
+  const label = s.label === status
+    ? status
+    : t(`company.jobStatus.${s.label}`, s.label);
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color} ${s.bg} border border-white/10`}>
-      {s.label}
+      {label}
     </span>
   );
 }
@@ -327,6 +332,7 @@ interface HeroDashboardPremiumProps { user: UserRecord; runtimeState: RuntimeSta
 const HeroDashboardPremium = memo(function HeroDashboardPremium({
   user, runtimeState,
 }: HeroDashboardPremiumProps) {
+  const { t } = useTranslation();
   const trustScore = computeCompanyTrustScore(user);
   const cd         = (user?.["companyData"] as Record<string, unknown>) ?? {};
   const profile    = cd["profile"] as { name?: string } | undefined;
@@ -364,33 +370,33 @@ const HeroDashboardPremium = memo(function HeroDashboardPremium({
         <div className="flex flex-col gap-3 min-w-0 lg:flex-1">
           <div className="flex items-center gap-2 text-[11px] text-slate-200">
             <Sparkles className="w-4 h-4 text-cyan-400" />
-            <span>JOBFAST Enterprise • AI CEO Briefing</span>
+            <span>{t("company.hero.badge", "JOBFAST Enterprise • AI CEO Briefing")}</span>
           </div>
           <h1 className="text-xl lg:text-2xl font-semibold tracking-tight">
-            Good morning {greetingName} 👋
+            {t("company.hero.greeting", { name: greetingName, defaultValue: "Good morning {{name}} 👋" })}
           </h1>
           <p className="text-[12px] text-slate-200">
-            Welcome back to JOBFAST Enterprise — {name}. Trust Score {trustScore}% • Global AI business command.
+            {t("company.hero.subtitle", { name, trustScore, defaultValue: "Welcome back to JOBFAST Enterprise — {{name}}. Trust Score {{trustScore}}% • Global AI business command." })}
           </p>
 
           <div className="mt-2 grid grid-cols-1 lg:grid-cols-3 gap-2">
             <div className="rounded-xl bg-black/45 border border-white/10 backdrop-blur-xl p-3">
-              <p className="text-[10px] text-slate-200 font-semibold mb-1">AI Weather & Market</p>
+              <p className="text-[10px] text-slate-200 font-semibold mb-1">{t("company.hero.weatherMarket", "AI Weather & Market")}</p>
               <p className="text-[10px] text-slate-100">{weather.city} • {weather.temp}°C • {weather.label}</p>
               <p className="text-[10px] text-sky-300 mt-1">{marketTrend}</p>
-              <p className="text-[10px] text-slate-300 mt-1">Economic index: {economicIndex}</p>
-              <p className="text-[10px] text-slate-300 mt-1">Currency base: {currency}</p>
+              <p className="text-[10px] text-slate-300 mt-1">{t("company.hero.economicIndex", { index: economicIndex, defaultValue: "Economic index: {{index}}" })}</p>
+              <p className="text-[10px] text-slate-300 mt-1">{t("company.hero.currencyBase", { currency, defaultValue: "Currency base: {{currency}}" })}</p>
             </div>
             <div className="rounded-xl bg-black/45 border border-white/10 backdrop-blur-xl p-3">
-              <p className="text-[10px] text-slate-200 font-semibold mb-1">Company Goal</p>
+              <p className="text-[10px] text-slate-200 font-semibold mb-1">{t("company.hero.companyGoal", "Company Goal")}</p>
               <p className="text-[10px] text-slate-100">{goal}</p>
-              <p className="text-[10px] text-slate-200 font-semibold mt-2">Today's targets</p>
+              <p className="text-[10px] text-slate-200 font-semibold mt-2">{t("company.hero.todaysTargets", "Today's targets")}</p>
               <ul className="text-[10px] text-slate-100 space-y-1 mt-1">
-                {todaysTargets.map((t) => <li key={t}>• {t}</li>)}
+                {todaysTargets.map((target) => <li key={target}>• {target}</li>)}
               </ul>
             </div>
             <div className="rounded-xl bg-black/45 border border-white/10 backdrop-blur-xl p-3">
-              <p className="text-[10px] text-slate-200 font-semibold mb-1">AI Suggestions</p>
+              <p className="text-[10px] text-slate-200 font-semibold mb-1">{t("company.hero.aiSuggestions", "AI Suggestions")}</p>
               <ul className="text-[10px] text-emerald-300 space-y-1">
                 {computeAIBriefing(user, runtimeState).map((line) => <li key={line}>• {line}</li>)}
               </ul>
@@ -399,10 +405,10 @@ const HeroDashboardPremium = memo(function HeroDashboardPremium({
         </div>
 
         <div className="grid grid-cols-2 gap-3 lg:w-[320px] lg:flex-none">
-          <AnimatedKPI label="Employees Online" value={onlineEmployees} accent="from-emerald-400/70 via-emerald-500/60 to-cyan-400/70" />
-          <AnimatedKPI label="Active Projects"  value={activeProjects}  accent="from-indigo-400/70 via-sky-500/60 to-purple-500/70" />
-          <AnimatedKPI label="Revenue Today"    value={revenueToday}    prefix="$" accent="from-amber-400/80 via-orange-500/70 to-rose-500/70" />
-          <AnimatedKPI label="Business Status"  value={(cd["statusLabel"] as string | undefined) ?? "Healthy"} accent="from-cyan-400/70 via-blue-500/70 to-emerald-500/70" />
+          <AnimatedKPI label={t("company.kpi.employeesOnline", "Employees Online")} value={onlineEmployees} accent="from-emerald-400/70 via-emerald-500/60 to-cyan-400/70" />
+          <AnimatedKPI label={t("company.kpi.activeProjects", "Active Projects")}   value={activeProjects}  accent="from-indigo-400/70 via-sky-500/60 to-purple-500/70" />
+          <AnimatedKPI label={t("company.kpi.revenueToday", "Revenue Today")}       value={revenueToday}    prefix="$" accent="from-amber-400/80 via-orange-500/70 to-rose-500/70" />
+          <AnimatedKPI label={t("company.kpi.businessStatus", "Business Status")}   value={(cd["statusLabel"] as string | undefined) ?? "Healthy"} accent="from-cyan-400/70 via-blue-500/70 to-emerald-500/70" />
         </div>
       </div>
     </div>
@@ -414,6 +420,7 @@ const HeroDashboardPremium = memo(function HeroDashboardPremium({
 interface KPICenterProps { user: UserRecord; runtimeState: RuntimeState }
 
 const EnterpriseKPICenter = memo(function EnterpriseKPICenter({ user, runtimeState }: KPICenterProps) {
+  const { t } = useTranslation();
   const cd = (user?.["companyData"] as Record<string, unknown>) ?? {};
   const employees = (cd["employees"] as unknown[] | undefined) ?? [];
   const jobs      = (cd["jobs"]      as unknown[] | undefined) ?? [];
@@ -441,24 +448,24 @@ const EnterpriseKPICenter = memo(function EnterpriseKPICenter({ user, runtimeSta
   };
 
   return (
-    <GlassSection icon={<LineChart className="w-4 h-4 text-cyan-400" />} title="Enterprise KPI Center" className="mb-6">
+    <GlassSection icon={<LineChart className="w-4 h-4 text-cyan-400" />} title={t("company.kpi.title", "Enterprise KPI Center")} className="mb-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <AnimatedKPI label="Revenue"             value={kpi.revenue}             prefix="$" accent="from-emerald-400 to-emerald-600" />
-        <AnimatedKPI label="Net Profit"          value={kpi.profit}              prefix="$" accent="from-indigo-400 to-indigo-600" />
-        <AnimatedKPI label="Gross Profit"        value={kpi.grossProfit}         prefix="$" accent="from-sky-400 to-sky-600" />
-        <AnimatedKPI label="Cashflow"            value={kpi.cashflow}            prefix="$" accent="from-cyan-400 to-cyan-600" />
-        <AnimatedKPI label="Burn Rate"           value={kpi.burnRate}            prefix="$" accent="from-rose-400 to-rose-600" />
-        <AnimatedKPI label="Employees"           value={kpi.employees}                      accent="from-purple-400 to-purple-600" />
-        <AnimatedKPI label="Contracts"           value={kpi.contracts}                      accent="from-amber-400 to-amber-600" />
-        <AnimatedKPI label="Payroll"             value={kpi.payroll}             prefix="$" accent="from-blue-400 to-blue-600" />
-        <AnimatedKPI label="Customer Satisfaction" value={kpi.customerSatisfaction} suffix="%" accent="from-emerald-400 to-emerald-600" />
-        <AnimatedKPI label="Worker Satisfaction" value={kpi.workerSatisfaction}   suffix="%" accent="from-sky-400 to-sky-600" />
-        <AnimatedKPI label="Late Payments"       value={kpi.latePayments}                   accent="from-rose-400 to-rose-600" />
-        <AnimatedKPI label="Productivity Index"  value={kpi.productivityIndex}    suffix="%" accent="from-indigo-400 to-indigo-600" />
-        <AnimatedKPI label="Attendance"          value={kpi.attendanceRate}       suffix="%" accent="from-amber-400 to-amber-600" />
-        <AnimatedKPI label="Hiring Success Rate" value={kpi.hiringSuccessRate}   suffix="%" accent="from-cyan-400 to-cyan-600" />
-        <AnimatedKPI label="AI Risk Score"       value={kpi.aiRiskScore}                    accent="from-red-400 to-red-600" />
-        <AnimatedKPI label="Global Rank"         value={kpi.globalRank}                     accent="from-purple-400 to-purple-600" />
+        <AnimatedKPI label={t("company.kpi.revenue",               "Revenue")}               value={kpi.revenue}              prefix="$" accent="from-emerald-400 to-emerald-600" />
+        <AnimatedKPI label={t("company.kpi.netProfit",             "Net Profit")}             value={kpi.profit}               prefix="$" accent="from-indigo-400 to-indigo-600" />
+        <AnimatedKPI label={t("company.kpi.grossProfit",           "Gross Profit")}           value={kpi.grossProfit}          prefix="$" accent="from-sky-400 to-sky-600" />
+        <AnimatedKPI label={t("company.kpi.cashflow",              "Cashflow")}               value={kpi.cashflow}             prefix="$" accent="from-cyan-400 to-cyan-600" />
+        <AnimatedKPI label={t("company.kpi.burnRate",              "Burn Rate")}              value={kpi.burnRate}             prefix="$" accent="from-rose-400 to-rose-600" />
+        <AnimatedKPI label={t("company.kpi.employees",             "Employees")}              value={kpi.employees}                       accent="from-purple-400 to-purple-600" />
+        <AnimatedKPI label={t("company.kpi.contracts",             "Contracts")}              value={kpi.contracts}                       accent="from-amber-400 to-amber-600" />
+        <AnimatedKPI label={t("company.kpi.payroll",               "Payroll")}                value={kpi.payroll}              prefix="$" accent="from-blue-400 to-blue-600" />
+        <AnimatedKPI label={t("company.kpi.customerSatisfaction",  "Customer Satisfaction")}  value={kpi.customerSatisfaction} suffix="%" accent="from-emerald-400 to-emerald-600" />
+        <AnimatedKPI label={t("company.kpi.workerSatisfaction",    "Worker Satisfaction")}    value={kpi.workerSatisfaction}   suffix="%" accent="from-sky-400 to-sky-600" />
+        <AnimatedKPI label={t("company.kpi.latePayments",          "Late Payments")}          value={kpi.latePayments}                    accent="from-rose-400 to-rose-600" />
+        <AnimatedKPI label={t("company.kpi.productivityIndex",     "Productivity Index")}     value={kpi.productivityIndex}    suffix="%" accent="from-indigo-400 to-indigo-600" />
+        <AnimatedKPI label={t("company.kpi.attendance",            "Attendance")}             value={kpi.attendanceRate}       suffix="%" accent="from-amber-400 to-amber-600" />
+        <AnimatedKPI label={t("company.kpi.hiringSuccessRate",     "Hiring Success Rate")}    value={kpi.hiringSuccessRate}    suffix="%" accent="from-cyan-400 to-cyan-600" />
+        <AnimatedKPI label={t("company.kpi.aiRiskScore",           "AI Risk Score")}          value={kpi.aiRiskScore}                     accent="from-red-400 to-red-600" />
+        <AnimatedKPI label={t("company.kpi.globalRank",            "Global Rank")}            value={kpi.globalRank}                      accent="from-purple-400 to-purple-600" />
       </div>
     </GlassSection>
   );
@@ -466,30 +473,31 @@ const EnterpriseKPICenter = memo(function EnterpriseKPICenter({ user, runtimeSta
 
 // ---- ANALYTICS SHELL -------------------------------------------------------
 
-const RealAnalyticsShell = memo(function RealAnalyticsShell({ user }: { user: UserRecord }) {
+const RealAnalyticsShell = memo(function RealAnalyticsShell({ user: _user }: { user: UserRecord }) {
+  const { t } = useTranslation();
   return (
-    <GlassSection icon={<BarChart3 className="w-4 h-4 text-cyan-400" />} title="Analytics & Business Intelligence" className="mb-6">
+    <GlassSection icon={<BarChart3 className="w-4 h-4 text-cyan-400" />} title={t("company.analytics.title", "Analytics & Business Intelligence")} className="mb-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="space-y-2">
-          <p className="text-[10px] text-slate-200 font-semibold">Heatmaps & Country Comparison</p>
+          <p className="text-[10px] text-slate-200 font-semibold">{t("company.analytics.heatmaps", "Heatmaps & Country Comparison")}</p>
           <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
             <div className="w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.28),transparent_60%),radial-gradient(circle_at_10%_80%,rgba(248,113,113,0.35),transparent_50%)] animate-[pulse_4s_infinite]" />
           </div>
-          <p className="text-[10px] text-slate-300">Country & branch comparison, top services/employers/workers, market trends.</p>
+          <p className="text-[10px] text-slate-300">{t("company.analytics.heatmapsDesc", "Country & branch comparison, top services/employers/workers, market trends.")}</p>
         </div>
         <div className="space-y-2">
-          <p className="text-[10px] text-slate-200 font-semibold">Revenue • Cashflow • Payroll</p>
+          <p className="text-[10px] text-slate-200 font-semibold">{t("company.analytics.revenue", "Revenue • Cashflow • Payroll")}</p>
           <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
             <div className="w-full h-full bg-[linear-gradient(to_top,rgba(34,197,94,0.35),transparent),linear-gradient(to_right,rgba(59,130,246,0.4),transparent)] animate-[pulse_3s_infinite]" />
           </div>
-          <p className="text-[10px] text-slate-300">Revenue timelines, payroll evolution, trust score, monthly/yearly comparisons & forecast graphs.</p>
+          <p className="text-[10px] text-slate-300">{t("company.analytics.revenueDesc", "Revenue timelines, payroll evolution, trust score, monthly/yearly comparisons & forecast graphs.")}</p>
         </div>
         <div className="space-y-2">
-          <p className="text-[10px] text-slate-200 font-semibold">Hiring & Conversion Funnels</p>
+          <p className="text-[10px] text-slate-200 font-semibold">{t("company.analytics.hiring", "Hiring & Conversion Funnels")}</p>
           <div className="h-32 rounded-xl bg-black/40 border border-white/10 overflow-hidden">
             <div className="w-full h-full bg-[repeating-linear-gradient(90deg,rgba(129,140,248,0.4),rgba(129,140,248,0.4)_6px,transparent_6px,transparent_12px)] animate-[pulse_2.6s_infinite]" />
           </div>
-          <p className="text-[10px] text-slate-300">Hiring funnel, conversion funnel, employee growth, late payments, AI suggestions on performance.</p>
+          <p className="text-[10px] text-slate-300">{t("company.analytics.hiringDesc", "Hiring funnel, conversion funnel, employee growth, late payments, AI suggestions on performance.")}</p>
         </div>
       </div>
     </GlassSection>
@@ -506,10 +514,11 @@ interface NotificationCenterProps {
 const NotificationCenter = memo(function NotificationCenter({
   notifications, onMarkRead,
 }: NotificationCenterProps) {
+  const { t } = useTranslation();
   return (
-    <GlassSection icon={<Bell className="w-4 h-4 text-amber-400" />} title="Notification Center">
+    <GlassSection icon={<Bell className="w-4 h-4 text-amber-400" />} title={t("company.notifications.title", "Notification Center")}>
       {notifications.length === 0 ? (
-        <p className="text-[10px] text-slate-300">No notifications yet — AI will show security, payment, GPS & system alerts here.</p>
+        <p className="text-[10px] text-slate-300">{t("company.notifications.empty", "No notifications yet — AI will show security, payment, GPS & system alerts here.")}</p>
       ) : (
         <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
           {notifications.map((n) => (
@@ -524,11 +533,11 @@ const NotificationCenter = memo(function NotificationCenter({
                   {n.title} • <span className="capitalize">{n.type}</span>
                 </p>
                 <p className="text-[10px] text-slate-300">{n.message}</p>
-                <p className="text-[9px] text-slate-500 mt-1">Priority: {n.priority} • {n.timestamp}</p>
+                <p className="text-[9px] text-slate-500 mt-1">{t("company.notifications.priority", "Priority")}: {n.priority} • {n.timestamp}</p>
               </div>
               {!n.read && (
                 <button type="button" onClick={() => onMarkRead(n.id)} className="text-[9px] text-emerald-300">
-                  Mark read
+                  {t("company.notifications.markRead", "Mark read")}
                 </button>
               )}
             </div>
@@ -544,6 +553,7 @@ const NotificationCenter = memo(function NotificationCenter({
 const AIEnterpriseAssistant = memo(function AIEnterpriseAssistant({
   user, runtimeState,
 }: { user: UserRecord; runtimeState: RuntimeState }) {
+  const { t } = useTranslation();
   const cd      = (user?.["companyData"] as Record<string, unknown>) ?? {};
   const summary = runtimeState.aiSummary ?? {
     applicantsToday: (cd["applicantsToday"] as number | undefined) ?? 17,
@@ -556,16 +566,20 @@ const AIEnterpriseAssistant = memo(function AIEnterpriseAssistant({
     ?? (user?.["name"] as string | undefined) ?? "CEO";
 
   return (
-    <GlassSection icon={<Cpu className="w-4 h-4 text-cyan-400" />} title="AI Enterprise Assistant">
-      <p className="text-[11px] text-slate-200 mb-2">Good morning {greeting}.  Today your company has:</p>
+    <GlassSection icon={<Cpu className="w-4 h-4 text-cyan-400" />} title={t("company.ai.title", "AI Enterprise Assistant")}>
+      <p className="text-[11px] text-slate-200 mb-2">
+        {t("company.ai.greeting", { name: greeting, defaultValue: "Good morning {{name}}. Today your company has:" })}
+      </p>
       <ul className="text-[10px] text-slate-100 space-y-1 mb-2">
-        <li>• {summary.applicantsToday} new applicants</li>
-        <li>• {summary.projectsDelayed} projects delayed</li>
-        <li>• Revenue changed by {summary.revenueDelta}</li>
-        <li>• {summary.employeesAbsent} employees absent</li>
+        <li>• {t("company.ai.newApplicants",   { count: summary.applicantsToday, defaultValue: "{{count}} new applicants" })}</li>
+        <li>• {t("company.ai.projectsDelayed", { count: summary.projectsDelayed, defaultValue: "{{count}} projects delayed" })}</li>
+        <li>• {t("company.ai.revenueChanged",  { delta: summary.revenueDelta,    defaultValue: "Revenue changed by {{delta}}" })}</li>
+        <li>• {t("company.ai.employeesAbsent", { count: summary.employeesAbsent, defaultValue: "{{count}} employees absent" })}</li>
       </ul>
-      <p className="text-[10px] text-emerald-300 mb-2">Recommendation: {summary.recommendation}</p>
-      <p className="text-[10px] text-slate-200 font-semibold mb-1">AI Decision Engine</p>
+      <p className="text-[10px] text-emerald-300 mb-2">
+        {t("company.ai.recommendation", { text: summary.recommendation, defaultValue: "Recommendation: {{text}}" })}
+      </p>
+      <p className="text-[10px] text-slate-200 font-semibold mb-1">{t("company.ai.decisionEngine", "AI Decision Engine")}</p>
       <ul className="text-[10px] text-sky-300 space-y-1">
         {computeAIBriefing(user, runtimeState).map((line) => <li key={line}>• {line}</li>)}
       </ul>
@@ -576,6 +590,7 @@ const AIEnterpriseAssistant = memo(function AIEnterpriseAssistant({
 // ---- WALLET CENTER ---------------------------------------------------------
 
 const WalletCenter = memo(function WalletCenter({ user }: { user: UserRecord }) {
+  const { t } = useTranslation();
   const cd = (user?.["companyData"] as Record<string, unknown>) ?? {};
   const wallet = (cd["wallet"] as Record<string, unknown>) ?? {
     balance:  (cd["walletBalance"] as number | undefined) ?? 0,
@@ -585,15 +600,15 @@ const WalletCenter = memo(function WalletCenter({ user }: { user: UserRecord }) 
   };
 
   return (
-    <GlassSection icon={<Wallet className="w-4 h-4 text-emerald-400" />} title="Wallet • Finance Center">
+    <GlassSection icon={<Wallet className="w-4 h-4 text-emerald-400" />} title={t("company.wallet.title", "Wallet • Finance Center")}>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-        <AnimatedKPI label="Balance"  value={wallet["balance"]  as number} prefix="$" accent="from-emerald-400 to-emerald-600" />
-        <AnimatedKPI label="Escrow"   value={wallet["escrow"]   as number} prefix="$" accent="from-indigo-400 to-indigo-600" />
-        <AnimatedKPI label="Pending"  value={wallet["pending"]  as number} prefix="$" accent="from-amber-400 to-amber-600" />
-        <AnimatedKPI label="Released" value={wallet["released"] as number} prefix="$" accent="from-sky-400 to-sky-600" />
+        <AnimatedKPI label={t("company.wallet.balance",  "Balance")}  value={wallet["balance"]  as number} prefix="$" accent="from-emerald-400 to-emerald-600" />
+        <AnimatedKPI label={t("company.wallet.escrow",   "Escrow")}   value={wallet["escrow"]   as number} prefix="$" accent="from-indigo-400 to-indigo-600" />
+        <AnimatedKPI label={t("company.wallet.pending",  "Pending")}  value={wallet["pending"]  as number} prefix="$" accent="from-amber-400 to-amber-600" />
+        <AnimatedKPI label={t("company.wallet.released", "Released")} value={wallet["released"] as number} prefix="$" accent="from-sky-400 to-sky-600" />
       </div>
       <p className="text-[10px] text-slate-300">
-        Wallet modules: Withdraw, Cards, Crypto, Invoices, Taxes, Payroll — UI ready to plug into finance APIs.
+        {t("company.wallet.desc", "Wallet modules: Withdraw, Cards, Crypto, Invoices, Taxes, Payroll — UI ready to plug into finance APIs.")}
       </p>
     </GlassSection>
   );
@@ -604,6 +619,7 @@ const WalletCenter = memo(function WalletCenter({ user }: { user: UserRecord }) 
 const EnterpriseSearchBar = memo(function EnterpriseSearchBar({
   onSearch,
 }: { onSearch?: (q: string) => void }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -620,10 +636,10 @@ const EnterpriseSearchBar = memo(function EnterpriseSearchBar({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search employees, projects, invoices, jobs, companies, clients, payments, chats, branches, AI commands…"
+        placeholder={t("company.search.placeholder", "Search employees, projects, invoices, jobs, companies, clients, payments, chats, branches, AI commands…")}
         className="bg-transparent text-[11px] text-white placeholder-slate-400 outline-none w-48 lg:w-64"
       />
-      <button type="submit" className="text-[10px] text-cyan-300">Enter</button>
+      <button type="submit" className="text-[10px] text-cyan-300">{t("company.search.enter", "Enter")}</button>
     </form>
   );
 });
@@ -633,15 +649,16 @@ const EnterpriseSearchBar = memo(function EnterpriseSearchBar({
 const QuickActionsBar = memo(function QuickActionsBar({
   onAction,
 }: { onAction?: (id: string) => void }) {
+  const { t } = useTranslation();
   const actions = [
-    { id: "createJob",          label: "Create Job" },
-    { id: "payEmployee",        label: "Pay Employee" },
-    { id: "openChat",           label: "Open Chat" },
-    { id: "generateInvoice",    label: "Generate Invoice" },
-    { id: "addBranch",          label: "Add Branch" },
-    { id: "viewAnalytics",      label: "View Analytics" },
-    { id: "scheduleInterview",  label: "Schedule Interview" },
-    { id: "launchAI",           label: "Launch AI" },
+    { id: "createJob",         label: t("company.actions.createJob",         "Create Job") },
+    { id: "payEmployee",       label: t("company.actions.payEmployee",       "Pay Employee") },
+    { id: "openChat",          label: t("company.actions.openChat",          "Open Chat") },
+    { id: "generateInvoice",   label: t("company.actions.generateInvoice",   "Generate Invoice") },
+    { id: "addBranch",         label: t("company.actions.addBranch",         "Add Branch") },
+    { id: "viewAnalytics",     label: t("company.actions.viewAnalytics",     "View Analytics") },
+    { id: "scheduleInterview", label: t("company.actions.scheduleInterview", "Schedule Interview") },
+    { id: "launchAI",          label: t("company.actions.launchAI",          "Launch AI") },
   ];
 
   return (
@@ -673,23 +690,24 @@ interface CommandBarProps {
 const CommandBar = memo(function CommandBar({
   user, notificationsCount, messagesCount, onSearch, onQuickAction,
 }: CommandBarProps) {
+  const { t } = useTranslation();
   const cd            = (user?.["companyData"] as Record<string, unknown>) ?? {};
-  const revenueToday  = (cd["revenueToday"]         as number | undefined) ?? 0;
-  const walletBalance = (cd["walletBalance"]         as number | undefined) ?? 0;
-  const calendarEvents= (cd["calendarEventsToday"]  as number | undefined) ?? 0;
+  const revenueToday  = (cd["revenueToday"]        as number | undefined) ?? 0;
+  const walletBalance = (cd["walletBalance"]        as number | undefined) ?? 0;
+  const calendarEvents= (cd["calendarEventsToday"] as number | undefined) ?? 0;
 
   return (
     <div className="mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
       <div className="flex items-center gap-2">
         <EnterpriseSearchBar onSearch={onSearch} />
         <button type="button" className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
-          <Mic className="w-3 h-3 text-cyan-400" /> <span>AI Voice</span>
+          <Mic className="w-3 h-3 text-cyan-400" /> <span>{t("company.commandBar.aiVoice", "AI Voice")}</span>
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="relative px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
-          <Bell className="w-3 h-3 text-amber-400" /> <span>Notifications</span>
+          <Bell className="w-3 h-3 text-amber-400" /> <span>{t("company.commandBar.notifications", "Notifications")}</span>
           {notificationsCount > 0 && (
             <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500 text-[9px] text-white">
               {notificationsCount}
@@ -697,7 +715,7 @@ const CommandBar = memo(function CommandBar({
           )}
         </button>
         <button type="button" className="relative px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
-          <MessageCircle className="w-3 h-3 text-sky-400" /> <span>Messages</span>
+          <MessageCircle className="w-3 h-3 text-sky-400" /> <span>{t("company.commandBar.messages", "Messages")}</span>
           {messagesCount > 0 && (
             <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-indigo-500 text-[9px] text-white">
               {messagesCount}
@@ -705,19 +723,19 @@ const CommandBar = memo(function CommandBar({
           )}
         </button>
         <button type="button" className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
-          <Wallet className="w-3 h-3 text-emerald-400" /> <span>Wallet</span>
+          <Wallet className="w-3 h-3 text-emerald-400" /> <span>{t("company.commandBar.wallet", "Wallet")}</span>
           <span className="text-[10px] text-emerald-300 ml-1">${walletBalance}</span>
         </button>
         <button type="button" className="px-2 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl flex items-center gap-1 text-[10px] text-slate-200">
-          <Calendar className="w-3 h-3 text-slate-200" /> <span>Calendar</span>
-          {calendarEvents > 0 && <span className="text-[9px] text-slate-300 ml-1">{calendarEvents} today</span>}
+          <Calendar className="w-3 h-3 text-slate-200" /> <span>{t("company.commandBar.calendar", "Calendar")}</span>
+          {calendarEvents > 0 && <span className="text-[9px] text-slate-300 ml-1">{calendarEvents} {t("company.commandBar.today", "today")}</span>}
         </button>
         <QuickActionsBar onAction={onQuickAction} />
       </div>
 
       <div className="flex items-center gap-2 text-[10px] text-slate-300">
         <Activity className="w-3 h-3 text-emerald-400" />
-        <span>Revenue today: ${revenueToday}</span>
+        <span>{t("company.commandBar.revenueToday", { amount: revenueToday, defaultValue: "Revenue today: ${{amount}}" })}</span>
       </div>
     </div>
   );
@@ -728,6 +746,7 @@ const CommandBar = memo(function CommandBar({
 const AICommandCenterButton = memo(function AICommandCenterButton({
   onOpen,
 }: { onOpen: () => void }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -735,7 +754,7 @@ const AICommandCenterButton = memo(function AICommandCenterButton({
       className="fixed bottom-4 right-4 z-40 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-indigo-500 text-white text-[11px] font-semibold shadow-[0_18px_45px_rgba(15,23,42,0.95)] flex items-center gap-2"
     >
       <Command className="w-4 h-4" />
-      AI COMMAND CENTER
+      {t("company.commandCenter.button", "AI COMMAND CENTER")}
     </button>
   );
 });
@@ -749,7 +768,8 @@ interface CompanyDashboardProps {
   tab?: string;
 }
 
-export default function CompanyDashboard({ user, tab }: CompanyDashboardProps) {
+export default function CompanyDashboard({ user, tab: _tab }: CompanyDashboardProps) {
+  const { t } = useTranslation();
   const [activeTab,      setActiveTab]      = useState("overview");
   const [notifications,  setNotifications]  = useState<NotificationData[]>([]);
   const [messagesCount,  setMessagesCount]  = useState(0);
@@ -762,9 +782,9 @@ export default function CompanyDashboard({ user, tab }: CompanyDashboardProps) {
     if (key === "applicants") {
       setNotifications((prev) => [{
         id:        `notif_${Date.now()}`,
-        title:     "New applicant",
+        title:     t("company.notifications.newApplicant", "New applicant"),
         type:      "ai_alert",
-        message:   `New applicant for job ${(data["jobTitle"] as string | undefined) ?? ""}`,
+        message:   t("company.notifications.newApplicantMsg", { job: (data["jobTitle"] as string | undefined) ?? "", defaultValue: "New applicant for job {{job}}" }),
         priority:  "medium",
         timestamp: new Date().toLocaleTimeString(),
         read:      false,
@@ -833,24 +853,24 @@ export default function CompanyDashboard({ user, tab }: CompanyDashboardProps) {
                   : "bg-black/40 border-white/10 text-slate-300"
               } backdrop-blur-xl flex items-center gap-1`}
             >
-              {id === "overview"   && <Sparkles className="w-3 h-3 text-cyan-300" />}
-              {id === "employees"  && <Users    className="w-3 h-3 text-sky-300" />}
+              {id === "overview"   && <Sparkles  className="w-3 h-3 text-cyan-300" />}
+              {id === "employees"  && <Users     className="w-3 h-3 text-sky-300" />}
               {id === "hiring"     && <LineChart className="w-3 h-3 text-emerald-300" />}
               {id === "projects"   && <FileText  className="w-3 h-3 text-indigo-300" />}
               {id === "branches"   && <Globe2    className="w-3 h-3 text-amber-300" />}
               {id === "analytics"  && <BarChart3 className="w-3 h-3 text-rose-300" />}
-              <span className="capitalize">{id}</span>
+              <span>{t(`company.tabs.${id}`, id)}</span>
             </button>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {activeTab === "overview"   && <GlassSection title="Overview"           icon={<Sparkles  className="w-4 h-4 text-cyan-400"    />}><p className="text-[10px] text-slate-200">Overview metrics & guidance. Ploge CompanyOverviewSupplement la oswa lòt widgets (CRM, inventory, AI reports, contracts, etc.).</p></GlassSection>}
-          {activeTab === "employees"  && <GlassSection title="Employees"          icon={<Users     className="w-4 h-4 text-sky-400"      />}><p className="text-[10px] text-slate-200">Employees management UI (photo, online, GPS, project, attendance, performance, salary, contracts, docs, certificates, languages, AI recommendations).</p></GlassSection>}
-          {activeTab === "hiring"     && <GlassSection title="Hiring Center"      icon={<LineChart className="w-4 h-4 text-emerald-400"  />}><p className="text-[10px] text-slate-200">Hiring Center tankou LinkedIn Recruiter / Indeed Employer / SAP SuccessFactors ak AI candidate ranking, skills match %, experience, distance, expected salary, availability, background check, one-click hire/interview/video/offer/contract/payroll.</p></GlassSection>}
-          {activeTab === "projects"   && <GlassSection title="Projects"           icon={<FileText  className="w-4 h-4 text-indigo-400"   />}><p className="text-[10px] text-slate-200">Projects UI tankou Monday/Asana/ClickUp/Jira ak timeline, Gantt, Kanban, calendar, budget, tasks, workers, progress, invoices.</p></GlassSection>}
-          {activeTab === "branches"   && <GlassSection title="Branches Map"       icon={<MapPin    className="w-4 h-4 text-amber-400"    />}><p className="text-[10px] text-slate-200">Google Maps Enterprise: live workers, live jobs, clients, hotels, restaurants, construction sites, routes, ETA, traffic, nearby workers — Uber-style map (Mapbox/Google Maps lib).</p></GlassSection>}
-          {activeTab === "analytics"  && <GlassSection title="Advanced Analytics" icon={<BarChart3 className="w-4 h-4 text-rose-400"     />}><p className="text-[10px] text-slate-200">Business Intelligence tankou Power BI/Tableau/Looker/Google Analytics ak 40+ charts, animated graphs, forecast, prediction, AI suggestions sou hiring, payroll, market, risk.</p></GlassSection>}
+          {activeTab === "overview"  && <GlassSection title={t("company.tabs.overview",  "Overview")}          icon={<Sparkles  className="w-4 h-4 text-cyan-400"   />}><p className="text-[10px] text-slate-200">{t("company.tabContent.overview",  "Overview metrics & guidance.")}</p></GlassSection>}
+          {activeTab === "employees" && <GlassSection title={t("company.tabs.employees", "Employees")}         icon={<Users     className="w-4 h-4 text-sky-400"     />}><p className="text-[10px] text-slate-200">{t("company.tabContent.employees", "Employees management UI.")}</p></GlassSection>}
+          {activeTab === "hiring"    && <GlassSection title={t("company.tabs.hiring",    "Hiring Center")}     icon={<LineChart className="w-4 h-4 text-emerald-400" />}><p className="text-[10px] text-slate-200">{t("company.tabContent.hiring",    "Hiring Center.")}</p></GlassSection>}
+          {activeTab === "projects"  && <GlassSection title={t("company.tabs.projects",  "Projects")}          icon={<FileText  className="w-4 h-4 text-indigo-400"  />}><p className="text-[10px] text-slate-200">{t("company.tabContent.projects",  "Projects UI.")}</p></GlassSection>}
+          {activeTab === "branches"  && <GlassSection title={t("company.tabs.branches",  "Branches Map")}      icon={<MapPin    className="w-4 h-4 text-amber-400"   />}><p className="text-[10px] text-slate-200">{t("company.tabContent.branches",  "Branches Map.")}</p></GlassSection>}
+          {activeTab === "analytics" && <GlassSection title={t("company.tabs.analytics", "Advanced Analytics")} icon={<BarChart3 className="w-4 h-4 text-rose-400"  />}><p className="text-[10px] text-slate-200">{t("company.tabContent.analytics", "Business Intelligence.")}</p></GlassSection>}
         </div>
       </div>
 
@@ -861,15 +881,17 @@ export default function CompanyDashboard({ user, tab }: CompanyDashboardProps) {
           <div className="w-full max-w-3xl rounded-3xl border border-white/20 bg-slate-950/95 p-6 shadow-[0_40px_120px_rgba(15,23,42,0.9)]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-                <Command className="w-4 h-4 text-cyan-400" /> AI Command Center
+                <Command className="w-4 h-4 text-cyan-400" /> {t("company.commandCenter.title", "AI Command Center")}
               </h2>
-              <button type="button" onClick={() => setAiCommandOpen(false)} className="text-[10px] text-slate-300">Close</button>
+              <button type="button" onClick={() => setAiCommandOpen(false)} className="text-[10px] text-slate-300">
+                {t("company.commandCenter.close", "Close")}
+              </button>
             </div>
             <p className="text-[10px] text-slate-200 mb-3">
-              Generate Report • Predict Revenue • Optimize Hiring • Optimize Payroll • Find Workers • Analyze Market • Generate Contracts • Analyze Company Risk.
+              {t("company.commandCenter.desc", "Generate Report • Predict Revenue • Optimize Hiring • Optimize Payroll • Find Workers • Analyze Market • Generate Contracts • Analyze Company Risk.")}
             </p>
             <div className="h-40 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-[10px] text-slate-400">
-              AI command workspace ap ploge isit la (text + voice + charts).
+              {t("company.commandCenter.workspace", "AI command workspace")}
             </div>
           </div>
         </div>
