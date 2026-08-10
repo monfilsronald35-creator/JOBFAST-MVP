@@ -41,6 +41,7 @@ interface ListingItem {
     propertyType?: string;
     workspaceType?: string;
     tourType?: string;
+    phone?: string;
   };
   profession?: string;
   experience?: string;
@@ -78,14 +79,39 @@ type ConfigShape = Record<string, unknown> & {
   };
 };
 
+// Unified modal state — eliminates booking/detail conflict
+type ActiveListingAction =
+  | { type: 'detail';  listing: ListingItem }
+  | { type: 'book';    listing: ListingItem }
+  | { type: 'review';  listing: ListingItem }
+  | { type: 'contact'; listing: ListingItem }
+  | null;
+
 interface AvailabilityState { color: string; bg: string; dot: string; label: string; }
+
+// Normalize availability to a canonical key that exists in AVAILABILITY_STATES
+const CANONICAL_AVAILABILITY = new Set(Object.keys(AVAILABILITY_STATES as Record<string, unknown>));
+function normalizeAvailability(state?: string): string {
+  return state && CANONICAL_AVAILABILITY.has(state) ? state : 'available';
+}
+
+// API response contract
+interface MarketplaceListingsResponse {
+  items: ListingItem[];
+  pagination: {
+    total: number;
+    hasMore: boolean;
+    page: number;
+  };
+}
 
 // ─────────────────────────────────────────────────────────────
 // AVAILABILITY BADGE
 // ─────────────────────────────────────────────────────────────
-export const AvailabilityBadge = memo(function AvailabilityBadge({ state }: { state?: string }) {
+export const AvailabilityBadge = memo(function AvailabilityBadge({ state }: { state?: string | undefined }) {
   const states = AVAILABILITY_STATES as Record<string, AvailabilityState>;
-  const cfg: AvailabilityState = states[state ?? 'available'] ?? states['available']!;
+  const key = normalizeAvailability(state);
+  const cfg: AvailabilityState = states[key] ?? states['available']!;
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.color} ${cfg.bg}`}>
       {cfg.dot} {cfg.label}
@@ -97,16 +123,17 @@ export const AvailabilityBadge = memo(function AvailabilityBadge({ state }: { st
 // REPUTATION BAR
 // ─────────────────────────────────────────────────────────────
 export const ReputationBar = memo(function ReputationBar({ score }: { score: number }) {
+  const clamped = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
   const color =
-    score >= 80 ? '#10b981' :
-    score >= 50 ? '#6366f1' :
-                  '#ef4444';
+    clamped >= 80 ? '#10b981' :
+    clamped >= 50 ? '#6366f1' :
+                   '#ef4444';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, background: color }} />
+        <div className="h-full rounded-full transition-all" style={{ width: `${clamped}%`, background: color }} />
       </div>
-      <span className="text-[10px] font-bold text-slate-400 shrink-0">{score}</span>
+      <span className="text-[10px] font-bold text-slate-400 shrink-0">{clamped}</span>
     </div>
   );
 });
@@ -114,7 +141,7 @@ export const ReputationBar = memo(function ReputationBar({ score }: { score: num
 // ─────────────────────────────────────────────────────────────
 // GALLERY VIEWER
 // ─────────────────────────────────────────────────────────────
-const GalleryViewer = memo(function GalleryViewer({ images = [], type }: { images?: string[]; type?: string }) {
+const GalleryViewer = memo(function GalleryViewer({ images = [], type }: { images?: string[] | undefined; type?: string | undefined }) {
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
@@ -129,7 +156,7 @@ const GalleryViewer = memo(function GalleryViewer({ images = [], type }: { image
     <div>
       <div className="h-40 rounded-xl overflow-hidden bg-slate-800 flex items-center justify-center">
         <img src={images[active]} alt={type} className="w-full h-full object-cover"
-          onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
+          onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
       </div>
       {images.length > 1 && (
         <div className="flex gap-1.5 mt-2">
@@ -137,7 +164,7 @@ const GalleryViewer = memo(function GalleryViewer({ images = [], type }: { image
             <button key={i} onClick={() => setActive(i)}
               className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border-2 transition ${i === active ? 'border-indigo-500' : 'border-transparent'}`}>
               <img src={src} alt="" className="w-full h-full object-cover"
-                onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             </button>
           ))}
         </div>
@@ -158,7 +185,8 @@ interface ContactPanelProps {
 
 export const ContactPanel = memo(function ContactPanel({ listing, config, onClose, onBook }: ContactPanelProps) {
   const navigate = useNavigate();
-  const phone = listing.phone ?? (listing.profileMetadata as Record<string, unknown> | undefined)?.['phone'] as string | undefined;
+  // Phone can live on top-level or inside profileMetadata
+  const phone = listing.phone ?? listing.profileMetadata?.phone;
 
   const actions: Record<string, () => void> = {
     call:       () => phone && (window.location.href = `tel:${phone}`),
@@ -166,18 +194,21 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
     directions: () => {
       const lat = listing.location?.coordinates?.latitude;
       const lng = listing.location?.coordinates?.longitude;
-      if (lat && lng) navigate(`/map?lat=${lat}&lng=${lng}`);
+      // Use typeof check — coordinates could be 0 which is falsy but valid
+      if (typeof lat === 'number' && typeof lng === 'number') {
+        navigate(`/map?lat=${lat}&lng=${lng}`);
+      }
     },
     book:       () => { onClose?.(); onBook?.(listing); },
     emergency:  () => phone && (window.location.href = `tel:${phone}`),
   };
 
   const OPTION_LABELS: Record<string, { icon: string; label: string; color: string }> = {
-    call:       { icon: '📞', label: 'Rele',      color: 'bg-green-500 text-black'   },
-    chat:       { icon: '💬', label: 'Chat',      color: 'bg-blue-500 text-white'    },
-    book:       { icon: '📅', label: config.booking.label, color: 'bg-indigo-500 text-white' },
-    directions: { icon: '🗺️', label: 'Direksyon', color: 'bg-slate-700 text-white'   },
-    emergency:  { icon: '🚨', label: 'Dijans',    color: 'bg-red-600 text-white'     },
+    call:       { icon: '📞', label: 'Rele',                 color: 'bg-green-500 text-black'   },
+    chat:       { icon: '💬', label: 'Chat',                 color: 'bg-blue-500 text-white'    },
+    book:       { icon: '📅', label: config.booking.label,   color: 'bg-indigo-500 text-white'  },
+    directions: { icon: '🗺️', label: 'Direksyon',            color: 'bg-slate-700 text-white'   },
+    emergency:  { icon: '🚨', label: 'Dijans',               color: 'bg-red-600 text-white'     },
   };
 
   return (
@@ -210,36 +241,46 @@ interface BookingModalProps {
 }
 
 export const BookingModal = memo(function BookingModal({ listing, config, onClose, onSubmit }: BookingModalProps) {
-  const { user } = useAuth() as { user: Record<string, unknown> | null };
   const bc = config.booking;
 
   const [form, setForm] = useState({ date: '', time: '', partySize: 1, duration: 1, notes: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm(prev => ({ ...prev, [k]: v }));
 
+  // Central booking validator
+  const formInvalid =
+    (bc.requiresDate === true && !form.date) ||
+    (bc.requiresTime === true && !form.time) ||
+    (bc.requiresPartySize === true && form.partySize < 1) ||
+    (bc.requiresDuration === true && form.duration < 1);
+
   const handleSubmit = useCallback(async () => {
-    if (!form.date && bc.requiresDate) return;
+    if (bc.requiresDate === true && !form.date) return;
+    if (bc.requiresTime === true && !form.time) return;
+    if (bc.requiresPartySize === true && form.partySize < 1) return;
+    if (bc.requiresDuration === true && form.duration < 1) return;
     setSubmitting(true);
+    setApiError(null);
     try {
+      // Backend derives customer identity from JWT — never send customerId/customerName from frontend
       await API.post('/marketplace/book', {
-        customerId:   user?.['_id'] ?? user?.['id'],
-        customerName: user?.['name'],
-        targetId:     listing._id ?? listing.id,
-        targetName:   listing.name,
-        bookingType:  bc.type,
+        targetId:    listing._id ?? listing.id,
+        targetName:  listing.name,
+        bookingType: bc.type,
         ...form,
       });
       setSuccess(true);
       onSubmit?.();
     } catch {
-      // keep modal open on error
+      setApiError('Rezèvasyon an echwe. Eseye ankò.');
     } finally {
       setSubmitting(false);
     }
-  }, [form, listing, user, bc, onSubmit]);
+  }, [form, listing, bc, onSubmit]);
 
   if (success) {
     return (
@@ -298,9 +339,10 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
         </div>
       )}
+      {apiError && <p className="text-xs text-red-400">{apiError}</p>}
       <div className="flex gap-2 pt-2">
         <button onClick={handleSubmit}
-          disabled={submitting || (bc.requiresDate === true && !form.date)}
+          disabled={submitting || formInvalid}
           className="flex-1 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold disabled:opacity-40">
           {submitting ? 'Ap anvwaye...' : bc.label}
         </button>
@@ -321,7 +363,6 @@ interface ReviewModalProps {
 }
 
 export const ReviewModal = memo(function ReviewModal({ listing, config, onClose, onSubmit }: ReviewModalProps) {
-  const { user } = useAuth() as { user: Record<string, unknown> | null };
   const [overallRating, setOverallRating] = useState(0);
   const [criteria, setCriteria] = useState<Record<string, number>>(
     Object.fromEntries((config.reviewCriteria ?? []).map(c => [c, 0])),
@@ -334,7 +375,7 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
 
   const StarPicker = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => (
     <div className="flex gap-1">
-      {[1,2,3,4,5].map(s => (
+      {[1, 2, 3, 4, 5].map(s => (
         <button key={s} onClick={() => onChange(s)}
           className={`text-lg transition ${s <= value ? 'text-amber-400' : 'text-slate-600'}`}>★</button>
       ))}
@@ -345,22 +386,21 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
     if (overallRating === 0) return;
     setSubmitting(true);
     try {
+      // Backend derives reviewer identity from JWT — never send reviewerId from frontend
       await API.post('/marketplace/reviews', {
-        targetId:     listing._id ?? listing.id,
-        reviewerId:   user?.['_id'] ?? user?.['id'],
-        reviewerName: user?.['name'],
-        rating:       overallRating,
+        targetId: listing._id ?? listing.id,
+        rating:   overallRating,
         criteria,
         comment,
       });
       setSuccess(true);
       onSubmit?.();
     } catch {
-      // keep open
+      // keep open on error
     } finally {
       setSubmitting(false);
     }
-  }, [overallRating, criteria, comment, listing, user, onSubmit]);
+  }, [overallRating, criteria, comment, listing, onSubmit]);
 
   if (success) {
     return (
@@ -450,7 +490,7 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
     .filter(f => f.text);
 
   const reputationScore = useMemo(
-    () => computeMarketplaceReputation(item, item.marketplaceData) as number,
+    () => Math.max(0, Math.min(100, Math.round(Number((computeMarketplaceReputation as (u: unknown, d: unknown) => number)(item, item.marketplaceData)) || 0))),
     [item],
   );
 
@@ -466,8 +506,10 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
             {city && <p className="text-[10px] text-slate-400">📍 {city}</p>}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <AvailabilityBadge state={item.availability ?? 'available'} />
-            <button onClick={() => onFavorite?.(item)}
+            <AvailabilityBadge state={item.availability} />
+            {/* stopPropagation prevents card onClick from firing when favoriting */}
+            <button
+              onClick={e => { e.stopPropagation(); onFavorite?.(item); }}
               className={`text-lg transition ${isFavorited ? 'text-rose-400' : 'text-slate-600 hover:text-rose-300'}`}>
               {isFavorited ? '❤️' : '🤍'}
             </button>
@@ -489,13 +531,20 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
       )}
 
       <div className="px-4 pb-4 grid grid-cols-3 gap-2">
-        <button onClick={() => onBook?.(item)} className="py-2 rounded-xl bg-indigo-500 text-white text-[10px] font-bold">
+        {/* stopPropagation on all action buttons — prevents detail panel from opening simultaneously */}
+        <button
+          onClick={e => { e.stopPropagation(); onBook?.(item); }}
+          className="py-2 rounded-xl bg-indigo-500 text-white text-[10px] font-bold">
           {config.booking.label}
         </button>
-        <button onClick={() => onContact?.(item)} className="py-2 rounded-xl bg-slate-800 text-slate-200 text-[10px]">
+        <button
+          onClick={e => { e.stopPropagation(); onContact?.(item); }}
+          className="py-2 rounded-xl bg-slate-800 text-slate-200 text-[10px]">
           📞 Kontakte
         </button>
-        <button onClick={() => onReview?.(item)} className="py-2 rounded-xl bg-slate-800 text-amber-400 text-[10px]">
+        <button
+          onClick={e => { e.stopPropagation(); onReview?.(item); }}
+          className="py-2 rounded-xl bg-slate-800 text-amber-400 text-[10px]">
           ⭐ Evalye
         </button>
       </div>
@@ -520,6 +569,10 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
   const [panel, setPanel] = useState<PanelMode>('detail');
   const isFav = favorites?.has(listing._id ?? listing.id ?? '');
 
+  const reputationScore = Math.max(
+    0, Math.min(100, Math.round(Number((computeMarketplaceReputation as (u: unknown, d: unknown) => number)(listing, listing.marketplaceData)) || 0)),
+  );
+
   const panels: Record<PanelMode, React.ReactNode> = {
     detail: (
       <div className="p-5 space-y-4">
@@ -535,7 +588,7 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
           </button>
         </div>
 
-        <AvailabilityBadge state={listing.availability ?? 'available'} />
+        <AvailabilityBadge state={listing.availability} />
 
         <GalleryViewer images={listing.profileMetadata?.photos ?? []} type={config.galleryType} />
 
@@ -545,7 +598,7 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
 
         <div>
           <p className="text-[10px] font-bold text-slate-500 mb-1.5">Reputasyon</p>
-          <ReputationBar score={computeMarketplaceReputation(listing, listing.marketplaceData) as number} />
+          <ReputationBar score={reputationScore} />
         </div>
 
         <div className="grid grid-cols-3 gap-2">
@@ -581,7 +634,7 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
 // DATA HOOK
 // ─────────────────────────────────────────────────────────────
 interface UseMarketplaceListingsOptions {
-  role?: string;
+  role?: string | undefined;
   query?: string;
   tab?: string;
   coords?: { lat: number; lng: number } | null;
@@ -589,14 +642,16 @@ interface UseMarketplaceListingsOptions {
 }
 
 export function useMarketplaceListings({ role, query = '', tab = 'all', coords, enabled = true }: UseMarketplaceListingsOptions) {
-  const [listings, setListings] = useState<ListingItem[]>([]);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
-  const [hasMore, setHasMore]   = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const pageRef  = useRef(1);
+  const [listings, setListings]   = useState<ListingItem[]>([]);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [hasMore, setHasMore]     = useState(false);
+  const [totalCount, setTotal]    = useState(0);
+  const abortRef                  = useRef<AbortController | null>(null);
+  const pageRef                   = useRef(1);
+  const loadingMoreRef            = useRef(false);
 
-  const fetch = useCallback(async (page = 1, append = false) => {
+  const fetchListings = useCallback(async (page = 1, append = false) => {
     if (!enabled) return;
     abortRef.current?.abort();
     const ctrl = new AbortController();
@@ -609,10 +664,14 @@ export function useMarketplaceListings({ role, query = '', tab = 'all', coords, 
       if (coords) { params['lat'] = coords.lat; params['lng'] = coords.lng; }
 
       const res = await API.get('/marketplace/listings', { params, signal: ctrl.signal });
-      const { items = [], hasMore: more = false } = (res.data?.data as { items?: ListingItem[]; hasMore?: boolean }) ?? {};
+      const data = res.data?.data as MarketplaceListingsResponse | undefined;
+      const items = data?.items ?? [];
+      // Fallback pagination for backends that haven't adopted the new contract yet
+      const pagination = data?.pagination ?? { total: items.length, hasMore: false, page };
 
       setListings(prev => (append ? [...prev, ...items] : items));
-      setHasMore(!!more);
+      setHasMore(pagination.hasMore);
+      setTotal(pagination.total);
       pageRef.current = page;
     } catch (err: unknown) {
       const e = err as { code?: string; name?: string };
@@ -623,14 +682,23 @@ export function useMarketplaceListings({ role, query = '', tab = 'all', coords, 
     }
   }, [role, query, tab, coords, enabled]);
 
-  const loadMore = useCallback(() => fetch(pageRef.current + 1, true), [fetch]);
+  // Guard against concurrent loadMore calls firing from IntersectionObserver
+  const loadMore = useCallback(async () => {
+    if (loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    try {
+      await fetchListings(pageRef.current + 1, true);
+    } finally {
+      loadingMoreRef.current = false;
+    }
+  }, [fetchListings]);
 
   useEffect(() => {
     pageRef.current = 1;
-    fetch(1, false);
-  }, [fetch]);
+    fetchListings(1, false);
+  }, [fetchListings]);
 
-  return { listings, loading, error, hasMore, loadMore, refetch: () => fetch(1, false) };
+  return { listings, loading, error, hasMore, totalCount, loadMore, refetch: () => fetchListings(1, false) };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -651,13 +719,23 @@ function useFavorites(userId: string | undefined) {
 
   const toggle = useCallback(async (listing: ListingItem) => {
     const id = listing._id ?? listing.id ?? '';
-    const next = new Set(favorites);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    setFavorites(next);
+    // Optimistic update — functional form avoids stale-closure race conditions
+    setFavorites(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
     try {
-      await API.post('/marketplace/favorites/toggle', { userId, targetId: id });
-    } catch { setFavorites(favorites); }
-  }, [favorites, userId]);
+      await API.post('/marketplace/favorites/toggle', { targetId: id });
+    } catch {
+      // Rollback on API error
+      setFavorites(prev => {
+        const rollback = new Set(prev);
+        if (rollback.has(id)) rollback.delete(id); else rollback.add(id);
+        return rollback;
+      });
+    }
+  }, [userId]);
 
   return { favorites, toggleFavorite: toggle };
 }
@@ -670,23 +748,29 @@ interface MarketplaceCoreProps { role?: string; initialQuery?: string; }
 export default function MarketplaceCore({ role, initialQuery = '' }: MarketplaceCoreProps) {
   const { user } = useAuth() as { user: Record<string, unknown> | null };
   const userId = (user?.['_id'] ?? user?.['id']) as string | undefined;
-  const config = useMemo(() => getMarketplaceConfig(role) as ConfigShape, [role]);
+  const config = useMemo(() => getMarketplaceConfig(role ?? '') as unknown as ConfigShape, [role]);
   const { coords, gpsState, acquire } = useGPS() as {
     coords: { lat: number; lng: number } | null;
     gpsState: string;
     acquire: () => void;
   };
 
+  // GPS acquisition — never blocks the marketplace, coords passed for geo-ranking when available
   useEffect(() => { acquire(); }, [acquire]);
 
-  const [query, setQuery]               = useState(initialQuery);
-  const [activeTab, setActiveTab]       = useState('all');
-  const [detailListing, setDetail]      = useState<ListingItem | null>(null);
-  const [bookingListing, setBooking]    = useState<ListingItem | null>(null);
-  const [reviewListing, setReview]      = useState<ListingItem | null>(null);
-  const sentinelRef                     = useRef<HTMLDivElement>(null);
+  // Separate input state (immediate) from query state (debounced 350ms)
+  const [searchInput, setSearchInput] = useState(initialQuery);
+  const [query, setQuery]             = useState(initialQuery);
+  const [activeTab, setActiveTab]     = useState('all');
+  const [activeAction, setActiveAction] = useState<ActiveListingAction>(null);
+  const sentinelRef                   = useRef<HTMLDivElement>(null);
 
-  const { listings, loading, error, hasMore, loadMore } = useMarketplaceListings({
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(searchInput), 350);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const { listings, loading, error, hasMore, loadMore, totalCount } = useMarketplaceListings({
     role, query, tab: activeTab, coords,
   });
 
@@ -703,7 +787,15 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
     return () => observer.disconnect();
   }, [hasMore, loadMore]);
 
-  const tabCounts = useMemo(() => ({ all: listings.length }), [listings]);
+  // Tab counts come from backend pagination.total, not local array length
+  const tabCounts = useMemo(() => ({ all: totalCount }), [totalCount]);
+
+  // Unified action helpers
+  const openDetail  = useCallback((listing: ListingItem) => setActiveAction({ type: 'detail',  listing }), []);
+  const openBook    = useCallback((listing: ListingItem) => setActiveAction({ type: 'book',    listing }), []);
+  const openReview  = useCallback((listing: ListingItem) => setActiveAction({ type: 'review',  listing }), []);
+  const openContact = useCallback((listing: ListingItem) => setActiveAction({ type: 'contact', listing }), []);
+  const closeAction = useCallback(() => setActiveAction(null), []);
 
   const gpsAcquiring = gpsState === (GPS_STATES as Record<string, string>)['acquiring'] || gpsState === (GPS_STATES as Record<string, string>)['idle'];
   const gpsBlocked   = gpsState === (GPS_STATES as Record<string, string>)['denied']
@@ -725,8 +817,8 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
         </div>
 
         <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
+          value={searchInput}
+          onChange={e => setSearchInput(e.target.value)}
           placeholder={config.browsePlaceholder}
           className="w-full px-4 py-3 bg-[#162238] rounded-xl text-sm text-white placeholder-slate-400 outline-none focus:ring-1 focus:ring-indigo-400/40"
         />
@@ -753,7 +845,7 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
 
         {loading && listings.length === 0 && (
           <div className="space-y-3">
-            {[1,2,3].map(i => (
+            {[1, 2, 3].map(i => (
               <div key={i} className="h-40 bg-slate-800/40 rounded-2xl animate-pulse" />
             ))}
           </div>
@@ -768,14 +860,14 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
         )}
 
         {listings.map(item => (
-          <div key={item.id ?? item._id} onClick={() => setDetail(item)}>
+          <div key={item.id ?? item._id} onClick={() => openDetail(item)}>
             <MarketplaceListingCard
               item={item}
               config={config}
               isFavorited={favorites.has(item._id ?? item.id ?? '')}
-              onBook={(l) => { setBooking(l); }}
-              onContact={(l) => setDetail(l)}
-              onReview={(l) => { setReview(l); }}
+              onBook={openBook}
+              onContact={openContact}
+              onReview={openReview}
               onFavorite={toggleFavorite}
             />
           </div>
@@ -788,34 +880,46 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
         )}
       </div>
 
-      {detailListing && (
+      {/* Unified modal rendering — only one action active at a time */}
+      {activeAction?.type === 'detail' && (
         <ListingDetailPanel
-          listing={detailListing}
+          listing={activeAction.listing}
           config={config}
-          onClose={() => setDetail(null)}
+          onClose={closeAction}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
         />
       )}
 
-      {bookingListing && !detailListing && (
+      {activeAction?.type === 'book' && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
-          onClick={e => e.target === e.currentTarget && setBooking(null)}>
+          onClick={e => e.target === e.currentTarget && closeAction()}>
           <div className="w-full max-w-md bg-[#0f172a] rounded-t-2xl border border-slate-800">
             <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mt-3 mb-1" />
-            <BookingModal listing={bookingListing} config={config}
-              onClose={() => setBooking(null)} onSubmit={() => setBooking(null)} />
+            <BookingModal listing={activeAction.listing} config={config}
+              onClose={closeAction} onSubmit={closeAction} />
           </div>
         </div>
       )}
 
-      {reviewListing && !detailListing && (
+      {activeAction?.type === 'review' && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
-          onClick={e => e.target === e.currentTarget && setReview(null)}>
+          onClick={e => e.target === e.currentTarget && closeAction()}>
           <div className="w-full max-w-md bg-[#0f172a] rounded-t-2xl border border-slate-800">
             <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mt-3 mb-1" />
-            <ReviewModal listing={reviewListing} config={config}
-              onClose={() => setReview(null)} onSubmit={() => setReview(null)} />
+            <ReviewModal listing={activeAction.listing} config={config}
+              onClose={closeAction} onSubmit={closeAction} />
+          </div>
+        </div>
+      )}
+
+      {activeAction?.type === 'contact' && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+          onClick={e => e.target === e.currentTarget && closeAction()}>
+          <div className="w-full max-w-md bg-[#0f172a] rounded-t-2xl border border-slate-800 p-5">
+            <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mt-3 mb-5" />
+            <ContactPanel listing={activeAction.listing} config={config}
+              onClose={closeAction} onBook={openBook} />
           </div>
         </div>
       )}
