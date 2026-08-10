@@ -8,16 +8,12 @@ import React, {
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FixedSizeGrid as Grid } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
 import io from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
 import {
   getAllCategoryConfigs,
   isMarketplaceProvider,
-  getMarketplaceConfig,
 } from "../config/marketplaceConfig";
-import EmptyState from "../components/EmptyState";
 
 const HERO_VIDEO_SRC_1080 = "/assets/video/hero-jobfast-1080p.mp4";
 const HERO_VIDEO_SRC_720  = "/assets/video/hero-jobfast-720p.mp4";
@@ -111,18 +107,24 @@ const ProgressiveImage = memo(function ProgressiveImage({
 }: ProgressiveImageProps) {
   const [imageSrc, setImageSrc] = useState(placeholder || src);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    setFailed(false);
     const img = new Image();
     img.src = src;
     img.onload = () => { setImageSrc(src); setLoaded(true); };
+    img.onerror = () => setFailed(true);
   }, [src]);
+
+  if (failed) return null;
 
   return (
     <img
       src={imageSrc}
       alt={alt}
       loading="lazy"
+      onError={() => setFailed(true)}
       className={`${className} transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-70 blur-sm"}`}
     />
   );
@@ -148,22 +150,6 @@ function AnimatedCounter({ value, prefix = "", suffix = "" }: AnimatedCounterPro
   }, [value]);
   return <span>{prefix}{display.toLocaleString()}{suffix}</span>;
 }
-
-// ─── Skeleton card ────────────────────────────────────────────────────────────
-
-const SkeletonCard = memo(function SkeletonCard() {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
-      <div className="h-24 bg-slate-800/60" />
-      <div className="p-3 space-y-2">
-        <div className="h-3 w-2/3 rounded bg-slate-700" />
-        <div className="h-2 w-1/2 rounded bg-slate-800" />
-        <div className="h-2 w-1/3 rounded bg-slate-800" />
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_1.5s_infinite]" />
-    </div>
-  );
-});
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 
@@ -221,8 +207,9 @@ const categoryThemeColors: Record<string, string> = {
 };
 
 const CategoryCard = memo(function CategoryCard({ config, stats, onClick }: CategoryCardProps) {
-  const imageSrc = config.heroImage || `/assets/categories/${config.role}-4k.webp`;
-  const blurSrc  = config.heroBlur  || `/assets/categories/${config.role}-blur.jpg`;
+  const hasImage = Boolean(config.heroImage);
+  const imageSrc = config.heroImage ?? `/assets/categories/${config.role}-4k.webp`;
+  const blurSrc  = config.heroBlur  ?? `/assets/categories/${config.role}-blur.jpg`;
   const glow = categoryThemeColors[config.role] ?? categoryThemeColors['default']!;
 
   return (
@@ -237,8 +224,14 @@ const CategoryCard = memo(function CategoryCard({ config, stats, onClick }: Cate
     >
       <div className={`absolute inset-0 pointer-events-none bg-gradient-to-br ${glow}`} />
       <div className="relative h-28">
-        <ProgressiveImage src={imageSrc} placeholder={blurSrc} alt={config.label} className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        {hasImage ? (
+          <ProgressiveImage src={imageSrc} placeholder={blurSrc} alt={config.label} className="h-full w-full object-cover" />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center">
+            <span className="text-5xl drop-shadow-lg" aria-hidden="true">{config.icon}</span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 text-[10px] text-emerald-300">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           Live
@@ -435,7 +428,7 @@ function AIAssistantPanel({ open, onClose, user, onRunQuery }: AIAssistantPanelP
 
 // ─── Premium hero ─────────────────────────────────────────────────────────────
 
-interface PremiumHeroProps { roleLabel: string; metrics: HeroMetric[]; persona?: string }
+interface PremiumHeroProps { roleLabel: string; metrics: HeroMetric[]; persona?: string | undefined }
 
 function PremiumHero({ roleLabel, persona }: PremiumHeroProps) {
   const { t } = useTranslation();
@@ -531,7 +524,7 @@ function PremiumHero({ roleLabel, persona }: PremiumHeroProps) {
             <div key={item.label} className="flex items-center gap-2 rounded-2xl bg-black/45 px-3 py-2 border border-slate-800/70 shadow-[0_10px_30px_rgba(15,23,42,0.85)]">
               <div className="min-w-0">
                 <div className="text-sm font-bold text-white">
-                  <AnimatedCounter value={item.value} prefix={item.prefix} suffix={item.suffix} />
+                  <AnimatedCounter value={item.value} prefix={item.prefix ?? ""} suffix={item.suffix ?? ""} />
                 </div>
                 <p className="text-[9px] text-slate-400">{item.label}</p>
               </div>
@@ -751,7 +744,7 @@ export default function HomeMarketplace() {
 
   const categories = useMemo(() => getAllCategoryConfigs() as CategoryConfig[], []);
   const isProvider = useMemo(
-    () => isMarketplaceProvider(u?.['role'] as string | undefined),
+    () => isMarketplaceProvider((u?.['role'] as string) ?? ''),
     [u]
   );
 
@@ -778,6 +771,7 @@ export default function HomeMarketplace() {
     : t("roles.guest", "Guest");
 
   return (
+    <AppErrorBoundary>
     <div className={`min-h-screen pb-24 ${theme}`} style={{ color: "#fff" }}>
       <PremiumHero roleLabel={roleLabel} metrics={DEMO_METRICS} persona={u?.['persona'] as string | undefined} />
 
@@ -822,5 +816,6 @@ export default function HomeMarketplace() {
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
     </div>
+    </AppErrorBoundary>
   );
 }
