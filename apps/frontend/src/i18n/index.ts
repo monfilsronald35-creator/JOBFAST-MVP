@@ -6,10 +6,11 @@ import en from '../locales/en.json';
 import ht from '../locales/ht.json';
 import fr from '../locales/fr.json';
 
-export const SUPPORTED_LANGUAGES = ['ht', 'fr', 'en', 'es'] as const;
+export const SUPPORTED_LANGUAGES = ['es', 'en', 'ht', 'fr'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
-export const DEFAULT_LANGUAGE: SupportedLanguage = 'ht';
+// Español is the default — matches LanguageSelector fallback
+export const DEFAULT_LANGUAGE: SupportedLanguage = 'es';
 export const STORAGE_KEY = 'jobfast_language';
 
 const LANG_SET = new Set<string>(SUPPORTED_LANGUAGES);
@@ -60,7 +61,7 @@ const resources = {
 
 const normalizeLang = (lang: unknown): string | null => {
   if (typeof lang !== 'string') return null;
-  const clean = lang.toLowerCase().split('-')[0];
+  const clean = lang.toLowerCase().replace(/-.*$/, '');
   return LANG_SET.has(clean) ? clean : null;
 };
 

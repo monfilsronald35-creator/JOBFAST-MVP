@@ -10,6 +10,7 @@ import React, {
   useState, useCallback, useEffect, useRef, useMemo, memo,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import API from '../../api/axios';
 import {
@@ -142,12 +143,13 @@ export const ReputationBar = memo(function ReputationBar({ score }: { score: num
 // GALLERY VIEWER
 // ─────────────────────────────────────────────────────────────
 const GalleryViewer = memo(function GalleryViewer({ images = [], type }: { images?: string[] | undefined; type?: string | undefined }) {
+  const { t } = useTranslation();
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
     return (
       <div className="h-32 bg-slate-800/50 rounded-xl flex items-center justify-center text-slate-500 text-sm">
-        Pa gen foto
+        {t('marketplace.no_photos', 'Pa gen foto')}
       </div>
     );
   }
@@ -185,6 +187,7 @@ interface ContactPanelProps {
 
 export const ContactPanel = memo(function ContactPanel({ listing, config, onClose, onBook }: ContactPanelProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   // Phone can live on top-level or inside profileMetadata
   const phone = listing.phone ?? listing.profileMetadata?.phone;
 
@@ -204,11 +207,11 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
   };
 
   const OPTION_LABELS: Record<string, { icon: string; label: string; color: string }> = {
-    call:       { icon: '📞', label: 'Rele',                 color: 'bg-green-500 text-black'   },
-    chat:       { icon: '💬', label: 'Chat',                 color: 'bg-blue-500 text-white'    },
-    book:       { icon: '📅', label: config.booking.label,   color: 'bg-indigo-500 text-white'  },
-    directions: { icon: '🗺️', label: 'Direksyon',            color: 'bg-slate-700 text-white'   },
-    emergency:  { icon: '🚨', label: 'Dijans',               color: 'bg-red-600 text-white'     },
+    call:       { icon: '📞', label: t('marketplace.call', 'Rele'),            color: 'bg-green-500 text-black'   },
+    chat:       { icon: '💬', label: t('marketplace.chat', 'Chat'),            color: 'bg-blue-500 text-white'    },
+    book:       { icon: '📅', label: config.booking.label,                     color: 'bg-indigo-500 text-white'  },
+    directions: { icon: '🗺️', label: t('marketplace.directions', 'Direksyon'), color: 'bg-slate-700 text-white'   },
+    emergency:  { icon: '🚨', label: t('marketplace.emergency', 'Dijans'),     color: 'bg-red-600 text-white'     },
   };
 
   return (
@@ -224,7 +227,7 @@ export const ContactPanel = memo(function ContactPanel({ listing, config, onClos
         );
       })}
       <button onClick={onClose} className="w-full py-2 rounded-xl text-xs text-slate-400 bg-slate-800/50">
-        Fèmen
+        {t('marketplace.close', 'Fèmen')}
       </button>
     </div>
   );
@@ -241,6 +244,7 @@ interface BookingModalProps {
 }
 
 export const BookingModal = memo(function BookingModal({ listing, config, onClose, onSubmit }: BookingModalProps) {
+  const { t } = useTranslation();
   const bc = config.booking;
 
   const [form, setForm] = useState({ date: '', time: '', partySize: 1, duration: 1, notes: '' });
@@ -286,9 +290,9 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
     return (
       <div className="p-6 text-center space-y-3">
         <p className="text-3xl">✅</p>
-        <p className="text-white font-bold">Demann Anvwaye!</p>
-        <p className="text-xs text-slate-400">Ou pral resevwa yon konfirmasyon tou dousman.</p>
-        <button onClick={onClose} className="w-full py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold">Fèmen</button>
+        <p className="text-white font-bold">{t('marketplace.booking_sent', 'Demann Anvwaye!')}</p>
+        <p className="text-xs text-slate-400">{t('marketplace.booking_sent_hint', 'Ou pral resevwa yon konfirmasyon tou dousman.')}</p>
+        <button onClick={onClose} className="w-full py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold">{t('marketplace.close', 'Fèmen')}</button>
       </div>
     );
   }
@@ -298,7 +302,7 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
       <h3 className="text-sm font-bold text-white">📅 {bc.label} — {listing.name}</h3>
       {bc.requiresDate && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">Dat</label>
+          <label className="text-[10px] text-slate-400 block mb-1">{t('marketplace.date_label', 'Dat')}</label>
           <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
             min={new Date().toISOString().split('T')[0]}
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40" />
@@ -306,14 +310,14 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
       )}
       {bc.requiresTime && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">Lè</label>
+          <label className="text-[10px] text-slate-400 block mb-1">{t('marketplace.time_label', 'Lè')}</label>
           <input type="time" value={form.time} onChange={e => set('time', e.target.value)}
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40" />
         </div>
       )}
       {bc.requiresPartySize && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">{bc.partySizeLabel ?? 'Kantite Moun'}</label>
+          <label className="text-[10px] text-slate-400 block mb-1">{bc.partySizeLabel ?? t('marketplace.party_size_label', 'Kantite Moun')}</label>
           <div className="flex items-center gap-3">
             <button onClick={() => set('partySize', Math.max(1, form.partySize - 1))} className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">−</button>
             <span className="text-white font-bold text-sm w-6 text-center">{form.partySize}</span>
@@ -323,7 +327,7 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
       )}
       {bc.requiresDuration && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">{bc.durationLabel ?? 'Dire'}</label>
+          <label className="text-[10px] text-slate-400 block mb-1">{bc.durationLabel ?? t('marketplace.duration_label', 'Dire')}</label>
           <div className="flex items-center gap-3">
             <button onClick={() => set('duration', Math.max(1, form.duration - 1))} className="w-8 h-8 bg-slate-800 rounded-lg text-white font-bold">−</button>
             <span className="text-white font-bold text-sm w-6 text-center">{form.duration}</span>
@@ -333,20 +337,20 @@ export const BookingModal = memo(function BookingModal({ listing, config, onClos
       )}
       {bc.requiresNotes && (
         <div>
-          <label className="text-[10px] text-slate-400 block mb-1">{bc.notesLabel ?? 'Nòt'}</label>
+          <label className="text-[10px] text-slate-400 block mb-1">{bc.notesLabel ?? t('marketplace.notes_label', 'Nòt')}</label>
           <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
-            rows={2} placeholder="Ekri nòt ou..."
+            rows={2} placeholder={t('marketplace.notes_placeholder', 'Ekri nòt ou...')}
             className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
         </div>
       )}
-      {apiError && <p className="text-xs text-red-400">{apiError}</p>}
+      {apiError && <p className="text-xs text-red-400">{t('marketplace.booking_failed', apiError)}</p>}
       <div className="flex gap-2 pt-2">
         <button onClick={handleSubmit}
           disabled={submitting || formInvalid}
           className="flex-1 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold disabled:opacity-40">
-          {submitting ? 'Ap anvwaye...' : bc.label}
+          {submitting ? t('marketplace.sending', 'Ap anvwaye...') : bc.label}
         </button>
-        <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">Anile</button>
+        <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">{t('marketplace.cancel', 'Anile')}</button>
       </div>
     </div>
   );
@@ -363,6 +367,7 @@ interface ReviewModalProps {
 }
 
 export const ReviewModal = memo(function ReviewModal({ listing, config, onClose, onSubmit }: ReviewModalProps) {
+  const { t } = useTranslation();
   const [overallRating, setOverallRating] = useState(0);
   const [criteria, setCriteria] = useState<Record<string, number>>(
     Object.fromEntries((config.reviewCriteria ?? []).map(c => [c, 0])),
@@ -406,22 +411,22 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
     return (
       <div className="p-6 text-center space-y-3">
         <p className="text-3xl">⭐</p>
-        <p className="text-white font-bold">Mèsi pou Evalyasyon Ou!</p>
-        <button onClick={onClose} className="w-full py-2.5 bg-amber-500 text-black rounded-xl text-sm font-bold">Fèmen</button>
+        <p className="text-white font-bold">{t('marketplace.review_thanks', 'Mèsi pou Evalyasyon Ou!')}</p>
+        <button onClick={onClose} className="w-full py-2.5 bg-amber-500 text-black rounded-xl text-sm font-bold">{t('marketplace.close', 'Fèmen')}</button>
       </div>
     );
   }
 
   return (
     <div className="p-5 space-y-4">
-      <h3 className="text-sm font-bold text-white">⭐ Evalye — {listing.name}</h3>
+      <h3 className="text-sm font-bold text-white">⭐ {t('marketplace.review_action', 'Evalye')} — {listing.name}</h3>
       <div>
-        <label className="text-[10px] text-slate-400 block mb-2">Rating Global</label>
+        <label className="text-[10px] text-slate-400 block mb-2">{t('marketplace.rating_global', 'Rating Global')}</label>
         <StarPicker value={overallRating} onChange={setOverallRating} />
       </div>
       {(config.reviewCriteria ?? []).length > 0 && (
         <div className="space-y-2.5">
-          <label className="text-[10px] text-slate-400 block">Detay</label>
+          <label className="text-[10px] text-slate-400 block">{t('marketplace.rating_detail', 'Detay')}</label>
           {config.reviewCriteria!.map(criterion => (
             <div key={criterion} className="flex items-center justify-between">
               <span className="text-xs text-slate-300 capitalize">{criterion}</span>
@@ -431,18 +436,18 @@ export const ReviewModal = memo(function ReviewModal({ listing, config, onClose,
         </div>
       )}
       <div>
-        <label className="text-[10px] text-slate-400 block mb-1">Kòmantè</label>
+        <label className="text-[10px] text-slate-400 block mb-1">{t('marketplace.comment_label', 'Kòmantè')}</label>
         <textarea value={comment} onChange={e => setComment(e.target.value)}
-          rows={3} placeholder="Pata eksperyans ou..."
+          rows={3} placeholder={t('marketplace.comment_placeholder', 'Pata eksperyans ou...')}
           className="w-full px-3 py-1.5 bg-slate-900 rounded-lg text-xs text-white placeholder-slate-500 outline-none resize-none" />
       </div>
       <div className="flex gap-2">
         <button onClick={handleSubmit}
           disabled={submitting || overallRating === 0}
           className="flex-1 py-2.5 bg-amber-500 text-black rounded-xl text-sm font-bold disabled:opacity-40">
-          {submitting ? 'Ap anvwaye...' : 'Soumèt Evalyasyon'}
+          {submitting ? t('marketplace.sending', 'Ap anvwaye...') : t('marketplace.submit_review', 'Soumèt Evalyasyon')}
         </button>
-        <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">Anile</button>
+        <button onClick={onClose} className="px-4 py-2.5 bg-slate-800 text-slate-300 rounded-xl text-sm">{t('marketplace.cancel', 'Anile')}</button>
       </div>
     </div>
   );
@@ -465,7 +470,7 @@ const CARD_FIELD_RENDERERS: Record<string, (item: ListingItem) => string | null>
   distance:       (item) => item.distanceKm != null ? `📍 ${Number(item.distanceKm).toFixed(1)} km` : null,
   experience:     (item) => item.experience ? `🎓 ${item.experience} ans` : null,
   language:       (item) => item.language ? `🌐 ${item.language}` : null,
-  verified:       (item) => item.verified ? '✅ Verifye' : null,
+  verified:       () => null, // rendered via t() in card body
   availability:   () => null,
 };
 
@@ -482,10 +487,11 @@ interface MarketplaceListingCardProps {
 export const MarketplaceListingCard = memo(function MarketplaceListingCard({
   item, config, onBook, onContact, onReview, onFavorite, isFavorited,
 }: MarketplaceListingCardProps) {
+  const { t } = useTranslation();
   const city = item.location?.city ?? item.location?.state ?? '';
 
   const fields = (config.cardFields ?? [])
-    .filter(f => f !== 'availability')
+    .filter(f => f !== 'availability' && f !== 'verified')
     .map(f => ({ key: f, text: CARD_FIELD_RENDERERS[f]?.(item) ?? null }))
     .filter(f => f.text);
 
@@ -526,6 +532,10 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
         </div>
       )}
 
+      {item.verified && (
+        <p className="px-4 pb-1 text-[10px] text-green-400 font-bold">✅ {t('marketplace.verified', 'Verifye')}</p>
+      )}
+
       {item.profileMetadata?.bio && (
         <p className="px-4 pb-2 text-[10px] text-slate-400 line-clamp-2">{item.profileMetadata.bio}</p>
       )}
@@ -540,12 +550,12 @@ export const MarketplaceListingCard = memo(function MarketplaceListingCard({
         <button
           onClick={e => { e.stopPropagation(); onContact?.(item); }}
           className="py-2 rounded-xl bg-slate-800 text-slate-200 text-[10px]">
-          📞 Kontakte
+          📞 {t('marketplace.contact', 'Kontakte')}
         </button>
         <button
           onClick={e => { e.stopPropagation(); onReview?.(item); }}
           className="py-2 rounded-xl bg-slate-800 text-amber-400 text-[10px]">
-          ⭐ Evalye
+          ⭐ {t('marketplace.review_action', 'Evalye')}
         </button>
       </div>
     </div>
@@ -566,6 +576,7 @@ interface ListingDetailPanelProps {
 }
 
 function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavorite }: ListingDetailPanelProps) {
+  const { t } = useTranslation();
   const [panel, setPanel] = useState<PanelMode>('detail');
   const isFav = favorites?.has(listing._id ?? listing.id ?? '');
 
@@ -597,7 +608,7 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
         )}
 
         <div>
-          <p className="text-[10px] font-bold text-slate-500 mb-1.5">Reputasyon</p>
+          <p className="text-[10px] font-bold text-slate-500 mb-1.5">{t('marketplace.reputation', 'Reputasyon')}</p>
           <ReputationBar score={reputationScore} />
         </div>
 
@@ -606,10 +617,10 @@ function ListingDetailPanel({ listing, config, onClose, favorites, onToggleFavor
             📅 {config.booking.label}
           </button>
           <button onClick={() => setPanel('contact')} className="py-2.5 rounded-xl bg-slate-800 text-slate-200 text-xs">
-            📞 Kontakte
+            📞 {t('marketplace.contact', 'Kontakte')}
           </button>
           <button onClick={() => setPanel('review')} className="py-2.5 rounded-xl bg-slate-800 text-amber-400 text-xs">
-            ⭐ Evalye
+            ⭐ {t('marketplace.review_action', 'Evalye')}
           </button>
         </div>
       </div>
@@ -746,6 +757,7 @@ function useFavorites(userId: string | undefined) {
 interface MarketplaceCoreProps { role?: string; initialQuery?: string; }
 
 export default function MarketplaceCore({ role, initialQuery = '' }: MarketplaceCoreProps) {
+  const { t } = useTranslation();
   const { user } = useAuth() as { user: Record<string, unknown> | null };
   const userId = (user?.['_id'] ?? user?.['id']) as string | undefined;
   const config = useMemo(() => getMarketplaceConfig(role ?? '') as unknown as ConfigShape, [role]);
@@ -811,8 +823,8 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
           <div>
             <h1 className="text-sm font-bold text-white">{config.browseTitle}</h1>
             {coords !== null && <p className="text-[10px] text-green-400">📡 {config.gpsLabel}</p>}
-            {gpsAcquiring && <p className="text-[10px] text-slate-400">📡 Ap jwenn lokasyon...</p>}
-            {gpsBlocked   && <p className="text-[10px] text-amber-400">📍 Chèche san distans</p>}
+            {gpsAcquiring && <p className="text-[10px] text-slate-400">📡 {t('marketplace.gps_searching', 'Ap jwenn lokasyon...')}</p>}
+            {gpsBlocked   && <p className="text-[10px] text-amber-400">📍 {t('marketplace.gps_no_distance', 'Chèche san distans')}</p>}
           </div>
         </div>
 
@@ -841,7 +853,7 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
       </div>
 
       <div className="px-5 space-y-3">
-        {error && <p className="text-center text-red-400 text-xs mt-4">{error}</p>}
+        {error && <p className="text-center text-red-400 text-xs mt-4">{t('marketplace.network_error', error)}</p>}
 
         {loading && listings.length === 0 && (
           <div className="space-y-3">
@@ -854,8 +866,8 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
         {!loading && !error && listings.length === 0 && (
           <div className="text-center py-12 text-slate-500">
             <p className="text-3xl mb-2">{config.icon}</p>
-            <p className="text-sm">Pa gen rezilta</p>
-            <p className="text-xs mt-1">Eseye yon lòt mo oswa onglet</p>
+            <p className="text-sm">{t('marketplace.no_results', 'Pa gen rezilta')}</p>
+            <p className="text-xs mt-1">{t('marketplace.no_results_hint', 'Eseye yon lòt mo oswa onglet')}</p>
           </div>
         )}
 
@@ -875,7 +887,7 @@ export default function MarketplaceCore({ role, initialQuery = '' }: Marketplace
 
         {hasMore && (
           <div ref={sentinelRef} className="py-6 text-center">
-            {loading && <p className="text-slate-400 text-xs animate-pulse">Chaje plis...</p>}
+            {loading && <p className="text-slate-400 text-xs animate-pulse">{t('marketplace.loading_more', 'Chaje plis...')}</p>}
           </div>
         )}
       </div>
