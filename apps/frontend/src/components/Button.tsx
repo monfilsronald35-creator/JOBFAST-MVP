@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useRef, useEffect, memo, forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // ─────────────────────────────────────────────────────────────
 // VARIANT & SIZE MAPS
@@ -127,7 +128,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     leftIcon          = null,
     rightIcon         = null,
     loading           = false,
-    loadingText       = 'Ap trete…',
+    loadingText       = undefined,
     disabled          = false,
     fullWidth         = false,
     rounded           = false,
@@ -145,6 +146,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   const isDisabled  = loading || disabled;
   const spinnerClass = SPINNER_SIZES[size] ?? SPINNER_SIZES.md;
 
+  const { t } = useTranslation();
+  const effectiveLoadingText = loadingText ?? t('common.processing', 'Ap trete...');
+
   const base = [
     'relative inline-flex items-center justify-center font-bold select-none transition-all duration-150',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]',
@@ -160,7 +164,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   const inner = loading ? (
     <>
       <span className={`${spinnerClass} animate-spin rounded-full border-2 border-current border-r-transparent shrink-0`} aria-hidden="true" />
-      {loadingText && <span>{loadingText}</span>}
+      {effectiveLoadingText && <span>{effectiveLoadingText}</span>}
     </>
   ) : (
     <>

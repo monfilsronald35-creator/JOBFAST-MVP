@@ -60,6 +60,18 @@ const detectLanguage = (): SupportedLanguage => {
   if (!isBrowser()) return DEFAULT_LANGUAGE;
   const saved = safeGet(STORAGE_KEY);
   if (saved) return normalizeLanguage(saved);
+
+  // Prefer the browser's preferred languages list if available
+  try {
+    const langs = (navigator && (navigator as any).languages) || [];
+    for (const l of langs) {
+      const norm = normalizeLanguage(l);
+      if (norm) return norm;
+    }
+  } catch {
+    // fall through
+  }
+
   const browser = typeof navigator !== 'undefined' ? navigator.language : null;
   return normalizeLanguage(browser);
 };
@@ -76,7 +88,9 @@ export const initI18n = async (): Promise<typeof i18n> => {
     .init({
       resources,
       lng:         detectLanguage(),
-      fallbackLng: DEFAULT_LANGUAGE,
+      // Keep Kreyòl as the primary default language, but prefer Spanish then English
+      // when a key is missing. This makes fallbacks friendlier for Spanish-speaking users.
+      fallbackLng: ['es', 'en'],
       interpolation: { escapeValue: false },
       react:       { useSuspense: false },
     })
