@@ -1,6 +1,7 @@
-import { Router }                    from 'express';
-import { requireAuth, requireRole } from '../../../core/middleware/auth.middleware.js';
-import { LocalizationController }   from '../controllers/LocalizationController.js';
+import { Router }                      from 'express';
+import { requireAuth, requireRole }   from '../../../core/middleware/auth.middleware.js';
+import { LocalizationController }     from '../controllers/LocalizationController.js';
+import { LocalizationController004 }  from '../controllers/LocalizationController004.js';
 
 export const localizationRouter = Router();
 const R  = requireAuth;
@@ -31,3 +32,32 @@ localizationRouter.patch('/countries/:code/features', R, A, C.updateCountryFeatu
 // ── Admin: analytics ─────────────────────────────────────────────────────────
 localizationRouter.get ('/analytics',              R, A, C.getAnalytics);
 localizationRouter.get ('/analytics/:code/trend',  R, A, C.getCountryTrend);
+
+// ─── Migration 004: Timezones, DST, Working Days, Business Hours, Holidays, Measurement ───
+const D = LocalizationController004;
+
+// Timezones (public)
+localizationRouter.get('/timezones',              D.listTimezones);
+localizationRouter.get('/timezones/:id/dst',      D.getDstRules);     // must be before /:id
+localizationRouter.get('/timezones/:id',          D.getTimezone);
+
+// Working Days (read: public, write: admin)
+localizationRouter.get('/working-days',           D.listWorkingDays);
+localizationRouter.put('/working-days',           R, A, D.upsertWorkingDays);
+
+// Business Hours (read: public, write: admin)
+localizationRouter.get('/business-hours',         D.listBusinessHours);
+localizationRouter.get('/business-hours/open',    D.checkIsOpen);
+localizationRouter.put('/business-hours',         R, A, D.upsertBusinessHours);
+
+// Holidays (public)
+localizationRouter.get('/holidays',               D.listHolidays);
+localizationRouter.get('/holidays/check',         D.isHoliday);
+localizationRouter.get('/holidays/search',        D.searchHolidays);
+
+// Measurement (public)
+localizationRouter.get('/measurement-systems',                    D.listMeasurementSystems);
+localizationRouter.get('/measurement-units',                      D.listMeasurementUnits);
+localizationRouter.get('/measurement-units/:id',                  D.getMeasurementUnit);
+localizationRouter.get('/measurement-preferences/:countryId',     D.getCountryMeasurementPreferences);
+localizationRouter.post('/measurement-units/convert',             D.convertUnit);

@@ -375,7 +375,7 @@ function HelpPane() {
   return (
     <div style={paneStyle}>
       <h2 style={h2}>{t('settings.help.title', 'Help & Support')}</h2>
-      <p style={{ color: '#94A3B8', marginBottom: 16 }}>{t('settings.help.email', 'support@jobfasthq.com')}</p>
+      <p style={{ color: '#94A3B8', marginBottom: 16 }}>{t('settings.help.email', 'monfilsronald35@gmail.com')}</p>
       <a href="https://jobfast-mvp-spzy.vercel.app" style={{ display: 'block', color: '#FACC15', fontSize: 13, marginBottom: 16 }}>jobfast-mvp-spzy.vercel.app</a>
       {Array.isArray(FAQ) && FAQ.map((f, i) => (
         <div key={i} style={{ marginBottom: 16, padding: '12px 16px', background: '#0F172A', borderRadius: 10 }}>
@@ -395,7 +395,7 @@ function AboutPane() {
       <div style={infoBlock}><label style={labelStyle}>{t('settings.about.version', 'Version')}</label><span style={valueStyle}>4.0.0</span></div>
       <div style={infoBlock}><label style={labelStyle}>{t('settings.about.platform', 'Platform')}</label><span style={valueStyle}>JOBFAST HQ Global</span></div>
       <div style={infoBlock}><label style={labelStyle}>{t('settings.about.website', 'Website')}</label><a href="https://jobfast-mvp-spzy.vercel.app" style={{ color: '#FACC15' }}>jobfast-mvp-spzy.vercel.app</a></div>
-      <div style={infoBlock}><label style={labelStyle}>{t('settings.about.email', 'Email')}</label><span style={valueStyle}>hello@jobfasthq.com</span></div>
+      <div style={infoBlock}><label style={labelStyle}>{t('settings.about.email', 'Email')}</label><span style={valueStyle}>monfilsronald35@gmail.com</span></div>
       <div style={{ ...infoBlock, marginTop: 20 }}>
         <p style={{ color: '#94A3B8', fontSize: 12 }}>{t('settings.about.copyright', '© 2025 JOBFAST. All rights reserved.')}</p>
       </div>

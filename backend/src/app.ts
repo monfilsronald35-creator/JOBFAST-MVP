@@ -32,7 +32,7 @@ export function createApp(): Express {
   }));
 
   const ALLOWED_ORIGINS_DEFAULT = isProd
-    ? 'https://jobfast-mvp-spzy.vercel.app,https://jobfasthq.com,https://app.jobfasthq.com'
+    ? 'https://jobfast-mvp-spzy.vercel.app'
     : 'http://localhost:5173';
 
   app.use(cors({

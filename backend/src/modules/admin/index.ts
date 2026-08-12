@@ -61,7 +61,7 @@ export function registerAdminModule(app: Express): void {
 
     // Always include branding constants
     config['public_app_name']       = 'JOBFAST';
-    config['public_support_email']  = 'support@jobfasthq.com';
+    config['public_support_email']  = 'monfilsronald35@gmail.com';
     config['public_api_url']        = 'https://jobfast-backend.onrender.com';
     config['public_app_url']        = 'https://jobfast-mvp-spzy.vercel.app';
 
