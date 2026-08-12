@@ -1,4 +1,5 @@
 import React, { memo, useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type RecordingState = 'idle' | 'recording' | 'done';
@@ -87,7 +88,7 @@ const VoiceRecorder = memo(function VoiceRecorder({ open, onClose, onRecord }: V
             </button>
           )}
 
-          <button type="button" onClick={onClose} className="text-[11px] text-slate-400">Cancel</button>
+          <button type="button" onClick={onClose} className="text-[11px] text-slate-400">{t('common.cancel', 'Anile')}</button>
         </motion.div>
       )}
     </AnimatePresence>
