@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://jobfast-backend.onrender.com/api/v1' }}
   VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL || 'https://jobfast-backend.onrender.com' }}
 
