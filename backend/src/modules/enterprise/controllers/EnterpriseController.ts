@@ -311,7 +311,7 @@ export const EnterpriseController = {
   },
 
   async listWorkflows(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try { res.json({ data: await WorkflowService.list(pid(req, 'orgId')) }); } catch (err) { next(err); }
+    try { res.json({ data: await WorkflowService.listWorkflows(pid(req, 'orgId')) }); } catch (err) { next(err); }
   },
 
   async submitWorkflow(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -341,7 +341,7 @@ export const EnterpriseController = {
   async listWorkflowInstances(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const qp = q(req);
-      res.json({ data: await WorkflowService.list(pid(req, 'orgId'), qp['status'] ? String(qp['status']) : undefined) });
+      res.json({ data: await WorkflowService.listWorkflowInstances(pid(req, 'orgId'), qp['status'] ? String(qp['status']) : undefined) });
     } catch (err) { next(err); }
   },
 

@@ -17,7 +17,7 @@ export const WorkflowService = {
     return wf;
   },
 
-  async list(orgId: string): Promise<Workflow[]> {
+  async listWorkflows(orgId: string): Promise<Workflow[]> {
     return EnterpriseRepository.listWorkflows(orgId);
   },
 
@@ -82,7 +82,7 @@ export const WorkflowService = {
     return (await EnterpriseRepository.getWorkflowInstance(instanceId))!;
   },
 
-  async list(orgId: string, status?: string): Promise<WorkflowInstance[]> {
+  async listWorkflowInstances(orgId: string, status?: string): Promise<WorkflowInstance[]> {
     return EnterpriseRepository.listWorkflowInstances(orgId, status);
   },
 };
