@@ -27,47 +27,41 @@
       "short_name": "Djòb",
       "url": "/search?type=job",
       "description": "Jwenn djòb pre ou",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [{ "src": "/brand/icons/jobfast-icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Chèche Travayè",
       "short_name": "Travayè",
       "url": "/search?type=user",
       "description": "Rekrite travayè eksperyanse",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [{ "src": "/brand/icons/jobfast-icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Pòtefèy",
       "short_name": "Bous",
       "url": "/wallet",
       "description": "Jere lajan ou",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [{ "src": "/brand/icons/jobfast-icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
 
   "icons": [
-    { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-167x167.png", "sizes": "167x167", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-180x180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/brand/icons/jobfast-icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icons/jobfast-icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icons/jobfast-icon-1024.png",         "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icons/jobfast-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
 
   "screenshots": [
     {
-      "src": "/splash/splash-750x1334.png",
+      "src": "/brand/splash/ios/iphone/portrait/750x1334.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "JOBFAST — Jwenn Djòb ak Sèvis"
     },
     {
-      "src": "/splash/splash-1080x1920.png",
+      "src": "/brand/splash/ios/iphone/portrait/1080x1920.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",

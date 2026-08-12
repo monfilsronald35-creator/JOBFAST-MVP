@@ -1,0 +1,90 @@
+/* ═══════════════════════════════════════════════════════════════
+   JOBFAST Splash Screen CSS
+   Safe areas · responsive clamp() · GPU-only animations · a11y
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Safe area container ──────────────────────────────────────── */
+.splash-root {
+  padding-top:    env(safe-area-inset-top,    0px);
+  padding-right:  env(safe-area-inset-right,  0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left:   env(safe-area-inset-left,   0px);
+  box-sizing: border-box;
+  min-height: 100dvh;
+}
+
+/* ── Logo sizing — clamp() fluid scale ───────────────────────── */
+
+/* Small logo (checking / error phase) */
+.splash-logo {
+  width: clamp(160px, 44vw, 320px);
+  height: auto;
+  max-height: 38vh;
+  object-fit: contain;
+}
+
+/* Hero logo (main splash phase) */
+.splash-logo-hero {
+  width: clamp(200px, 52vw, 380px);
+  height: auto;
+  max-height: 44vh;
+  object-fit: contain;
+}
+
+/* Tablet (≥ 768px) */
+@media (min-width: 768px) {
+  .splash-logo       { width: clamp(240px, 36vw, 380px); max-height: 40vh; }
+  .splash-logo-hero  { width: clamp(280px, 40vw, 440px); max-height: 46vh; }
+}
+
+/* Large screen (≥ 1200px) */
+@media (min-width: 1200px) {
+  .splash-logo       { width: 360px; }
+  .splash-logo-hero  { width: 420px; }
+}
+
+/* Landscape — limit by height, not width */
+@media (orientation: landscape) {
+  .splash-logo      { width: min(40vw, 260px); max-height: 52vh; }
+  .splash-logo-hero { width: min(44vw, 300px); max-height: 58vh; }
+}
+
+/* ── Keyframes (GPU-only: transform + opacity) ───────────────── */
+@keyframes jf-logo-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.94); }
+  to   { opacity: 1; transform: translate3d(0, 0,    0) scale(1);    }
+}
+
+@keyframes jf-logo-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1);    }
+  to   { opacity: 0; transform: translate3d(0, 0, 0) scale(0.985); }
+}
+
+@keyframes jf-bar {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(0%);    }
+  100% { transform: translateX(100%);  }
+}
+
+/* ── Animation classes ───────────────────────────────────────── */
+.splash-logo,
+.splash-logo-hero,
+.splash-text-reveal {
+  animation: jf-logo-in 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.splash-bar-inner {
+  animation: jf-bar 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Reduced motion — accessibility obligatwa ────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .splash-root *,
+  .splash-logo,
+  .splash-logo-hero,
+  .splash-bar-inner {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

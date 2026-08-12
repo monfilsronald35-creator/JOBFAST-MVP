@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { changeLanguage, STORAGE_KEY } from "../i18n";
-import splashImg from "../assets/images/splash.png";
+import '../styles/splash.css';
 
 // ---- CONFIG / TYPES --------------------------------------------------------
 
@@ -238,24 +238,21 @@ function SplashScreen() {
   if (!langPicked || phase === "language") {
     return (
       <main
-        className="relative min-h-screen w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none"
+        className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none"
         aria-labelledby="splash-language-title"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] animate-[gradientMove_12s_ease-in-out_infinite] z-0" />
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[120px] animate-[pulseGlow_6s_ease-in-out_infinite] z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] z-0" />
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[120px] z-0" />
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
           <div
-            className="text-center animate-[logoReveal_800ms_ease-out]"
+            className="text-center splash-text-reveal"
             aria-label={t("splash.brand_aria")}
           >
             <h1 className="text-4xl font-black tracking-tight mb-1">
               <span className="text-yellow-400">JOB</span>
               <span className="text-white">FAST</span>
             </h1>
-            <p className="text-2xl font-bold text-white mt-3 animate-[glowPulse_2.4s_ease-in-out_infinite]">
-              🌐
-            </p>
           </div>
 
           <section
@@ -336,7 +333,7 @@ function SplashScreen() {
   if (phase === "error" && error) {
     const errorKey = `splash.errors.${error.code}`;
     return (
-      <main className="relative min-h-screen w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none">
+      <main className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none">
         <div className="absolute inset-0 bg-gradient-to-b from-[#150b1e] via-[#050B18] to-[#02060F] z-0" />
         <div className="pointer-events-none absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-red-500/15 blur-[120px] z-0" />
 
@@ -369,15 +366,15 @@ function SplashScreen() {
   // 3) CHECKING / LOADING STATE (session flow)
   if (phase === "checking") {
     return (
-      <main className="relative min-h-screen w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] animate-[gradientMove_12s_ease-in-out_infinite] z-0" />
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[120px] animate-[glowPulse_5s_ease-in-out_infinite] z-0" />
+      <main className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] z-0" />
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[320px] w-[320px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[120px] z-0" />
 
         <section className="relative z-10 flex flex-col items-center text-center max-w-sm w-full">
           <img
-            src={splashImg}
+            src="/brand/logo/jobfast-logo.svg"
             alt={t("splash.logo_alt")}
-            className="w-40 h-40 object-contain animate-[logoReveal_900ms_ease-out]"
+            className="splash-logo"
             loading="eager"
           />
           <p className="mt-6 text-sm text-slate-300">
@@ -386,7 +383,7 @@ function SplashScreen() {
 
           <div className="mt-6 w-full flex flex-col gap-2">
             <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full w-1/3 bg-yellow-400 animate-[loadingBar_1.4s_ease-in-out_infinite]" />
+              <div className="h-full w-1/3 bg-yellow-400 splash-bar-inner" />
             </div>
             {isSlow && (
               <p className="text-xs text-slate-400">
@@ -402,12 +399,12 @@ function SplashScreen() {
   // 4) MAIN SPLASH UI (guest, no auto-redirect yet)
   return (
     <main
-      className="relative min-h-screen w-full bg-[#050B18] text-white overflow-hidden flex flex-col justify-between items-center px-6 py-10 select-none"
+      className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col justify-between items-center px-6 py-10 select-none"
       aria-labelledby="splash-main-title"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] animate-[gradientMove_16s_ease-in-out_infinite] z-0" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[100px] animate-[glowPulse_6s_ease-in-out_infinite] z-0" />
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[100px] animate-[glowPulse_8s_ease-in-out_infinite] z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] z-0" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[100px] z-0" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[100px] z-0" />
 
       {/* TOP BAR — language switcher */}
       <div className="relative z-20 w-full flex justify-end">
@@ -445,9 +442,9 @@ function SplashScreen() {
       <section className="relative z-10 flex flex-col items-center text-center max-w-md w-full my-auto">
         <div className="mb-6 flex items-center justify-center">
           <img
-            src={splashImg}
+            src="/brand/logo/jobfast-logo.svg"
             alt={t("splash.logo_alt")}
-            className="w-56 h-56 md:w-64 md:h-64 object-contain drop-shadow-[0_15px_35px_rgba(234,179,8,0.40)] animate-[logoReveal_900ms_ease-out]"
+            className="splash-logo-hero drop-shadow-[0_15px_35px_rgba(234,179,8,0.40)]"
             loading="eager"
           />
         </div>
