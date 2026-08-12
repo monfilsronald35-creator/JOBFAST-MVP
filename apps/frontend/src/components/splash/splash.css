@@ -10,14 +10,15 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left:   env(safe-area-inset-left,   0px);
   box-sizing: border-box;
-  min-height: 100dvh;
+  min-height: 100svh; /* stable viewport — iOS Safari fallback */
+  min-height: 100dvh; /* dynamic viewport — Android Chrome wins */
 }
 
 /* ── Logo sizing — clamp() fluid scale ───────────────────────── */
 
 /* Small logo (checking / error phase) */
 .splash-logo {
-  width: clamp(160px, 44vw, 320px);
+  width: min(clamp(160px, 44vw, 320px), 72vw);
   height: auto;
   max-height: 38vh;
   object-fit: contain;
@@ -25,7 +26,7 @@
 
 /* Hero logo (main splash phase) */
 .splash-logo-hero {
-  width: clamp(200px, 52vw, 380px);
+  width: min(clamp(200px, 52vw, 380px), 72vw);
   height: auto;
   max-height: 44vh;
   object-fit: contain;

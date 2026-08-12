@@ -1,8 +1,8 @@
 import React, { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { changeLanguage, STORAGE_KEY } from "../i18n";
-import '../styles/splash.css';
+import { changeLanguage, STORAGE_KEY } from "../../i18n";
+import './splash.css';
 
 // ---- CONFIG / TYPES --------------------------------------------------------
 

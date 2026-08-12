@@ -10,7 +10,7 @@ import PublicLayout from "@/components/PublicLayout";
 import Loader from "@/components/Loader";
 
 // Auth & Public Pages
-import SplashScreen    from "@/pages/SplashScreen.jsx";
+import SplashScreen    from "@/components/splash/SplashScreen";
 import Onboarding      from "@/pages/Onboarding.jsx";
 import RegisterScreen  from "@/pages/Register/index.jsx";
 import LoginScreen     from "@/pages/Login.jsx";

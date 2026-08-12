@@ -1,60 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 430">
   <!--
-    JOBFAST MASTER LOGO — transparent background
-    For use on dark backgrounds (splash screen, dark UI)
-    Buildings + FAST text = white for dark bg visibility
-    Worker + JOB text = #FFB800 amber/yellow (brand colour)
+    JOBFAST Master Logo — Transparent Background
+    For use on dark navy (#050B18) backgrounds
+    Worker / JOB:  #F5C518 (golden yellow)
+    Building / FAST: #FFFFFF (white — visible on dark)
   -->
 
-  <!-- ══ BILDING BLAN — DÈYÈ FIGUR LA ═════════════════════ -->
-  <g fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="miter">
-    <rect x="258" y="84" width="90" height="214"/>
-    <line x1="258" y1="114" x2="348" y2="114"/>
-    <line x1="258" y1="144" x2="348" y2="144"/>
-    <line x1="258" y1="174" x2="348" y2="174"/>
-    <line x1="258" y1="204" x2="348" y2="204"/>
-    <line x1="258" y1="234" x2="348" y2="234"/>
-    <line x1="258" y1="264" x2="348" y2="264"/>
-    <line x1="288" y1="84"  x2="288" y2="298"/>
-    <line x1="318" y1="84"  x2="318" y2="298"/>
-    <rect x="358" y="118" width="76" height="180"/>
-    <line x1="358" y1="148" x2="434" y2="148"/>
-    <line x1="358" y1="178" x2="434" y2="178"/>
-    <line x1="358" y1="208" x2="434" y2="208"/>
-    <line x1="358" y1="238" x2="434" y2="238"/>
-    <line x1="358" y1="268" x2="434" y2="268"/>
-    <line x1="396" y1="118" x2="396" y2="298"/>
-  </g>
-  <line x1="48" y1="298" x2="456" y2="298" stroke="#FFFFFF" stroke-width="3"/>
+  <!-- ═══ BUILDINGS ═══ -->
+  <!-- Tall building (left of building group) -->
+  <rect x="305" y="65" width="92" height="210" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="miter"/>
+  <line x1="336" y1="65"  x2="336" y2="275" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="366" y1="65"  x2="366" y2="275" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="305" y1="105" x2="397" y2="105" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="305" y1="145" x2="397" y2="145" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="305" y1="185" x2="397" y2="185" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="305" y1="225" x2="397" y2="225" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="305" y1="265" x2="397" y2="265" stroke="#FFFFFF" stroke-width="5"/>
 
-  <!-- ══ TRAVAYÈ JÒN #FFB800 ═════════════════════════════ -->
-  <!-- Chapò dòm -->
-  <path d="M 142,142 Q 142,66 202,62 Q 264,66 264,142 Z" fill="#FFB800"/>
-  <!-- Chapò brim -->
-  <ellipse cx="203" cy="142" rx="78" ry="14" fill="#FFB800"/>
-  <!-- Bann nwa (detay chapò) -->
-  <ellipse cx="203" cy="136" rx="70" ry="8" fill="#0A1628" opacity=".8"/>
-  <!-- Tèt -->
-  <ellipse cx="200" cy="188" rx="47" ry="52" fill="#FFB800"/>
-  <!-- Kou -->
-  <rect x="185" y="234" width="30" height="16" rx="5" fill="#FFB800"/>
-  <!-- Bra gòch (estann gòch) -->
-  <path d="M 54,292 Q 56,258 76,246 Q 98,237 122,240 L 127,258 Q 105,258 88,269 Q 70,280 70,295 Z" fill="#FFB800"/>
-  <!-- Kò / bra kwaze -->
-  <path d="M 76,296 L 87,252 Q 112,230 153,228 L 168,230 Q 184,249 200,251 Q 218,249 246,232 L 262,228 Q 306,230 328,252 L 338,296 Q 286,314 208,316 Q 130,314 76,296 Z" fill="#FFB800"/>
-  <!-- Bra dwat -->
-  <path d="M 358,292 Q 356,258 336,246 Q 314,237 290,240 L 285,258 Q 307,258 324,269 Q 342,280 342,295 Z" fill="#FFB800"/>
-  <!-- Lonbraj bra -->
-  <path d="M 84,256 Q 208,244 330,256 L 328,267 Q 208,255 86,267 Z" fill="#D49000"/>
-  <path d="M 82,269 Q 207,258 328,270 L 326,282 Q 207,270 84,282 Z" fill="#C98800"/>
+  <!-- Shorter building (right) -->
+  <rect x="402" y="108" width="62" height="167" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="miter"/>
+  <line x1="433" y1="108" x2="433" y2="275" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="402" y1="143" x2="464" y2="143" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="402" y1="178" x2="464" y2="178" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="402" y1="213" x2="464" y2="213" stroke="#FFFFFF" stroke-width="5"/>
+  <line x1="402" y1="248" x2="464" y2="248" stroke="#FFFFFF" stroke-width="5"/>
 
-  <!-- ══ TÈKS JOBFAST ════════════════════════════════════ -->
-  <text x="78"  y="400" font-family="Arial Black, Impact, Helvetica Neue, Arial, sans-serif"
-        font-size="88" font-weight="900" fill="#FFB800">JOB</text>
-  <text x="272" y="400" font-family="Arial Black, Impact, Helvetica Neue, Arial, sans-serif"
-        font-size="88" font-weight="900" fill="#FFFFFF">FAST</text>
-  <text x="256" y="434" font-family="Helvetica Neue, Arial, sans-serif"
-        font-size="20" fill="#6688AA" text-anchor="middle">Travay. Sèvis. Biznis.</text>
-  <text x="256" y="457" font-family="Helvetica Neue, Arial, sans-serif"
-        font-size="19" fill="#6688AA" text-anchor="middle">Tout nan yon sèl aplikasyon.</text>
+  <!-- Ground line -->
+  <line x1="38" y1="275" x2="468" y2="275" stroke="#FFFFFF" stroke-width="8"/>
+
+  <!-- ═══ CONSTRUCTION WORKER ═══ -->
+
+  <!-- Hard hat dome -->
+  <path d="M 78,140 C 76,46 168,36 168,36 C 168,36 260,46 258,140 Z" fill="#F5C518"/>
+
+  <!-- Hard hat brim -->
+  <ellipse cx="168" cy="140" rx="108" ry="18" fill="#F5C518"/>
+
+  <!-- Hat band shadow -->
+  <ellipse cx="168" cy="134" rx="95"  ry="11" fill="#C8930A" opacity="0.30"/>
+
+  <!-- Head -->
+  <ellipse cx="164" cy="198" rx="58" ry="64" fill="#F5C518"/>
+
+  <!-- Neck -->
+  <rect x="145" y="256" width="36" height="18" rx="7" fill="#F5C518"/>
+
+  <!-- Torso core -->
+  <path d="
+    M 64,275  L 74,243
+    C 90,210 122,198 150,203
+    C 158,218 162,222 164,222
+    C 166,222 170,218 178,203
+    C 208,198 240,210 256,243
+    L 266,275
+    C 208,294 164,295 164,295
+    C 164,295 120,294 64,275 Z
+  " fill="#F5C518"/>
+
+  <!-- Left arm (extends left) -->
+  <path d="
+    M 74,243  L 55,265
+    C 50,245 56,222 72,212
+    C 88,202 112,202 124,207
+    L 124,222
+    C 104,222 88,234 78,247
+    C 68,260 68,270 70,275 Z
+  " fill="#F5C518"/>
+
+  <!-- Right arm (extends right) -->
+  <path d="
+    M 256,243  L 275,265
+    C 280,245 274,222 258,212
+    C 242,202 218,202 206,207
+    L 206,222
+    C 226,222 242,234 252,247
+    C 262,260 262,270 260,275 Z
+  " fill="#F5C518"/>
+
+  <!-- Arm crease shadow -->
+  <path d="M 58,250 C 164,240 270,250 270,250 L 268,262 C 268,262 164,252 60,262 Z"
+    fill="#B8820A" opacity="0.45"/>
+
+  <!-- ═══ WORDMARK ═══ -->
+  <text x="38" y="392"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="114" font-weight="900" fill="#F5C518">JOB</text>
+  <text x="248" y="392"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="114" font-weight="900" fill="#FFFFFF">FAST</text>
 </svg>
