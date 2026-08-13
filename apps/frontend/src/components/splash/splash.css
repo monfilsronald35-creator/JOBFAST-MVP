@@ -1,0 +1,41 @@
+:root{
+  --splash-bg: #050F1E;
+}
+
+.jf-splash-root{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--splash-bg);
+  z-index:9999;
+  min-height:100dvh;
+  min-height:100svh;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-right:env(safe-area-inset-right,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:env(safe-area-inset-left,0px);
+}
+
+.jf-splash-inner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  max-width:1200px;
+  padding:1.5rem;
+}
+
+.jf-splash-logo{
+  display:block;
+  max-width: min(clamp(180px, 48vw, 420px), 72vw);
+  max-height:42vh;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .jf-splash-root, .jf-splash-inner, .jf-splash-logo{ transition:none !important; animation:none !important; }
+}
