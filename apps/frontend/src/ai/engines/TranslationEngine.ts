@@ -33,52 +33,70 @@ export const TranslationEngine = {
 
     // Skip if same language
     if (sourceLang !== 'unknown' && sourceLang === request.targetLang) {
-      return { original: request.text, translated: request.text, sourceLang, targetLang: request.targetLang, confidence: 100 };
+      return {
+        original: request.text,
+        translated: request.text,
+        sourceLang,
+        targetLang: request.targetLang,
+        confidence: 100,
+      };
     }
 
     // Backend specialized translation service (DeepL, Google Translate, etc.)
     try {
       const res = await fetch('/api/ai/translate', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ ...request, sourceLang }),
+        body: JSON.stringify({ ...request, sourceLang }),
       });
       if (res.ok) {
-        const result = await res.json() as TranslationResult;
+        const result = (await res.json()) as TranslationResult;
         _cache.set(key, result);
         return result;
       }
-    } catch { /* AI fallback */ }
+    } catch {
+      /* AI fallback */
+    }
 
     // AI fallback
-    const langNames: Record<string, string> = { ht: 'Haitian Creole', fr: 'French', en: 'English', es: 'Spanish' };
+    const langNames: Record<string, string> = {
+      ht: 'Haitian Creole',
+      fr: 'French',
+      en: 'English',
+      es: 'Spanish',
+    };
     const targetName = langNames[request.targetLang] ?? request.targetLang;
-    const translated = await AIGateway.complete(
-      request.text,
-      {
-        strategy:     'fastest',
-        systemPrompt: SYSTEM_PROMPTS.translator(sourceLang, request.targetLang),
-        messages:     [{ role: 'user', content: request.text }],
-        maxTokens:    Math.ceil(request.text.length / 2),
-        cacheKey:     key,
-        context:      { language: request.targetLang },
-      },
-    ).catch(() => request.text);
+    const translated = await AIGateway.complete(request.text, {
+      strategy: 'fastest',
+      systemPrompt: SYSTEM_PROMPTS.translator(sourceLang, request.targetLang),
+      messages: [{ role: 'user', content: request.text }],
+      maxTokens: Math.ceil(request.text.length / 2),
+      cacheKey: key,
+      context: { language: request.targetLang },
+    }).catch(() => request.text);
 
     const result: TranslationResult = {
-      original:   request.text,
+      original: request.text,
       translated,
       sourceLang: sourceLang !== 'unknown' ? sourceLang : 'en',
       targetLang: request.targetLang,
       confidence: 85,
-      provider:   'ai',
+      provider: 'ai',
     };
     _cache.set(key, result);
     return result;
   },
 
-  async translateBatch(texts: string[], targetLang: string, sourceLang?: string): Promise<TranslationResult[]> {
-    return Promise.all(texts.map(text => this.translate({ text, targetLang, sourceLang })));
+  async translateBatch(
+    texts: string[],
+    targetLang: string,
+    sourceLang?: string,
+  ): Promise<TranslationResult[]> {
+    return Promise.all(
+      texts.map((text) =>
+        this.translate({ text, targetLang, ...(sourceLang !== undefined ? { sourceLang } : {}) }),
+      ),
+    );
   },
 
   async autoTranslate(text: string, userLang: string): Promise<string> {

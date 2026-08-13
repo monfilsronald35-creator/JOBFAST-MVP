@@ -1,7 +1,7 @@
-import React, { memo, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { changeLanguage, STORAGE_KEY } from "../../i18n";
+import React, { memo, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage, STORAGE_KEY } from '../../i18n';
 import './splash.css';
 
 // ---- CONFIG / TYPES --------------------------------------------------------
@@ -13,13 +13,13 @@ interface Language {
 }
 
 const LANGUAGES: Language[] = [
-  { code: "ht", name: "Kreyòl Ayisyen", native: "Kreyòl" },
-  { code: "fr", name: "Français",       native: "Français" },
-  { code: "en", name: "English",        native: "English" },
-  { code: "es", name: "Español",        native: "Español" },
+  { code: 'ht', name: 'Kreyòl Ayisyen', native: 'Kreyòl' },
+  { code: 'fr', name: 'Français', native: 'Français' },
+  { code: 'en', name: 'English', native: 'English' },
+  { code: 'es', name: 'Español', native: 'Español' },
 ];
 
-type Phase = "language" | "checking" | "ready" | "error";
+type Phase = 'language' | 'checking' | 'ready' | 'error';
 
 interface ErrorState {
   code: string;
@@ -77,32 +77,34 @@ function SplashScreen() {
   const { t, i18n } = useTranslation();
 
   const [langPicked, setLangPicked] = useState(hasChosenLanguage);
-  const [selecting,  setSelecting]  = useState(false);
+  const [selecting, setSelecting] = useState(false);
 
-  const [phase,    setPhase]    = useState<Phase>(hasChosenLanguage() ? "checking" : "language");
-  const [error,    setError]    = useState<ErrorState | null>(null);
-  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
-  const [isSlow,   setIsSlow]   = useState(false);
+  const [phase, setPhase] = useState<Phase>(hasChosenLanguage() ? 'checking' : 'language');
+  const [error, setError] = useState<ErrorState | null>(null);
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  );
+  const [isSlow, setIsSlow] = useState(false);
 
   useEffect(() => {
-    document.title = "JOBFAST";
-    track("splash_viewed");
+    document.title = 'JOBFAST';
+    track('splash_viewed');
   }, []);
 
   // Online / offline tracking
   useEffect(() => {
     const updateStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener("online",  updateStatus);
-    window.addEventListener("offline", updateStatus);
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
     return () => {
-      window.removeEventListener("online",  updateStatus);
-      window.removeEventListener("offline", updateStatus);
+      window.removeEventListener('online', updateStatus);
+      window.removeEventListener('offline', updateStatus);
     };
   }, []);
 
   // Slow loading indicator (> 3s)
   useEffect(() => {
-    if (phase === "checking") {
+    if (phase === 'checking') {
       const id = window.setTimeout(() => setIsSlow(true), 3000);
       return () => window.clearTimeout(id);
     }
@@ -110,7 +112,7 @@ function SplashScreen() {
   }, [phase]);
 
   const currentLang =
-    LANGUAGES.find((l) => l.code === (i18n.language?.split("-")[0])) ?? LANGUAGES[0]!;
+    LANGUAGES.find((l) => l.code === i18n.language?.split('-')[0]) ?? LANGUAGES[0]!;
 
   // ---- LANGUAGE HANDLERS ---------------------------------------------------
 
@@ -118,16 +120,16 @@ function SplashScreen() {
     if (selecting || code === currentLang.code) return;
 
     setSelecting(true);
-    track("splash_language_select_clicked", { code });
+    track('splash_language_select_clicked', { code });
 
     try {
       await changeLanguage(code);
       setLangPicked(true);
-      setPhase("checking");
-      track("splash_language_selected", { code });
+      setPhase('checking');
+      track('splash_language_selected', { code });
     } catch {
-      setError({ code: "unknown" });
-      setPhase("error");
+      setError({ code: 'unknown' });
+      setPhase('error');
     } finally {
       setSelecting(false);
     }
@@ -135,36 +137,36 @@ function SplashScreen() {
 
   const handleSkipLanguage = () => {
     setLangPicked(true);
-    setPhase("checking");
+    setPhase('checking');
   };
 
   // ---- SESSION / HEALTH FLOW ----------------------------------------------
 
   const runSessionFlow = async () => {
     try {
-      setPhase("checking");
+      setPhase('checking');
       setError(null);
 
       // 1) Internet
       if (!navigator.onLine) {
-        setError({ code: "offline" });
-        setPhase("error");
+        setError({ code: 'offline' });
+        setPhase('error');
         return;
       }
 
       // 2) Backend health
       const backendOk = await pingBackend();
       if (!backendOk) {
-        setError({ code: "backend_offline" });
-        setPhase("error");
+        setError({ code: 'backend_offline' });
+        setPhase('error');
         return;
       }
 
       // 3) Supabase health
       const supabaseOk = await pingSupabase();
       if (!supabaseOk) {
-        setError({ code: "supabase_offline" });
-        setPhase("error");
+        setError({ code: 'supabase_offline' });
+        setPhase('error');
         return;
       }
 
@@ -172,8 +174,8 @@ function SplashScreen() {
       const session = await getSupabaseSession();
       if (session.exists === false) {
         // Pa gen sesyon → guest flow
-        track("splash_session_missing");
-        setPhase("ready");
+        track('splash_session_missing');
+        setPhase('ready');
         return;
       }
 
@@ -181,8 +183,8 @@ function SplashScreen() {
       try {
         await refreshSupabaseToken();
       } catch {
-        setError({ code: "session_expired" });
-        setPhase("error");
+        setError({ code: 'session_expired' });
+        setPhase('error');
         return;
       }
 
@@ -196,46 +198,46 @@ function SplashScreen() {
       void checkNotifications();
 
       // Decide destination selon session / role / onboarding
-      const role = session.role ?? "worker";
+      const role = session.role ?? 'worker';
       const onboardingCompleted = profile.onboardingCompleted ?? false;
 
-      let destination = "/dashboard";
+      let destination = '/dashboard';
 
       if (!session.exists) {
-        destination = "/login";
+        destination = '/login';
       } else if (!onboardingCompleted) {
-        destination = "/onboarding";
+        destination = '/onboarding';
       } else {
-        if (role === "admin")    destination = "/admin";
-        if (role === "employer") destination = "/employer";
-        if (role === "worker")   destination = "/dashboard";
+        if (role === 'admin') destination = '/admin';
+        if (role === 'employer') destination = '/employer';
+        if (role === 'worker') destination = '/dashboard';
       }
 
-      track("splash_navigate", { destination, role, onboardingCompleted });
+      track('splash_navigate', { destination, role, onboardingCompleted });
       navigate(destination, { replace: true });
     } catch {
-      setError({ code: "unknown" });
-      setPhase("error");
+      setError({ code: 'unknown' });
+      setPhase('error');
     }
   };
 
   // Lañse flow la chak fwa nou antre nan "checking"
   useEffect(() => {
-    if (phase === "checking") {
+    if (phase === 'checking') {
       runSessionFlow();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   const handleRetry = () => {
-    track("splash_retry_clicked", { errorCode: error?.code });
+    track('splash_retry_clicked', { errorCode: error?.code });
     runSessionFlow();
   };
 
   // ---- RENDER SECTIONS -----------------------------------------------------
 
   // 1) LANGUAGE PICKER
-  if (!langPicked || phase === "language") {
+  if (!langPicked || phase === 'language') {
     return (
       <main
         className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none"
@@ -245,10 +247,7 @@ function SplashScreen() {
         <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-yellow-500/15 blur-[120px] z-0" />
 
         <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
-          <div
-            className="text-center splash-text-reveal"
-            aria-label={t("splash.brand_aria")}
-          >
+          <div className="text-center splash-text-reveal" aria-label={t('splash.brand_aria')}>
             <h1 className="text-4xl font-black tracking-tight mb-1">
               <span className="text-yellow-400">JOB</span>
               <span className="text-white">FAST</span>
@@ -260,21 +259,13 @@ function SplashScreen() {
             aria-labelledby="splash-language-title"
           >
             <header className="px-5 pt-5 pb-3 text-center border-b border-white/10">
-              <p
-                id="splash-language-title"
-                className="text-white font-bold text-base"
-              >
-                {t("splash.language.title")}
+              <p id="splash-language-title" className="text-white font-bold text-base">
+                {t('splash.language.title')}
               </p>
-              <p className="text-slate-400 text-xs mt-0.5">
-                {t("splash.language.subtitle")}
-              </p>
+              <p className="text-slate-400 text-xs mt-0.5">{t('splash.language.subtitle')}</p>
             </header>
 
-            <div
-              role="radiogroup"
-              aria-label={t("splash.language.aria_group")}
-            >
+            <div role="radiogroup" aria-label={t('splash.language.aria_group')}>
               {LANGUAGES.map((lang) => {
                 const isActive = lang.code === currentLang.code;
                 return (
@@ -289,9 +280,10 @@ function SplashScreen() {
                     onClick={() => handlePick(lang.code)}
                     disabled={selecting}
                     className={`w-full flex items-center gap-4 px-5 py-4 transition-all border-b border-white/5 last:border-0
-                      ${isActive
-                        ? "bg-yellow-400/15 text-yellow-300"
-                        : "text-white hover:bg-white/8 active:bg-white/15"
+                      ${
+                        isActive
+                          ? 'bg-yellow-400/15 text-yellow-300'
+                          : 'text-white hover:bg-white/8 active:bg-white/15'
                       }
                       disabled:opacity-60`}
                   >
@@ -307,9 +299,7 @@ function SplashScreen() {
                         })}
                       </p>
                     </div>
-                    {isActive && (
-                      <span className="ml-auto text-yellow-400 text-lg">✓</span>
-                    )}
+                    {isActive && <span className="ml-auto text-yellow-400 text-lg">✓</span>}
                   </button>
                 );
               })}
@@ -322,7 +312,7 @@ function SplashScreen() {
             disabled={selecting}
             className="text-slate-500 text-sm hover:text-slate-300 transition disabled:opacity-60"
           >
-            {selecting ? t("common.loading") : t("splash.language.skip")}
+            {selecting ? t('common.loading') : t('splash.language.skip')}
           </button>
         </div>
       </main>
@@ -330,7 +320,7 @@ function SplashScreen() {
   }
 
   // 2) ERROR STATE (offline, backend, supabase, session, timeout)
-  if (phase === "error" && error) {
+  if (phase === 'error' && error) {
     const errorKey = `splash.errors.${error.code}`;
     return (
       <main className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none">
@@ -339,16 +329,14 @@ function SplashScreen() {
 
         <section className="relative z-10 max-w-sm w-full text-center space-y-4">
           <h1 className="text-2xl font-bold" aria-live="assertive">
-            {t(`${errorKey}.title`, { defaultValue: t("splash.errors.fallback_title") })}
+            {t(`${errorKey}.title`, { defaultValue: t('splash.errors.fallback_title') })}
           </h1>
           <p className="text-sm text-slate-300">
-            {t(`${errorKey}.message`, { defaultValue: t("splash.errors.fallback_message") })}
+            {t(`${errorKey}.message`, { defaultValue: t('splash.errors.fallback_message') })}
           </p>
 
-          {error.code === "offline" && (
-            <p className="text-xs text-slate-400 mt-1">
-              {t("splash.errors.offline_hint")}
-            </p>
+          {error.code === 'offline' && (
+            <p className="text-xs text-slate-400 mt-1">{t('splash.errors.offline_hint')}</p>
           )}
 
           <button
@@ -356,7 +344,7 @@ function SplashScreen() {
             onClick={handleRetry}
             className="mt-4 w-full py-3 rounded-2xl bg-yellow-400 text-[#041126] text-sm font-extrabold shadow-xl hover:bg-yellow-500 active:scale-98 transition"
           >
-            {t("splash.retry")}
+            {t('splash.retry')}
           </button>
         </section>
       </main>
@@ -364,7 +352,7 @@ function SplashScreen() {
   }
 
   // 3) CHECKING / LOADING STATE (session flow)
-  if (phase === "checking") {
+  if (phase === 'checking') {
     return (
       <main className="splash-root relative min-h-[100dvh] w-full bg-[#050B18] text-white overflow-hidden flex flex-col items-center justify-center px-6 py-10 select-none">
         <div className="absolute inset-0 bg-gradient-to-b from-[#081225] via-[#050B18] to-[#02060F] z-0" />
@@ -373,23 +361,17 @@ function SplashScreen() {
         <section className="relative z-10 flex flex-col items-center text-center max-w-sm w-full">
           <img
             src="/brand/logo/jobfast-logo.svg"
-            alt={t("splash.logo_alt")}
+            alt={t('splash.logo_alt')}
             className="splash-logo"
             loading="eager"
           />
-          <p className="mt-6 text-sm text-slate-300">
-            {t("splash.loading_main")}
-          </p>
+          <p className="mt-6 text-sm text-slate-300">{t('splash.loading_main')}</p>
 
           <div className="mt-6 w-full flex flex-col gap-2">
             <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
               <div className="h-full w-1/3 bg-yellow-400 splash-bar-inner" />
             </div>
-            {isSlow && (
-              <p className="text-xs text-slate-400">
-                {t("splash.loading_details")}
-              </p>
-            )}
+            {isSlow && <p className="text-xs text-slate-400">{t('splash.loading_details')}</p>}
           </div>
         </section>
       </main>
@@ -409,7 +391,7 @@ function SplashScreen() {
       {/* TOP BAR — language switcher */}
       <div className="relative z-20 w-full flex justify-end">
         <nav
-          aria-label={t("splash.language.switcher_aria")}
+          aria-label={t('splash.language.switcher_aria')}
           className="flex items-center gap-1 bg-white/10 rounded-xl p-1 backdrop-blur-sm"
         >
           {LANGUAGES.map((lang) => {
@@ -421,8 +403,8 @@ function SplashScreen() {
                 onClick={() => handlePick(lang.code)}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition ${
                   isActive
-                    ? "bg-yellow-400 text-[#041126] shadow-md"
-                    : "text-white/60 hover:text-white"
+                    ? 'bg-yellow-400 text-[#041126] shadow-md'
+                    : 'text-white/60 hover:text-white'
                 }`}
                 aria-label={t(`languages.${lang.code}.aria_label`, {
                   defaultValue: lang.name,
@@ -443,22 +425,19 @@ function SplashScreen() {
         <div className="mb-6 flex items-center justify-center">
           <img
             src="/brand/logo/jobfast-logo.svg"
-            alt={t("splash.logo_alt")}
+            alt={t('splash.logo_alt')}
             className="splash-logo-hero drop-shadow-[0_15px_35px_rgba(234,179,8,0.40)]"
             loading="eager"
           />
         </div>
 
-        <h1
-          id="splash-main-title"
-          className="text-6xl md:text-7xl font-black tracking-tight"
-        >
+        <h1 id="splash-main-title" className="text-6xl md:text-7xl font-black tracking-tight">
           <span className="text-yellow-400">JOB</span>
           <span className="text-white">FAST</span>
         </h1>
 
         <p className="mt-5 max-w-[280px] text-lg md:text-xl font-medium leading-relaxed text-slate-300 whitespace-pre-line">
-          {t("splash.slogan")}
+          {t('splash.slogan')}
         </p>
       </section>
 
@@ -467,35 +446,35 @@ function SplashScreen() {
         <button
           type="button"
           onClick={() => {
-            track("splash_start_clicked");
-            navigate("/onboarding");
+            track('splash_start_clicked');
+            navigate('/onboarding');
           }}
           className="relative w-full py-4 rounded-2xl bg-yellow-400 text-[#041126] text-lg font-extrabold shadow-xl hover:bg-yellow-500 active:scale-98 transition overflow-hidden"
         >
-          <span className="relative z-10">{t("splash.start")}</span>
+          <span className="relative z-10">{t('splash.start')}</span>
           <span className="pointer-events-none absolute inset-0 bg-white/20 opacity-0 hover:opacity-40 transition-opacity" />
         </button>
 
         <button
           type="button"
           onClick={() => {
-            track("splash_login_clicked");
-            navigate("/login");
+            track('splash_login_clicked');
+            navigate('/login');
           }}
           className="w-full py-2 text-lg font-semibold text-white transition duration-150 hover:text-yellow-400"
         >
-          {t("splash.login")}
+          {t('splash.login')}
         </button>
 
         <button
           type="button"
           onClick={() => {
-            track("splash_register_clicked");
-            navigate("/register");
+            track('splash_register_clicked');
+            navigate('/register');
           }}
           className="w-full py-1 text-base font-medium text-slate-400 transition duration-150 hover:text-white"
         >
-          {t("splash.register")}
+          {t('splash.register')}
         </button>
       </section>
     </main>

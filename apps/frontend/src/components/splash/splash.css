@@ -5,10 +5,10 @@
 
 /* ── Safe area container ──────────────────────────────────────── */
 .splash-root {
-  padding-top:    env(safe-area-inset-top,    0px);
-  padding-right:  env(safe-area-inset-right,  0px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left:   env(safe-area-inset-left,   0px);
+  padding-left: env(safe-area-inset-left, 0px);
   box-sizing: border-box;
   min-height: 100svh; /* stable viewport — iOS Safari fallback */
   min-height: 100dvh; /* dynamic viewport — Android Chrome wins */
@@ -34,37 +34,71 @@
 
 /* Tablet (≥ 768px) */
 @media (min-width: 768px) {
-  .splash-logo       { width: clamp(240px, 36vw, 380px); max-height: 40vh; }
-  .splash-logo-hero  { width: clamp(280px, 40vw, 440px); max-height: 46vh; }
+  .splash-logo {
+    width: clamp(240px, 36vw, 380px);
+    max-height: 40vh;
+  }
+  .splash-logo-hero {
+    width: clamp(280px, 40vw, 440px);
+    max-height: 46vh;
+  }
 }
 
 /* Large screen (≥ 1200px) */
 @media (min-width: 1200px) {
-  .splash-logo       { width: 360px; }
-  .splash-logo-hero  { width: 420px; }
+  .splash-logo {
+    width: 360px;
+  }
+  .splash-logo-hero {
+    width: 420px;
+  }
 }
 
 /* Landscape — limit by height, not width */
 @media (orientation: landscape) {
-  .splash-logo      { width: min(40vw, 260px); max-height: 52vh; }
-  .splash-logo-hero { width: min(44vw, 300px); max-height: 58vh; }
+  .splash-logo {
+    width: min(40vw, 260px);
+    max-height: 52vh;
+  }
+  .splash-logo-hero {
+    width: min(44vw, 300px);
+    max-height: 58vh;
+  }
 }
 
 /* ── Keyframes (GPU-only: transform + opacity) ───────────────── */
 @keyframes jf-logo-in {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.94); }
-  to   { opacity: 1; transform: translate3d(0, 0,    0) scale(1);    }
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 @keyframes jf-logo-out {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1);    }
-  to   { opacity: 0; transform: translate3d(0, 0, 0) scale(0.985); }
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.985);
+  }
 }
 
 @keyframes jf-bar {
-  0%   { transform: translateX(-100%); }
-  50%  { transform: translateX(0%);    }
-  100% { transform: translateX(100%);  }
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* ── Animation classes ───────────────────────────────────────── */

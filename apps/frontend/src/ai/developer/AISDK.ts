@@ -26,29 +26,47 @@ export class AIAgent {
   async chat(userMessage: string, userId?: string): Promise<string> {
     const history = userId ? await AIMemory.getHistory(this.sessionId, 10) : [];
     const messages: AIRequest['messages'] = [
-      ...history.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+      ...history.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       { role: 'user', content: userMessage },
     ];
 
     const response = await AIGateway.chat({
       messages,
-      systemPrompt:   this.config.systemPrompt,
-      strategy:       this.config.strategy ?? 'balanced',
-      maxTokens:      this.config.maxTokens,
-      temperature:    this.config.temperature,
-      context:        userId ? { userId, sessionId: this.sessionId } : {},
+      systemPrompt: this.config.systemPrompt,
+      strategy: this.config.strategy ?? 'balanced',
+      ...(this.config.maxTokens !== undefined && { maxTokens: this.config.maxTokens }),
+      ...(this.config.temperature !== undefined && { temperature: this.config.temperature }),
+      ...(userId ? { context: { userId, sessionId: this.sessionId } } : {}),
     });
 
     if (userId) {
-      await AIMemory.addMessage({ role: 'user',      content: userMessage,          sessionId: this.sessionId, userId, timestamp: Date.now() });
-      await AIMemory.addMessage({ role: 'assistant', content: response.content ?? '', sessionId: this.sessionId, userId, timestamp: Date.now() });
+      await AIMemory.addMessage({
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: userMessage,
+        sessionId: this.sessionId,
+        userId,
+        timestamp: Date.now(),
+      });
+      await AIMemory.addMessage({
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: response.content ?? '',
+        sessionId: this.sessionId,
+        userId,
+        timestamp: Date.now(),
+      });
     }
 
     return response.content ?? '';
   }
 
   async *stream(userMessage: string): AsyncGenerator<string> {
-    for await (const chunk of AIGateway.stream({ messages: [{ role: 'user', content: userMessage }], systemPrompt: this.config.systemPrompt, strategy: this.config.strategy ?? 'balanced' })) {
+    for await (const chunk of AIGateway.stream({
+      messages: [{ role: 'user', content: userMessage }],
+      systemPrompt: this.config.systemPrompt,
+      strategy: this.config.strategy ?? 'balanced',
+    })) {
       if (chunk.delta) yield chunk.delta;
     }
   }
@@ -61,11 +79,16 @@ export class AIAgent {
 // ─── Workflow Builder ──────────────────────────────────────────────────────────
 
 export type WorkflowStep =
-  | { type: 'ai_chat';    prompt: string; systemPrompt?: string; outputKey: string }
-  | { type: 'ai_json';    prompt: string; outputKey: string }
-  | { type: 'condition';  expression: string; trueSteps: WorkflowStep[]; falseSteps?: WorkflowStep[] }
-  | { type: 'transform';  fn: (ctx: WorkflowContext) => unknown; outputKey: string }
-  | { type: 'fetch';      url: string; method?: string; body?: unknown; outputKey: string };
+  | { type: 'ai_chat'; prompt: string; systemPrompt?: string; outputKey: string }
+  | { type: 'ai_json'; prompt: string; outputKey: string }
+  | {
+      type: 'condition';
+      expression: string;
+      trueSteps: WorkflowStep[];
+      falseSteps?: WorkflowStep[];
+    }
+  | { type: 'transform'; fn: (ctx: WorkflowContext) => unknown; outputKey: string }
+  | { type: 'fetch'; url: string; method?: string; body?: unknown; outputKey: string };
 
 export interface WorkflowContext {
   input: Record<string, unknown>;
@@ -97,7 +120,12 @@ export class AIWorkflow {
 
     switch (step.type) {
       case 'ai_chat': {
-        const result = await AIGateway.complete(interpolate(step.prompt), step.systemPrompt ? { messages: [{ role: 'user', content: interpolate(step.prompt) }] } : undefined);
+        const result = await AIGateway.complete(
+          interpolate(step.prompt),
+          step.systemPrompt
+            ? { messages: [{ role: 'user', content: interpolate(step.prompt) }] }
+            : undefined,
+        );
         ctx[step.outputKey] = result;
         break;
       }
@@ -117,8 +145,12 @@ export class AIWorkflow {
         break;
       }
       case 'fetch': {
-        const body = step.body ? JSON.stringify(step.body) : undefined;
-        const res = await fetch(step.url, { method: step.method ?? 'GET', body, headers: body ? { 'Content-Type': 'application/json' } : {} });
+        const body = step.body ? JSON.stringify(step.body) : null;
+        const res = await fetch(step.url, {
+          method: step.method ?? 'GET',
+          body,
+          headers: body ? { 'Content-Type': 'application/json' } : {},
+        });
         ctx[step.outputKey] = await res.json();
         break;
       }
@@ -129,8 +161,8 @@ export class AIWorkflow {
 // ─── Plugin Interface ─────────────────────────────────────────────────────────
 
 export interface AIPlugin {
-  id:          string;
-  name:        string;
+  id: string;
+  name: string;
   description: string;
   install(sdk: typeof AISDK): void;
 }
@@ -155,7 +187,10 @@ export const AISDK = {
   },
 
   async *stream(message: string, options?: Partial<AIRequest>): AsyncGenerator<string> {
-    for await (const chunk of AIGateway.stream({ messages: [{ role: 'user', content: message }], ...options })) {
+    for await (const chunk of AIGateway.stream({
+      messages: [{ role: 'user', content: message }],
+      ...options,
+    })) {
       if (chunk.delta) yield chunk.delta;
     }
   },
