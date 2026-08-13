@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import {
   Search, Mic, Sparkles, SlidersHorizontal, X, ChevronRight,
@@ -554,6 +555,7 @@ interface JobDetailSheetProps {
 }
 
 function JobDetailSheet({ job, onClose, saved, onToggleSave }: JobDetailSheetProps) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState('Description');
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -620,7 +622,7 @@ function JobDetailSheet({ job, onClose, saved, onToggleSave }: JobDetailSheetPro
               saved ? 'border-amber-400/30 bg-amber-400/10 text-amber-300' : 'border-white/10 bg-white/5 text-slate-300'
             )}
           >
-            {saved ? 'Saved ✓' : 'Save'}
+            {saved ? t('common.saved', { defaultValue: 'Saved ✓' }) : t('common.save', { defaultValue: 'Sove' })}
           </button>
         </div>
       </div>
