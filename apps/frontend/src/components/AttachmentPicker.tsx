@@ -1,4 +1,5 @@
 import React, { memo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TYPES = [
@@ -57,7 +58,7 @@ const AttachmentPicker = memo(function AttachmentPicker({ open, onClose, onSelec
               ))}
             </div>
             <button type="button" onClick={onClose} className="w-full mt-3 text-[11px] text-slate-400">
-              Cancel
+                          {t('common.cancel', 'Anile')}
             </button>
           </motion.div>
         )}
